@@ -15,8 +15,9 @@ const props = withDefaults(
     readonly failureLabel: string
     readonly variant: 'card' | 'primary' | 'text' | 'tertiary'
     readonly disabled?: boolean
+    readonly iconPlacement?: 'left' | 'right'
   }>(),
-  { disabled: false },
+  { disabled: false, iconPlacement: 'left' },
 )
 defineSlots<{ default?: () => unknown }>()
 
@@ -112,6 +113,7 @@ async function copy(): Promise<void> {
         <span class="flex min-w-0 items-center gap-content-gap">
           <span
             class="pavp-copy-icon shrink-0 grid size-icon-medium text-control-primary"
+            :class="{ 'order-last': iconPlacement === 'right' }"
             aria-hidden="true"
           >
             <span
@@ -166,6 +168,7 @@ async function copy(): Promise<void> {
     <span class="inline-flex min-w-0 items-center gap-content-gap">
       <span
         class="pavp-copy-icon shrink-0 grid size-icon-medium"
+        :class="{ 'order-last': iconPlacement === 'right' }"
         aria-hidden="true"
       >
         <span class="pavp-copy-icon__idle i-lucide-copy col-start-1 row-start-1 size-icon-medium" />

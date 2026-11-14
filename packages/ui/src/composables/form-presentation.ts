@@ -3,11 +3,13 @@ import type {
   UiFormController,
   UiFormAttachmentSource,
   UiFormAttachmentResolver,
+  UiFormAttachmentService,
 } from '../components/form-contracts'
 
 interface FormPresentation {
   attachmentSource(name: string): UiFormAttachmentSource
   attachmentPreview(name: string): UiFormAttachmentResolver | undefined
+  attachmentPicker(name: string): UiFormAttachmentService['pickFile']
 
   readonly generation: Readonly<Ref<number>>
   readonly feedbackTarget: Readonly<

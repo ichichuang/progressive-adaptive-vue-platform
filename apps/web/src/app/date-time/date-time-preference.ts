@@ -11,8 +11,13 @@ export const dateTimeSettingsSchema = z.strictObject({
     }
   }),
   hourCycle: z.enum(['h12', 'h23']),
+  dateFormat: z.enum(['locale', 'ymd', 'dmy', 'mdy']).default('locale'),
 })
-export const defaultDateTimeSettings = { timeZone: 'system', hourCycle: 'h23' } as const
+export const defaultDateTimeSettings = {
+  timeZone: 'system',
+  hourCycle: 'h23',
+  dateFormat: 'locale',
+} as const
 export const dateTimePreferenceSchema = dateTimeSettingsSchema.extend({
   schemaVersion: z.literal(1),
 })

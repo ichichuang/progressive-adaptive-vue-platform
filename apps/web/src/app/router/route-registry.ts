@@ -291,6 +291,15 @@ function defineChartWorkspaceRoute<const S extends string>(suffix: S) {
   } as const)
 }
 
+function defineMotionWorkspaceRoute<const S extends string>(suffix: S) {
+  return defineConsoleWorkspaceRoute({
+    name: `component-motion-${suffix}`,
+    pathPattern: `/components/motion/${suffix}`,
+    sourcePath: `apps/web/src/pages/component-motion-${suffix}.vue`,
+    meta: { telemetryName: `route.component.motion.${suffix}` },
+  } as const)
+}
+
 function defineFormWorkspaceRoute<const S extends string>(suffix: S) {
   return defineConsoleWorkspaceRoute({
     name: `component-form-${suffix}`,
@@ -398,6 +407,7 @@ export const routeRegistry = Object.freeze([
   defineWorkbenchRoute('sizes'),
   defineWorkbenchRoute('typography'),
   defineWorkbenchRoute('interactions'),
+  defineWorkbenchRoute('date-time'),
   defineWorkbenchRoute('motion'),
   defineConsoleWorkspaceRoute({
     name: 'component-showcase',
@@ -426,6 +436,21 @@ export const routeRegistry = Object.freeze([
   defineChartWorkspaceRoute('linked'),
   defineChartWorkspaceRoute('tour'),
   defineChartWorkspaceRoute('stage'),
+  defineComponentWorkspaceRoute('motion'),
+  defineMotionWorkspaceRoute('reveal'),
+  defineMotionWorkspaceRoute('spatial'),
+  defineMotionWorkspaceRoute('material'),
+  defineMotionWorkspaceRoute('particles'),
+  defineMotionWorkspaceRoute('text'),
+  defineRoute({
+    ...defineMotionWorkspaceRoute('route-transitions'),
+    querySchemaId: 'route-query.motion-transition',
+  }),
+  defineRoute({
+    ...defineMotionWorkspaceRoute('route-preview'),
+    pathPattern: '/components/motion/route-transitions/preview',
+    querySchemaId: 'route-query.motion-transition',
+  }),
   ...formWorkspaceRoutes,
   defineComponentWorkspaceRoute('table'),
   defineTableExampleRoute('table', 'appearance'),
@@ -713,6 +738,7 @@ export const consoleNavigationRegistry = Object.freeze([
     labelKey: 'navigation.capabilities',
     items: Object.freeze([
       defineNavigationItem('workbench-interactions', 'i-lucide-sparkles'),
+      defineNavigationItem('workbench-date-time', 'i-lucide-clock-3'),
       defineNavigationItem('workbench-motion', 'i-lucide-workflow'),
     ]),
   }),
@@ -759,6 +785,19 @@ export const consoleNavigationRegistry = Object.freeze([
           defineNavigationItem('component-chart-linked', 'i-lucide-database'),
           defineNavigationItem('component-chart-tour', 'i-lucide-database'),
           defineNavigationItem('component-chart-stage', 'i-lucide-database'),
+        ]),
+      }),
+      Object.freeze({
+        id: 'cinematic-motion',
+        labelKey: 'navigation.cinematic-motion',
+        items: Object.freeze([
+          defineNavigationItem('component-motion', 'i-lucide-sparkles'),
+          defineNavigationItem('component-motion-reveal', 'i-lucide-sparkles'),
+          defineNavigationItem('component-motion-spatial', 'i-lucide-sparkles'),
+          defineNavigationItem('component-motion-material', 'i-lucide-sparkles'),
+          defineNavigationItem('component-motion-particles', 'i-lucide-sparkles'),
+          defineNavigationItem('component-motion-text', 'i-lucide-sparkles'),
+          defineNavigationItem('component-motion-route-transitions', 'i-lucide-sparkles'),
         ]),
       }),
       Object.freeze({

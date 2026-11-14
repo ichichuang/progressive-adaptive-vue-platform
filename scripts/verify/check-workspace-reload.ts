@@ -21,7 +21,10 @@ interface TestOwner {
   ): Promise<{ isCurrent(): boolean; reload(action: () => void): boolean } | undefined>
 }
 interface TestExports {
-  provideWorkspaceUnsavedChanges: (workspace: TestWorkspace) => TestOwner
+  provideWorkspaceUnsavedChanges: (
+    workspace: TestWorkspace,
+    options?: { readonly protectDocument?: boolean },
+  ) => TestOwner
   workspaceUnsavedChangesKey: InjectionKey<
     (registration: { instance: symbol; read(): { dirty: boolean; revision: number } }) => () => void
   >
@@ -86,6 +89,22 @@ export async function verifyWorkspaceReload(): Promise<void> {
       return () => h('div')
     },
   }
+  const isolated = renderer.createApp({
+    setup() {
+      owner = provideWorkspaceUnsavedChanges(workspace, { protectDocument: false })
+      return () => h(child)
+    },
+  })
+  isolated.mount({})
+  assert.ok(owner)
+  const localRequest = owner.requestReload(() => true)
+  assert.equal(owner.reloadConfirmation.value?.affectedEntries.length, 1)
+  const localBeforeUnload = new Event('beforeunload', { cancelable: true })
+  events.dispatchEvent(localBeforeUnload)
+  assert.equal(localBeforeUnload.defaultPrevented, false)
+  owner.reloadConfirmation.value.cancel()
+  assert.equal(await localRequest, undefined)
+  isolated.unmount()
   const app = renderer.createApp({
     setup() {
       owner = provideWorkspaceUnsavedChanges(workspace)
@@ -96,7 +115,7 @@ export async function verifyWorkspaceReload(): Promise<void> {
   try {
     assert.ok(owner)
     const first = owner.requestReload(() => true)
-    assert.equal(owner.reloadConfirmation.value?.affectedEntries.length, 1)
+    assert.equal(owner.reloadConfirmation.value.affectedEntries.length, 1)
     state.revision++
     assert.equal(await first, undefined)
     const second = owner.requestReload(() => true)

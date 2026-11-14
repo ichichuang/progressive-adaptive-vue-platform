@@ -104,6 +104,18 @@ export const uiPublicComponentRegistry = Object.freeze({
       sourcePath: 'packages/ui/src/components/UiG2Chart.vue',
       props: Object.freeze([
         Object.freeze({
+          name: 'dateTime',
+          type: 'UiDateTimeContext',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'dateTimeChannels',
+          type: 'UiG2ChartDateTimeChannels',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'tour',
           type: 'UiChartTourConfig',
           required: false,
@@ -284,6 +296,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           type: 'boolean',
           required: false,
           defaultValue: 'false',
+        }),
+        Object.freeze({
+          name: 'iconPlacement',
+          type: "'left' | 'right'",
+          required: false,
+          defaultValue: "'left'",
         }),
       ]),
       emits: Object.freeze([]),
@@ -484,7 +502,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         }),
         Object.freeze({
           name: 'contentLayout',
-          type: "'scroll' | 'contained'",
+          type: "'scroll' | 'contained' | 'contained-flush'",
           required: false,
           defaultValue: null,
         }),
@@ -695,6 +713,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           name: 'layout',
           type: 'readonly UiDashboardItemPosition[]',
           required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'scrollController',
+          type: 'UiScrollController | undefined',
+          required: false,
           defaultValue: null,
         }),
         Object.freeze({ name: 'rowHeight', type: 'number', required: false, defaultValue: null }),

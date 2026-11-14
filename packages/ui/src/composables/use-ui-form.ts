@@ -83,6 +83,12 @@ export function useUiForm<const Schema extends UiFormSchema>(
         const service = typeof source === 'function' ? { upload: source } : source
         if (service === undefined || typeof service.upload !== 'function')
           throw new TypeError('Attachment fields require a trusted registered source.')
+        if (
+          service.pickFile !== undefined &&
+          (typeof service.pickFile.label !== 'function' ||
+            typeof service.pickFile.select !== 'function')
+        )
+          throw new TypeError('Attachment picker requires a label and a trusted file selector.')
         if (node.preview !== undefined && typeof service.resolvePreview !== 'function')
           throw new TypeError('Attachment preview requires a trusted resolver.')
         if (node.imageProcessing !== undefined || node.preview !== undefined) {
@@ -2415,6 +2421,9 @@ export function useUiForm<const Schema extends UiFormSchema>(
       const source = attachments.get(name)
       if (source === undefined) throw new TypeError('Unknown attachment source.')
       return source.upload
+    },
+    attachmentPicker(name) {
+      return attachments.get(name)?.pickFile
     },
     attachmentPreview(name) {
       return attachments.get(name)?.resolvePreview

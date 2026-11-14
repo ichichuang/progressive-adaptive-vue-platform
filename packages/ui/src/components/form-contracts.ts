@@ -121,7 +121,7 @@ export type UiFormAttachment = Readonly<{
 }>
 export type UiFormAttachmentSource = (
   file: File,
-  context: UiFormWorkContext & { readonly field: string },
+  context: UiFormWorkContext & { readonly field: string; readonly originalFile?: File },
 ) => Promise<UiFormAttachment>
 export interface UiFormImageProcessing {
   readonly crop?: { readonly aspectRatio?: number }
@@ -139,6 +139,13 @@ export type UiFormAttachmentResolver = (
 export interface UiFormAttachmentService {
   readonly upload: UiFormAttachmentSource
   readonly resolvePreview?: UiFormAttachmentResolver
+  /** Trusted application file picker (for example an asset library), never serialized in JSON. */
+  readonly pickFile?: {
+    readonly label: UiFormText
+    readonly select: (
+      context: UiFormWorkContext & { readonly field: string },
+    ) => Promise<File | null>
+  }
 }
 export interface UiFormMediaCopy {
   readonly cropTitle: UiFormText

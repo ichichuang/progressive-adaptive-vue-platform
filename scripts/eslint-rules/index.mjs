@@ -1427,9 +1427,27 @@ const noUnapprovedVisualLiterals = {
           getStaticPropertyName(value.property, value.computed) === path.at(-1) &&
           previewNavigationSelection(value.object, path.slice(0, -1))
         )
+      const selectionTest = resolveLocalExpression(value?.test)
+      const exclusion = resolveLocalExpression(selectionTest?.right)
+      const branded = resolveLocalExpression(exclusion?.argument)
+      const brandTest = (test, id) =>
+        test?.type === 'BinaryExpression' &&
+        test.operator === '===' &&
+        test.left.type === 'Identifier' &&
+        test.left.name === 'style' &&
+        test.right.type === 'Literal' &&
+        test.right.value === id
       return (
         value?.type === 'ConditionalExpression' &&
-        regionalField(value.test, ['isCustomized'], 'sidebar') &&
+        selectionTest?.type === 'LogicalExpression' &&
+        selectionTest.operator === '&&' &&
+        regionalField(selectionTest.left, ['isCustomized'], 'sidebar') &&
+        exclusion?.type === 'UnaryExpression' &&
+        exclusion.operator === '!' &&
+        branded?.type === 'LogicalExpression' &&
+        branded.operator === '||' &&
+        brandTest(branded.left, 'brand-sidebar') &&
+        brandTest(branded.right, 'brand-frame') &&
         regionalField(
           value.consequent,
           ['appearance', 'colorPalette', 'roles', 'primary', 'solid'],
@@ -1470,8 +1488,10 @@ const noUnapprovedVisualLiterals = {
           : { background: 'background', color: 'foreground' }
       const remaining = new Set(Object.keys(pairs))
       let spread = kind === 'scope'
+      let pressedSpread =
+        kind === 'scope' && filename === 'packages/ui/src/providers/UiColorScope.vue'
       return (
-        fields.length === remaining.size + Number(spread) &&
+        fields.length === remaining.size + Number(spread) + Number(pressedSpread) &&
         fields.every((field) => {
           if (
             field.type === 'SpreadElement' &&
@@ -1481,12 +1501,27 @@ const noUnapprovedVisualLiterals = {
             spread = false
             return true
           }
+          if (field.type === 'SpreadElement' && pressedSpread) {
+            const call = resolveLocalExpression(field.argument)
+            if (
+              call?.type === 'CallExpression' &&
+              call.arguments.length === 1 &&
+              sinks.imported(call.callee, '../adapters/naive/regional-navigation-theme', [
+                'regionalNavigationPressedStyle',
+              ]) &&
+              regionalField(call.arguments[0], ['appearance'])
+            ) {
+              pressedSpread = false
+              return true
+            }
+          }
           if (field.type !== 'Property') return false
           const key = getStaticPropertyName(field.key, field.computed)
           return remaining.delete(key) && regionalField(field.value, ['surface', pairs[key]])
         }) &&
         remaining.size === 0 &&
-        !spread
+        !spread &&
+        !pressedSpread
       )
     }
 
@@ -1652,6 +1687,7 @@ const noUnapprovedVisualLiterals = {
         const fields = result?.type === 'ObjectExpression' ? result.properties : []
         const pairs = {
           '--n-item-color-active': 'itemColorActiveCollapsed',
+          '--n-item-color-active-hover': 'itemColorActiveHover',
           '--pavp-collapsed-foreground': 'itemIconColorCollapsed',
           '--pavp-collapsed-active-foreground': 'itemIconColorActive',
           '--pavp-collapsed-hover': 'itemColorHover',
@@ -1695,6 +1731,8 @@ const noUnapprovedVisualLiterals = {
         const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
         const pairs = {
           '--pavp-radio-card-hover-surface': 'soft.background.hover',
+          '--pavp-radio-card-pressed-surface': 'soft.background.pressed',
+          '--pavp-radio-card-selected-pressed-surface': 'solid.background.pressed',
           '--pavp-radio-card-selected-hover-surface': 'solid.background.hover',
           '--pavp-radio-card-selected-hover-foreground': 'solid.foreground',
         }
@@ -2140,7 +2178,7 @@ const noUnapprovedVisualLiterals = {
         ) {
           const pairs = {
             '--preview-sidebar': ['sidebar', 'surface.background'],
-            '--preview-sidebar-text': ['sidebar', 'appearance.colorPalette.text.primary'],
+            '--preview-sidebar-text': ['sidebar', 'surface.foreground'],
             '--preview-header': ['header', 'surface.background'],
             '--preview-header-text': ['header', 'surface.foreground'],
             '--preview-tabs': ['tabs', 'surface.background'],
@@ -2288,6 +2326,49 @@ const noUnapprovedVisualLiterals = {
           node.right.quasis[1].value.raw === 'px'
         )
           return
+
+        // The cinematic recipe owns a pointer-inert decorative SVG over measured target bounds.
+        if (
+          [
+            'packages/ui/src/adapters/motion/cinematic-theme-rift.ts',
+            'packages/ui/src/adapters/motion/cinematic-text-recipes.ts',
+            'packages/ui/src/adapters/motion/cinematic-gpu-playback.ts',
+          ].includes(filename)
+        ) {
+          if (
+            filename === 'packages/ui/src/adapters/motion/cinematic-gpu-playback.ts' &&
+            propertyName === 'borderRadius' &&
+            node.right.type === 'MemberExpression' &&
+            node.right.object.type === 'Identifier' &&
+            node.right.object.name === 'style' &&
+            getStaticPropertyName(node.right.property, node.right.computed) === 'borderRadius'
+          )
+            return
+          const fixed = { position: 'fixed', pointerEvents: 'none', overflow: 'hidden' }
+          if (
+            fixed[propertyName] !== undefined &&
+            staticNodeValue(node.right) === fixed[propertyName]
+          )
+            return
+          if (
+            ['left', 'top', 'width', 'height'].includes(propertyName) &&
+            node.right.type === 'TemplateLiteral' &&
+            node.right.expressions.length === 1 &&
+            node.right.quasis.length === 2 &&
+            node.right.quasis[0].value.raw === '' &&
+            node.right.quasis[1].value.raw === 'px'
+          )
+            return
+          if (
+            propertyName === 'zIndex' &&
+            node.right.type === 'CallExpression' &&
+            node.right.callee.type === 'MemberExpression' &&
+            getStaticPropertyName(node.right.callee.property, node.right.callee.computed) ===
+              'getPropertyValue' &&
+            staticNodeValue(node.right.arguments[0]) === '--ui-z-overlay'
+          )
+            return
+        }
 
         // PDF canvas CSS dimensions are measured page geometry, separate from DPR backing pixels.
         if (
@@ -2459,6 +2540,15 @@ const noUnapprovedVisualLiterals = {
             return
           }
           if (sinks.dom(object) && method === 'animate') {
+            if (
+              [
+                'packages/ui/src/adapters/motion/cinematic-theme-rift.ts',
+                'packages/ui/src/adapters/motion/cinematic-dom-playback.ts',
+                'packages/ui/src/adapters/motion/cinematic-text-recipes.ts',
+                'packages/ui/src/adapters/motion/cinematic-gpu-playback.ts',
+              ].includes(filename)
+            )
+              return
             reportStyleOwner(node)
             return
           }

@@ -283,6 +283,24 @@ export async function verifyRuntimeUpdate(): Promise<void> {
       focus.dispatchEvent(new Event('focus'))
       await monitor.check()
       assert.equal(requests.length, 10)
+      let manualCalls = 0
+      const manual = create({
+        document: page,
+        window: browser,
+        automatic: false,
+        fetch: () => {
+          manualCalls++
+          return Promise.resolve(Response.json(candidate))
+        },
+        onCandidate: () => undefined,
+      })
+      assert.equal(intervals.size, 0)
+      focus.dispatchEvent(new Event('focus'))
+      visibility.dispatchEvent(new Event('visibilitychange'))
+      assert.equal(manualCalls, 0)
+      await manual.check()
+      assert.equal(manualCalls, 1)
+      manual.dispose()
     } finally {
       Date.now = clock
     }

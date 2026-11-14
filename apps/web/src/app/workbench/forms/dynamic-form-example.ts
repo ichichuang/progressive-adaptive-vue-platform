@@ -42,24 +42,46 @@ export const dynamicFormPresets = {
       { name: 'notes', label: 'formShowcase.notes', fields: ['notes'] },
     ],
   },
+  textCapacity: {
+    columns: 2,
+    fields: sharedFields.map((field) =>
+      field.name === 'capacity'
+        ? { kind: 'text' as const, name: 'capacity', label: 'configuredForm.capacity' }
+        : field,
+    ),
+    steps: [
+      { name: 'identity', label: 'formCapabilities.steps.identity', fields: ['name', 'email'] },
+      {
+        name: 'details',
+        label: 'formCapabilities.steps.details',
+        fields: ['capacity', 'contacts'],
+      },
+    ],
+  },
 } as const satisfies Record<string, UiFormSchema>
 
 export type DynamicFormPreset = keyof typeof dynamicFormPresets
-// This example persists only its two known configurations and non-sensitive sample fields.
+// This example persists only its known configurations and non-sensitive sample fields.
 // Backend-supplied configuration itself is not automatically persisted by the form component.
 const draftSchema = z
   .strictObject({
-    preset: z.enum(['simple', 'detailed']),
+    preset: z.enum(['simple', 'detailed', 'textCapacity']),
     values: z.strictObject({
       name: z.string(),
       email: z.string(),
-      capacity: z.number().nullable(),
+      capacity: z.union([z.number().nullable(), z.string()]),
       contacts: z.array(z.strictObject({ email: z.string() })),
       notes: z.string().optional(),
     }),
     step: z.string(),
   })
   .superRefine((value, context) => {
+    if ((value.preset === 'textCapacity') !== (typeof value.values.capacity === 'string'))
+      context.addIssue({
+        code: 'custom',
+        path: ['values', 'capacity'],
+        message: 'Capacity does not match the selected control type.',
+      })
     if ((value.preset === 'detailed') !== Object.hasOwn(value.values, 'notes'))
       context.addIssue({
         code: 'custom',

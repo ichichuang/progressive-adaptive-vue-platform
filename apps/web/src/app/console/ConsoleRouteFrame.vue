@@ -2,6 +2,7 @@
 import { explicitThemePreferenceSchema } from '@platform/design-system'
 import {
   UiAdminShell,
+  useUiMotion,
   UiWorkspaceTabs,
   type UiAdminNavigationExpansionUpdate,
   type UiAdminNavigationGroup,
@@ -62,9 +63,46 @@ import {
 } from '../router/route-registry'
 import { provideSettingsReturn } from '../router/settings-return'
 import { useRuntimePresentation } from '../config/runtime-presentation'
+import {
+  connectRouteMotionPlayer,
+  type RouteMotionOrigin,
+} from '../router/route-transition/route-motion-player'
 import { useShellScrollRestoration } from '../scroll/use-shell-scroll-restoration'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
+let routeActivation: { readonly origin: RouteMotionOrigin; readonly capturedAt: number } | undefined
+function captureRouteActivation(event: MouseEvent): void {
+  const target = event.target
+  const affordance =
+    target instanceof Element
+      ? target.closest(
+          '.pavp-admin-shell__identity, [role="tab"], .pavp-workspace-tabs__close, [data-pavp-admin-navigation] [data-pavp-navigation-key], [data-pavp-admin-navigation] [role="menuitem"]',
+        )
+      : null
+  if (affordance === null) {
+    routeActivation = undefined
+    return
+  }
+  routeActivation =
+    event.button === 0 && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey
+      ? {
+          origin:
+            event.detail === 0 ? 'center' : { clientX: event.clientX, clientY: event.clientY },
+          capturedAt: performance.now(),
+        }
+      : undefined
+}
+function clearRouteActivation(): void {
+  routeActivation = undefined
+}
+connectRouteMotionPlayer(useUiMotion(), () => {
+  const activation = routeActivation
+  routeActivation = undefined
+  // The shell title waits 500ms to distinguish click from double-click.
+  return activation !== undefined && performance.now() - activation.capturedAt <= 1000
+    ? activation.origin
+    : 'center'
+})
 const shellScroll = useShellScrollRestoration()
 const presentation = useRuntimePresentation()
 
@@ -603,7 +641,13 @@ async function navigate(routeName: string): Promise<void> {
     :composition="composition"
     :prepare-navigation-focus="prepareNavigationFocus"
     :navigation-focus-request="navigationFocusRequest"
-    :content-layout="containedContent ? 'contained' : 'scroll'"
+    :content-layout="
+      !containedContent
+        ? 'scroll'
+        : activeRouteName === 'workbench-dashboard'
+          ? 'contained-flush'
+          : 'contained'
+    "
     :active-route-name="activeRouteName"
     :navigation="navigation"
     :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
@@ -611,6 +655,9 @@ async function navigate(routeName: string): Promise<void> {
     :color-mode-switch-failed="colorModeSwitchFailed"
     :expanded-navigation-group-ids="effectiveExpandedGroupIds"
     :copy="copy"
+    @click.capture="captureRouteActivation"
+    @keydown.capture="clearRouteActivation"
+    @pointercancel.capture="clearRouteActivation"
     @navigate="navigate"
     @navigate-home="navigateHome"
     @toggle-color-mode="toggleColorMode"
@@ -660,7 +707,7 @@ async function navigate(routeName: string): Promise<void> {
               :bordered="false"
               @click="navigateFromDock('control-center')"
             >
-              <span class="flex min-w-0 items-center gap-content-gap">
+              <span class="wb-settings-dock-content flex min-w-0 items-center">
                 <NIcon>
                   <span
                     aria-hidden="true"

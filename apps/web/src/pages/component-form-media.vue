@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onScopeDispose, ref } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -12,15 +12,22 @@ defineOptions({ name: 'ComponentFormMediaPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
 const demo = useFormShowcase()
 const { t } = demo
-const example = createFormMediaExample()
+const example = createFormMediaExample(() => t('formCapabilities.media.useSample'))
 const mode = ref<'edit' | 'detail'>('edit')
 const form = useUiForm({
   ...demo,
   formId: 'form-media',
   schema: example.schema,
   initial: { draftId: 'media-example', values: example.initial },
-  attachments: { session: example.service },
+  attachments: { session: example.service, 'image-session': example.imageService },
 })
+const comparison = computed(() => {
+  const image = form.values.value.image[0]
+  return image ? example.comparisons.get(image.id) : undefined
+})
+function describeImage(image: { width: number; height: number; bytes: number }): string {
+  return `${String(image.width)} × ${String(image.height)} · ${(image.bytes / 1024).toFixed(1)} KB`
+}
 const history = useFormExampleUndo(() => form)
 onScopeDispose(example.dispose)
 </script>
@@ -59,6 +66,24 @@ onScopeDispose(example.dispose)
         <span />
       </template>
     </UiForm>
+    <template #insight>
+      <div class="grid min-w-0 gap-component-unit text-caption">
+        <strong>{{ t('formCapabilities.media.comparison') }}</strong>
+        <template v-if="comparison">
+          <span
+            v-text="`${t('formCapabilities.media.before')} · ${describeImage(comparison.before)}`"
+          />
+          <span
+            v-text="`${t('formCapabilities.media.after')} · ${describeImage(comparison.after)}`"
+          />
+        </template>
+        <span
+          v-else
+          class="text-text-secondary"
+          v-text="t('formCapabilities.media.comparisonEmpty')"
+        />
+      </div>
+    </template>
     <template #actions>
       <FormExampleActions
         :form="form"

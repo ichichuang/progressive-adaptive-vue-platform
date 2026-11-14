@@ -291,3 +291,5 @@ JSON 不接受颜色、CSS、事件、原始 HTML、图片或任意扩展属性�
 前端 copy 使用 `richText` 工具文案映射及 `richTextLinkLabel`、`richTextLinkApply`、
 `richTextLinkInvalid`。编辑器按需加载，详情用同一文档规则的只读呈现，不使用 `v-html`。
 输入法组合期间控件持有 pending 状态，提交不得截断输入；外部重置/替换沿用表单缓冲保护。
+
+Trusted attachment services may provide `pickFile: { label, select }` to select a File from an application asset library. This alternative to the operating-system picker follows the same pending-input, cancellation, crop, encoding and upload flow. `select` receives `{ signal, field }`, returns a File or null on cancellation, and must respect cancellation. Neither the picker nor its files belongs in JSON configuration. Upload context optionally includes `originalFile` for real processing metadata comparisons; this File is transient and must never be written to form values or drafts.

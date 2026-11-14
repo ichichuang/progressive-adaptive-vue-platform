@@ -1,8 +1,11 @@
 import { computed, shallowRef, onScopeDispose, useTemplateRef, watch, watchPostEffect } from 'vue'
 import type { SelectProps } from 'naive-ui/es/select'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
-import { acceptsControlValue, isDateOnly } from '../../components/form-control-values'
+import { acceptsControlValue } from '../../components/form-control-values'
 
+import { useUiDateTime } from '../../date-time/date-time-context'
+import type { UiDateTimeContext } from '../../date-time/date-time'
+import { formatDateInput, parseDateInput } from './pavp-naive-date-time'
 import { formatFormMask } from '../../components/form-special-values'
 
 /** Typed control projection and transient input commitment, private to Naive presentation. */
@@ -10,6 +13,7 @@ export function useFormControl<I>(props: {
   readonly form: UiFormController<I>
   readonly binding: UiFormFieldBinding
 }) {
+  const dateTime = useUiDateTime()
   const root = useTemplateRef<HTMLElement>('root')
   const config = computed(() => {
     const config = props.form.fields.find((field) => field.name === props.binding.name)
@@ -112,7 +116,18 @@ export function useFormControl<I>(props: {
   // Only transient vendor edit syntax lives here; canonical values remain in the controller.
   const composing = shallowRef(false)
   const buffer = shallowRef<string | null>(null)
-  const dateText = computed(() => buffer.value ?? textValue.value)
+  const bufferDatePolicy = shallowRef<UiDateTimeContext | undefined>()
+  const dateText = computed(
+    () =>
+      buffer.value ??
+      (config.value.kind === 'date'
+        ? formatDateInput(textValue.value, dateTime.value)
+        : textValue.value),
+  )
+  function captureDatePolicy(): void {
+    if (config.value.kind === 'date' && buffer.value === null)
+      bufferDatePolicy.value = dateTime.value ? { ...dateTime.value } : undefined
+  }
   const numberFormat = computed(() => {
     const raw = buffer.value
     return raw !== null && (composing.value || !Number.isFinite(Number(raw)))
@@ -175,6 +190,7 @@ export function useFormControl<I>(props: {
       return
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       const correctingNumber = config.value.kind === 'number' && numberFormat.value !== undefined
+      captureDatePolicy()
       buffer.value = event.target.value
       reportPending()
       // A temporary official format override preserves invalid text on blur.
@@ -209,11 +225,20 @@ export function useFormControl<I>(props: {
     return accepted
   }
   function updateDateText(value: string): void {
+    captureDatePolicy()
     if (buffer.value !== value) {
       buffer.value = value
       reportPending()
     }
-    if (!composing.value && (value === '' || isDateOnly(value))) update(value === '' ? null : value)
+    if (!composing.value) {
+      const parsed = parseDateInput(value, bufferDatePolicy.value)
+      if (value === '') update(null)
+      else if (
+        parsed !== null &&
+        (value === parsed || value === formatDateInput(parsed, bufferDatePolicy.value))
+      )
+        update(parsed)
+    }
   }
   function blurNumber(): void {
     // Invalid text remains visible through the official format prop. Merely
@@ -246,8 +271,10 @@ export function useFormControl<I>(props: {
       // Match Naive's installed numeric parser; the decoder rejects NaN/Infinity.
       return update(raw === '' ? null : Number(raw))
     }
-    if (config.value.kind === 'date')
-      return buffer.value === '' ? update(null) : isDateOnly(buffer.value) && update(buffer.value)
+    if (config.value.kind === 'date') {
+      const parsed = parseDateInput(buffer.value, bufferDatePolicy.value)
+      return buffer.value === '' ? update(null) : parsed !== null && update(parsed)
+    }
     if (
       config.value.kind === 'text' ||
       config.value.kind === 'textarea' ||

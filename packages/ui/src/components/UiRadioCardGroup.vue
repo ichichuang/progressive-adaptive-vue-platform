@@ -67,6 +67,10 @@ const radioCardThemeOverrides = computed(() => ({
   buttonBoxShadowHover: 'none',
 }))
 const radioCardStyle = computed(() => ({
+  '--pavp-radio-card-pressed-surface':
+    appearance.value.colorPalette.roles.primary.soft.background.pressed,
+  '--pavp-radio-card-selected-pressed-surface':
+    appearance.value.colorPalette.roles.primary.solid.background.pressed,
   '--pavp-radio-card-hover-surface':
     appearance.value.colorPalette.roles.primary.soft.background.hover,
   '--pavp-radio-card-selected-hover-surface':
@@ -196,6 +200,22 @@ const radioCardStyle = computed(() => ({
   ):hover {
   background: var(--pavp-radio-card-selected-hover-surface);
   color: var(--pavp-radio-card-selected-hover-foreground);
+}
+
+@media (forced-colors: none) {
+  .pavp-radio-card-group[data-ui-radio-card-group][data-disabled='false']
+    > .pavp-radio-card-group__option[data-ui-radio-card-option]:not(
+      .n-radio-button--disabled
+    ):hover:active {
+    background: var(--pavp-radio-card-pressed-surface);
+  }
+
+  .pavp-radio-card-group[data-ui-radio-card-group][data-disabled='false']
+    > .pavp-radio-card-group__option[data-ui-radio-card-option][data-selected='true']:not(
+      .n-radio-button--disabled
+    ):hover:active {
+    background: var(--pavp-radio-card-selected-pressed-surface);
+  }
 }
 
 .pavp-radio-card-group[data-ui-radio-card-group]

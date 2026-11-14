@@ -1,3 +1,4 @@
+import { createG2InnerContrast } from './pavp-g2-label-contrast'
 import type { UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiG2ChartOptions } from '../../components/g2-chart-contracts'
 import { projectG2Theme, type G2ThemeMetrics } from './pavp-g2-theme'
@@ -237,8 +238,7 @@ export function projectG2Options(
               : position === 'top'
                 ? { dy: -metrics.spacing * 2, textBaseline: 'bottom' }
                 : {}
-        // Native contrast transform measures the actual mark fill, not the primary
-        // button background. Explicit label colors/transforms remain caller-owned.
+        // Shared contrast follows the composited animated mark fill, not a one-time snapshot. Explicit label colors/transforms remain caller-owned.
         const labelStyle = record(label['style']) ? label['style'] : {}
         const contrastTransform =
           platformInnerContrast &&
@@ -246,7 +246,11 @@ export function projectG2Options(
           label['fill'] === undefined &&
           labelStyle['fill'] === undefined &&
           label['transform'] === undefined
-            ? { transform: [{ type: 'contrastReverse' }] }
+            ? {
+                transform: [
+                  { type: createG2InnerContrast(appearance.colorPalette.surfaces.surface) },
+                ],
+              }
             : {}
         return { ...placement, ...contrastTransform, ...label }
       })

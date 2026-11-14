@@ -3,7 +3,9 @@ export interface UiDateTimeContext {
   readonly locale: string
   readonly timeZone: string
   readonly hourCycle?: 'h12' | 'h23'
+  readonly dateFormat?: UiDateFormat
 }
+export type UiDateFormat = 'locale' | 'ymd' | 'dmy' | 'mdy'
 export type UiDateTimePreset = 'date' | 'time' | 'datetime' | 'long-date'
 export type UiDateTimeValue =
   | { readonly kind: 'instant'; readonly value: string }
@@ -47,6 +49,12 @@ function validContext(value: unknown): value is UiDateTimeContext {
   return (
     typeof value.locale === 'string' &&
     typeof value.timeZone === 'string' &&
+    (!('dateFormat' in value) ||
+      value.dateFormat === undefined ||
+      value.dateFormat === 'locale' ||
+      value.dateFormat === 'ymd' ||
+      value.dateFormat === 'dmy' ||
+      value.dateFormat === 'mdy') &&
     (!('hourCycle' in value) ||
       value.hourCycle === undefined ||
       value.hourCycle === 'h12' ||
@@ -151,11 +159,45 @@ export function formatUiDateTime(
       options.second = '2-digit'
       if (context.hourCycle !== undefined) options.hourCycle = context.hourCycle
     }
-    return remember(
+    const formatter = remember(
       formatters,
       JSON.stringify([context.locale, options]),
       () => new Intl.DateTimeFormat(context.locale, options),
-    ).format(ms)
+    )
+    // Numeric date order is an explicit display preference, not a model conversion.
+    // Long dates retain their localized month names; wall dates always use UTC.
+    if (
+      context.dateFormat &&
+      context.dateFormat !== 'locale' &&
+      (style === 'date' || style === 'datetime')
+    ) {
+      const dateFormatter = remember(
+        formatters,
+        JSON.stringify(['numeric', options.timeZone]),
+        () =>
+          new Intl.DateTimeFormat('en-GB', {
+            timeZone: options.timeZone,
+            calendar: 'gregory',
+            numberingSystem: 'latn',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+          }),
+      )
+      const parts = dateFormatter.formatToParts(ms)
+      const part = (type: Intl.DateTimeFormatPartTypes) =>
+        parts.find((entry) => entry.type === type)?.value ?? ''
+      const date =
+        context.dateFormat === 'ymd'
+          ? `${part('year')}-${part('month')}-${part('day')}`
+          : context.dateFormat === 'dmy'
+            ? `${part('day')}/${part('month')}/${part('year')}`
+            : `${part('month')}/${part('day')}/${part('year')}`
+      if (style === 'date') return date
+      const time = formatUiDateTime(value, context, 'time')
+      return time === null ? null : `${date} ${time}`
+    }
+    return formatter.format(ms)
   } catch {
     return null
   }

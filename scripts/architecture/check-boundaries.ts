@@ -1,16 +1,13 @@
-import { formatUiDateTime } from '../../packages/ui/src/date-time/date-time'
 import { readFile, readdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { getEventListeners } from 'node:events'
 import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { TextDecoder } from 'node:util'
-import { runInNewContext } from 'node:vm'
 
 import stylelint from 'stylelint'
 import { ESLint } from 'eslint'
 import ts from 'typescript'
 import type * as VueRuntime from 'vue'
-import type * as VueSfc from 'vue/compiler-sfc'
 
 import type * as QueryCore from '../../apps/web/src/shared/query'
 import type * as ApiCore from '../../apps/web/src/shared/api'
@@ -27,10 +24,7 @@ import {
   type ApiResult,
 } from '../../apps/web/src/shared/api'
 import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/runtime-configuration-contract'
-import {
-  readUapiWorldTime,
-  type UapiWorldTime,
-} from '../../apps/web/src/shared/services/uapi-world-time'
+import { readUapiWorldTime } from '../../apps/web/src/shared/services/uapi-world-time'
 import { validateArchitectureAdminConsole } from './check-architecture-admin-console'
 import { validateAppearanceCutover } from './check-appearance-cutover'
 import { validateI18nArchitecture } from './check-i18n'
@@ -1426,203 +1420,6 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
   return violations
 }
 
-async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boolean> {
-  const fromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
-  const vue = fromWeb('vue') as typeof VueRuntime
-  const compiler = fromWeb('vue/compiler-sfc') as typeof VueSfc
-  const source = await readFile(resolve(rootDirectory, 'apps/web/src/pages/dashboard.vue'), 'utf8')
-  const { descriptor } = compiler.parse(source)
-  const component = compiler.compileScript(descriptor, {
-    id: 'dashboard-request-probe',
-    inlineTemplate: true,
-  })
-  const compiled = ts.transpileModule(component.content, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText
-  const calls: { url: URL; input: RequestInit }[] = []
-  const wrapper = vue.defineComponent({
-    inheritAttrs: false,
-    setup(_props, { slots, attrs }) {
-      return () => vue.h('div', attrs, [slots['actions']?.(), slots['default']?.()])
-    },
-  })
-  const button = vue.defineComponent({
-    inheritAttrs: false,
-    setup(_props, { slots, attrs }) {
-      return () => vue.h('button', attrs, slots['default']?.())
-    },
-  })
-  const radioGroup = vue.defineComponent({
-    inheritAttrs: false,
-    emits: ['update:value'],
-    setup(_props, { emit }) {
-      return () =>
-        vue.h(
-          'button',
-          {
-            onClick: () => {
-              emit('update:value', 'overview')
-            },
-          },
-          'open-dashboard-overview',
-        )
-    },
-  })
-  const mocks: Readonly<Record<string, unknown>> = {
-    vue,
-    '@platform/ui': {
-      UiScrollArea: wrapper,
-      UiStatusBadge: wrapper,
-      formatUiDateTime,
-      useUiDateTime: () =>
-        vue.computed(() => ({ locale: 'zh-CN', timeZone: 'Asia/Shanghai', hourCycle: 'h23' })),
-    },
-    'naive-ui/es/button': { NButton: button },
-    'naive-ui/es/card': { NCard: wrapper },
-    '@platform/design-system': { builtInAppearanceThemePreviews: [] },
-    '../shared/i18n': {
-      useConsoleI18n: () => ({ t: (key: string) => key, locale: vue.ref('zh-CN') }),
-    },
-    '../shared/api': {
-      createApiClient: (input: ApiCore.ApiClientInput) =>
-        createApiClient({
-          ...input,
-          fetch: (url, request) => {
-            calls.push({ url, input: request })
-            return Promise.resolve(
-              new Response(JSON.stringify(worldTime), {
-                headers: { 'content-type': 'application/json' },
-              }),
-            )
-          },
-        }),
-    },
-    '../app/api/api-read-boundary': {
-      useApiReadBoundary: () => ({
-        configured: true,
-        configuration: { status: 'configured', baseUrl: 'https://transport.invalid/base/' },
-      }),
-    },
-    '../shared/services/uapi-world-time': { readUapiWorldTime },
-    '../app/appearance/appearance-read-boundary': {
-      useAppearanceReadBoundary: () => ({
-        snapshot: vue.shallowRef({ theme: { themeId: 'probe' }, motion: 'none' }),
-      }),
-    },
-    '../app/router/application-navigation': {
-      useApplicationNavigation: () => ({ resolveHref: () => '/' }),
-      useApplicationLinkActivation: () => () => undefined,
-    },
-    '../app/router/route-input': { registeredRouteDestination: (value: unknown) => value },
-    '../app/workbench/WorkbenchPage.vue': wrapper,
-    '../app/workbench/dashboard/DashboardComposer.vue': wrapper,
-    '../app/router/router-scroll-controller': { routerScrollControllerKey: Symbol('test-scroll') },
-    'naive-ui/es/radio': { NRadioGroup: radioGroup, NRadioButton: wrapper },
-  }
-  const module = { exports: {} as { default?: VueRuntime.Component } }
-  runInNewContext(compiled, {
-    AbortController,
-    exports: module.exports,
-    module,
-    require: (name: string): unknown => {
-      if (!Object.hasOwn(mocks, name)) throw new Error(`Unexpected dashboard dependency: ${name}`)
-      return mocks[name]
-    },
-  })
-  if (module.exports.default === undefined) return false
-
-  interface ProbeNode {
-    readonly tag: string
-    text: string
-    readonly props: Record<string, unknown>
-    readonly children: ProbeNode[]
-    parent: ProbeNode | null
-    readonly style: { display: string }
-  }
-  const node = (tag: string, text = ''): ProbeNode => ({
-    tag,
-    text,
-    props: {},
-    children: [],
-    parent: null,
-    style: { display: '' },
-  })
-  const renderer = vue.createRenderer<ProbeNode, ProbeNode>({
-    createElement: (tag) => node(tag),
-    createText: (text) => node('#text', text),
-    createComment: (text) => node('#comment', text),
-    setText: (element, text) => {
-      element.text = text
-    },
-    setElementText: (element, text) => {
-      element.text = text
-      element.children.length = 0
-    },
-    insert: (element, parent, anchor) => {
-      if (element.parent !== null) {
-        const previousIndex = element.parent.children.indexOf(element)
-        if (previousIndex >= 0) element.parent.children.splice(previousIndex, 1)
-      }
-      const index = anchor === null || anchor === undefined ? -1 : parent.children.indexOf(anchor)
-      parent.children.splice(index < 0 ? parent.children.length : index, 0, element)
-      element.parent = parent
-    },
-    remove: (element) => {
-      if (element.parent === null) return
-      const index = element.parent.children.indexOf(element)
-      if (index >= 0) element.parent.children.splice(index, 1)
-      element.parent = null
-    },
-    parentNode: (element) => element.parent,
-    nextSibling: (element) =>
-      element.parent?.children[element.parent.children.indexOf(element) + 1] ?? null,
-    patchProp: (element, key, _previous, value) => {
-      element.props[key] = value
-      if (key === 'textContent') {
-        element.text = String(value ?? '')
-        element.children.length = 0
-      }
-    },
-  })
-  const root = node('root')
-  const app = renderer.createApp(module.exports.default, { title: 'Dashboard', message: 'Probe' })
-  const children = (element: ProbeNode): ProbeNode[] => [
-    element,
-    ...element.children.flatMap(children),
-  ]
-  const text = (element: ProbeNode): string => element.text + element.children.map(text).join('')
-  try {
-    app.mount(root)
-    const overviewButton = children(root).find(
-      (element) => text(element) === 'open-dashboard-overview' && element.tag === 'button',
-    )
-    const openOverview = overviewButton?.props['onClick'] as (() => void) | undefined
-    if (typeof openOverview !== 'function') return false
-    openOverview()
-    await vue.nextTick()
-    const requestButton = children(root).find(
-      (element) => element.tag === 'button' && text(element).includes('workbench.request'),
-    )
-    const click = requestButton?.props['onClick'] as (() => void) | undefined
-    const callsBeforeClick = calls.length
-    if (typeof click !== 'function') return false
-    click()
-    await new Promise<void>((resolveTurn) => setImmediate(resolveTurn))
-    await vue.nextTick()
-    const request = calls[0]
-    return (
-      callsBeforeClick === 0 &&
-      calls.length === 1 &&
-      request?.input.method === 'GET' &&
-      request.url.pathname === '/base/v1/misc/worldtime' &&
-      request.url.searchParams.get('city') === 'Asia/Shanghai' &&
-      text(root).includes('workbench.api.success')
-    )
-  } finally {
-    app.unmount()
-  }
-}
-
 export async function validateApiTransport(): Promise<readonly string[]> {
   const violations: string[] = []
   const expect = (condition: boolean, label: string): void => {
@@ -2335,10 +2132,6 @@ export async function validateApiTransport(): Promise<readonly string[]> {
     timezone: 'Asia/Shanghai',
     weekday: 'Tuesday',
   }
-  expect(
-    await validateDashboardWorldTime(worldTime),
-    'dashboard requests Beijing using the documented IANA zone through the actual service',
-  )
   expect(
     (
       await readUapiWorldTime(

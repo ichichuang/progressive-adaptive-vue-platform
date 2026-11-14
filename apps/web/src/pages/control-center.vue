@@ -652,6 +652,26 @@ onScopeDispose(() => {
               />
             </SettingsField>
             <SettingsField
+              id="settings-date-format"
+              class="wb-settings-choice-field"
+              :label="t('dateShowcase.dateFormat')"
+            >
+              <UiRadioCardGroup
+                class="wb-setting-choice"
+                :accessible-label="t('dateShowcase.dateFormat')"
+                :model-value="dateTimeStore.preference.dateFormat"
+                :options="[
+                  { value: 'locale', label: t('dateShowcase.localeFormat') },
+                  { value: 'ymd', label: t('dateShowcase.ymd') },
+                  { value: 'dmy', label: t('dateShowcase.dmy') },
+                  { value: 'mdy', label: t('dateShowcase.mdy') },
+                ]"
+                @update:model-value="
+                  dateTimeStore.update({ ...dateTimeStore.preference, dateFormat: $event })
+                "
+              />
+            </SettingsField>
+            <SettingsField
               id="settings-hour-cycle"
               class="wb-settings-choice-field"
               :label="t('dateShowcase.hours')"

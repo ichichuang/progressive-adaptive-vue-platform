@@ -1,3 +1,4 @@
+// @unocss-include
 import {
   defineComponent,
   h,
@@ -60,8 +61,8 @@ export const PavpRichTextContent = defineComponent({
         node.type === 'bulletList' ? 'ul' : 'ol',
         {
           class: [
-            'm-0 grid gap-component-unit',
-            node.type === 'bulletList' ? 'list-disc list-inside' : 'list-decimal list-inside',
+            'm-0 grid gap-component-unit p-panel-narrow',
+            node.type === 'bulletList' ? 'list-disc list-outside' : 'list-decimal list-outside',
           ],
         },
         node.content.map((item) => h('li', {}, item.content.map(block))),

@@ -29,7 +29,7 @@ const bootstrap = port.read()
 const initialPreset: DynamicFormPreset =
   bootstrap.status === 'found' ? bootstrap.data.preset : 'simple'
 const changing = ref(false)
-const outcome = ref<'ready' | 'applied' | 'blocked' | 'failed'>('ready')
+const outcome = ref<'ready' | 'applied' | 'reset' | 'blocked' | 'failed'>('ready')
 const owner = useUiDynamicForm({
   ...demo,
   formId: 'form-dynamic',
@@ -38,7 +38,11 @@ const owner = useUiDynamicForm({
 })
 const form = owner.form
 const preset = computed<DynamicFormPreset>(() =>
-  form.value.schema.fields.some((field) => field.name === 'notes') ? 'detailed' : 'simple',
+  form.value.schema.fields.some((field) => field.name === 'notes')
+    ? 'detailed'
+    : form.value.schema.fields.some((field) => field.name === 'capacity' && field.kind === 'text')
+      ? 'textCapacity'
+      : 'simple',
 )
 const draft = useDraftSession({
   port,
@@ -78,6 +82,7 @@ const outcomeMessage = computed(
     ({
       ready: t('formCapabilities.dynamic.ready'),
       applied: t('formCapabilities.dynamic.applied'),
+      reset: t('formCapabilities.dynamic.reset'),
       blocked: t('formCapabilities.dynamic.blocked'),
       failed: t('formCapabilities.dynamic.failed'),
     })[visibleOutcome.value],
@@ -95,12 +100,31 @@ const draftMessage = computed(() => {
   return t('formCapabilities.dynamic.saved')
 })
 async function selectPreset(value: string | number | boolean): Promise<void> {
-  if ((value !== 'simple' && value !== 'detailed') || changing.value) return
+  if (
+    (value !== 'simple' &&
+      value !== 'detailed' &&
+      value !== 'textCapacity' &&
+      value !== 'invalid') ||
+    changing.value
+  )
+    return
   changing.value = true
   try {
-    const result = await owner.replaceSchema(dynamicFormPresets[value])
+    // Deliberately duplicated field names exercise the real schema boundary without
+    // changing the active controller or writing an invalid configuration to storage.
+    const result = await owner.replaceSchema(
+      value === 'invalid'
+        ? { fields: [dynamicFormPresets.simple.fields[0], dynamicFormPresets.simple.fields[0]] }
+        : dynamicFormPresets[value],
+    )
     outcome.value =
-      result.status === 'applied' ? 'applied' : result.status === 'unchanged' ? 'ready' : 'blocked'
+      result.status === 'applied'
+        ? result.resetFields.includes('capacity')
+          ? 'reset'
+          : 'applied'
+        : result.status === 'unchanged'
+          ? 'ready'
+          : 'blocked'
   } catch {
     outcome.value = 'failed'
   } finally {
@@ -131,6 +155,9 @@ async function selectPreset(value: string | number | boolean): Promise<void> {
         <NRadioButton value="detailed">
           {{ t('formCapabilities.dynamic.detailed') }}
         </NRadioButton>
+        <NRadioButton value="textCapacity">
+          {{ t('formCapabilities.dynamic.textCapacity') }}
+        </NRadioButton>
       </NRadioGroup>
     </template>
     <p class="m-0 text-caption text-text-secondary">
@@ -154,6 +181,12 @@ async function selectPreset(value: string | number | boolean): Promise<void> {
       </p>
     </template>
     <template #actions>
+      <NButton
+        :disabled="busy"
+        @click="selectPreset('invalid')"
+      >
+        {{ t('formCapabilities.dynamic.invalid') }}
+      </NButton>
       <NButton
         :disabled="busy || !canBack"
         @click="form.goBackStep()"

@@ -42,6 +42,14 @@ import { routeTransitionBoundaryRegistry } from '../../apps/web/src/app/router/r
 import { routeTransitionPresetRegistry } from '../../apps/web/src/app/router/route-transition/route-transition-preset-registry'
 import { resolveRouteTransition } from '../../apps/web/src/app/router/route-transition/resolve-route-transition'
 import {
+  routeTransitionShowcaseRules,
+  cinematicRoutePresetIds,
+  getCinematicRouteRecipe,
+  allowsCinematicRoutePreset,
+  isWelcomeRouteEdge,
+  isRouteTransitionShowcasePair,
+} from '../../apps/web/src/app/router/route-transition/route-transition-showcase'
+import {
   resolveRouteTransitionRule,
   routeTransitionRuleRegistry,
 } from '../../apps/web/src/app/router/route-transition/route-transition-rule-registry'
@@ -74,6 +82,7 @@ const expectedPageSources = [
   'apps/web/src/pages/sizes.vue',
   'apps/web/src/pages/typography.vue',
   'apps/web/src/pages/interactions.vue',
+  'apps/web/src/pages/date-time.vue',
   'apps/web/src/pages/motion.vue',
   'apps/web/src/pages/component-showcase.vue',
   'apps/web/src/pages/component-actions.vue',
@@ -95,6 +104,14 @@ const expectedPageSources = [
   'apps/web/src/pages/component-chart-linked.vue',
   'apps/web/src/pages/component-chart-tour.vue',
   'apps/web/src/pages/component-chart-stage.vue',
+  'apps/web/src/pages/component-motion.vue',
+  'apps/web/src/pages/component-motion-reveal.vue',
+  'apps/web/src/pages/component-motion-spatial.vue',
+  'apps/web/src/pages/component-motion-material.vue',
+  'apps/web/src/pages/component-motion-particles.vue',
+  'apps/web/src/pages/component-motion-text.vue',
+  'apps/web/src/pages/component-motion-route-transitions.vue',
+  'apps/web/src/pages/component-motion-route-preview.vue',
   'apps/web/src/pages/component-form-overview.vue',
   'apps/web/src/pages/component-form-basics.vue',
   'apps/web/src/pages/component-form-detail.vue',
@@ -147,7 +164,7 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 80)
+const expectedProductPageSources = expectedPageSources.slice(0, 89)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
   'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
@@ -310,6 +327,16 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.workbench-interactions',
     'route.workbench.interactions',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/date-time.vue',
+    'workbench-date-time',
+    '/date-time',
+    'route-params.none',
+    'route-query.none',
+    'route-title.workbench-date-time',
+    'route.workbench.date-time',
     'route-boundary',
   ],
   [
@@ -520,6 +547,86 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.component-chart-stage',
     'route.component.chart.stage',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion.vue',
+    'component-motion',
+    '/components/motion',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-motion',
+    'route.component.motion',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-reveal.vue',
+    'component-motion-reveal',
+    '/components/motion/reveal',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-motion-reveal',
+    'route.component.motion.reveal',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-spatial.vue',
+    'component-motion-spatial',
+    '/components/motion/spatial',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-motion-spatial',
+    'route.component.motion.spatial',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-material.vue',
+    'component-motion-material',
+    '/components/motion/material',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-motion-material',
+    'route.component.motion.material',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-particles.vue',
+    'component-motion-particles',
+    '/components/motion/particles',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-motion-particles',
+    'route.component.motion.particles',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-text.vue',
+    'component-motion-text',
+    '/components/motion/text',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-motion-text',
+    'route.component.motion.text',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-route-transitions.vue',
+    'component-motion-route-transitions',
+    '/components/motion/route-transitions',
+    'route-params.none',
+    'route-query.motion-transition',
+    'route-title.component-motion-route-transitions',
+    'route.component.motion.route-transitions',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-motion-route-preview.vue',
+    'component-motion-route-preview',
+    '/components/motion/route-transitions/preview',
+    'route-params.none',
+    'route-query.motion-transition',
+    'route-title.component-motion-route-preview',
+    'route.component.motion.route-preview',
     'route-boundary',
   ],
   [
@@ -1080,6 +1187,7 @@ const expectedRouteTitles = {
   'route-title.workbench-interactions': getDefaultConsoleMessage(
     'route-title.workbench-interactions',
   ),
+  'route-title.workbench-date-time': getDefaultConsoleMessage('route-title.workbench-date-time'),
   'route-title.workbench-motion': getDefaultConsoleMessage('route-title.workbench-motion'),
   'route-title.component-showcase': getDefaultConsoleMessage('route-title.component-showcase'),
   'route-title.component-actions': getDefaultConsoleMessage('route-title.component-actions'),
@@ -1120,6 +1228,28 @@ const expectedRouteTitles = {
   'route-title.component-chart-tour': getDefaultConsoleMessage('route-title.component-chart-tour'),
   'route-title.component-chart-stage': getDefaultConsoleMessage(
     'route-title.component-chart-stage',
+  ),
+  'route-title.component-motion': getDefaultConsoleMessage('route-title.component-motion'),
+  'route-title.component-motion-reveal': getDefaultConsoleMessage(
+    'route-title.component-motion-reveal',
+  ),
+  'route-title.component-motion-spatial': getDefaultConsoleMessage(
+    'route-title.component-motion-spatial',
+  ),
+  'route-title.component-motion-material': getDefaultConsoleMessage(
+    'route-title.component-motion-material',
+  ),
+  'route-title.component-motion-particles': getDefaultConsoleMessage(
+    'route-title.component-motion-particles',
+  ),
+  'route-title.component-motion-text': getDefaultConsoleMessage(
+    'route-title.component-motion-text',
+  ),
+  'route-title.component-motion-route-transitions': getDefaultConsoleMessage(
+    'route-title.component-motion-route-transitions',
+  ),
+  'route-title.component-motion-route-preview': getDefaultConsoleMessage(
+    'route-title.component-motion-route-preview',
   ),
   'route-title.component-form-overview': getDefaultConsoleMessage(
     'route-title.component-form-overview',
@@ -1328,6 +1458,11 @@ const expectedMessages = [
     getDefaultConsoleMessage('route-message.workbench-interactions-summary'),
   ],
   [
+    'workbench-date-time',
+    'route-message.workbench-date-time-summary',
+    getDefaultConsoleMessage('route-message.workbench-date-time-summary'),
+  ],
+  [
     'workbench-motion',
     'route-message.workbench-motion-summary',
     getDefaultConsoleMessage('route-message.workbench-motion-summary'),
@@ -1431,6 +1566,46 @@ const expectedMessages = [
     'component-chart-stage',
     'route-message.component-chart-stage-summary',
     getDefaultConsoleMessage('route-message.component-chart-stage-summary'),
+  ],
+  [
+    'component-motion',
+    'route-message.component-motion-summary',
+    getDefaultConsoleMessage('route-message.component-motion-summary'),
+  ],
+  [
+    'component-motion-reveal',
+    'route-message.component-motion-reveal-summary',
+    getDefaultConsoleMessage('route-message.component-motion-reveal-summary'),
+  ],
+  [
+    'component-motion-spatial',
+    'route-message.component-motion-spatial-summary',
+    getDefaultConsoleMessage('route-message.component-motion-spatial-summary'),
+  ],
+  [
+    'component-motion-material',
+    'route-message.component-motion-material-summary',
+    getDefaultConsoleMessage('route-message.component-motion-material-summary'),
+  ],
+  [
+    'component-motion-particles',
+    'route-message.component-motion-particles-summary',
+    getDefaultConsoleMessage('route-message.component-motion-particles-summary'),
+  ],
+  [
+    'component-motion-text',
+    'route-message.component-motion-text-summary',
+    getDefaultConsoleMessage('route-message.component-motion-text-summary'),
+  ],
+  [
+    'component-motion-route-transitions',
+    'route-message.component-motion-route-transitions-summary',
+    getDefaultConsoleMessage('route-message.component-motion-route-transitions-summary'),
+  ],
+  [
+    'component-motion-route-preview',
+    'route-message.component-motion-route-preview-summary',
+    getDefaultConsoleMessage('route-message.component-motion-route-preview-summary'),
   ],
   [
     'component-form-overview',
@@ -2362,7 +2537,8 @@ function applicationNavigationContractViolations(source: string): string[] {
     options === undefined ||
     !ts.isIntersectionTypeNode(options.type) ||
     options.type.types.length !== 2 ||
-    compact(options.type.types[0]) !== "Pick<RouterNavigationOptions,'replace'>" ||
+    compact(options.type.types[0]) !==
+      "Pick<RouteTransitionNavigationOptions,'replace'|'visual'|'origin'>" ||
     !isDeepStrictEqual(optionMembers(currentOptionFields?.members), [
       "readonlyopenIn?:'current-page'",
       'readonlyrecovery?:never',
@@ -2429,28 +2605,46 @@ function applicationNavigationContractViolations(source: string): string[] {
     nodesOf(navigate, ts.isCallExpression).filter((call) => callMemberName(call) === 'navigate')
       .length !== 1 ||
     returnedNavigation?.parent !== navigate.body ||
-    optionObjects.length !== 1 ||
     !exactSet(
-      optionObjects[0]?.properties.map((property) => property.name?.getText() ?? '') ?? [],
-      ['replace'],
-    ) ||
-    !isDeepStrictEqual(
-      memberPath(
-        optionObjects[0] === undefined
-          ? undefined
-          : objectPropertyValue(optionObjects[0], 'replace'),
+      optionObjects.flatMap((object) =>
+        object.properties
+          .filter(ts.isPropertyAssignment)
+          .map((property) => property.name.getText()),
       ),
-      [navigate.parameters[1]?.name.getText(), 'replace'],
+      ['replace', 'visual', 'origin'],
     ) ||
-    optionObjects[0]?.properties.some(ts.isSpreadAssignment) === true ||
+    optionObjects.some((object) =>
+      object.properties.some(
+        (property) =>
+          ts.isSpreadAssignment(property) &&
+          (!ts.isParenthesizedExpression(property.expression) ||
+            !ts.isConditionalExpression(property.expression.expression) ||
+            !ts.isObjectLiteralExpression(property.expression.expression.whenTrue) ||
+            !ts.isObjectLiteralExpression(property.expression.expression.whenFalse)),
+      ),
+    ) ||
+    optionObjects.some((object) =>
+      object.properties
+        .filter(ts.isPropertyAssignment)
+        .some(
+          (property) =>
+            !isDeepStrictEqual(memberPath(property.initializer), [
+              navigate.parameters[1]?.name.getText(),
+              property.name.getText(),
+            ]),
+        ),
+    ) ||
     (forwarded !== undefined &&
       (ts.isIdentifier(forwarded) ||
         nodesOf(forwarded, ts.isPropertyAccessExpression).some(
-          (property) => property.name.text !== 'replace',
+          (property) =>
+            property.name.text !== 'replace' &&
+            property.name.text !== 'visual' &&
+            property.name.text !== 'origin',
         )))
   )
     violations.push(
-      'Application Navigation must return the original coordinator Promise and project only replace, without preliminary work.',
+      'Application Navigation must return the original coordinator Promise and project only replace, explicit visual intent and accepted interaction origin, without preliminary work.',
     )
 
   const newPage = navigate?.body?.statements.find(
@@ -2770,7 +2964,7 @@ function applicationNavigationContractViolations(source: string): string[] {
       'navigate',
     ]) ||
     !ts.isReturnStatement(currentActivation?.parent ?? parsed) ||
-    currentActivation?.arguments.length !== 1 ||
+    currentActivation?.arguments.length !== 2 ||
     (currentPrevent?.end ?? 0) >= currentActivation.pos ||
     nodesOf(handler, ts.isAwaitExpression).length !== 0 ||
     handler.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) === true ||
@@ -2831,7 +3025,7 @@ function applicationNavigationContractViolations(source: string): string[] {
   )?.expression
   if (
     !isDeepStrictEqual(linkOverloads.map(signature), [
-      '=>:MouseEvent,:RegisteredRouteDestination=>Promise<TypedNavigationResult>|undefined',
+      '?:CinematicLinkOptions=>:MouseEvent,:RegisteredRouteDestination=>Promise<TypedNavigationResult>|undefined',
       ':NewBrowserPageOptions=>:MouseEvent,:RegisteredRouteDestination=>Promise<BrowserPageOpenResult>|undefined',
       ':TrackedNewBrowserPageOptions=>:MouseEvent,:RegisteredRouteDestination=>Promise<TrackedBrowserPageResult>|undefined',
     ]) ||
@@ -4101,7 +4295,7 @@ function registryViolations(): string[] {
         ? `route-breadcrumb.${record.name}`
         : null
     const expectedWorkspace = expectedRouteRecords
-      .slice(0, 79)
+      .slice(0, 88)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
@@ -4364,6 +4558,7 @@ function schemaViolations(): string[] {
   const notFound = params.get('route-params.not-found-path')
   const noQuery = query.get('route-query.none')
   const tableEditor = query.get('route-query.table-editor')
+  const motionTransition = query.get('route-query.motion-transition')
 
   if (
     paramsSchemas.length !== 2 ||
@@ -4380,7 +4575,14 @@ function schemaViolations(): string[] {
   }
 
   if (
-    querySchemas.length !== 3 ||
+    querySchemas.length !== 4 ||
+    motionTransition === undefined ||
+    !motionTransition.safeParse({}).success ||
+    !motionTransition.safeParse({ preset: 'route-transition.none' }).success ||
+    !motionTransition.safeParse({ preset: 'theme-rift' }).success ||
+    motionTransition.safeParse({ preset: 'unknown' }).success ||
+    motionTransition.safeParse({ preset: ['theme-rift'] }).success ||
+    motionTransition.safeParse({ preset: 'theme-rift', extra: 'no' }).success ||
     noQuery === undefined ||
     !noQuery.safeParse({}).success ||
     noQuery.safeParse({ unexpected: 'value' }).success ||
@@ -4396,7 +4598,7 @@ function schemaViolations(): string[] {
     tableEditor.safeParse({ mode: 'detail', id: '1', unexpected: 'value' }).success
   ) {
     violations.push(
-      'Router Query Schema Registry diverged from the strict empty and table editor schemas.',
+      'Router Query Schema Registry diverged from its strict empty, table and motion-preview schemas.',
     )
   }
 
@@ -4410,6 +4612,80 @@ function schemaViolations(): string[] {
     violations.push('Route Registry Params/Query schema references are not closed.')
   }
 
+  return violations
+}
+
+function routeTransitionShowcaseViolations(): string[] {
+  const names = ['component-motion-route-transitions', 'component-motion-route-preview'] as const
+  const violations: string[] = []
+  if (
+    !isRouteTransitionShowcasePair(names[0], names[1]) ||
+    !isRouteTransitionShowcasePair(names[1], names[0]) ||
+    isRouteTransitionShowcasePair(names[0], names[0]) ||
+    isRouteTransitionShowcasePair('workbench-welcome', names[1]) ||
+    routeTransitionShowcaseRules(
+      'workbench-welcome',
+      'workbench-dashboard',
+      'route-transition.sheet-soft',
+    ) !== undefined ||
+    routeTransitionShowcaseRules(names[0], names[1], 'unknown') !== undefined ||
+    routeTransitionShowcaseRules(names[0], names[1], 'theme-rift') !== undefined ||
+    !isWelcomeRouteEdge('workbench-welcome', names[0]) ||
+    !isWelcomeRouteEdge(names[0], 'workbench-welcome') ||
+    isWelcomeRouteEdge('workbench-welcome', 'workbench-welcome') ||
+    isWelcomeRouteEdge(names[0], names[1])
+  )
+    violations.push(
+      'Route transition demo intent must remain isolated to the two registered demo pages.',
+    )
+  for (const preset of cinematicRoutePresetIds) {
+    const recipe = getCinematicRouteRecipe(preset)
+    if (
+      !allowsCinematicRoutePreset(names[0], names[1], preset) ||
+      !allowsCinematicRoutePreset(names[1], names[0], preset) ||
+      allowsCinematicRoutePreset(names[0], 'workbench-dashboard', preset) ||
+      allowsCinematicRoutePreset(names[0], names[0], preset) ||
+      allowsCinematicRoutePreset('workbench-welcome', 'workbench-dashboard', preset) !==
+        (preset === 'theme-rift') ||
+      recipe.coverMs + recipe.revealMs > 1000 ||
+      routeTransitionShowcaseRules(names[0], names[1], preset) !== undefined ||
+      !routeQuerySchemaRegistry
+        .find((entry) => entry.id === 'route-query.motion-transition')
+        ?.schema.safeParse({ preset }).success
+    )
+      violations.push(
+        `Cinematic route recipe ${preset} must preserve exact scope, query and bounded pacing.`,
+      )
+  }
+  for (const preset of routeTransitionPresetRegistry) {
+    for (const [from, to] of [
+      [names[0], names[1]],
+      [names[1], names[0]],
+    ] as const) {
+      const rules = routeTransitionShowcaseRules(from, to, preset.id)
+      if (rules === undefined) {
+        violations.push(`Route transition demo does not admit ${preset.id}.`)
+        continue
+      }
+      const input = { ...routeTransitionSelectionInput, fromRouteName: from, toRouteName: to }
+      const full = resolveRouteTransition(input, rules)
+      const reduced = resolveRouteTransition({ ...input, motion: 'reduced' }, rules)
+      if (
+        (preset.id === 'route-transition.none'
+          ? full.kind !== 'bypass' || reduced.kind !== 'bypass'
+          : full.kind !== 'native-element' ||
+            full.presetId !== preset.id ||
+            reduced.kind !== 'native-element' ||
+            reduced.presetId !== preset.reducedPresetId) ||
+        resolveRouteTransition({ ...input, motion: 'none' }, rules).kind !== 'bypass' ||
+        resolveRouteTransition({ ...input, nativeApiAvailable: false }, rules).kind !== 'bypass' ||
+        resolveRouteTransition({ ...input, navigationKind: 'replace' }, rules).kind !== 'bypass' ||
+        resolveRouteTransition({ ...input, navigationKind: 'traverse-back' }, rules).kind !==
+          'bypass'
+      )
+        violations.push(`Route transition demo projection drifted for ${preset.id} from ${from}.`)
+    }
+  }
   return violations
 }
 
@@ -4540,59 +4816,84 @@ async function pageViolations(): Promise<string[]> {
                     !source.includes(`from '../app/workbench/api/${component}.vue'`)
                   )
                 })()
-              : sourcePath === 'apps/web/src/pages/component-charts.vue'
-                ? count(source, /<ChartCapabilityOverview\b/gu) !== 1 ||
-                  !source.includes("from '../app/workbench/charts/ChartCapabilityOverview.vue'")
-                : sourcePath === 'apps/web/src/pages/component-chart-stage.vue'
-                  ? count(source, /<ChartStageWorkbench\b/gu) !== 1 ||
-                    !source.includes("from '../app/workbench/charts/ChartStageWorkbench.vue'")
-                  : sourcePath === 'apps/web/src/pages/component-chart-tour.vue'
-                    ? count(source, /<ChartTourWorkbench\b/gu) !== 1 ||
-                      !source.includes("from '../app/workbench/charts/ChartTourWorkbench.vue'")
-                    : sourcePath === 'apps/web/src/pages/component-chart-linked.vue'
-                      ? count(source, /<ChartLinkedWorkbench\b/gu) !== 1 ||
-                        !source.includes("from '../app/workbench/charts/ChartLinkedWorkbench.vue'")
-                      : sourcePath.includes('/component-chart-live-')
-                        ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
-                          !source.includes("from '../app/workbench/charts/ChartLiveWorkbench.vue'")
-                        : sourcePath.includes('/component-chart-')
-                          ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
+              : sourcePath === 'apps/web/src/pages/dashboard.vue'
+                ? count(source, /<DashboardComposer\b/gu) !== 1 ||
+                  !source.includes("from '../app/workbench/dashboard/DashboardComposer.vue'") ||
+                  count(source, /<WorkbenchPage\b/gu) !== 0
+                : sourcePath.includes('/component-motion-route-')
+                  ? count(source, /<RouteTransitionWorkbench\b/gu) !== 1 ||
+                    !source.includes(
+                      "from '../app/workbench/cinematic/RouteTransitionWorkbench.vue'",
+                    )
+                  : sourcePath.includes('/component-motion')
+                    ? count(source, /<CinematicMotionWorkbench\b/gu) !== 1 ||
+                      !source.includes(
+                        "from '../app/workbench/cinematic/CinematicMotionWorkbench.vue'",
+                      )
+                    : sourcePath === 'apps/web/src/pages/component-charts.vue'
+                      ? count(source, /<ChartCapabilityOverview\b/gu) !== 1 ||
+                        !source.includes(
+                          "from '../app/workbench/charts/ChartCapabilityOverview.vue'",
+                        )
+                      : sourcePath === 'apps/web/src/pages/component-chart-stage.vue'
+                        ? count(source, /<ChartStageWorkbench\b/gu) !== 1 ||
+                          !source.includes("from '../app/workbench/charts/ChartStageWorkbench.vue'")
+                        : sourcePath === 'apps/web/src/pages/component-chart-tour.vue'
+                          ? count(source, /<ChartTourWorkbench\b/gu) !== 1 ||
                             !source.includes(
-                              "from '../app/workbench/charts/ChartExampleWorkbench.vue'",
+                              "from '../app/workbench/charts/ChartTourWorkbench.vue'",
                             )
-                          : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
-                            ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                              !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
-                              count(source, /<UiScrollArea\b/gu) !== 1
-                            : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
-                              ? count(source, /<FormBasicControls\b/gu) !== 1 ||
+                          : sourcePath === 'apps/web/src/pages/component-chart-linked.vue'
+                            ? count(source, /<ChartLinkedWorkbench\b/gu) !== 1 ||
+                              !source.includes(
+                                "from '../app/workbench/charts/ChartLinkedWorkbench.vue'",
+                              )
+                            : sourcePath.includes('/component-chart-live-')
+                              ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
                                 !source.includes(
-                                  "from '../app/workbench/forms/FormBasicControls.vue'",
+                                  "from '../app/workbench/charts/ChartLiveWorkbench.vue'",
                                 )
-                              : sourcePath.includes('/component-form-') &&
-                                  sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
-                                ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                              : sourcePath.includes('/component-chart-')
+                                ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
                                   !source.includes(
-                                    "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
+                                    "from '../app/workbench/charts/ChartExampleWorkbench.vue'",
                                   )
-                                : tablePageComponent !== undefined
-                                  ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !==
-                                      1 ||
-                                    !source.includes(
-                                      `from '../app/workbench/tables/${tablePageComponent}.vue'`,
-                                    )
-                                  : sourcePath === 'apps/web/src/pages/component-table.vue' ||
-                                      /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
-                                        sourcePath,
-                                      )
-                                    ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                                : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
+                                  ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                                    !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+                                    count(source, /<UiScrollArea\b/gu) !== 1
+                                  : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
+                                    ? count(source, /<FormBasicControls\b/gu) !== 1 ||
                                       !source.includes(
-                                        "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                        "from '../app/workbench/forms/FormBasicControls.vue'",
                                       )
-                                    : count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                                      !source.includes(
-                                        "from '../app/workbench/WorkbenchPage.vue'",
-                                      )) || count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
+                                    : sourcePath.includes('/component-form-') &&
+                                        sourcePath !==
+                                          'apps/web/src/pages/component-form-builder.vue'
+                                      ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                                        !source.includes(
+                                          "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
+                                        )
+                                      : tablePageComponent !== undefined
+                                        ? count(
+                                            source,
+                                            new RegExp(`<${tablePageComponent}\\b`, 'gu'),
+                                          ) !== 1 ||
+                                          !source.includes(
+                                            `from '../app/workbench/tables/${tablePageComponent}.vue'`,
+                                          )
+                                        : sourcePath === 'apps/web/src/pages/component-table.vue' ||
+                                            /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
+                                              sourcePath,
+                                            )
+                                          ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                                            !source.includes(
+                                              "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                            )
+                                          : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                                            !source.includes(
+                                              "from '../app/workbench/WorkbenchPage.vue'",
+                                            )) || count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
     const errorPageInvalid =
       !productPage &&
       (count(source, /<main\b/gu) !== 1 ||
@@ -5839,7 +6140,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 80 &&
+        productRoutes.length === 89 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -6177,9 +6478,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -6312,7 +6613,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
@@ -8261,6 +8562,7 @@ const workspaceAxisRouteNames = [
   'workbench-sizes',
   'workbench-typography',
   'workbench-interactions',
+  'workbench-date-time',
   'workbench-motion',
   'api-overview',
   'api-basics',
@@ -8291,6 +8593,13 @@ const workspaceAxisRouteNames = [
   'component-chart-linked',
   'component-chart-tour',
   'component-chart-stage',
+  'component-motion',
+  'component-motion-reveal',
+  'component-motion-spatial',
+  'component-motion-material',
+  'component-motion-particles',
+  'component-motion-text',
+  'component-motion-route-transitions',
   'component-form-overview',
   'component-form-basics',
   'component-form-detail',
@@ -10980,6 +11289,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...registryViolations(),
     ...guardStageProgressViolations(),
     ...schemaViolations(),
+    ...routeTransitionShowcaseViolations(),
     ...(await routeInputHierarchyViolations()),
     ...(await pageViolations()),
     ...(await generatedTypeViolations()),

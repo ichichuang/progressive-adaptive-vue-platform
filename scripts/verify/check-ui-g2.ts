@@ -1156,9 +1156,12 @@ const innerDefaults = projectG2Options(
   600,
   320,
 )
-assert.deepEqual(record((record(innerDefaults)['labels'] as unknown[])[0])['transform'], [
-  { type: 'contrastReverse' },
-])
+assert.equal(
+  typeof record(
+    (record((record(innerDefaults)['labels'] as unknown[])[0])['transform'] as unknown[])[0],
+  )['type'],
+  'function',
+)
 const innerExplicit = projectG2Options(
   { type: 'interval', labels: [{ text: 'value', position: 'inside', style: { fill: '#123456' } }] },
   appearance,
@@ -1275,4 +1278,269 @@ console.log(
   tour.play()
   tour.dispose()
   assert.equal(callback, undefined)
+}
+
+// Temporal formatting is explicit and immutable; native developer customizations win.
+{
+  const { projectG2DateTime } = await import('../../packages/ui/src/adapters/g2/pavp-g2-date-time')
+  const context = { locale: 'en-US', timeZone: 'UTC', hourCycle: 'h23' } as const
+  const source = {
+    type: 'line' as const,
+    encode: { x: 'at', y: 'value' },
+    tooltip: { items: ['value'] },
+  }
+  const channels = { x: { kind: 'timestamp', unit: 'milliseconds', preset: 'time' } } as const
+  assert.equal(projectG2DateTime(source, undefined, context), source)
+  const projected = projectG2DateTime(source, channels, context)
+  const inspect = projected as unknown as {
+    axis: { x: { labelFormatter: (value: unknown) => string } }
+    tooltip: { title: (value: unknown) => string; items: readonly string[] }
+  }
+  assert.equal(inspect.axis.x.labelFormatter(Date.UTC(2026, 0, 1, 12)), '12:00:00')
+  assert.match(inspect.tooltip.title({ at: Date.UTC(2026, 0, 1, 12) }), /2026/u)
+  assert.equal(inspect.axis.x.labelFormatter('not-a-date'), '—')
+  assert.deepEqual(inspect.tooltip.items, ['value'])
+  assert.equal('axis' in source, false)
+  const instantProjected = projectG2DateTime(
+    { ...source, scale: { x: { type: 'time' } } },
+    { x: { kind: 'instant', preset: 'time' } },
+    context,
+  ) as unknown as { axis: { x: { labelFormatter: (value: unknown) => string } } }
+  assert.equal(instantProjected.axis.x.labelFormatter(new Date('2026-01-01T12:00:00Z')), '12:00:00')
+  assert.equal(instantProjected.axis.x.labelFormatter(new Date('invalid')), '—')
+  const dateProjected = projectG2DateTime(
+    source,
+    { x: { kind: 'date' } },
+    { ...context, timeZone: 'America/New_York' },
+  ) as unknown as { axis: { x: { labelFormatter: (value: unknown) => string } } }
+  assert.equal(dateProjected.axis.x.labelFormatter('2026-01-01'), '01/01/2026')
+  assert.equal(
+    dateProjected.axis.x.labelFormatter(new Date('2026-01-01T00:00:00Z')),
+    '—',
+    'Civil date channels do not guess a timezone for instant values.',
+  )
+  // Exercise the installed continuous scale, including local-midnight ticks crossing DST.
+  const { Time } = createRequire(uiRequire.resolve('@antv/g2'))('@antv/scale') as {
+    Time: new (options: { domain: Date[]; tickCount: number; utc: boolean }) => {
+      getTicks(): Date[]
+    }
+  }
+  const previousTZ = process.env['TZ']
+  try {
+    for (const hostZone of ['UTC', 'Asia/Shanghai', 'America/New_York', 'Pacific/Kiritimati']) {
+      process.env['TZ'] = hostZone
+      for (const utc of [false, true]) {
+        const domain = ['2026-03-07', '2026-03-10'].map(
+          (date) => new Date(utc ? date : `${date}T00:00:00`),
+        )
+        const ticks = new Time({ domain, tickCount: 4, utc }).getTicks()
+        assert.equal(ticks.length, 4)
+        for (const displayZone of ['UTC', 'America/New_York', 'Pacific/Kiritimati']) {
+          const options = { ...source, scale: { x: { type: 'time' as const, utc } } }
+          const adapted = projectG2DateTime(
+            options,
+            { x: { kind: 'date' } },
+            { ...context, timeZone: displayZone, dateFormat: 'ymd' },
+          ) as unknown as { axis: { x: { labelFormatter: (value: unknown) => string } } }
+          assert.deepEqual(ticks.map(adapted.axis.x.labelFormatter), [
+            '2026-03-07',
+            '2026-03-08',
+            '2026-03-09',
+            '2026-03-10',
+          ])
+          assert.equal(adapted.axis.x.labelFormatter(new Date('invalid')), '—')
+          assert.equal(adapted.axis.x.labelFormatter('2026-03-07'), '2026-03-07')
+          assert.equal('axis' in options, false)
+          assert.deepEqual(options.scale.x, { type: 'time', utc })
+          const nestedDates = projectG2DateTime(
+            { type: 'view', scale: options.scale, children: [source] },
+            { x: { kind: 'date' } },
+            { ...context, timeZone: displayZone, dateFormat: 'dmy' },
+          ) as unknown as {
+            children: { axis: { x: { labelFormatter: (value: unknown) => string } } }[]
+          }
+          assert.equal(nestedDates.children[0]?.axis.x.labelFormatter(ticks[0]), '07/03/2026')
+          const customDate = () => 'caller date'
+          const explicit = projectG2DateTime(
+            { ...options, axis: { x: { labelFormatter: customDate } } },
+            { x: { kind: 'date' } },
+            context,
+          ) as unknown as { axis: { x: { labelFormatter: typeof customDate } } }
+          assert.equal(explicit.axis.x.labelFormatter, customDate)
+        }
+      }
+    }
+  } finally {
+    if (previousTZ === undefined) delete process.env['TZ']
+    else process.env['TZ'] = previousTZ
+  }
+  for (const tooltip of ['value', ['value'], { field: 'value' }, { channel: 'y' }, () => 'value']) {
+    const shortcut = projectG2DateTime({ ...source, tooltip }, channels, context) as unknown as {
+      tooltip: unknown
+    }
+    assert.equal(shortcut.tooltip, tooltip, 'Native tooltip shortcuts remain caller-owned.')
+  }
+
+  assert.equal(
+    projectG2DateTime(source, undefined, context),
+    source,
+    'Removing date channels restores original options without stale projected formatters.',
+  )
+  const custom = () => 'custom'
+  const overridden = projectG2DateTime(
+    { ...source, axis: { x: { labelFormatter: custom } }, tooltip: { title: custom } },
+    channels,
+    context,
+  ) as unknown as {
+    axis: { x: { labelFormatter: typeof custom } }
+    tooltip: { title: typeof custom }
+  }
+  assert.equal(overridden.axis.x.labelFormatter, custom)
+  assert.equal(overridden.tooltip.title, custom)
+  const disabled = projectG2DateTime(
+    { ...source, axis: false, tooltip: false },
+    channels,
+    context,
+  ) as unknown as { axis: false; tooltip: false }
+  assert.equal(disabled.axis, false)
+  assert.equal(disabled.tooltip, false)
+  const nested = projectG2DateTime(
+    { type: 'view', axis: false, tooltip: false, children: [source] },
+    channels,
+    context,
+  ) as unknown as { children: { axis: false; tooltip: false }[] }
+  assert.equal(nested.children[0]?.axis, false)
+  // The child explicitly supplies tooltip items, so it owns its tooltip rather than inheriting false.
+  const inherited = projectG2DateTime(
+    {
+      type: 'view',
+      axis: false,
+      tooltip: false,
+      children: [{ type: 'line', encode: { x: 'at', y: 'value' } }],
+    },
+    channels,
+    context,
+  ) as unknown as { children: { axis: false; tooltip: false }[] }
+  assert.equal(inherited.children[0]?.tooltip, false)
+}
+
+{
+  const { innerLabelContrast } =
+    await import('../../packages/ui/src/adapters/g2/pavp-g2-label-contrast')
+  assert.equal(innerLabelContrast('#000', 1, 1, '#fff'), '#fff')
+  assert.equal(innerLabelContrast('#fff', 1, 1, '#000'), '#000')
+  assert.equal(innerLabelContrast('#000', 1, 0.25, '#fff'), '#000')
+  assert.equal(innerLabelContrast('#fff', 1, 0.25, '#000'), '#fff')
+  assert.equal(innerLabelContrast('rgba(0, 0, 0, 0.25)', 1, 1, '#fff'), '#000')
+  assert.equal(innerLabelContrast('#000', 0.25, 1, '#fff'), '#000')
+  assert.equal(innerLabelContrast('#000', 1, 1, '#000'), '#fff')
+  assert.equal(innerLabelContrast('gradient', 1, 1, '#fff'), undefined)
+}
+
+{
+  const {
+    createG2InnerContrast,
+    resetG2LabelContrast,
+    disposeG2LabelContrast,
+    resolveG2CanvasBackground,
+  } = await import('../../packages/ui/src/adapters/g2/pavp-g2-label-contrast')
+  const events = new Map<string, (event?: unknown) => void>()
+  let writes = 0
+  const parentDocument = { parentElement: null }
+  const mark = {
+    destroyed: false,
+    parsedStyle: { fill: { r: 0, g: 0, b: 0, alpha: 1 }, fillOpacity: 1, opacity: 1 },
+    parentElement: parentDocument,
+  }
+  const attributes = new Map<string, unknown>([
+    ['dependentElement', mark],
+    ['fill', '#000'],
+  ])
+  const label = {
+    destroyed: false,
+    getBounds: () => ({ center: [0, 0], halfExtents: [1, 1] }),
+    getAttribute: (key: string) => attributes.get(key),
+    setAttribute: (key: string, value: unknown) => {
+      writes++
+      attributes.set(key, value)
+      events.get('DOMAttrModified')?.({ attrName: key, target: label })
+    },
+  }
+  const canvas = {
+    getContextService: () => ({ getDomElement: () => ({}) }),
+    addEventListener: (name: string, callback: (event?: unknown) => void) => {
+      assert.equal(events.has(name), false)
+      events.set(name, callback)
+    },
+    removeEventListener: (name: string) => events.delete(name),
+  }
+  type Transform = ReturnType<ReturnType<typeof createG2InnerContrast>>
+  const labels = [label] as unknown as Parameters<Transform>[0]
+  const context = { canvas } as unknown as Parameters<Transform>[1]
+  createG2InnerContrast('#fff')()(labels, context)
+  assert.equal(attributes.get('fill'), '#fff')
+  const initialWrites = writes
+  events.get('beforerender')?.()
+  events.get('beforerender')?.()
+  assert.equal(writes, initialWrites, 'Idle frames do not dirty or rewrite label colors.')
+  mark.parsedStyle.opacity = 0.25
+  events.get('DOMAttrModified')?.({ attrName: 'opacity', target: mark })
+  events.get('beforerender')?.()
+  assert.equal(
+    attributes.get('fill'),
+    '#000',
+    'Direct/animated opacity changes update composited contrast.',
+  )
+  mark.parsedStyle.opacity = 1
+  mark.parsedStyle.fill = { r: 255, g: 255, b: 255, alpha: 1 }
+  events.get('DOMAttrModified')?.({ attrName: 'fill', target: mark })
+  events.get('beforerender')?.()
+  assert.equal(attributes.get('fill'), '#000')
+  // G Canvas paints each primitive using its own resolved opacity, not ancestor products.
+  const nativeG = g2Require('@antv/g') as {
+    Group: new (config: unknown) => {
+      append: (...children: unknown[]) => void
+      parsedStyle: { opacity?: number }
+    }
+    Rect: new (config: unknown) => typeof mark
+  }
+  const group = new nativeG.Group({ style: { opacity: 0.25 } })
+  const inherited = new nativeG.Rect({ style: { width: 10, height: 10, fill: '#fff' } })
+  const explicit = new nativeG.Rect({ style: { width: 10, height: 10, fill: '#fff', opacity: 1 } })
+  group.append(inherited, explicit)
+  assert.equal(group.parsedStyle.opacity, 0.25)
+  assert.equal(inherited.parsedStyle.opacity, undefined)
+  assert.equal(explicit.parsedStyle.opacity, 1)
+  attributes.set('dependentElement', explicit)
+  createG2InnerContrast('#000')()(labels, context)
+  assert.equal(
+    attributes.get('fill'),
+    '#000',
+    'Explicit opaque child is not faded by ancestor opacity.',
+  )
+  attributes.set('dependentElement', inherited)
+  createG2InnerContrast('#000')()(labels, context)
+  assert.equal(
+    attributes.get('fill'),
+    '#000',
+    'Unspecified opacity matches native Canvas default 1.',
+  )
+  attributes.set('dependentElement', mark)
+  createG2InnerContrast('#fff')()(labels, context)
+  const lifecycleContext = context as unknown as Parameters<typeof resetG2LabelContrast>[0]
+  assert.equal(resolveG2CanvasBackground(lifecycleContext, '#123456'), 'rgb(18, 52, 86)')
+  resetG2LabelContrast(lifecycleContext)
+  attributes.set('fill', '#custom')
+  mark.parsedStyle.fill = { r: 0, g: 0, b: 0, alpha: 1 }
+  events.get('DOMAttrModified')?.({ attrName: 'fill', target: mark })
+  events.get('beforerender')?.()
+  assert.equal(
+    attributes.get('fill'),
+    '#custom',
+    'A new spec with explicit colors no longer belongs to auto contrast.',
+  )
+  createG2InnerContrast('#000')()(labels, context)
+  assert.equal(events.size, 3, 'Re-registering labels reuses one canvas listener set.')
+  disposeG2LabelContrast(lifecycleContext)
+  assert.equal(events.size, 0, 'Disposal removes scene listeners.')
 }

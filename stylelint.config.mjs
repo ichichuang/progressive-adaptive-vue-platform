@@ -174,6 +174,7 @@ const shellMaterialColorVariables = [
   ),
 ]
 const approvedSpacingPatterns = [
+  String.raw`calc\(\s*\(\s*var\(--ui-layout-admin-sidebar-rail-inline-size\)\s*-\s*var\(--ui-space-content-gap\)\s*\)\s*/\s*2\s*\)`,
   zeroLengthPattern,
   cssVariablePattern('--pavp-safe-area-(?:block|inline|bottom|left|right|top)[a-z-]*'),
   `${cssEnvFunction}\\(${cssTrivia}(?:safe-area-(?:max-)?inset-(?:top|right|bottom|left)|keyboard-inset-(?:top|right|bottom|left|width|height)|titlebar-area-(?:x|y|width|height)|viewport-segment-(?:width|height|top|right|bottom|left)\\s+\\d+\\s+\\d+)${cssTrivia}(?:,${cssTrivia}${zeroLengthPattern}${cssTrivia})?\\)`,
@@ -277,6 +278,14 @@ const visualAuthorityRules = {
 }
 const shellVisualAuthorityRules = {
   ...visualAuthorityRules,
+  'box-shadow': [
+    rawColorFunction,
+    disallowOutsideAuthorities(
+      [...shadowVariables, ...adminShadowVariables],
+      ['none'],
+      [String.raw`inset\s+0\s+0\s+0\s+var\(\s*--ui-admin-focus-width\s*\)\s+currentColor`],
+    ),
+  ],
   color: colorAuthorityRules(
     [
       ...textColorVariables,

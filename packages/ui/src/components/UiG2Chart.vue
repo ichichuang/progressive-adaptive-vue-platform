@@ -2,6 +2,14 @@
 import { Chart, ChartEvent, render as renderG2 } from '@antv/g2'
 import { inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
+import { useUiDateTime } from '../date-time/date-time-context'
+import type { UiDateTimeContext } from '../date-time/date-time'
+import { projectG2DateTime } from '../adapters/g2/pavp-g2-date-time'
+import {
+  resetG2LabelContrast,
+  disposeG2LabelContrast,
+  resolveG2CanvasBackground,
+} from '../adapters/g2/pavp-g2-label-contrast'
 import { projectG2Options } from '../adapters/g2/pavp-g2-options'
 import { settleG2Animations } from '../adapters/g2/pavp-g2-retarget'
 import { animateG2Labels, captureG2Labels } from '../adapters/g2/pavp-g2-label-motion'
@@ -11,6 +19,7 @@ import { createChartTour } from './chart-tour-runtime'
 import type {
   UiChartTourConfig,
   UiChartTourState,
+  UiG2ChartDateTimeChannels,
   UiG2ChartHandle,
   UiG2ChartOptions,
 } from './g2-chart-contracts'
@@ -20,12 +29,15 @@ const props = defineProps<{
   readonly options: UiG2ChartOptions
   readonly label: string
   readonly tour?: UiChartTourConfig
+  readonly dateTime?: UiDateTimeContext
+  readonly dateTimeChannels?: UiG2ChartDateTimeChannels
 }>()
 const emit = defineEmits<{
   rendered: []
   error: [error: Error]
   tourChange: [state: UiChartTourState]
 }>()
+const globalDateTime = useUiDateTime()
 const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined) throw new Error('UiG2Chart requires UiProvider.')
 const host = ref<HTMLElement | null>(null)
@@ -277,7 +289,11 @@ async function render(): Promise<void> {
     paintedSize = { width, height }
     const metrics = readMetrics()
     const options = projectG2Options(
-      props.options,
+      projectG2DateTime(
+        props.options,
+        props.dateTimeChannels,
+        props.dateTime ?? globalDateTime.value,
+      ),
       appearance.value,
       metrics,
       width,
@@ -304,6 +320,7 @@ async function render(): Promise<void> {
         resolve()
         return
       }
+      resetG2LabelContrast(chart.getContext())
       renderG2(options, chart.getContext(), resolve, reject)
     })
     if (isCurrent(currentGeneration, currentRevision)) {
@@ -351,7 +368,12 @@ async function exportImage(): Promise<Blob> {
   snapshot.height = source.height
   const context = snapshot.getContext('2d')
   if (!context) throw new Error('Image export is unavailable.')
-  context.fillStyle = appearance.value.colorPalette.surfaces.surface
+  const background = resolveG2CanvasBackground(
+    chart.getContext(),
+    appearance.value.colorPalette.surfaces.surface,
+  )
+  // Nonuniform DOM paint cannot be flattened to one color; preserve the export fallback.
+  context.fillStyle = background ?? appearance.value.colorPalette.surfaces.surface
   context.fillRect(0, 0, snapshot.width, snapshot.height)
   context.drawImage(source, 0, 0)
   return await new Promise<Blob>((resolve, reject) => {
@@ -429,6 +451,7 @@ function stop(): void {
   observedSize = undefined
   observedMetrics = ''
   resizing.value = false
+  if (chart) disposeG2LabelContrast(chart.getContext())
   chart?.destroy()
   tooltipViewport?.destroy()
   tooltipViewport = undefined
@@ -458,6 +481,13 @@ watch(
   { deep: true, immediate: true },
 )
 watch(() => props.options, schedule, { deep: true, flush: 'post' })
+watch(
+  () => [props.dateTimeChannels, props.dateTime ?? globalDateTime.value] as const,
+  ([nextChannels], [previousChannels]) => {
+    if (nextChannels || previousChannels) schedule()
+  },
+  { deep: true, flush: 'post' },
+)
 watch(
   appearance,
   (next, previous) => {

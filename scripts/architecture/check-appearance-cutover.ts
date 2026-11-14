@@ -50,6 +50,11 @@ import { validatePublicRoleRegistry } from '../../packages/design-system/src/bui
 import { generatedThemeRegistry } from '../../packages/design-system/src/generated/theme-registry'
 import { completeBuiltInThemeDefinitionSchema } from '../../packages/design-system/src/schema/complete-theme.schema'
 import { uiDensityValues } from '../../packages/design-system/src/schema/appearance.schema'
+import {
+  regionalHeaderTheme,
+  regionalNavigationTheme,
+  regionalNavigationPressedStyle,
+} from '../../packages/ui/src/adapters/naive/regional-navigation-theme'
 
 type JsonObject = Record<string, unknown>
 
@@ -3632,6 +3637,56 @@ function validateRegionalAppearanceProjection(): readonly string[] {
             const minimum = contrast === 'enhanced' ? 7 : 4.5
             if (ratio(result.surface.foreground, result.surface.background) < minimum)
               failures.push(`${label}: surface foreground contrast failed.`)
+            if (region === 'sidebar' && ['brand-sidebar', 'brand-frame'].includes(colorStyle)) {
+              const menu = regionalNavigationTheme(result.appearance)
+              const pairs = [
+                [menu.itemTextColor, result.surface.background],
+                [menu.itemTextColorHover, menu.itemColorHover],
+                [menu.itemTextColorActive, menu.itemColorActive],
+                [menu.itemTextColorActiveHover, menu.itemColorActiveHover],
+                [menu.itemIconColorCollapsed, result.surface.background],
+                [menu.itemIconColorActive, menu.itemColorActiveCollapsed],
+              ] as const
+              if (pairs.some(([foreground, background]) => ratio(foreground, background) < minimum))
+                failures.push(`${label}: branded navigation state contrast failed.`)
+              if (menu.itemColorActive === result.surface.background)
+                failures.push(`${label}: branded navigation active state must be visible.`)
+              const primary = result.appearance.colorPalette.roles.primary
+              if (
+                menu.itemColorActive !== primary.soft.background.default ||
+                menu.itemColorActiveHover !== primary.soft.background.hover ||
+                menu.itemTextColorActive !== primary.soft.foreground
+              )
+                failures.push(
+                  `${label}: branded navigation must retain the theme's primary state pair.`,
+                )
+              const pressed = regionalNavigationPressedStyle(result.appearance)
+              if (
+                ratio(menu.itemTextColor, pressed['--pavp-navigation-pressed']) < minimum ||
+                ratio(menu.itemTextColorActive, pressed['--pavp-navigation-selected-pressed']) <
+                  minimum
+              )
+                failures.push(
+                  `${label}: branded navigation press must preserve foreground contrast.`,
+                )
+              const controls = regionalHeaderTheme(result.surface, result.appearance)
+              if (
+                controls.waveOpacity !== '0' ||
+                controls.colorPrimary !== menu.itemColorActive ||
+                controls.textColorPrimary !== menu.itemTextColorActive ||
+                controls.colorHoverPrimary !== menu.itemColorActiveHover ||
+                controls.colorPressedPrimary !== pressed['--pavp-navigation-selected-pressed']
+              )
+                failures.push(
+                  `${label}: navigation action must share the selected menu state pair.`,
+                )
+
+              if (
+                ratio(controls.textColorHover, controls.colorHover) < minimum ||
+                ratio(controls.textColorPressed, controls.colorPressed) < minimum
+              )
+                failures.push(`${label}: branded controls must use readable interaction pairs.`)
+            }
             for (const role of Object.values(result.appearance.colorPalette.roles)) {
               for (const background of Object.values(role.solid.background))
                 if (ratio(role.solid.foreground, background) < minimum)
@@ -3641,18 +3696,14 @@ function validateRegionalAppearanceProjection(): readonly string[] {
                   failures.push(`${label}: soft role contrast failed.`)
             }
             const darkRegion =
-              (region === 'sidebar' &&
-                ['dark-navigation', 'brand-sidebar', 'dark-frame', 'brand-frame'].includes(
-                  colorStyle,
-                )) ||
+              (region === 'sidebar' && ['dark-navigation', 'dark-frame'].includes(colorStyle)) ||
               (region === 'header' && ['dark-frame'].includes(colorStyle))
             const expectedMode = darkRegion ? 'dark' : colorMode
             const palette = result.appearance.colorPalette
             const solidRegion =
-              region === 'header' && ['brand-header', 'brand-frame'].includes(colorStyle)
-            const tintedRegion =
-              (region === 'sidebar' && ['brand-sidebar', 'brand-frame'].includes(colorStyle)) ||
-              (['soft-frame'].includes(colorStyle) && region !== 'content')
+              (region === 'header' && ['brand-header', 'brand-frame'].includes(colorStyle)) ||
+              (region === 'sidebar' && ['brand-sidebar', 'brand-frame'].includes(colorStyle))
+            const tintedRegion = colorStyle === 'soft-frame' && region !== 'content'
             const sunkenRegion =
               (region === 'sidebar' && colorStyle === 'dark-navigation') ||
               (['dark-frame'].includes(colorStyle) && (region === 'sidebar' || region === 'header'))

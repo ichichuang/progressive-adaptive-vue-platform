@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { routeTransitionShowcasePresetIds } from './route-transition/route-transition-showcase'
 import { tableQuerySharingCodec } from '../tables/table-query-sharing-example'
 
 export const routeParamsSchemaRegistry = Object.freeze([
@@ -13,6 +14,10 @@ export const routeParamsSchemaRegistry = Object.freeze([
 ] as const)
 
 export const routeQuerySchemaRegistry = Object.freeze([
+  Object.freeze({
+    id: 'route-query.motion-transition',
+    schema: z.strictObject({ preset: z.enum(routeTransitionShowcasePresetIds).optional() }),
+  }),
   Object.freeze({ id: 'route-query.table-query-link', schema: tableQuerySharingCodec.querySchema }),
   Object.freeze({
     id: 'route-query.table-editor',

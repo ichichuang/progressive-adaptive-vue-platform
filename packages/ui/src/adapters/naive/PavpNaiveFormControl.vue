@@ -25,6 +25,9 @@ import {
 } from 'vue'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
 import PavpNaiveFormChoice from './PavpNaiveFormChoice.vue'
+import { formatUiDateTime } from '../../date-time/date-time'
+import { useUiDateTime } from '../../date-time/date-time-context'
+import { naiveDateFormat, naiveTimeFormat, formatDateInput } from './pavp-naive-date-time'
 import { useFormControl } from './use-form-control'
 import { pavpNaiveAppearanceKey } from './pavp-naive-runtime-context'
 import { createPavpNaiveFormThemeProjection } from './pavp-naive-form-theme'
@@ -36,6 +39,9 @@ const props = defineProps<{
   readonly form: UiFormController<I>
   readonly binding: UiFormFieldBinding
 }>()
+const dateTime = useUiDateTime()
+const dateFormat = computed(() => naiveDateFormat(dateTime.value))
+const timeFormat = computed(() => naiveTimeFormat(dateTime.value))
 const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined) throw new TypeError('Form controls require UiProvider.')
 const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value))
@@ -224,6 +230,18 @@ const scalarChoice = computed(() =>
     ? selectValue.value
     : null,
 )
+const readonlyDateText = computed(() => {
+  if (config.value.kind === 'date-range')
+    return (
+      rangeValue.value?.map((value) => formatDateInput(value, dateTime.value)).join(' – ') ?? ''
+    )
+  if (config.value.kind === 'date') return formatDateInput(textValue.value, dateTime.value)
+  if (config.value.kind === 'time' && dateTime.value)
+    return (
+      formatUiDateTime({ kind: 'time', value: textValue.value }, dateTime.value) ?? textValue.value
+    )
+  return textValue.value
+})
 const multipleChoices = computed(() => (Array.isArray(selectValue.value) ? selectValue.value : []))
 const calendarOpen = shallowRef(false)
 watch(
@@ -269,11 +287,9 @@ function chooseDate(value: string | null): void {
       :tabindex="binding.disabled ? -1 : 0"
     >
       {{
-        config.kind === 'date-range'
-          ? rangeValue?.join(' – ')
-          : config.kind === 'date' || config.kind === 'time'
-            ? textValue
-            : selectedText
+        config.kind === 'date-range' || config.kind === 'date' || config.kind === 'time'
+          ? readonlyDateText
+          : selectedText
       }}
     </div>
     <NInput
@@ -524,6 +540,7 @@ function chooseDate(value: string | null): void {
       type="daterange"
       :formatted-value="rangeValue"
       value-format="yyyy-MM-dd"
+      :format="dateFormat"
       clearable
       input-readonly
       :disabled="binding.disabled"
@@ -537,6 +554,8 @@ function chooseDate(value: string | null): void {
       v-else-if="config.kind === 'time'"
       :formatted-value="binding.value === null ? null : textValue"
       value-format="HH:mm:ss"
+      :format="timeFormat"
+      :use12-hours="dateTime?.hourCycle === 'h12'"
       clearable
       input-readonly
       :disabled="binding.disabled"
@@ -594,6 +613,7 @@ function chooseDate(value: string | null): void {
           type="date"
           :formatted-value="binding.value === null ? null : textValue"
           value-format="yyyy-MM-dd"
+          :format="dateFormat"
           :actions="[]"
           to="#pavp-overlay-root"
           :disabled="binding.disabled"

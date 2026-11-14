@@ -69,14 +69,27 @@ const apiShowcaseRoutes = Object.freeze([
   'api-advanced',
 ] as const)
 
+const cinematicRoutes = Object.freeze([
+  'component-motion',
+  'component-motion-reveal',
+  'component-motion-spatial',
+  'component-motion-material',
+  'component-motion-particles',
+  'component-motion-text',
+  'component-motion-route-transitions',
+  'component-motion-route-preview',
+] as const)
+
 const allProductRoutes = Object.freeze([
   ...apiShowcaseRoutes,
+  ...cinematicRoutes,
   'workbench-welcome',
   'workbench-dashboard',
   'workbench-colors',
   'workbench-sizes',
   'workbench-typography',
   'workbench-interactions',
+  'workbench-date-time',
   'workbench-motion',
   'component-showcase',
   'component-actions',
@@ -132,7 +145,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
     UiReportPreview: Object.freeze(['component-combination-report']),
     UiG2Chart: Object.freeze([
       'component-combination-report',
-      'workbench-interactions',
+      'workbench-date-time',
       'workbench-welcome',
       'component-charts',
       'component-chart-trends',
@@ -148,7 +161,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-stage',
       'workbench-dashboard',
     ]),
-    UiTable: Object.freeze([...tableExampleRoutes, 'api-integration', 'workbench-interactions']),
+    UiTable: Object.freeze([...tableExampleRoutes, 'api-integration', 'workbench-date-time']),
     UiTableEditor: Object.freeze([
       'component-combination-modal',
       'component-combination-drawer',
@@ -156,12 +169,14 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-table-editor',
     ]),
     UiCopyAction: Object.freeze([
+      ...cinematicRoutes,
       'workbench-dashboard',
       ...apiShowcaseRoutes,
       'workbench-colors',
       'workbench-sizes',
       'workbench-typography',
       'workbench-interactions',
+      'workbench-date-time',
       'workbench-motion',
       'component-showcase',
       'component-actions',
@@ -189,8 +204,8 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-stage',
     ]),
     UiScrollArea: contentRoutes,
-    UiForm: Object.freeze([...formExampleRoutes, 'workbench-interactions']),
-    UiFormField: Object.freeze([...formExampleRoutes, 'workbench-interactions']),
+    UiForm: Object.freeze([...formExampleRoutes, 'workbench-date-time']),
+    UiFormField: Object.freeze([...formExampleRoutes, 'workbench-date-time']),
     UiWorkspaceTabs: allProductRoutes,
     UiAdminShell: contentRoutes,
     UiPageHeader: Object.freeze([]),
@@ -201,9 +216,9 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-selection',
       'component-form-controls',
     ]),
-    UiSection: Object.freeze(['workbench-interactions', 'component-layout']),
+    UiSection: Object.freeze(['workbench-interactions', 'workbench-date-time', 'component-layout']),
     UiDisplayStage: Object.freeze(['component-chart-stage']),
     UiDashboardGrid: Object.freeze(['workbench-dashboard', 'component-chart-stage']),
-    UiStatusBadge: Object.freeze(['workbench-dashboard', 'component-showcase', 'component-data']),
+    UiStatusBadge: Object.freeze(['component-showcase', 'component-data']),
   },
 )

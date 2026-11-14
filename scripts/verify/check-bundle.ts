@@ -102,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 87
+const expectedLazyRouteCount = 96
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -121,10 +121,12 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
-const expectedDynamicRootCount = 100
+const cinematicGpuManifestKey = '../../packages/ui/src/adapters/motion/cinematic-gpu-stage.ts'
+const expectedDynamicRootCount = 110
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
+  cinematicGpuManifestKey,
   scrollEnhancementManifestKey,
   localizationRuntimeManifestKey,
   workspaceDiscardManifestKey,
@@ -988,6 +990,7 @@ if (
   expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
   expectedLazyRouteCount +
     expectedMotionFeatureDynamicRootCount +
+    1 + // Cinematic GPU renderer is demand-loaded, never startup code.
     1 +
     1 +
     1 +
@@ -1000,12 +1003,13 @@ if (
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected ${String(expectedLazyRouteCount)} routes, one motion root, one scroll enhancement, one shell scroll runtime, one navigation actions root, one workspace discard dialog, one i18n runtime and seven catalog roots.`,
+    `Canonical dynamic root authority drifted: expected ${String(expectedLazyRouteCount)} routes, one motion root, one cinematic GPU root, one scroll enhancement, one shell scroll runtime, one navigation actions root, one workspace discard dialog, one i18n runtime and seven catalog roots.`,
   )
 }
 
 const initialDynamicRootKeys = new Set<string>()
 const dynamicImportOwnerKeys = new Set<string>()
+let cinematicGpuDynamicImportReferences = 0
 let motionFeatureDynamicImportReferences = 0
 let scrollEnhancementDynamicImportReferences = 0
 let workspaceDiscardDynamicImportReferences = 0
@@ -1021,6 +1025,7 @@ for (const ownerKey of initialChunkKeys) {
 
   for (const dynamicRootKey of dynamicImports) {
     initialDynamicRootKeys.add(dynamicRootKey)
+    if (dynamicRootKey === cinematicGpuManifestKey) cinematicGpuDynamicImportReferences += 1
 
     if (dynamicRootKey === motionFeatureManifestKey) {
       motionFeatureDynamicImportReferences += 1
@@ -1054,6 +1059,16 @@ if (
 ) {
   throw new Error(
     'Scroll enhancement must have exactly one shared dynamic import and remain outside the Initial Static Closure.',
+  )
+}
+
+if (
+  cinematicGpuDynamicImportReferences !== 1 ||
+  initialChunkKeys.has(cinematicGpuManifestKey) ||
+  manifest[cinematicGpuManifestKey] === undefined
+) {
+  throw new Error(
+    'Cinematic GPU must resolve through one lazy import and stay out of startup chunks.',
   )
 }
 
@@ -1365,7 +1380,7 @@ for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const
 }
 
 console.log(
-  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one Scroll enhancement + one shell scroll runtime + one navigation actions root + one workspace discard dialog + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
+  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one cinematic GPU renderer + one Scroll enhancement + one shell scroll runtime + one navigation actions root + one workspace discard dialog + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
   `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip`,

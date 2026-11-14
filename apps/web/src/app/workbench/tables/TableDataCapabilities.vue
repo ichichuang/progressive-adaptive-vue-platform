@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue'
+import { computed, onDeactivated, ref, shallowRef } from 'vue'
 import {
   UiForm,
   UiScrollArea,
@@ -129,6 +129,11 @@ const response = ref<TableDemoResponse>('rows')
 const detail = shallowRef<UiTableReadonlyRecord | null>(null)
 const detailOpen = ref(false)
 const filtersOpen = ref(false)
+// Retained pages must release teleported overlays when leaving their route.
+onDeactivated(() => {
+  filtersOpen.value = false
+  detailOpen.value = false
+})
 const hintKeys = {
   sorting: 'tableCapabilities.data.sortingHint',
   rendering: 'tableCapabilities.data.renderingHint',

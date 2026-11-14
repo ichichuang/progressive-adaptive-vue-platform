@@ -23,9 +23,15 @@ import {
   type BrowserPageSessionSnapshot,
 } from './browser-page-session-contract'
 import { isRouterNavigationCurrent, type RouterNavigationOptions } from './router-lifecycle'
-import type { RouteTransitionCoordinator } from './route-transition/route-transition-coordinator'
+import type {
+  RouteTransitionCoordinator,
+  RouteTransitionNavigationOptions,
+} from './route-transition/route-transition-coordinator'
 
-type ApplicationNavigationOptions = Pick<RouterNavigationOptions, 'replace'> & {
+type ApplicationNavigationOptions = Pick<
+  RouteTransitionNavigationOptions,
+  'replace' | 'visual' | 'origin'
+> & {
   readonly openIn?: 'current-page'
   readonly reuse?: never
   readonly recovery?: never
@@ -608,7 +614,13 @@ export function provideApplicationNavigation(
       return Promise.resolve({ kind: 'invalid-input', reason: 'options' })
     return coordinator.navigate(
       destination,
-      options?.replace === undefined ? undefined : { replace: options.replace },
+      options === undefined
+        ? undefined
+        : {
+            ...(options.replace === undefined ? {} : { replace: options.replace }),
+            ...(options.visual === undefined ? {} : { visual: options.visual }),
+            ...(options.origin === undefined ? {} : { origin: options.origin }),
+          },
     )
   }
 
@@ -700,7 +712,14 @@ export function useWorkspaceEditorNavigation(hasUnsavedChanges: () => boolean) {
   }
 }
 
-export function useApplicationLinkActivation(): (
+interface CinematicLinkOptions {
+  readonly transition: 'theme-rift'
+  readonly openIn?: never
+}
+
+export function useApplicationLinkActivation(
+  options?: CinematicLinkOptions,
+): (
   event: MouseEvent,
   destination: RegisteredRouteDestination,
 ) => Promise<TypedNavigationResult> | undefined
@@ -717,7 +736,7 @@ export function useApplicationLinkActivation(
   destination: RegisteredRouteDestination,
 ) => Promise<TrackedBrowserPageResult> | undefined
 export function useApplicationLinkActivation(
-  options?: NewBrowserPageOptions | TrackedNewBrowserPageOptions,
+  options?: NewBrowserPageOptions | TrackedNewBrowserPageOptions | CinematicLinkOptions,
 ): (
   event: MouseEvent,
   destination: RegisteredRouteDestination,
@@ -765,6 +784,20 @@ export function useApplicationLinkActivation(
     const href = anchor.getAttribute('href')
     if (href === null || href === '' || href !== navigation.resolveHref(destination)) return
     event.preventDefault()
-    return navigation.navigate(destination)
+    return navigation.navigate(
+      destination,
+      options !== undefined && 'transition' in options
+        ? {
+            visual: {
+              preset: options.transition,
+              origin:
+                event.detail === 0 ? 'center' : { clientX: event.clientX, clientY: event.clientY },
+            },
+          }
+        : {
+            origin:
+              event.detail === 0 ? 'center' : { clientX: event.clientX, clientY: event.clientY },
+          },
+    )
   }
 }

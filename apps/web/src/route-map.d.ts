@@ -346,6 +346,62 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'component-motion': RouteRecordInfo<
+      'component-motion',
+      '/components/motion',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-material': RouteRecordInfo<
+      'component-motion-material',
+      '/components/motion/material',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-particles': RouteRecordInfo<
+      'component-motion-particles',
+      '/components/motion/particles',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-reveal': RouteRecordInfo<
+      'component-motion-reveal',
+      '/components/motion/reveal',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-route-transitions': RouteRecordInfo<
+      'component-motion-route-transitions',
+      '/components/motion/route-transitions',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-route-preview': RouteRecordInfo<
+      'component-motion-route-preview',
+      '/components/motion/route-transitions/preview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-spatial': RouteRecordInfo<
+      'component-motion-spatial',
+      '/components/motion/spatial',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-motion-text': RouteRecordInfo<
+      'component-motion-text',
+      '/components/motion/text',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'component-navigation': RouteRecordInfo<
       'component-navigation',
       '/components/navigation',
@@ -503,6 +559,13 @@ declare module 'vue-router/auto-routes' {
     'workbench-dashboard': RouteRecordInfo<
       'workbench-dashboard',
       '/dashboard',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'workbench-date-time': RouteRecordInfo<
+      'workbench-date-time',
+      '/date-time',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -1013,6 +1076,70 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/component-motion.vue': {
+      routes:
+        | 'component-motion'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-material.vue': {
+      routes:
+        | 'component-motion-material'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-particles.vue': {
+      routes:
+        | 'component-motion-particles'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-reveal.vue': {
+      routes:
+        | 'component-motion-reveal'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-route-transitions.vue': {
+      routes:
+        | 'component-motion-route-transitions'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-route-preview.vue': {
+      routes:
+        | 'component-motion-route-preview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-spatial.vue': {
+      routes:
+        | 'component-motion-spatial'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-motion-text.vue': {
+      routes:
+        | 'component-motion-text'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/component-navigation.vue': {
       routes:
         | 'component-navigation'
@@ -1192,6 +1319,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/dashboard.vue': {
       routes:
         | 'workbench-dashboard'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/date-time.vue': {
+      routes:
+        | 'workbench-date-time'
       views:
         | never
       pathParamNames:

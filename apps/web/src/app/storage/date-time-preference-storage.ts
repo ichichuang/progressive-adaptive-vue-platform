@@ -110,7 +110,8 @@ export function createDateTimePreferenceStorage(
         if (
           confirmed.success &&
           confirmed.data.timeZone === parsed.data.timeZone &&
-          confirmed.data.hourCycle === parsed.data.hourCycle
+          confirmed.data.hourCycle === parsed.data.hourCycle &&
+          confirmed.data.dateFormat === parsed.data.dateFormat
         )
           return { status: 'saved' }
       } catch (source: unknown) {

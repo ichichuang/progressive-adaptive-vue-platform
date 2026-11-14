@@ -84,6 +84,7 @@ export const shellIconResolverOwner = {
     'i-lucide-panels-top-left',
     'i-lucide-workflow',
     'i-lucide-map',
+    'i-lucide-clock-3',
     'i-lucide-ruler',
     'i-lucide-type',
     'i-lucide-sparkles',
@@ -598,7 +599,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 0,
     context: [],
     selector:
-      '.pavp-dashboard-grid :deep(.grid-stack-item:not(.ui-draggable-dragging):not(.ui-resizable-resizing):not(.grid-stack-placeholder))',
+      '.pavp-dashboard-grid.grid-stack-animate :deep(.grid-stack-item:not(.ui-draggable-dragging):not(.ui-resizable-resizing):not(.grid-stack-placeholder))',
     declarations: [
       ['transition-duration', 'var(--ui-motion-duration)', false],
       ['transition-timing-function', 'var(--ui-motion-easing)', false],
@@ -632,20 +633,13 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [
       ['background', 'var(--ui-color-surface-panel)', false],
       ['border-radius', 'var(--ui-radius-panel)', false],
+      ['border-width', 'var(--ui-border-width)', false],
+      ['border-style', 'dashed', false],
+      ['border-color', 'var(--ui-color-border-default)', false],
     ],
     responsibility: 'VENDOR_ADAPTER_OWNER',
   },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-dashboard-chart',
-    declarations: [
-      ['block-size', 'calc(var(--ui-workbench-specimen-preview-block-size) * 2)', false],
-      ['min-inline-size', '0', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
+
   {
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
@@ -784,6 +778,34 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
+    selector: '.wb-home-wordmark',
+    declarations: [
+      ['inline-size', 'fit-content', false],
+      [
+        'background-image',
+        'linear-gradient(\n      110deg,\n      var(--ui-color-expression-accent-a-foreground),\n      var(--ui-color-text-primary) 48%,\n      var(--ui-color-expression-accent-b-foreground)\n    )',
+        false,
+      ],
+      ['background-clip', 'text', false],
+      ['color', 'transparent', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components', '@media (forced-colors: active)'],
+    selector: '.wb-home-wordmark',
+    declarations: [
+      ['background-image', 'none', false],
+      ['color', 'CanvasText', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
     selector: '.wb-home-subtitle',
     declarations: [
       ['display', 'block', false],
@@ -843,6 +865,11 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: ['@layer components'],
     selector: '.wb-home-preview',
     declarations: [
+      [
+        'background-image',
+        'linear-gradient(\n      145deg,\n      var(--ui-color-expression-accent-a-soft-background),\n      var(--ui-color-surface-panel) 54%,\n      var(--ui-color-expression-accent-b-soft-background)\n    )',
+        false,
+      ],
       ['gap', 'var(--ui-space-content-gap)', false],
       ['grid-template-columns', 'minmax(0, 1fr)', false],
       ['min-inline-size', '0', false],
@@ -890,7 +917,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: ['@layer components'],
     selector: '.wb-home-palette-fan',
     declarations: [
-      ['block-size', 'var(--ui-control-height)', false],
+      ['block-size', 'calc(var(--ui-control-height) * 0.5)', false],
       ['gap', 'var(--ui-space-component-unit)', false],
     ],
     responsibility: 'RUNTIME_STYLE_OWNER',
@@ -1054,38 +1081,25 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-home-dashboard-grid',
-    declarations: [
-      [
-        'grid-template-columns',
-        'repeat(\n      auto-fit,\n      minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 1.4)), 1fr)\n    )',
-        false,
-      ],
-      ['align-items', 'start', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-home-clock',
-    declarations: [
-      ['font-size', 'var(--ui-font-size-title)', false],
-      ['overflow-wrap', 'anywhere', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-
-  {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
     context: [],
     selector: '.pavp-admin-shell__identity.n-button',
-    declarations: [['flex-shrink', '1', false]],
+    declarations: [
+      ['flex-shrink', '1', false],
+      ['color', 'inherit', true],
+      ['background', 'transparent', true],
+      ['transform', 'none', true],
+      ['transition', 'none', true],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-admin-shell__identity.n-button:not(:focus-visible)',
+    declarations: [['box-shadow', 'none', true]],
     responsibility: 'VENDOR_ADAPTER_OWNER',
   },
   {
@@ -1245,6 +1259,14 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
     context: ['@layer components'],
+    selector: '.pavp-admin-shell__content[data-content-flush]',
+    declarations: [['overflow', 'visible', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__content-inner',
     declarations: [
       [
@@ -1299,6 +1321,14 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: ['@layer components'],
     selector: ".pavp-admin-shell[data-layout-profile='narrow'] .pavp-admin-shell__content-inner",
     declarations: [['padding', 'var(--ui-space-content-gap)', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-admin-shell .pavp-admin-shell__content-inner[data-content-flush]',
+    declarations: [['padding', '0', false]],
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
   },
   {
@@ -2364,7 +2394,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 0,
     context: [],
     selector: '.pavp-admin-shell__collapsed-trigger:focus-visible::before',
-    declarations: [['box-shadow', 'var(--ui-admin-shadow-focus-ring)', false]],
+    declarations: [['box-shadow', 'inset 0 0 0 var(--ui-admin-focus-width) currentColor', false]],
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
   },
   {
@@ -2382,7 +2412,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     selector:
       '.pavp-admin-shell__action:focus-visible,\n  .pavp-admin-shell__navigation-action:focus-visible,\n  .pavp-admin-shell__drawer-navigation:focus-visible',
     declarations: [
-      ['box-shadow', 'var(--ui-admin-shadow-focus-ring)', false],
+      ['box-shadow', 'inset 0 0 0 var(--ui-admin-focus-width) currentColor', false],
       ['outline', 'none', false],
     ],
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
@@ -2443,7 +2473,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       "[data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible,\n  .pavp-admin-navigation-dropdown [data-pavp-navigation-key]:focus-visible",
     declarations: [
       ['border-radius', 'var(--ui-radius-control)', false],
-      ['box-shadow', 'var(--ui-admin-shadow-focus-ring)', false],
+      ['box-shadow', 'inset 0 0 0 var(--ui-admin-focus-width) currentColor', false],
       ['outline', 'none', false],
     ],
     responsibility: 'VENDOR_ADAPTER_OWNER',
@@ -2808,9 +2838,198 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
+    selector: '.wb-cinematic-choice.n-button',
+    declarations: [['block-size', 'calc(var(--ui-control-height) * 2)', true]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-cinematic-art',
+    declarations: [
+      [
+        'inline-size',
+        'min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 2))',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
     selector: '.wb-chart-picker',
     declarations: [
       ['inline-size', 'min(100%, var(--ui-workbench-specimen-minimum-inline-size))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-scroll',
+    declarations: [['overflow', 'visible', true]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-context-action',
+    declarations: [['justify-content', 'flex-start', true]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-context-action:not(:disabled, [data-dashboard-danger])',
+    declarations: [['color', 'var(--ui-color-text-primary)', true]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      '.wb-dashboard-context-action:not(:disabled, [data-dashboard-danger]):is(:hover, :focus-visible)',
+    declarations: [
+      ['background-color', 'var(--ui-color-action-primary)', true],
+      ['color', 'var(--ui-color-text-on-action)', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      '.wb-dashboard-context-action[data-dashboard-danger]:not(:disabled):is(:hover, :focus-visible)',
+    declarations: [
+      ['background-color', 'var(--ui-color-status-error)', true],
+      ['color', 'var(--ui-color-text-on-status-error)', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: ".wb-dashboard-choice:not(:disabled, [aria-disabled='true'], :has(> input:disabled))",
+    declarations: [
+      ['color', 'var(--ui-color-text-primary)', true],
+      ['transition-property', 'background-color, color, outline-color', true],
+      ['transition-duration', 'var(--ui-motion-duration)', true],
+      ['transition-timing-function', 'var(--ui-motion-easing)', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      ".wb-dashboard-choice:not(:disabled, [aria-disabled='true'], :has(> input:disabled)):hover",
+    declarations: [
+      ['background-color', 'var(--ui-color-expression-accent-a-soft-background)', true],
+      ['color', 'var(--ui-color-expression-accent-a-soft-foreground)', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      ".wb-dashboard-choice:not(:disabled, [aria-disabled='true'], :has(> input:disabled)):is([aria-pressed='true'], [aria-checked='true'], :has(> input:checked))",
+    declarations: [
+      ['background-color', 'var(--ui-color-action-primary)', true],
+      ['color', 'var(--ui-color-text-on-action)', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      ".wb-dashboard-choice:not(:disabled, [aria-disabled='true'], :has(> input:disabled)):is([aria-pressed='true'], [aria-checked='true'], :has(> input:checked)):hover:not(:focus-visible, :has(> input:focus-visible))",
+    declarations: [
+      ['outline', 'var(--ui-border-width) solid var(--ui-color-border-default)', true],
+      ['outline-offset', 'calc(-1 * var(--ui-border-width))', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-dock',
+    declarations: [
+      ['max-block-size', 'min(56%, var(--ui-workbench-api-content-block-size))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-dock-enter-active',
+    declarations: [
+      ['transition-property', 'opacity, transform', false],
+      ['transition-duration', 'var(--ui-motion-duration)', false],
+      ['transition-timing-function', 'var(--ui-motion-easing)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-dock-leave-active',
+    declarations: [
+      ['transition-property', 'opacity, transform', false],
+      ['transition-duration', 'var(--ui-motion-duration)', false],
+      ['transition-timing-function', 'var(--ui-motion-easing)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-dock-enter-from',
+    declarations: [
+      ['opacity', '0', false],
+      ['transform', 'translateY(var(--ui-space-component-unit))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-dock-leave-to',
+    declarations: [
+      ['opacity', '0', false],
+      ['transform', 'translateY(var(--ui-space-component-unit))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-dashboard-shortcuts',
+    declarations: [
+      [
+        'grid-template-columns',
+        'repeat(auto-fit, minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 0.62)), 1fr))',
+        false,
+      ],
     ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
@@ -3978,15 +4197,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['transform', 'scale(1)', false],
     ],
   },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 1,
-    context: [],
-    selector:
-      "[data-pavp-admin-navigation='persistent']\n  .n-menu-item-content:not(.n-menu-item-content--selected):not(.n-menu-item-content--child-active):active\n  :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
-    responsibility: 'VENDOR_ADAPTER_OWNER',
-    declarations: [['color', 'var(--ui-color-control-primary)', false]],
-  },
+
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 1,
@@ -4017,6 +4228,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['inset-inline', 'calc(var(--ui-space-content-gap) / 2)', false],
       ['border-radius', 'var(--ui-radius-control)', false],
       ['background', 'var(--n-item-color-active)', false],
+      ['transition', 'background-color var(--ui-motion-duration) var(--ui-motion-easing)', false],
       ['pointer-events', 'none', false],
     ],
   },
@@ -4130,15 +4342,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['border-width', 'var(--ui-admin-border-width)', false],
     ],
   },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 1,
-    context: [],
-    selector:
-      '.pavp-admin-navigation-dropdown\n  .n-dropdown-option-body:not(.n-dropdown-option-body--active:not(.n-dropdown-option-body--disabled)):active\n  :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)',
-    responsibility: 'VENDOR_ADAPTER_OWNER',
-    declarations: [['color', 'var(--ui-color-control-primary)', false]],
-  },
+
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 1,
@@ -5856,6 +6060,51 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     responsibility: 'VENDOR_ADAPTER_OWNER',
   },
   {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-admin-shell__menu',
+    declarations: [
+      [
+        'inline-size',
+        'calc(var(--ui-layout-admin-sidebar-expanded-inline-size) - var(--ui-space-content-gap))',
+        false,
+      ],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-admin-shell__menu :deep(.n-menu-item-content__icon)',
+    declarations: [['margin-inline-end', 'var(--ui-space-control-segment-gap)', true]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: ".wb-settings-dock.n-button[data-collapsed='false']",
+    declarations: [
+      ['justify-content', 'flex-start', true],
+      [
+        'padding-inline',
+        'calc((var(--ui-layout-admin-sidebar-rail-inline-size) - var(--ui-space-content-gap)) / 2)',
+        true,
+      ],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-settings-dock-content',
+    declarations: [['gap', 'var(--ui-space-control-segment-gap)', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
@@ -6746,6 +6995,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     selector: '.pavp-scroll-area__viewport',
     declarations: [
       ['block-size', '100%', false],
+      ['border-radius', 'inherit', false],
       ['min-block-size', '0', false],
       ['min-inline-size', '0', false],
       ['overscroll-behavior', 'contain', false],
@@ -6836,7 +7086,11 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [
       ['overflow', 'hidden auto', false],
       ['scrollbar-width', 'thin', false],
-      ['scrollbar-color', 'var(--ui-color-border-default) var(--ui-color-surface-panel)', false],
+      [
+        'scrollbar-color',
+        'var(--pavp-sidebar-scroll-handle, var(--ui-color-border-default)) var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel))',
+        false,
+      ],
     ],
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
   },
@@ -6938,6 +7192,31 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'packages/ui/src/components/UiScrollArea.vue',
     block: 1,
     context: [],
+    selector: '.pavp-scroll-area[data-regional-scroll]',
+    declarations: [
+      ['--pavp-sidebar-scroll-track', 'var(--pavp-region-background)', false],
+      [
+        '--pavp-sidebar-scroll-handle',
+        'color-mix(in srgb, var(--pavp-region-foreground) 30%, var(--pavp-region-background))',
+        false,
+      ],
+      [
+        '--pavp-sidebar-scroll-hover',
+        'color-mix(in srgb, var(--pavp-region-foreground) 55%, var(--pavp-region-background))',
+        false,
+      ],
+      [
+        '--pavp-sidebar-scroll-pressed',
+        'color-mix(in srgb, var(--pavp-region-foreground) 75%, var(--pavp-region-background))',
+        false,
+      ],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiScrollArea.vue',
+    block: 1,
+    context: [],
     selector: '[data-pavp-naive-scroll] > [data-scrollbar-rail]',
     declarations: [['visibility', 'hidden', false]],
     responsibility: 'VENDOR_ADAPTER_OWNER',
@@ -6951,13 +7230,33 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [
       ['--os-size', 'calc(var(--ui-space-content-gap) / 2)', false],
       ['--os-track-border-radius', 'var(--ui-radius-small)', false],
-      ['--os-track-bg', 'var(--ui-color-surface-panel)', false],
-      ['--os-track-bg-hover', 'var(--ui-color-surface-panel)', false],
-      ['--os-track-bg-active', 'var(--ui-color-surface-panel)', false],
+      ['--os-track-bg', 'var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel))', false],
+      [
+        '--os-track-bg-hover',
+        'var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel))',
+        false,
+      ],
+      [
+        '--os-track-bg-active',
+        'var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel))',
+        false,
+      ],
       ['--os-handle-border-radius', 'var(--ui-radius-small)', false],
-      ['--os-handle-bg', 'var(--ui-color-border-default)', false],
-      ['--os-handle-bg-hover', 'var(--ui-color-text-secondary)', false],
-      ['--os-handle-bg-active', 'var(--ui-color-text-secondary)', false],
+      [
+        '--os-handle-bg',
+        'var(--pavp-sidebar-scroll-handle, var(--ui-color-border-default))',
+        false,
+      ],
+      [
+        '--os-handle-bg-hover',
+        'var(--pavp-sidebar-scroll-hover, var(--ui-color-text-secondary))',
+        false,
+      ],
+      [
+        '--os-handle-bg-active',
+        'var(--pavp-sidebar-scroll-pressed, var(--ui-color-text-secondary))',
+        false,
+      ],
       ['--os-handle-perpendicular-size', 'calc(100% - var(--ui-border-width))', false],
       ['--os-handle-interactive-area-offset', 'calc(var(--ui-space-content-gap) / 2)', false],
       [
@@ -7162,6 +7461,24 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
         false,
       ],
     ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiRadioCardGroup.vue',
+    block: 0,
+    context: ['@media (forced-colors: none)'],
+    selector:
+      ".pavp-radio-card-group[data-ui-radio-card-group][data-disabled='false']\n    > .pavp-radio-card-group__option[data-ui-radio-card-option]:not(\n      .n-radio-button--disabled\n    ):hover:active",
+    declarations: [['background', 'var(--pavp-radio-card-pressed-surface)', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiRadioCardGroup.vue',
+    block: 0,
+    context: ['@media (forced-colors: none)'],
+    selector:
+      ".pavp-radio-card-group[data-ui-radio-card-group][data-disabled='false']\n    > .pavp-radio-card-group__option[data-ui-radio-card-option][data-selected='true']:not(\n      .n-radio-button--disabled\n    ):hover:active",
+    declarations: [['background', 'var(--pavp-radio-card-selected-pressed-surface)', false]],
     responsibility: 'VENDOR_ADAPTER_OWNER',
   },
   {
@@ -7550,6 +7867,120 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
     responsibility: 'VENDOR_ADAPTER_OWNER',
   },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector:
+      '.n-menu-item-content:where(:hover, .n-menu-item-content--hover)\n  .pavp-admin-navigation-selection-lens,\n.pavp-admin-shell__collapsed-trigger:hover .pavp-admin-navigation-selection-lens',
+    declarations: [['background', 'var(--n-item-color-active-hover)', false]],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector: ".pavp-admin-shell__collapsed-trigger[data-active='true']:hover::before",
+    declarations: [['background', 'var(--n-item-color-active-hover)', false]],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector:
+      "[data-pavp-admin-navigation-motion-ready='true']\n  .pavp-admin-shell__collapsed-trigger[data-active='true']:hover::before",
+    declarations: [['background', 'transparent', false]],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector:
+      ".pavp-admin-shell__collapsed-trigger:active .pavp-admin-navigation-selection-lens,\n[data-pavp-admin-navigation='persistent']\n  .n-menu-item-content:active\n  .pavp-admin-navigation-selection-lens",
+    declarations: [
+      [
+        'background',
+        'var(--pavp-navigation-selected-pressed, var(--n-item-color-active-hover))',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: ['@layer components'],
+    selector: "html[data-motion='none'] .pavp-admin-navigation-selection-lens",
+    declarations: [['transition', 'none', false]],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector: '.pavp-admin-shell__theme-picker-popover::before',
+    declarations: [
+      ['position', 'absolute', false],
+      ['inset-inline', '0', false],
+      ['block-size', 'var(--n-space)', false],
+      ['content', "''", false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector: "[v-placement^='bottom'] > .pavp-admin-shell__theme-picker-popover::before",
+    declarations: [['inset-block-end', '100%', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector: "[v-placement^='top'] > .pavp-admin-shell__theme-picker-popover::before",
+    declarations: [['inset-block-start', '100%', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector:
+      "[data-pavp-admin-navigation='persistent']\n  .n-menu-item-content:not(.n-menu-item-content--selected):active::before,\n.pavp-admin-shell__collapsed-trigger:not([data-active='true']):active::before",
+    declarations: [
+      ['background', 'var(--pavp-navigation-pressed, var(--n-item-color-hover))', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector:
+      "[data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected:active::before,\n.pavp-admin-shell__collapsed-trigger[data-active='true']:active::before",
+    declarations: [
+      [
+        'background',
+        'var(--pavp-navigation-selected-pressed, var(--n-item-color-active-hover))',
+        false,
+      ],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    selector:
+      "[data-pavp-admin-navigation-motion-ready='true']\n  .pavp-admin-shell__collapsed-trigger[data-active='true']:active::before",
+    declarations: [['background', 'transparent', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
 ]
 
 export const keyframeOwners: readonly {
@@ -7778,6 +8209,13 @@ export const styleAtRuleOwners: readonly {
     context: [],
     name: 'media',
     params: '(forced-colors: active)',
+  },
+  {
+    path: 'packages/ui/src/components/UiRadioCardGroup.vue',
+    block: 0,
+    context: [],
+    name: 'media',
+    params: '(forced-colors: none)',
   },
   {
     path: 'packages/ui/src/components/UiSection.vue',
@@ -8071,6 +8509,31 @@ export const styleAtRuleOwners: readonly {
 
 export const privateStyleVariables = [
   {
+    name: '--pavp-sidebar-scroll-track',
+    source: 'regional-scroll-surface-projection',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiScrollArea.vue',
+  },
+  {
+    name: '--pavp-sidebar-scroll-handle',
+    source: 'regional-scroll-surface-projection',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiScrollArea.vue',
+  },
+  {
+    name: '--pavp-sidebar-scroll-hover',
+    source: 'regional-scroll-surface-projection',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiScrollArea.vue',
+  },
+  {
+    name: '--pavp-sidebar-scroll-pressed',
+    source: 'regional-scroll-surface-projection',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiScrollArea.vue',
+  },
+
+  {
     name: '--preview-sidebar',
     source: 'design-system-color-style-preview',
     valueKind: 'color',
@@ -8233,6 +8696,18 @@ export const privateStyleVariables = [
     writer: 'packages/ui/src/components/UiRadioCardGroup.vue',
   },
   {
+    name: '--pavp-radio-card-selected-pressed-surface',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiRadioCardGroup.vue',
+  },
+  {
+    name: '--pavp-radio-card-pressed-surface',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiRadioCardGroup.vue',
+  },
+  {
     name: '--pavp-radio-card-hover-surface',
     source: 'naive-theme-bridge',
     valueKind: 'color',
@@ -8273,6 +8748,12 @@ export const privateStyleVariables = [
     source: 'validated-theme-mode-preview',
     valueKind: 'color',
     writer: 'apps/web/src/app/workbench/ColorModePreview.vue',
+  },
+  {
+    name: '--n-item-color-active-hover',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiAdminShell.vue',
   },
   {
     name: '--n-item-color-active',
@@ -8435,6 +8916,30 @@ export const privateStyleVariables = [
     source: 'runtime-theme-preview',
     valueKind: 'color',
     writer: 'apps/web/src/pages/control-center.vue',
+  },
+  {
+    name: '--pavp-navigation-pressed',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/adapters/naive/regional-navigation-theme.ts',
+  },
+  {
+    name: '--pavp-navigation-selected-pressed',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/adapters/naive/regional-navigation-theme.ts',
+  },
+  {
+    name: '--n-space',
+    source: 'vendor-adapter',
+    valueKind: 'dimension',
+    writer: 'packages/ui/src/components/UiAdminShell.vue',
+  },
+  {
+    name: '--n-item-color-hover',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
   },
 ] as const
 

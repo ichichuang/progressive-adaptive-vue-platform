@@ -51,6 +51,8 @@ export function createRuntimeUpdateMonitor(input: {
   readonly document: Document
   readonly window: Window
   readonly fetch?: typeof globalThis.fetch
+  /** Disable background wakeups for explicitly driven local demonstrations. */
+  readonly automatic?: boolean
   readonly onStatus?: (status: 'checking' | 'current' | 'available' | 'unavailable') => void
   readonly onCandidate: (identity: CompiledBuildIdentity | null) => void
 }) {
@@ -104,7 +106,7 @@ export function createRuntimeUpdateMonitor(input: {
   const wake = () => {
     void check(true)
   }
-  const production = compiledBuildIdentity.environment === 'production'
+  const production = compiledBuildIdentity.environment === 'production' && input.automatic !== false
   const timer = production
     ? input.window.setInterval(wake, applicationConfig.updates.pollIntervalMs)
     : undefined

@@ -58,6 +58,7 @@ export { useUiTableActions, type UiTableActionsInput } from './composables/use-u
 
 export { default as UiG2Chart } from './components/UiG2Chart.vue'
 export type {
+  UiG2ChartDateTimeChannels,
   UiG2ChartHandle,
   UiG2ChartOptions,
   UiChartTourTarget,
@@ -91,11 +92,14 @@ export type {
 
 export { formatUiDateTime, formatUiRelativeTime } from './date-time/date-time'
 export type {
+  UiDateFormat,
   UiDateTimeContext,
   UiDateTimeValue,
   UiDateTimePreset,
   UiDateTimeColumnFormat,
 } from './date-time/date-time'
+
+export { useUiClock } from './date-time/use-ui-clock'
 
 export { useUiDateTime } from './date-time/date-time-context'
 
@@ -135,3 +139,7 @@ export type * from './components/report-contracts'
 export { captureUiFormReport } from './components/report-form'
 export { captureUiTableReport } from './components/report-table'
 export { captureUiChartReport, createUiReportSnapshot } from './components/report-snapshot'
+
+export { useUiMotion } from './composables/use-ui-motion'
+export { uiMotionPresets } from './motion/motion-registry'
+export type * from './motion/motion-contracts'

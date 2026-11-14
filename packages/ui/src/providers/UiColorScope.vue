@@ -12,6 +12,7 @@ import {
 import {
   regionalHeaderTheme,
   regionalNavigationTheme,
+  regionalNavigationPressedStyle,
 } from '../adapters/naive/regional-navigation-theme'
 import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
 
@@ -35,9 +36,16 @@ const projection = computed(() =>
 )
 const surfaceOverrides = computed(() => {
   if (resolved.value === null) return {}
-  if (props.region === 'header') return { Button: regionalHeaderTheme(resolved.value.surface) }
-  if (props.region === 'sidebar')
-    return { Menu: regionalNavigationTheme(resolved.value.appearance) }
+  if (props.region === 'header')
+    return { Button: regionalHeaderTheme(resolved.value.surface, resolved.value.appearance) }
+  if (props.region === 'sidebar') {
+    return {
+      Menu: regionalNavigationTheme(resolved.value.appearance),
+      ...(global.value.colorStyle === 'brand-sidebar' || global.value.colorStyle === 'brand-frame'
+        ? { Button: regionalHeaderTheme(resolved.value.surface, resolved.value.appearance) }
+        : {}),
+    }
+  }
   return {}
 })
 const style = computed(() =>
@@ -45,6 +53,7 @@ const style = computed(() =>
     ? undefined
     : {
         ...resolved.value.cssVariables,
+        ...regionalNavigationPressedStyle(resolved.value.appearance),
         '--pavp-region-background': resolved.value.surface.background,
         '--pavp-region-foreground': resolved.value.surface.foreground,
       },

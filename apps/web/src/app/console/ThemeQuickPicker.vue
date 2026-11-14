@@ -170,7 +170,7 @@ function choose(theme: AppearanceThemePreviewProjection): void {
       />
     </svg>
     <div
-      class="gatheme-quick-choice-content grid grid-cols-5"
+      class="theme-quick-choices grid gap-component-unit"
       role="group"
       :aria-label="t('shell.themePickerLabel')"
     >
@@ -194,7 +194,7 @@ function choose(theme: AppearanceThemePreviewProjection): void {
         @blur="hovered = null"
         @click="choose(theme)"
       >
-        <span class="theme-quick-choice-content gatheme-quick-choice-content grid">
+        <span class="theme-quick-choice-content grid justify-items-center gap-component-unit">
           <svg
             class="theme-quick-palette"
             viewBox="0 0 44 54"
@@ -216,10 +216,26 @@ function choose(theme: AppearanceThemePreviewProjection): void {
             />
           </svg>
           <NIcon
-            class="i-lucide-check mx-auto"
             :class="{ 'opacity-0': !selected(theme) }"
             aria-hidden="true"
-          />
+          >
+            <svg viewBox="0 0 24 24">
+              <rect
+                width="24"
+                height="24"
+                rx="6"
+                :fill="swatches(theme).actionPrimary"
+              />
+              <path
+                d="m6 12 4 4 8-8"
+                fill="none"
+                :stroke="swatches(theme).onAction"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </NIcon>
         </span>
       </NButton>
     </div>

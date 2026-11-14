@@ -30,9 +30,10 @@
     "check:policy": "tsx scripts/verify/check-repository-policy.ts",
     "check:unused": "knip --config knip.jsonc",
     "check:bundle": "tsx scripts/verify/check-bundle.ts",
-    "verify": "tsx scripts/verify/check-runtime.ts && pnpm format:check && pnpm lint && pnpm lint:css && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm check:table && pnpm check:api-showcase && pnpm check:api-advanced && pnpm check:chart && pnpm check:interaction && pnpm schema:check && pnpm tokens:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle",
+    "verify": "tsx scripts/verify/check-runtime.ts && pnpm format:check && pnpm lint && pnpm lint:css && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm check:table && pnpm check:api-showcase && pnpm check:api-advanced && pnpm check:chart && pnpm check:interaction && pnpm check:motion && pnpm schema:check && pnpm tokens:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle",
     "check:api-showcase": "tsx scripts/verify/check-api-showcase.ts",
     "check:chart": "tsx scripts/verify/check-ui-g2.ts",
+    "check:motion": "tsx scripts/verify/check-ui-motion.ts",
     "check:interaction": "tsx scripts/verify/check-ui-interaction.ts",
     "check:api-advanced": "tsx scripts/verify/check-api-advanced.ts"
   },

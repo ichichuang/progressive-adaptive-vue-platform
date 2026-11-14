@@ -558,6 +558,7 @@ onActivated(() => {
 
   .pavp-scroll-area__viewport {
     block-size: 100%;
+    border-radius: inherit;
     min-block-size: 0;
     min-inline-size: 0;
     overscroll-behavior: contain;
@@ -625,8 +626,29 @@ onActivated(() => {
   :where(.pavp-scroll-area__viewport) {
     overflow: hidden auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--ui-color-border-default) var(--ui-color-surface-panel);
+    scrollbar-color: var(--pavp-sidebar-scroll-handle, var(--ui-color-border-default))
+      var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel));
   }
+}
+
+/* Regional scroll owners project from their actual surface, not the content palette. */
+.pavp-scroll-area[data-regional-scroll] {
+  --pavp-sidebar-scroll-track: var(--pavp-region-background);
+  --pavp-sidebar-scroll-handle: color-mix(
+    in srgb,
+    var(--pavp-region-foreground) 30%,
+    var(--pavp-region-background)
+  );
+  --pavp-sidebar-scroll-hover: color-mix(
+    in srgb,
+    var(--pavp-region-foreground) 55%,
+    var(--pavp-region-background)
+  );
+  --pavp-sidebar-scroll-pressed: color-mix(
+    in srgb,
+    var(--pavp-region-foreground) 75%,
+    var(--pavp-region-background)
+  );
 }
 
 [data-pavp-scroll-position] {
@@ -683,13 +705,13 @@ html[data-motion='full']
 :is(.pavp-scroll-area, [data-pavp-naive-scroll], [data-pavp-document-scroll]) .os-theme-pavp {
   --os-size: calc(var(--ui-space-content-gap) / 2);
   --os-track-border-radius: var(--ui-radius-small);
-  --os-track-bg: var(--ui-color-surface-panel);
-  --os-track-bg-hover: var(--ui-color-surface-panel);
-  --os-track-bg-active: var(--ui-color-surface-panel);
+  --os-track-bg: var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel));
+  --os-track-bg-hover: var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel));
+  --os-track-bg-active: var(--pavp-sidebar-scroll-track, var(--ui-color-surface-panel));
   --os-handle-border-radius: var(--ui-radius-small);
-  --os-handle-bg: var(--ui-color-border-default);
-  --os-handle-bg-hover: var(--ui-color-text-secondary);
-  --os-handle-bg-active: var(--ui-color-text-secondary);
+  --os-handle-bg: var(--pavp-sidebar-scroll-handle, var(--ui-color-border-default));
+  --os-handle-bg-hover: var(--pavp-sidebar-scroll-hover, var(--ui-color-text-secondary));
+  --os-handle-bg-active: var(--pavp-sidebar-scroll-pressed, var(--ui-color-text-secondary));
   --os-handle-perpendicular-size: calc(100% - var(--ui-border-width));
   --os-handle-interactive-area-offset: calc(var(--ui-space-content-gap) / 2);
   transition:

@@ -324,7 +324,7 @@ const expectedMotionGeometryNegativeProbeCount = 9
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 14
 const expectedAdminNavigationNativeSourceInvariantCount = 24
-const expectedAdminNavigationNativeSourceNegativeProbeCount = 25
+const expectedAdminNavigationNativeSourceNegativeProbeCount = 27
 const expectedAdminNavigationExpansionMotionInvariantCount = 22
 const expectedAdminNavigationExpansionMotionNegativeProbeCount = 9
 const expectedAdminNavigationCollapsedPopupSourceInvariantCount = 15
@@ -358,6 +358,7 @@ const expectedNavigationIconClasses = [
   'i-lucide-ruler',
   'i-lucide-type',
   'i-lucide-sparkles',
+  'i-lucide-clock-3',
   'i-lucide-workflow',
   'i-lucide-workflow',
   'i-lucide-workflow',
@@ -388,6 +389,13 @@ const expectedNavigationIconClasses = [
   'i-lucide-database',
   'i-lucide-database',
   'i-lucide-database',
+  'i-lucide-sparkles',
+  'i-lucide-sparkles',
+  'i-lucide-sparkles',
+  'i-lucide-sparkles',
+  'i-lucide-sparkles',
+  'i-lucide-sparkles',
+  'i-lucide-sparkles',
   'i-lucide-type',
   'i-lucide-type',
   'i-lucide-type',
@@ -473,6 +481,7 @@ const productRouteContract = [
   ['workbench-sizes', '/sizes', 'apps/web/src/pages/sizes.vue', '尺寸与空间'],
   ['workbench-typography', '/typography', 'apps/web/src/pages/typography.vue', '字体排印'],
   ['workbench-interactions', '/interactions', 'apps/web/src/pages/interactions.vue', '交互与状态'],
+  ['workbench-date-time', '/date-time', 'apps/web/src/pages/date-time.vue', '日期与时间'],
   ['workbench-motion', '/motion', 'apps/web/src/pages/motion.vue', '动画与动效'],
   ['component-showcase', '/components', 'apps/web/src/pages/component-showcase.vue', '组件总览'],
   ['component-actions', '/components/actions', 'apps/web/src/pages/component-actions.vue', '操作'],
@@ -563,6 +572,49 @@ const productRouteContract = [
     '/components/charts/stage',
     'apps/web/src/pages/component-chart-stage.vue',
     '比例大屏',
+  ],
+  ['component-motion', '/components/motion', 'apps/web/src/pages/component-motion.vue', '动效总览'],
+  [
+    'component-motion-reveal',
+    '/components/motion/reveal',
+    'apps/web/src/pages/component-motion-reveal.vue',
+    '遮罩揭幕',
+  ],
+  [
+    'component-motion-spatial',
+    '/components/motion/spatial',
+    'apps/web/src/pages/component-motion-spatial.vue',
+    '空间转场',
+  ],
+  [
+    'component-motion-material',
+    '/components/motion/material',
+    'apps/web/src/pages/component-motion-material.vue',
+    '材质特效',
+  ],
+  [
+    'component-motion-particles',
+    '/components/motion/particles',
+    'apps/web/src/pages/component-motion-particles.vue',
+    '碎解与粒子',
+  ],
+  [
+    'component-motion-text',
+    '/components/motion/text',
+    'apps/web/src/pages/component-motion-text.vue',
+    '文字动效',
+  ],
+  [
+    'component-motion-route-transitions',
+    '/components/motion/route-transitions',
+    'apps/web/src/pages/component-motion-route-transitions.vue',
+    '页面转场',
+  ],
+  [
+    'component-motion-route-preview',
+    '/components/motion/route-transitions/preview',
+    'apps/web/src/pages/component-motion-route-preview.vue',
+    '转场预览',
   ],
   [
     'component-form-overview',
@@ -3615,7 +3667,7 @@ function compiledShellStateViolations(source: string): string[] {
       !navigationWhereSelector &&
       selectors.some(
         (selector) =>
-          !/^html\[data-(?:material|motion)='[^']+'\] (?:\.pavp-admin-shell|\[data-pavp-admin-navigation='persistent'\]|\.pavp-admin-navigation-dropdown|:where\()/u.test(
+          !/^html\[data-(?:material|motion)='[^']+'\] (?:\.pavp-admin-shell|\[data-pavp-admin-navigation='persistent'\]|\.pavp-admin-navigation-dropdown|\.pavp-admin-navigation-selection-lens|:where\()/u.test(
             selector,
           ),
       )
@@ -5441,22 +5493,6 @@ function navigationSelectedColorStylesValid(source: string): boolean {
       selector: "[data-pavp-admin-navigation='persistent'] .n-menu.n-menu--collapsed",
       property: '--pavp-navigation-child-active-foreground',
       value: 'var(--ui-color-text-on-action)',
-    },
-    {
-      ...base,
-      context: [],
-      selector:
-        "[data-pavp-admin-navigation='persistent'] .n-menu-item-content:not(.n-menu-item-content--selected):not(.n-menu-item-content--child-active):active :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
-      property: 'color',
-      value: 'var(--ui-color-control-primary)',
-    },
-    {
-      ...base,
-      context: [],
-      selector:
-        '.pavp-admin-navigation-dropdown .n-dropdown-option-body:not(.n-dropdown-option-body--active:not(.n-dropdown-option-body--disabled)):active :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)',
-      property: 'color',
-      value: 'var(--ui-color-control-primary)',
     },
   ]
   const actual: StyleDeclarationIdentity[] = []
@@ -7326,13 +7362,19 @@ function runtime002NavigationViolations(shellSource: string): string[] {
       ) ||
         (rule.selector.includes(':focus') &&
           /\boutline\s*:\s*none\b/iu.test(rule.declarations) &&
-          !/\bbox-shadow\s*:\s*var\(--ui-[a-z0-9-]+\)/iu.test(rule.declarations))),
+          !/\bbox-shadow\s*:\s*inset 0 0 0 var\(--ui-admin-focus-width\) currentColor\s*;/iu.test(
+            rule.declarations,
+          ))),
   )
   if (
     drawerFocusDeclarations === undefined ||
     persistentFocusDeclarations === undefined ||
-    !/\bbox-shadow\s*:\s*var\(--ui-[a-z0-9-]+\)/iu.test(drawerFocusDeclarations) ||
-    !/\bbox-shadow\s*:\s*var\(--ui-[a-z0-9-]+\)/iu.test(persistentFocusDeclarations) ||
+    !/\bbox-shadow\s*:\s*inset 0 0 0 var\(--ui-admin-focus-width\) currentColor\s*;/iu.test(
+      drawerFocusDeclarations,
+    ) ||
+    !/\bbox-shadow\s*:\s*inset 0 0 0 var\(--ui-admin-focus-width\) currentColor\s*;/iu.test(
+      persistentFocusDeclarations,
+    ) ||
     focusSuppression
   ) {
     violations.push('PAVP_RUNTIME_002_FOCUS_PRESENTATION')
@@ -8027,7 +8069,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 87 ||
+    runtimeNumber(routeRegistry.length) !== 96 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
@@ -8220,10 +8262,12 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   const namedWorkbenchVendorSelectors = new Set([
+    '.wb-cinematic-choice.n-button',
     '.wb-theme-option.n-button',
     '.wb-theme-option .n-button__content',
     '.wb-section-link.n-button',
     '.wb-settings-dock.n-button',
+    ".wb-settings-dock.n-button[data-collapsed='false']",
     '.wb-overview-card.n-card',
     '.wb-link:not(.n-button):focus-visible, .wb-done:not(.n-button):focus-visible, .wb-section-link:not(.n-button):focus-visible',
     "[data-layout-profile='regular'] .wb-section-link.n-button, [data-layout-profile='wide'] .wb-section-link.n-button",
@@ -8719,8 +8763,8 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') &&
-        snapshot.routeCount === 87 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') &&
+        snapshot.routeCount === 96 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 13,
@@ -9115,7 +9159,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 87) {
+  if (snapshot.routeCount !== 96) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -9135,7 +9179,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     registered.get('UiG2Chart') !== 16 ||
     !isDeepStrictEqual(componentExampleConsumers['UiG2Chart'], [
       'component-combination-report',
-      'workbench-interactions',
+      'workbench-date-time',
       'workbench-welcome',
       'component-charts',
       'component-chart-trends',
@@ -11272,7 +11316,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       cssDeclarationsForSelector(
         cssRuleBlocks(styleContent(shellSource)),
         "[data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible",
-      )?.includes('box-shadow: var(--ui-admin-shadow-focus-ring);') === true,
+      )?.includes('box-shadow: inset 0 0 0 var(--ui-admin-focus-width) currentColor;') === true,
     ],
     [
       'NAV_MOTION_CLOSURE',
@@ -12322,11 +12366,32 @@ function adminNavigationNativeSourceInvariantResults(
     navigationSelectedColorProjection(snapshot.navigationColors).surface &&
     navigationSelectedColorProjection(snapshot.navigationColors).foreground &&
     navigationSelectedColorStylesValid(snapshot.shellSource)
-  const pressedSurfaceOverrideAbsent = !cssRuleBlocks(shellStyles).some(
+  const pressedSurfaceRules = cssRuleBlocks(shellStyles).filter(
     (rule) =>
       rule.selector.includes(':active::before') &&
       /\b(?:background|background-color)\s*:/iu.test(rule.declarations),
   )
+  const expectedPressedSurfaces = new Map([
+    [
+      "[data-pavp-admin-navigation='persistent'] .n-menu-item-content:not(.n-menu-item-content--selected):active::before, .pavp-admin-shell__collapsed-trigger:not([data-active='true']):active::before",
+      'background: var(--pavp-navigation-pressed, var(--n-item-color-hover));',
+    ],
+    [
+      "[data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected:active::before, .pavp-admin-shell__collapsed-trigger[data-active='true']:active::before",
+      'background: var(--pavp-navigation-selected-pressed, var(--n-item-color-active-hover));',
+    ],
+    [
+      "[data-pavp-admin-navigation-motion-ready='true'] .pavp-admin-shell__collapsed-trigger[data-active='true']:active::before",
+      'background: transparent;',
+    ],
+  ])
+  const pressedSurfaceOverrideAbsent =
+    pressedSurfaceRules.length === expectedPressedSurfaces.size &&
+    pressedSurfaceRules.every(
+      (rule) =>
+        expectedPressedSurfaces.get(normalizedCssSelector(rule.selector)) ===
+        rule.declarations.trim(),
+    )
   const wideCollapseControlOwned =
     controlledWideNavigationToggle(shellScript, snapshot.navigationActionsSource) &&
     shellTemplate.includes('data-pavp-admin-navigation-collapse-control="sidebar-toolbar"') &&
@@ -12357,9 +12422,9 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes('to: `#${sidebarOverlayId}`') &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -12458,7 +12523,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 87,
+      passed: snapshot.routeCount === 96,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -12665,7 +12730,7 @@ function adminNavigationCollapsedPopupInvariantResults(
         cssDeclarationsForSelector(
           shellRules,
           '.pavp-admin-navigation-dropdown [data-pavp-navigation-key]:focus-visible',
-        )?.includes('box-shadow: var(--ui-admin-shadow-focus-ring);') === true,
+        )?.includes('box-shadow: inset 0 0 0 var(--ui-admin-focus-width) currentColor;') === true,
     },
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_SINGLE_PANEL',
@@ -13312,6 +13377,28 @@ function runAdminNavigationNativeSourceNegativeProbes(
       { ...baseline, themeSource: baseline.themeSource.replace(' 6%,', ' 7%,') },
     ],
     [
+      'admin-navigation-native-press-overrides-selected-surface',
+      'ADMIN_NAV_NATIVE_SELECTED_SURFACE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replaceAll(
+          'var(--pavp-navigation-selected-pressed, var(--n-item-color-active-hover))',
+          'var(--ui-color-control-primary)',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-native-pointer-overrides-paired-foreground',
+      'ADMIN_NAV_NATIVE_SELECTED_SURFACE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '</style>',
+          "[data-pavp-admin-navigation='persistent'] .n-menu-item-content:active .n-menu-item-content-header { color: var(--ui-color-control-primary); }\n</style>",
+        ),
+      },
+    ],
+    [
       'admin-navigation-native-selected-strength-drift',
       'ADMIN_NAV_NATIVE_SELECTED_SURFACE',
       { ...baseline, themeSource: baseline.themeSource.replace(' 16%,', ' 15%,') },
@@ -13463,7 +13550,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 87',
+          'const expectedLazyRouteCount = 96',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -14816,9 +14903,9 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 87',
+    'const expectedLazyRouteCount = 96',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 100',
+    'const expectedDynamicRootCount = 110',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14840,10 +14927,10 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 87 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') ||
+    snapshot.routeCount !== 96 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -15357,14 +15444,14 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 87 ||
-    runtimeCount(productRoutes) !== 80 ||
+    runtimeCount(routeRegistry) !== 96 ||
+    runtimeCount(productRoutes) !== 89 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 80 ||
+    Object.keys(breadcrumbRegistry).length !== 89 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 87/80/7 workbench Route Registry closure drifted.')
+    violations.push('The exact 96/89/7 workbench Route Registry closure drifted.')
   }
 
   if (
@@ -15506,10 +15593,6 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
   ])
   const requiredConsumerImports = new Map<string, readonly string[]>([
     [
-      'apps/web/src/pages/dashboard.vue',
-      ['../app/api/api-read-boundary', '../shared/services/uapi-world-time'],
-    ],
-    [
       'apps/web/src/pages/control-center.vue',
       [
         '../app/appearance/appearance-mutation-boundary',
@@ -15574,6 +15657,38 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
       ['../app/workbench/charts/ChartStageWorkbench.vue'],
     ],
 
+    [
+      'apps/web/src/pages/component-motion.vue',
+      ['../app/workbench/cinematic/CinematicMotionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-reveal.vue',
+      ['../app/workbench/cinematic/CinematicMotionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-spatial.vue',
+      ['../app/workbench/cinematic/CinematicMotionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-material.vue',
+      ['../app/workbench/cinematic/CinematicMotionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-particles.vue',
+      ['../app/workbench/cinematic/CinematicMotionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-text.vue',
+      ['../app/workbench/cinematic/CinematicMotionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-route-transitions.vue',
+      ['../app/workbench/cinematic/RouteTransitionWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-motion-route-preview.vue',
+      ['../app/workbench/cinematic/RouteTransitionWorkbench.vue'],
+    ],
     ['apps/web/src/app/workbench/TokenSpecimen.vue', ['@platform/design-system']],
   ])
   for (const path of viewPaths) {
@@ -15595,6 +15710,10 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
           specifier.includes('/app/') &&
           !specifier.includes('/workbench/') &&
           !factImports.has(specifier) &&
+          !(
+            path === 'apps/web/src/pages/dashboard.vue' &&
+            specifier === '../app/router/route-transition/route-motion-player'
+          ) &&
           !(
             path === 'apps/web/src/pages/component-form-lifecycle.vue' &&
             ['../app/forms/use-form-draft', '../app/forms/use-form-draft-storage'].includes(
@@ -16031,10 +16150,10 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 87 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 80 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 96 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 89 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 87 ||
+    runtimeCount(routerRecords) !== 96 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
     runtimeCount(storageRecords) !== 13 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 18 ||
@@ -16076,6 +16195,29 @@ function validateInspectorProjections(): string[] {
       'Chart capabilities must remain a second-level submenu with twelve route leaves.',
     )
   }
+
+  const cinematicGroup = consoleNavigationRegistry
+    .find((group) => group.id === 'components')
+    ?.items.find((item) => 'items' in item && item.id === 'cinematic-motion')
+  if (
+    cinematicGroup === undefined ||
+    !('items' in cinematicGroup) ||
+    !isDeepStrictEqual(
+      cinematicGroup.items.map((item) => item.destination.name),
+      [
+        'component-motion',
+        'component-motion-reveal',
+        'component-motion-spatial',
+        'component-motion-material',
+        'component-motion-particles',
+        'component-motion-text',
+        'component-motion-route-transitions',
+      ],
+    )
+  )
+    violations.push(
+      'Unified motion must retain its distinct seven-category second-level navigation group.',
+    )
 
   const formGroup = consoleNavigationRegistry
     .find((group) => group.id === 'components')
@@ -16125,7 +16267,7 @@ function validateInspectorProjections(): string[] {
     !isDeepStrictEqual(navigationProjection, [
       ['工作台', ['欢迎', '仪表盘']],
       ['设计令牌', ['语义配色', '尺寸与空间', '字体排印']],
-      ['交互能力', ['交互与状态', '动画与动效']],
+      ['交互能力', ['交互与状态', '日期与时间', '动画与动效']],
       [
         'API 请求',
         [
@@ -16163,6 +16305,13 @@ function validateInspectorProjections(): string[] {
           '多图联动',
           '自动巡游',
           '比例大屏',
+          '动效总览',
+          '遮罩揭幕',
+          '空间转场',
+          '材质特效',
+          '碎解与粒子',
+          '文字动效',
+          '页面转场',
           '能力总览',
           '基础控件',
           '编辑与详情',

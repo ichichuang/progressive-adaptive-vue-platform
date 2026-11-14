@@ -33,10 +33,12 @@ function previewStyle(style: ColorStyle): Record<string, string> {
   const tabs = projectRegionAppearance(snapshot, 'tabs')
   const content = projectRegionAppearance(snapshot, 'content')
   const menuPalette = sidebar.appearance.colorPalette.roles.primary
-  const menuSelection = sidebar.isCustomized ? menuPalette.solid : menuPalette.soft
+  const brandedSidebar = style === 'brand-sidebar' || style === 'brand-frame'
+  const menuSelection =
+    sidebar.isCustomized && !brandedSidebar ? menuPalette.solid : menuPalette.soft
   return {
     '--preview-sidebar': sidebar.surface.background,
-    '--preview-sidebar-text': sidebar.appearance.colorPalette.text.primary,
+    '--preview-sidebar-text': sidebar.surface.foreground,
     '--preview-menu-active': menuSelection.background.default,
     '--preview-menu-content': menuSelection.foreground,
     '--preview-header': header.surface.background,

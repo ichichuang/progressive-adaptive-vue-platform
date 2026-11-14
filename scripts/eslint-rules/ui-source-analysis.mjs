@@ -226,6 +226,7 @@ function buildStyleSinkResolver(context) {
       imported(callee, '../adapters/naive/regional-navigation-theme', [
         'regionalNavigationTheme',
         'regionalHeaderTheme',
+        'regionalNavigationPressedStyle',
       ])
     )
       return true

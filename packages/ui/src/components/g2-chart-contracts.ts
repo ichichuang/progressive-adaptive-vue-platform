@@ -1,4 +1,11 @@
 import type { G2Spec } from '@antv/g2'
+import type { UiDateTimeColumnFormat } from '../date-time/date-time'
+
+/** Explicit temporal channel semantics; ordinary numeric/category axes remain unchanged. */
+export interface UiG2ChartDateTimeChannels {
+  readonly x?: UiDateTimeColumnFormat
+  readonly y?: UiDateTimeColumnFormat
+}
 
 /** Native G2 grammar. The component owns container sizing and motion policy. */
 export type UiG2ChartOptions = G2Spec

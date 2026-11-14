@@ -34,8 +34,8 @@ export const colorStyleRecipes: Readonly<
     dark: plane('dark', { sidebar: { colorMode: 'dark', surface: 'sunken' } }),
   }),
   'brand-sidebar': Object.freeze({
-    light: plane('light', { sidebar: { colorMode: 'dark', surface: 'tinted' } }),
-    dark: plane('dark', { sidebar: { colorMode: 'dark', surface: 'tinted' } }),
+    light: plane('light', { sidebar: { colorMode: 'light', surface: 'solid' } }),
+    dark: plane('dark', { sidebar: { colorMode: 'dark', surface: 'solid' } }),
   }),
   'brand-header': Object.freeze({
     light: plane('light', { header: { colorMode: 'light', surface: 'solid' } }),
@@ -54,11 +54,11 @@ export const colorStyleRecipes: Readonly<
   'brand-frame': Object.freeze({
     light: plane('light', {
       header: { colorMode: 'light', surface: 'solid' },
-      sidebar: { colorMode: 'dark', surface: 'tinted' },
+      sidebar: { colorMode: 'light', surface: 'solid' },
     }),
     dark: plane('dark', {
       header: { colorMode: 'dark', surface: 'solid' },
-      sidebar: { colorMode: 'dark', surface: 'tinted' },
+      sidebar: { colorMode: 'dark', surface: 'solid' },
     }),
   }),
   'soft-frame': Object.freeze({

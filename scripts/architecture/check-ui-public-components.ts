@@ -22,6 +22,15 @@ const uiProviderPath = 'packages/ui/src/providers/UiProvider.vue'
 const uiAdminShellPath = 'packages/ui/src/components/UiAdminShell.vue'
 const motionAdapterDirectory = 'packages/ui/src/adapters/motion'
 const motionAdapterFiles = [
+  'packages/ui/src/adapters/motion/cinematic-controller.ts',
+  'packages/ui/src/adapters/motion/cinematic-gpu-playback.ts',
+  'packages/ui/src/adapters/motion/cinematic-theme-rift.ts',
+  'packages/ui/src/adapters/motion/cinematic-dom-playback.ts',
+  'packages/ui/src/adapters/motion/cinematic-mask-recipes.ts',
+  'packages/ui/src/adapters/motion/cinematic-spatial-recipes.ts',
+  'packages/ui/src/adapters/motion/cinematic-text-recipes.ts',
+  'packages/ui/src/adapters/motion/cinematic-gpu-stage.ts',
+  'packages/ui/src/adapters/motion/cinematic-gpu-shaders.ts',
   'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue',
   'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
   'packages/ui/src/adapters/motion/motion-feature-runtime.ts',
@@ -2012,6 +2021,7 @@ function dismiss(event?: MouseEvent): void {
         if (
           ![
             'UiReportPreview',
+            'UiSection',
             'UiDisplayStage',
             'UiDashboardGrid',
             'UiG2Chart',
@@ -2091,7 +2101,7 @@ function dismiss(event?: MouseEvent): void {
     if (record.exportName === 'UiCopyAction') {
       const parsed = sourceFile(record.sourcePath, scriptContent(source))
       const actualProps: { name: string; type: string; required: boolean }[] = []
-      const defaultContract = { disabled: false }
+      const actualDefaults = new Map<string, string>()
       function visitCopyContract(node: ts.Node): void {
         if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
           const contract = node.typeArguments?.[0]
@@ -2114,12 +2124,12 @@ function dismiss(event?: MouseEvent): void {
             defaults !== undefined &&
             ts.isObjectLiteralExpression(defaults)
           )
-            defaultContract.disabled = defaults.properties.some(
-              (property) =>
-                ts.isPropertyAssignment(property) &&
-                property.name.getText(parsed) === 'disabled' &&
-                property.initializer.kind === ts.SyntaxKind.FalseKeyword,
-            )
+            for (const property of defaults.properties)
+              if (ts.isPropertyAssignment(property))
+                actualDefaults.set(
+                  property.name.getText(parsed),
+                  property.initializer.getText(parsed),
+                )
         }
         ts.forEachChild(node, visitCopyContract)
       }
@@ -2129,8 +2139,16 @@ function dismiss(event?: MouseEvent): void {
         type: compactType(prop.type),
         required: prop.required,
       }))
-      if (!isDeepStrictEqual(actualProps, expected) || !defaultContract.disabled)
-        violations.push('UiCopyAction exact Props and disabled default must match its Registry.')
+      const expectedDefaults = new Map(
+        record.props.flatMap((prop) =>
+          prop.defaultValue === null ? [] : [[prop.name, prop.defaultValue]],
+        ),
+      )
+      if (
+        !isDeepStrictEqual(actualProps, expected) ||
+        !isDeepStrictEqual(actualDefaults, expectedDefaults)
+      )
+        violations.push('UiCopyAction exact Props and defaults must match its Registry.')
     }
 
     if (record.exportName === 'UiRadioCardGroup') {
@@ -2209,6 +2227,7 @@ function dismiss(event?: MouseEvent): void {
     'packages/ui/src/adapters/naive/PavpNaiveFormChoice.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormAttachment.vue',
     'packages/ui/src/adapters/naive/use-form-control.ts',
+    'packages/ui/src/adapters/naive/pavp-naive-date-time.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/regional-navigation-theme.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',

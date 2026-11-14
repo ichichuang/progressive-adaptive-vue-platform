@@ -65,7 +65,7 @@ const props = defineProps<{
   readonly composition: UiShellComposition | null
   readonly navigationFocusRequest?: number
   readonly prepareNavigationFocus?: () => Promise<boolean>
-  readonly contentLayout?: 'scroll' | 'contained'
+  readonly contentLayout?: 'scroll' | 'contained' | 'contained-flush'
   readonly wideNavigationCollapsed: boolean
   readonly navigationAccordion: boolean
   readonly colorModeSwitchFailed: boolean
@@ -100,7 +100,10 @@ defineSlots<{
 }>()
 
 const enabled = computed(() => props.composition !== null)
-const containedContent = computed(() => enabled.value && props.contentLayout === 'contained')
+const flushContent = computed(() => enabled.value && props.contentLayout === 'contained-flush')
+const containedContent = computed(
+  () => enabled.value && (props.contentLayout === 'contained' || flushContent.value),
+)
 const administration = computed(() => props.composition?.startsWith('admin-') === true)
 const hasHeader = computed(
   () => administration.value || props.composition?.startsWith('header-') === true,
@@ -197,9 +200,11 @@ async function openThemePickerFromKeyboard(): Promise<void> {
   themePickerPinned.value = true
   themePickerOpen.value = true
   await nextTick()
-  themePickerPanel.value
-    ?.querySelector<HTMLButtonElement>('[aria-pressed="true"], button:not(:disabled)')
-    ?.focus()
+  const panel = themePickerPanel.value
+  const selected = panel?.querySelector<HTMLButtonElement>(
+    'button[aria-pressed="true"]:not(:disabled)',
+  )
+  ;(selected ?? panel?.querySelector<HTMLButtonElement>('button:not(:disabled)'))?.focus()
 }
 function toggleThemePicker(event: MouseEvent): void {
   if (event.detail === 0 && !themePickerPinned.value) {
@@ -281,6 +286,7 @@ const navigationIconClasses = [
   'i-lucide-panels-top-left',
   'i-lucide-workflow',
   'i-lucide-map',
+  'i-lucide-clock-3',
 ] as const
 type NavigationIconClass = (typeof navigationIconClasses)[number]
 
@@ -433,6 +439,7 @@ const collapsedMenuStyle = computed(() => {
       : regionalNavigationTheme(sidebarRegion.value.appearance)
   return {
     '--n-item-color-active': menu.itemColorActiveCollapsed,
+    '--n-item-color-active-hover': menu.itemColorActiveHover,
     '--pavp-collapsed-foreground': menu.itemIconColorCollapsed,
     '--pavp-collapsed-active-foreground': menu.itemIconColorActive,
     '--pavp-collapsed-hover': menu.itemColorHover,
@@ -1351,7 +1358,7 @@ watch(
           </div>
           <NPopover
             v-if="administration"
-            class="pavp-admin-shell__header-action-tooltip"
+            class="pavp-admin-shell__header-action-tooltip pavp-admin-shell__theme-picker-popover"
             :show="themePickerOpen"
             trigger="hover"
             placement="bottom-end"
@@ -1618,6 +1625,7 @@ watch(
             </div>
             <UiScrollArea
               class="flex-1 min-h-0"
+              :data-regional-scroll="sidebarRegion !== null ? '' : undefined"
               owner-id="architecture-console-sidebar"
               @viewport="emit('sidebar-viewport', $event)"
             >
@@ -1680,7 +1688,10 @@ watch(
                   <NMenu
                     v-show="!persistentNavigationCollapsed"
                     :accordion="navigationAccordion"
-                    class="pavp-admin-shell__menu w-admin-sidebar-expanded"
+                    class="pavp-admin-shell__menu"
+                    :root-indent="collapsedNavigationWidth / 2"
+                    :icon-size="currentRootFontSize"
+                    :collapsed-icon-size="currentRootFontSize"
                     :theme-overrides="navigationMenuThemeOverrides"
                     :collapsed="false"
                     :collapsed-width="collapsedNavigationWidth"
@@ -1732,6 +1743,7 @@ watch(
             :class="enabled ? 'pavp-admin-shell__content min-w-0' : undefined"
             :data-scroll-owner="enabled ? 'architecture-console-content' : undefined"
             :data-shell-region="enabled ? 'architecture-console-content' : undefined"
+            :data-content-flush="flushContent || undefined"
             :inert="administration && profile === 'narrow' && navigationOpen"
           >
             <UiScrollArea
@@ -1747,6 +1759,7 @@ watch(
                     : undefined
                 "
                 :data-contained="containedContent"
+                :data-content-flush="flushContent || undefined"
               >
                 <slot />
                 <UiColorScope region="footer">
@@ -1791,6 +1804,7 @@ watch(
               <div class="pavp-admin-shell__navigation-stack flex flex-col h-full min-h-0">
                 <UiScrollArea
                   class="flex-1 min-h-0"
+                  :data-regional-scroll="sidebarRegion !== null ? '' : undefined"
                   owner-id="architecture-console-drawer"
                   @viewport="emit('drawer-viewport', $event)"
                 >
@@ -2046,8 +2060,15 @@ watch(
   }
 
   .pavp-admin-shell__menu {
+    inline-size: calc(
+      var(--ui-layout-admin-sidebar-expanded-inline-size) - var(--ui-space-content-gap)
+    );
     min-block-size: 0;
     min-inline-size: 0;
+  }
+
+  .pavp-admin-shell__menu :deep(.n-menu-item-content__icon) {
+    margin-inline-end: var(--ui-space-control-segment-gap) !important;
   }
 
   .pavp-admin-shell__menu :deep(> .n-submenu) {
@@ -2100,6 +2121,10 @@ watch(
     border-radius: var(--ui-radius-panel);
     color: var(--pavp-region-foreground, var(--ui-color-text-primary));
     background: var(--pavp-region-background, var(--ui-admin-surface-content));
+  }
+
+  .pavp-admin-shell__content[data-content-flush] {
+    overflow: visible;
   }
 
   .pavp-admin-shell__content-inner {
@@ -2164,6 +2189,10 @@ watch(
 
   .pavp-admin-shell[data-layout-profile='narrow'] .pavp-admin-shell__content-inner {
     padding: var(--ui-space-content-gap);
+  }
+
+  .pavp-admin-shell .pavp-admin-shell__content-inner[data-content-flush] {
+    padding: 0;
   }
 
   .pavp-admin-shell__drawer-heading {
@@ -2267,7 +2296,7 @@ watch(
 }
 
 .pavp-admin-shell__collapsed-trigger:focus-visible::before {
-  box-shadow: var(--ui-admin-shadow-focus-ring);
+  box-shadow: inset 0 0 0 var(--ui-admin-focus-width) currentColor;
 }
 
 .pavp-admin-shell__action,
@@ -2345,7 +2374,7 @@ watch(
 .pavp-admin-shell__action:focus-visible,
 .pavp-admin-shell__navigation-action:focus-visible,
 .pavp-admin-shell__drawer-navigation:focus-visible {
-  box-shadow: var(--ui-admin-shadow-focus-ring);
+  box-shadow: inset 0 0 0 var(--ui-admin-focus-width) currentColor;
   outline: none;
 }
 
@@ -2374,6 +2403,14 @@ watch(
 
 .pavp-admin-shell__identity.n-button {
   flex-shrink: 1;
+  color: inherit !important;
+  background: transparent !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.pavp-admin-shell__identity.n-button:not(:focus-visible) {
+  box-shadow: none !important;
 }
 
 .pavp-admin-shell__navigation-disclosure {
@@ -2417,7 +2454,12 @@ watch(
     inset-inline: calc(var(--ui-space-content-gap) / 2);
     border-radius: var(--ui-radius-control);
     background: var(--n-item-color-active);
+    transition: background-color var(--ui-motion-duration) var(--ui-motion-easing);
     pointer-events: none;
+  }
+
+  html[data-motion='none'] .pavp-admin-navigation-selection-lens {
+    transition: none;
   }
 
   html[data-material='adaptive'] .pavp-admin-shell__header,
@@ -2483,7 +2525,7 @@ watch(
   [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible,
   .pavp-admin-navigation-dropdown [data-pavp-navigation-key]:focus-visible {
     border-radius: var(--ui-radius-control);
-    box-shadow: var(--ui-admin-shadow-focus-ring);
+    box-shadow: inset 0 0 0 var(--ui-admin-focus-width) currentColor;
     outline: none;
   }
 
@@ -2630,14 +2672,6 @@ watch(
   inset-inline: calc(var(--ui-space-content-gap) / 2);
 }
 
-[data-pavp-admin-navigation='persistent']
-  .n-menu-item-content:not(.n-menu-item-content--selected):not(
-    .n-menu-item-content--child-active
-  ):active
-  :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header) {
-  color: var(--ui-color-control-primary);
-}
-
 .pavp-admin-shell[data-navigation-collapsed='true']
   [data-pavp-admin-navigation='persistent']
   .n-menu-item-content--child-active::before,
@@ -2672,23 +2706,6 @@ html[data-motion='none']
   .n-dropdown-option
   .n-dropdown-option-body::before {
   transition: none;
-}
-
-.pavp-admin-shell[data-navigation-collapsed='false']
-  [data-pavp-admin-navigation-motion-ready='true']
-  .n-menu-item-content--selected::before,
-.pavp-admin-shell[data-navigation-collapsed='true']
-  [data-pavp-admin-navigation-motion-ready='true']
-  .n-menu-item-content.n-menu-item-content--child-active::before {
-  transition: none;
-}
-
-.pavp-admin-navigation-dropdown
-  .n-dropdown-option-body:not(
-    .n-dropdown-option-body--active:not(.n-dropdown-option-body--disabled)
-  ):active
-  :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label) {
-  color: var(--ui-color-control-primary);
 }
 
 html[data-material='reduced'] .pavp-admin-navigation-dropdown {
@@ -2732,5 +2749,69 @@ html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active {
 html[data-motion='none'] .pavp-admin-shell__action:active,
 html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
   transform: none;
+}
+
+/* The route-owned lens keeps selection while the pointer only changes its interaction state. */
+.n-menu-item-content:where(:hover, .n-menu-item-content--hover)
+  .pavp-admin-navigation-selection-lens,
+.pavp-admin-shell__collapsed-trigger:hover .pavp-admin-navigation-selection-lens {
+  background: var(--n-item-color-active-hover);
+}
+
+.pavp-admin-shell__collapsed-trigger:active .pavp-admin-navigation-selection-lens,
+[data-pavp-admin-navigation='persistent']
+  .n-menu-item-content:active
+  .pavp-admin-navigation-selection-lens {
+  background: var(--pavp-navigation-selected-pressed, var(--n-item-color-active-hover));
+}
+
+/* Keep the existing visual gap, but include it in the popup's pointer surface. */
+.pavp-admin-shell__theme-picker-popover::before {
+  position: absolute;
+  inset-inline: 0;
+  block-size: var(--n-space);
+  content: '';
+}
+
+[v-placement^='bottom'] > .pavp-admin-shell__theme-picker-popover::before {
+  inset-block-end: 100%;
+}
+
+[v-placement^='top'] > .pavp-admin-shell__theme-picker-popover::before {
+  inset-block-start: 100%;
+}
+
+.pavp-admin-shell__collapsed-trigger[data-active='true']:hover::before {
+  background: var(--n-item-color-active-hover);
+}
+
+[data-pavp-admin-navigation='persistent']
+  .n-menu-item-content:not(.n-menu-item-content--selected):active::before,
+.pavp-admin-shell__collapsed-trigger:not([data-active='true']):active::before {
+  background: var(--pavp-navigation-pressed, var(--n-item-color-hover));
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected:active::before,
+.pavp-admin-shell__collapsed-trigger[data-active='true']:active::before {
+  background: var(--pavp-navigation-selected-pressed, var(--n-item-color-active-hover));
+}
+
+.pavp-admin-shell[data-navigation-collapsed='false']
+  [data-pavp-admin-navigation-motion-ready='true']
+  .n-menu-item-content--selected::before,
+.pavp-admin-shell[data-navigation-collapsed='true']
+  [data-pavp-admin-navigation-motion-ready='true']
+  .n-menu-item-content.n-menu-item-content--child-active::before {
+  transition: none;
+}
+
+[data-pavp-admin-navigation-motion-ready='true']
+  .pavp-admin-shell__collapsed-trigger[data-active='true']:hover::before {
+  background: transparent;
+}
+
+[data-pavp-admin-navigation-motion-ready='true']
+  .pavp-admin-shell__collapsed-trigger[data-active='true']:active::before {
+  background: transparent;
 }
 </style>

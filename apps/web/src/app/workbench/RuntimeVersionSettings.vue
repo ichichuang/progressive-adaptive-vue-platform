@@ -4,6 +4,7 @@ import { NButton } from 'naive-ui/es/button'
 import { runtimeUpdateKey } from '../config/runtime-update-context'
 import { useConsoleI18n } from '../../shared/i18n'
 import SettingsField from './SettingsField.vue'
+import RuntimeVersionExample from './RuntimeVersionExample.vue'
 const { t } = useConsoleI18n()
 const runtimeUpdate = inject(runtimeUpdateKey)
 const updateStatus = computed(() => runtimeUpdate?.status.value ?? 'idle')
@@ -43,4 +44,5 @@ const updateMessage = computed(() => {
       />
     </div>
   </SettingsField>
+  <RuntimeVersionExample />
 </template>

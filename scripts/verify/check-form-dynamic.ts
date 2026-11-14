@@ -1,9 +1,44 @@
 import assert from 'node:assert/strict'
 import { watch } from 'vue'
+import {
+  dynamicFormPresets,
+  parseDynamicFormExampleDraft,
+} from '../../apps/web/src/app/workbench/forms/dynamic-form-example'
 import type { UiFormCopy, UiFormSchema } from '../../packages/ui/src/components/form-contracts'
 import { useUiDynamicForm } from '../../packages/ui/src/composables/use-ui-dynamic-form'
 
 export async function verifyDynamicForm(copy: UiFormCopy): Promise<void> {
+  const example = useUiDynamicForm({
+    formId: 'dynamic-showcase',
+    copy: { ...copy, previousStep: () => 'Back', nextStep: () => 'Next' },
+    schema: dynamicFormPresets.simple,
+    initial: { draftId: 'sample', values: { name: 'Kept', capacity: 12 } },
+  })
+  const changedType = await example.replaceSchema(dynamicFormPresets.textCapacity)
+  assert.equal(changedType.status, 'applied')
+  assert.ok(changedType.resetFields.includes('capacity'))
+  assert.equal(example.form.value.getValue('capacity'), '')
+  assert.equal(example.form.value.getValue('name'), 'Kept')
+  const snapshot = parseDynamicFormExampleDraft({
+    preset: 'textCapacity',
+    values: example.form.value.getValues(),
+    step: 'identity',
+  })
+  assert.equal(snapshot.values.capacity, '')
+  assert.throws(() => parseDynamicFormExampleDraft({ ...snapshot, preset: 'simple' }))
+  assert.throws(() =>
+    parseDynamicFormExampleDraft({ ...snapshot, values: { ...snapshot.values, capacity: 12 } }),
+  )
+  const preserved = example.form.value
+  await assert.rejects(
+    example.replaceSchema({
+      fields: [dynamicFormPresets.simple.fields[0], dynamicFormPresets.simple.fields[0]],
+    }),
+  )
+  assert.equal(example.form.value, preserved)
+  assert.equal(example.form.value.getValue('name'), 'Kept')
+  example.dispose()
+
   const original: UiFormSchema = {
     fields: [
       { kind: 'text', name: 'name', label: 'Name' },

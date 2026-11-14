@@ -111,6 +111,12 @@ const cannotChoose = computed(
     props.binding.readonly ||
     (props.config.maxFiles !== undefined && files.value.length >= props.config.maxFiles),
 )
+const picker = computed(() => formPresentation(props.form).attachmentPicker(props.config.source))
+async function pickFile(): Promise<void> {
+  const source = picker.value
+  if (!source || cannotChoose.value) return
+  await chooseFile((signal) => source.select({ signal, field: props.binding.name }))
+}
 async function choose({ file }: { readonly file: UploadFileInfo }): Promise<boolean> {
   if (file.file) await chooseFile(file.file)
   return false // NUpload never submits or stores raw File objects in the model.
@@ -148,6 +154,15 @@ function remove({ file }: { readonly file: UploadFileInfo }): boolean {
         }}
       </NButton>
     </NUpload>
+    <NButton
+      v-if="!readonly && picker"
+      secondary
+      :disabled="cannotChoose || busy"
+      :aria-label="picker.label()"
+      @click="pickFile"
+    >
+      {{ picker.label() }}
+    </NButton>
     <div
       v-if="config.preview || readonly"
       class="flex flex-wrap gap-component-unit"

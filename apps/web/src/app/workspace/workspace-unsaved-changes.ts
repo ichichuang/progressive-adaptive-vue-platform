@@ -24,7 +24,10 @@ interface DiscardConfirmation {
 export const workspaceUnsavedChangesKey: InjectionKey<(registration: Registration) => () => void> =
   Symbol('workspace-unsaved-changes')
 
-export function provideWorkspaceUnsavedChanges(workspace: ReturnType<typeof useWorkspaceStore>) {
+export function provideWorkspaceUnsavedChanges(
+  workspace: Pick<ReturnType<typeof useWorkspaceStore>, 'entries' | 'canDiscard'>,
+  options: { readonly protectDocument?: boolean } = {},
+) {
   const registrations = shallowRef<readonly Registration[]>([])
   const confirmation = shallowRef<DiscardConfirmation>()
   const reloadConfirmation = shallowRef<{
@@ -219,7 +222,7 @@ export function provideWorkspaceUnsavedChanges(workspace: ReturnType<typeof useW
     if (!hasUnsavedChanges.value) return
     event.preventDefault()
   }
-  if (typeof window !== 'undefined') {
+  if (options.protectDocument !== false && typeof window !== 'undefined') {
     watch(
       hasUnsavedChanges,
       (dirty) => {

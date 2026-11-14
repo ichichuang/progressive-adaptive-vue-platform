@@ -55,7 +55,9 @@ export function useFormAttachments<I>(props: {
     { flush: 'sync' },
   )
   onScopeDispose(cancel)
-  async function choose(selected: File): Promise<boolean> {
+  async function choose(
+    selection: File | ((signal: AbortSignal) => Promise<File | null>),
+  ): Promise<boolean> {
     const binding = props.binding
     const form = props.form
     const isDisposed = () => form.phase.value === 'disposed'
@@ -67,18 +69,26 @@ export function useFormAttachments<I>(props: {
       (maxFiles !== undefined && current.length >= maxFiles) ||
       (props.config.imageProcessing === undefined &&
         maxSize !== undefined &&
-        selected.size > maxSize)
+        selection instanceof File &&
+        selection.size > maxSize)
     ) {
       failed.value = true
       return false
     }
     const active = { controller: new AbortController(), binding, value: binding.value }
     request = active
+    const isCancelled = () => active.controller.signal.aborted || request !== active
     const generation = formPresentation(form).generation.value
     busy.value = true
     failed.value = false
     binding.setPendingInput(true)
     try {
+      const selected =
+        typeof selection === 'function' ? await selection(active.controller.signal) : selection
+      if (selected === null || isCancelled()) return false
+      if (!(selected instanceof File)) throw new TypeError('Attachment picker must return a File.')
+      if (!props.config.imageProcessing && maxSize !== undefined && selected.size > maxSize)
+        throw new TypeError('Attachment exceeds the size limit.')
       let file = selected
       if (props.config.imageProcessing !== undefined) {
         if (!props.processImage) throw new TypeError('Image processor is unavailable.')
@@ -87,8 +97,7 @@ export function useFormAttachments<I>(props: {
           props.config.imageProcessing,
           active.controller.signal,
         )
-        if (processed === null || active.controller.signal.aborted || request !== active)
-          return false
+        if (processed === null || isCancelled()) return false
         if (maxSize !== undefined && processed.size > maxSize)
           throw new TypeError('Processed image exceeds the attachment limit.')
         file = processed
@@ -96,10 +105,10 @@ export function useFormAttachments<I>(props: {
       const attachment = await formPresentation(form).attachmentSource(props.config.source)(file, {
         signal: active.controller.signal,
         field: binding.name,
+        originalFile: selected,
       })
       if (
-        active.controller.signal.aborted ||
-        request !== active ||
+        isCancelled() ||
         !sameDraftValue(binding.value, active.value) ||
         formPresentation(form).generation.value !== generation ||
         isDisposed()

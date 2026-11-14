@@ -140,6 +140,7 @@ export async function verifyFormAttachments(copy: UiFormCopy): Promise<void> {
   let finishCrop: ((value: File | null) => void) | undefined
   let cropSignal: AbortSignal | undefined
   let uploads = 0
+  let sourceOriginal: File | undefined
   const mediaState = mediaScope.run(() => {
     const config = {
       kind: 'attachment',
@@ -177,7 +178,8 @@ export async function verifyFormAttachments(copy: UiFormCopy): Promise<void> {
       },
       attachments: {
         photos: {
-          upload: (selected, { signal }) => {
+          upload: (selected, { signal, originalFile }) => {
+            sourceOriginal = originalFile
             signal.throwIfAborted()
             uploads++
             return Promise.resolve({ id: 'uploaded', name: selected.name })
@@ -214,12 +216,29 @@ export async function verifyFormAttachments(copy: UiFormCopy): Promise<void> {
   assert.equal(mediaState.mediaSession.failed.value, false)
   assert.equal(uploads, 0)
   assert.deepEqual(mediaState.mediaForm.getValue('photo'), [{ id: 'kept', name: 'kept.png' }])
+  let resolvePicker: ((value: File | null) => void) | undefined
+  let pickerSignal: AbortSignal | undefined
+  const picked = mediaState.mediaSession.choose((signal) => {
+    pickerSignal = signal
+    return new Promise((resolve) => {
+      resolvePicker = resolve
+    })
+  })
+  assert.equal(mediaState.mediaForm.hasPendingInput.value, true)
+  mediaState.mediaForm.reset()
+  assert.equal(pickerSignal?.aborted, true)
+  resolvePicker?.(file)
+  assert.equal(await picked, false, 'stale file picker must not open crop or upload')
+  assert.equal(uploads, 0)
+  assert.equal(await mediaState.mediaSession.choose(() => Promise.resolve(null)), false)
+  assert.equal(mediaState.mediaSession.failed.value, false, 'picker cancellation is not failure')
   const largeOriginal = new File(['x'.repeat(30)], 'original.png', { type: 'image/png' })
   const completedCrop = mediaState.mediaSession.choose(largeOriginal)
   assert.equal(cropSignal?.aborted, false)
   finishCrop?.(file)
   assert.equal(await completedCrop, true)
   assert.equal(uploads, 1)
+  assert.equal(sourceOriginal, largeOriginal, 'upload retains transient original metadata')
   assert.equal(mediaState.mediaForm.hasPendingInput.value, false)
   const oversizedOutput = mediaState.mediaSession.choose(largeOriginal)
   finishCrop?.(new File(['x'.repeat(21)], 'still-large.png', { type: 'image/png' }))

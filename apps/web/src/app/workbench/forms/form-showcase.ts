@@ -121,7 +121,7 @@ export const formCapabilities = {
     hint: 'formShowcase.validationHint',
     purpose: 'formShowcase.validationPurpose',
     try: 'formShowcase.validationTry',
-    api: 'rules · validation · validate · setValues · reset · nodeLabel · canFocusField · focusField',
+    api: 'rules · validation · validate · validateFields · resetFields · clearErrors · setValues · reset · nodeLabel · canFocusField · focusField',
     boundary: 'formShowcase.validationBoundary',
     controls: 'formShowcase.validationScenario',
     sources: ['apps/web/src/pages/component-form-validation.vue'],

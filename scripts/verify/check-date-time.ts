@@ -1,3 +1,10 @@
+import {
+  formatDateInput,
+  parseDateInput,
+  naiveDateFormat,
+  naiveTimeFormat,
+} from '../../packages/ui/src/adapters/naive/pavp-naive-date-time'
+import { createClockRuntime } from '../../packages/ui/src/date-time/clock-runtime'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { useDateTimeStore } from '../../apps/web/src/app/date-time/date-time.store'
@@ -15,6 +22,103 @@ import {
 import { parseUiTableSchema } from '../../packages/ui/src/components/table-schema'
 import { resolveTableColumnDisplay } from '../../packages/ui/src/components/table-column-display'
 export function verifyDateTime(): void {
+  for (const [dateFormat, expected] of [
+    ['ymd', '2026-11-23'],
+    ['dmy', '23/11/2026'],
+    ['mdy', '11/23/2026'],
+    ['locale', '11/23/2026'],
+  ] as const) {
+    const policy = {
+      locale: 'en-US',
+      timeZone: 'America/New_York',
+      hourCycle: 'h12',
+      dateFormat,
+    } as const
+    assert.equal(formatDateInput('2026-11-23', policy), expected)
+    assert.equal(parseDateInput(expected, policy), '2026-11-23')
+    assert.equal(parseDateInput('2026-11-23', policy), '2026-11-23')
+    assert.equal(parseDateInput('2026-02-30', policy), null)
+    assert.equal(parseDateInput('23/', policy), null)
+    assert.equal(naiveTimeFormat(policy), 'hh:mm:ss a')
+  }
+  assert.equal(
+    formatDateInput('2026-01-01', { locale: 'zh-CN', timeZone: 'America/New_York' }),
+    '2026/01/01',
+  )
+  assert.equal(
+    parseDateInput('01/02/2026', { locale: 'en-US', timeZone: 'UTC', dateFormat: 'dmy' }),
+    '2026-02-01',
+  )
+  assert.equal(
+    parseDateInput('01/02/2026', { locale: 'en-US', timeZone: 'UTC', dateFormat: 'mdy' }),
+    '2026-01-02',
+  )
+  assert.equal(
+    naiveDateFormat({ locale: 'en-US', timeZone: 'UTC', dateFormat: 'dmy' }),
+    "dd'/'MM'/'yyyy",
+  )
+  assert.equal(naiveTimeFormat(undefined), 'HH:mm:ss')
+
+  // A single shared timer serves two precisions, pauses while hidden and releases all listeners.
+  let time = 0
+  let hidden = false
+  let scheduled: (() => void) | undefined
+  let delay = 0
+  let visibility: (() => void) | undefined
+  let activeTimers = 0
+  const runtime = createClockRuntime({
+    now: () => time,
+    hidden: () => hidden,
+    schedule(callback, timeout) {
+      activeTimers += 1
+      assert.equal(activeTimers, 1)
+      delay = timeout
+      scheduled = () => {
+        activeTimers -= 1
+        scheduled = undefined
+        callback()
+      }
+      return () => {
+        if (scheduled) {
+          activeTimers -= 1
+          scheduled = undefined
+        }
+      }
+    },
+    listen(callback) {
+      visibility = callback
+      return () => {
+        visibility = undefined
+      }
+    },
+  })
+  const seconds: number[] = []
+  const minutes: number[] = []
+  const stopSecond = runtime.subscribe(1000, (now) => seconds.push(now))
+  const stopMinute = runtime.subscribe(60000, (now) => minutes.push(now))
+  assert.equal(delay, 1000)
+  time = 1000
+  scheduled?.()
+  assert.deepEqual(seconds, [0, 1000])
+  assert.deepEqual(minutes, [0])
+  hidden = true
+  visibility?.()
+  assert.equal(activeTimers, 0)
+  time = 120000
+  hidden = false
+  visibility?.()
+  assert.equal(seconds.at(-1), 120000)
+  assert.equal(minutes.at(-1), 120000)
+  time = 110000
+  scheduled?.()
+  assert.equal(seconds.at(-1), 110000, 'Wall-clock rollback must not freeze updates.')
+  assert.equal(minutes.at(-1), 110000)
+  stopSecond()
+  assert.equal(delay, 60000)
+  stopMinute()
+  assert.equal(activeTimers, 0)
+  assert.equal(visibility, undefined)
+
   assert.equal(
     dateTimeSettingsSchema.safeParse({ timeZone: 'system', hourCycle: 'h23' }).success,
     true,
@@ -49,13 +153,21 @@ export function verifyDateTime(): void {
       return { status: 'saved' }
     },
   }
-  const dispose = store.initialize(port, { timeZone: 'Asia/Shanghai', hourCycle: 'h23' })
+  const dispose = store.initialize(port, {
+    timeZone: 'Asia/Shanghai',
+    hourCycle: 'h23',
+    dateFormat: 'locale',
+  })
   assert.equal(store.preference.timeZone, 'Asia/Shanghai')
   store.update({ schemaVersion: 1, timeZone: 'America/New_York', hourCycle: 'h12' })
   assert.equal(store.preference.timeZone, 'America/New_York')
   assert.equal(store.persistenceFailed, false)
   const second = useDateTimeStore(piniaLibrary.createPinia())
-  const disposeSecond = second.initialize(port, { timeZone: 'UTC', hourCycle: 'h23' })
+  const disposeSecond = second.initialize(port, {
+    timeZone: 'UTC',
+    hourCycle: 'h23',
+    dateFormat: 'locale',
+  })
   assert.equal(
     second.preference.timeZone,
     'America/New_York',
@@ -68,10 +180,14 @@ export function verifyDateTime(): void {
   second.update({ schemaVersion: 1, timeZone: 'Europe/London', hourCycle: 'h23' })
   assert.equal(second.persistenceFailed, true)
   writable = true
-  record = { status: 'found', preference: { schemaVersion: 1, timeZone: 'UTC', hourCycle: 'h12' } }
+  record = {
+    status: 'found',
+    preference: { schemaVersion: 1, timeZone: 'UTC', hourCycle: 'h12', dateFormat: 'ymd' },
+  }
   callback?.()
   assert.equal(second.persistenceFailed, false)
   assert.equal(second.preference.hourCycle, 'h12')
+  assert.equal(second.preference.dateFormat, 'ymd')
   second.update({ schemaVersion: 1, timeZone: 'Invalid/Zone', hourCycle: 'h12' })
   assert.equal(second.preference.timeZone, 'UTC')
   disposeSecond()
@@ -96,6 +212,31 @@ export function verifyDateTime(): void {
     ),
     null,
   )
+  assert.equal(
+    formatUiDateTime({ kind: 'date', value: '2026-07-21' }, { ...shanghai, dateFormat: 'ymd' }),
+    '2026-07-21',
+  )
+  assert.equal(
+    formatUiDateTime({ kind: 'date', value: '2026-07-21' }, { ...shanghai, dateFormat: 'dmy' }),
+    '21/07/2026',
+  )
+  assert.equal(
+    formatUiDateTime({ kind: 'date', value: '2026-07-21' }, { ...shanghai, dateFormat: 'mdy' }),
+    '07/21/2026',
+  )
+  assert.equal(
+    unchecked({ kind: 'date', value: '2026-07-21' }, { ...shanghai, dateFormat: 'bad' }),
+    null,
+  )
+  for (const timeZone of ['UTC', 'America/New_York', 'Pacific/Kiritimati']) {
+    assert.equal(
+      formatUiDateTime(
+        { kind: 'date', value: '2026-07-21' },
+        { ...shanghai, timeZone, dateFormat: 'ymd' },
+      ),
+      '2026-07-21',
+    )
+  }
   const ny = { ...shanghai, timeZone: 'America/New_York' }
   const sample = { kind: 'instant', value: '2026-01-01T00:30:00Z' } as const
   assert.equal(formatUiDateTime(sample, shanghai), '01/01/2026, 08:30:00')

@@ -2,6 +2,7 @@
 import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
+import { NCard } from 'naive-ui/es/card'
 import { NRadioGroup, NRadioButton } from 'naive-ui/es/radio'
 import {
   UiG2Chart,
@@ -10,15 +11,27 @@ import {
   useUiDateTime,
   type UiG2ChartOptions,
 } from '@platform/ui'
-import type { DashboardPanel } from '../../dashboard/dashboard-contract'
+import {
+  dashboardDestinationLabels,
+  defaultDashboardDestinations,
+  type DashboardDestination,
+  type DashboardPanel,
+  type DashboardTone,
+} from '../../dashboard/dashboard-contract'
 import { useConsoleI18n } from '../../../shared/i18n'
-import { useApplicationNavigation } from '../../router/application-navigation'
+import { useDashboardActionTheme } from './use-dashboard-action-theme'
+import {
+  useApplicationNavigation,
+  useApplicationLinkActivation,
+} from '../../router/application-navigation'
 import { registeredRouteDestination } from '../../router/route-input'
-const props = defineProps<{ readonly panel: DashboardPanel; readonly editing: boolean }>()
+const props = defineProps<{ readonly panel: DashboardPanel; readonly tone: DashboardTone }>()
 const emit = defineEmits<{ update: [panel: DashboardPanel] }>()
 const { t } = useConsoleI18n()
+const actionTheme = useDashboardActionTheme()
 const dateTime = useUiDateTime()
 const navigation = useApplicationNavigation()
+const activate = useApplicationLinkActivation()
 const now = ref(Date.now())
 const revision = ref(0)
 let timer: ReturnType<typeof setInterval> | undefined
@@ -69,22 +82,40 @@ const date = computed(() =>
       )
     : '—',
 )
-const chart = computed<UiG2ChartOptions>(() => ({
-  type:
-    props.panel.type === 'chart' && props.panel.config.series === 'delivery' ? 'interval' : 'area',
-  data: Array.from({ length: 7 }, (_, index) => ({
+const chart = computed<UiG2ChartOptions>(() => {
+  const data = Array.from({ length: 7 }, (_, index) => ({
     day: String(index + 1),
     value: ([24, 36, 29, 52, 43, 64, 58][index] ?? 0) + revision.value * ((index % 3) + 1),
-  })),
-  encode: { x: 'day', y: 'value' },
-  axis: { x: { title: false }, y: { title: false } },
-  tooltip: { title: 'day', items: [{ field: 'value', name: t('dashboardBoard.value') }] },
-}))
-const links = [
-  { route: 'component-form-overview', label: 'dashboard.forms', icon: 'i-lucide-list-checks' },
-  { route: 'component-table-overview', label: 'dashboard.tables', icon: 'i-lucide-table-2' },
-  { route: 'component-charts', label: 'dashboard.charts', icon: 'i-lucide-chart-no-axes-combined' },
-] as const
+  }))
+  const shared = {
+    data,
+    encode: { x: 'day', y: 'value' },
+    axis: { x: { title: false }, y: { title: false } },
+    tooltip: { title: 'day', items: [{ field: 'value', name: t('dashboardBoard.chartValue') }] },
+  }
+  if (props.panel.type === 'chart' && props.panel.config.series === 'delivery')
+    return { ...shared, type: 'interval', style: { opacity: 1 }, animate: { enter: false } }
+  // The card owns entrance. Repeated initial size/theme paints must not replay a mark reveal.
+  // Keep native data-update transitions and inherit the resolved theme palette for both marks.
+  return {
+    ...shared,
+    type: 'view',
+    children: [
+      {
+        type: 'area',
+        style: { fillOpacity: 0.18, opacity: 1 },
+        tooltip: false,
+        animate: { enter: false },
+      },
+      { type: 'line', style: { lineWidth: 2, opacity: 1 }, animate: { enter: false } },
+    ],
+  }
+})
+const destinations = computed<readonly DashboardDestination[]>(() =>
+  props.panel.type === 'capabilities'
+    ? (props.panel.config.destinations ?? defaultDashboardDestinations)
+    : [],
+)
 function note(text: string): void {
   if (props.panel.type === 'notes') emit('update', { ...props.panel, config: { text } })
 }
@@ -106,33 +137,34 @@ function series(value: string | number | boolean): void {
         :aria-label="t('dashboardBoard.series')"
         @update:value="series"
       >
-        <NRadioButton value="traffic">
+        <NRadioButton
+          class="wb-dashboard-choice"
+          value="traffic"
+        >
           {{ t('dashboardBoard.trend') }}
         </NRadioButton>
-        <NRadioButton value="delivery">
+        <NRadioButton
+          class="wb-dashboard-choice"
+          value="delivery"
+        >
           {{ t('dashboardBoard.compare') }}
         </NRadioButton>
       </NRadioGroup>
       <NButton
         size="small"
+        type="primary"
         quaternary
+        :theme-overrides="actionTheme"
         @click="revision = (revision + 1) % 5"
       >
         {{ t('dashboardBoard.updateSample') }}
       </NButton>
     </div>
-    <div class="flex-1 min-h-0">
-      <UiScrollArea
-        :owner-id="`dashboard-chart-${panel.id}`"
-        contained
-      >
-        <div class="wb-dashboard-chart">
-          <UiG2Chart
-            :options="chart"
-            :label="t('dashboardBoard.sample')"
-          />
-        </div>
-      </UiScrollArea>
+    <div class="flex-1 min-h-0 min-w-0">
+      <UiG2Chart
+        :options="chart"
+        :label="t('dashboardBoard.sample')"
+      />
     </div>
     <p class="m-0 shrink-0 text-caption text-text-secondary">
       {{ t('dashboardBoard.sample') }}
@@ -146,8 +178,9 @@ function series(value: string | number | boolean): void {
       type="textarea"
       :value="panel.config.text"
       :maxlength="500"
-      show-count
-      :placeholder="t('dashboardBoard.notePlaceholder')"
+      :resizable="false"
+      :input-props="{ 'aria-label': t('dashboardBoard.notes') }"
+      :placeholder="t('dashboardBoard.notesEmpty')"
       :aria-label="t('dashboardBoard.notes')"
       class="h-full min-h-0"
       @update:value="note"
@@ -160,39 +193,69 @@ function series(value: string | number | boolean): void {
   >
     <div
       v-if="panel.type === 'clock'"
-      class="grid gap-content-gap"
+      class="flex flex-col gap-component-unit"
     >
-      <span class="text-caption text-text-secondary">{{ dateTime?.timeZone }}</span>
-      <strong class="tabular-nums text-expression-accent-a-foreground text-title">{{
-        time
-      }}</strong>
-      <span class="text-body text-text-secondary">{{ date }}</span>
+      <strong
+        class="tabular-nums text-title"
+        :class="{
+          'text-expression-accent-a-soft-foreground': tone === 'accent-a',
+          'text-expression-accent-b-soft-foreground': tone === 'accent-b',
+          'text-text-primary': tone !== 'accent-a' && tone !== 'accent-b',
+        }"
+        v-text="time"
+      />
+      <div class="flex flex-wrap items-center gap-component-unit text-caption text-text-secondary">
+        <span>{{ date }}</span>
+        <span>{{ dateTime?.timeZone }}</span>
+      </div>
     </div>
     <div
       v-else
-      class="grid gap-component-unit"
+      class="wb-dashboard-shortcuts grid min-w-0 gap-component-unit"
     >
-      <NButton
-        v-for="link in links"
-        :key="link.route"
-        secondary
-        block
-        @click="navigation.navigate(registeredRouteDestination({ name: link.route }))"
+      <NCard
+        v-for="destination in destinations"
+        :key="destination"
+        tag="a"
+        :href="navigation.resolveHref(registeredRouteDestination({ name: destination }))"
+        size="small"
+        :bordered="false"
+        hoverable
+        class="wb-link min-w-0"
+        @click="activate($event, registeredRouteDestination({ name: destination }))"
       >
-        <template #icon>
+        <span class="flex min-w-0 w-full items-center justify-between gap-content-gap">
+          <span class="flex min-w-0 items-center gap-component-unit">
+            <span
+              :class="{
+                'i-lucide-list-checks': destination === 'component-form-overview',
+                'i-lucide-table-2': destination === 'component-table-overview',
+                'i-lucide-chart-no-axes-combined': destination === 'component-charts',
+                'i-lucide-radio-tower': destination === 'api-overview',
+                'i-lucide-boxes': destination === 'component-showcase',
+                'i-lucide-palette': destination === 'workbench-colors',
+                'i-lucide-sparkles': destination === 'workbench-motion',
+                'i-lucide-calendar-clock': destination === 'workbench-date-time',
+              }"
+              class="shrink-0 text-text-secondary"
+              aria-hidden="true"
+            />
+            <strong class="text-body text-text-primary">{{
+              t(dashboardDestinationLabels[destination])
+            }}</strong>
+          </span>
           <span
-            :class="
-              link.route === 'component-form-overview'
-                ? 'i-lucide-list-checks'
-                : link.route === 'component-table-overview'
-                  ? 'i-lucide-table-2'
-                  : 'i-lucide-chart-no-axes-combined'
-            "
+            class="i-lucide-arrow-up-right shrink-0 text-text-secondary"
             aria-hidden="true"
           />
-        </template>
-        {{ t(link.label) }}
-      </NButton>
+        </span>
+      </NCard>
+      <p
+        v-if="destinations.length === 0"
+        class="m-0 text-body text-text-secondary"
+      >
+        {{ t('dashboardBoard.noDestinations') }}
+      </p>
     </div>
   </UiScrollArea>
 </template>
