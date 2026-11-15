@@ -170,6 +170,14 @@ const entranceOverrides = computed(
 function closeContext(): void {
   context.value = null
 }
+function finishEditing(): void {
+  editing.value = false
+  void nextTick(() =>
+    dashboardViewport.value
+      ?.closest<HTMLElement>('[data-dashboard-context-host]')
+      ?.focus({ preventScroll: true }),
+  )
+}
 function isInteractiveContextTarget(target: EventTarget | null): boolean {
   return (
     target instanceof Element &&
@@ -233,7 +241,7 @@ function contextAction(
       editing.value = true
       break
     case 'finish':
-      editing.value = false
+      finishEditing()
       break
     case 'remove':
       if (cardId) {
@@ -766,7 +774,7 @@ const announcement = computed(() => {
       v-text="announcement"
     />
     <footer
-      v-if="board.readFailure.value || board.failure.value"
+      v-if="editing || board.readFailure.value || board.failure.value"
       class="flex shrink-0 flex-wrap items-center gap-component-unit"
     >
       <template v-if="board.readFailure.value">
@@ -801,6 +809,16 @@ const announcement = computed(() => {
         @click="board.retry"
       >
         {{ t('dashboardBoard.saveFailed') }}
+      </NButton>
+      <NButton
+        v-if="editing"
+        class="ml-auto"
+        :theme-overrides="actionTheme"
+        type="primary"
+        size="small"
+        @click="finishEditing"
+      >
+        {{ t('dashboardBoard.finish') }}
       </NButton>
     </footer>
     <Transition
