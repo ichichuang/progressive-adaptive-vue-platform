@@ -16,6 +16,7 @@
   "workspace.label": "工作区",
   "workspace.previousLabel": "上一个标签",
   "workspace.nextLabel": "下一个标签",
+  "workspace.overflowLabel": "全部标签",
   "workspace.refreshLabel": "刷新",
   "shell.consoleTitle": "开发者工作台",
   "shell.navigationLabel": "工作台导航",

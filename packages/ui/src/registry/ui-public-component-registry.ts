@@ -456,6 +456,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           defaultValue: null,
         }),
         Object.freeze({ name: 'nextLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'overflowLabel',
+          type: 'string',
+          required: true,
+          defaultValue: null,
+        }),
         Object.freeze({ name: 'refreshLabel', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'closeLabel', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'panelId', type: 'string', required: true, defaultValue: null }),

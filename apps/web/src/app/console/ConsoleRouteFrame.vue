@@ -709,6 +709,7 @@ async function navigate(routeName: string): Promise<void> {
         :label="t('workspace.label')"
         :previous-label="t('workspace.previousLabel')"
         :next-label="t('workspace.nextLabel')"
+        :overflow-label="t('workspace.overflowLabel')"
         :refresh-label="t('workspace.refreshLabel')"
         :close-label="t('shell.closeActionLabel')"
         panel-id="pavp-workspace-panel"

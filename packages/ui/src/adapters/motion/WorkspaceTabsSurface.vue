@@ -6,6 +6,7 @@ import {
   type HTMLAttributes,
   type TransitionProps,
   computed,
+  h,
   inject,
   nextTick,
   onBeforeUnmount,
@@ -66,6 +67,7 @@ const props = defineProps<{
   readonly label: string
   readonly previousLabel: string
   readonly nextLabel: string
+  readonly overflowLabel: string
   readonly refreshLabel: string
   readonly closeLabel: string
   readonly panelId: string
@@ -100,10 +102,17 @@ function connectScrollController(controller: UiScrollController | null): void {
   if (controller === null || !initialReveal) return
   initialReveal = false
   const button = props.activeId === null ? null : findTabButton(props.activeId)
-  if (button !== null) revealTab(button, 'instant')
+  if (button !== null) revealTab(button, 'instant', 'center')
 }
 const groupId = `pavp-workspace-${useId()}`
 const menuId = `${groupId}-menu`
+const overflowButtonId = `${groupId}-overflow`
+const overflowAnchor = ref({ open: false, x: 0, y: 0 })
+let overflowCaller: HTMLElement | null = null
+const overflowing = ref(false)
+function closeOverflowMenu(): void {
+  if (overflowAnchor.value.open) overflowAnchor.value = { ...overflowAnchor.value, open: false }
+}
 let contextCaller: HTMLElement | null = null
 const contextMenu = ref<{ readonly id: string | null; readonly x: number; readonly y: number }>({
   id: null,
@@ -133,6 +142,67 @@ const contextOptions = computed<DropdownOption[]>(() => [
     },
   },
 ])
+function overflowOption(item: UiWorkspaceTab): DropdownOption {
+  return {
+    key: item.id,
+    label: () =>
+      h('span', { class: 'pavp-workspace-tabs-overflow__row' }, [
+        h('span', { class: 'pavp-workspace-tabs-overflow__name' }, item.label),
+        item.closable
+          ? h(
+              'button',
+              {
+                type: 'button',
+                class: 'pavp-workspace-tabs-overflow__close',
+                'aria-label': item.closeLabel,
+                onClick: (event: MouseEvent) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  closeOverflowTab(item.id)
+                },
+              },
+              [
+                h('span', {
+                  class: 'i-lucide-x pavp-workspace-tabs-overflow__icon',
+                  'aria-hidden': 'true',
+                }),
+              ],
+            )
+          : null,
+      ]),
+    ...(item.id === props.activeId
+      ? {
+          icon: () =>
+            h('span', {
+              class: 'i-lucide-check pavp-workspace-tabs-overflow__icon',
+              'aria-hidden': 'true',
+            }),
+        }
+      : {}),
+    props: {
+      role: 'menuitem',
+      tabindex: -1,
+      'data-tab-id': item.id,
+      class: item.id === props.activeId ? 'pavp-workspace-tabs-overflow__current' : undefined,
+    } as HTMLAttributes,
+  }
+}
+const overflowOptions = computed<DropdownOption[]>(() => props.items.map(overflowOption))
+const menuOptions = computed<DropdownOption[]>(() =>
+  overflowAnchor.value.open ? overflowOptions.value : contextOptions.value,
+)
+const menuVisible = computed(() => contextMenu.value.id !== null || overflowAnchor.value.open)
+const menuX = computed(() =>
+  contextMenu.value.id !== null ? contextMenu.value.x : overflowAnchor.value.x,
+)
+const menuY = computed(() =>
+  contextMenu.value.id !== null ? contextMenu.value.y : overflowAnchor.value.y,
+)
+const menuLabelledBy = computed(() => {
+  if (contextMenu.value.id !== null) return `${contextMenu.value.id}-tab`
+  if (overflowAnchor.value.open) return overflowButtonId
+  return undefined
+})
 function closeContextMenu(): void {
   // Keep the anchor stable while the dropdown finishes its leave transition.
   if (contextMenu.value.id !== null) contextMenu.value = { ...contextMenu.value, id: null }
@@ -148,6 +218,7 @@ function findTabButton(id: string): HTMLElement | null {
 function openContextMenu(id: string, x: number, y: number, caller?: HTMLElement): void {
   const button = findTabButton(id)
   if (button === null || !props.items.some((item) => item.id === id)) return
+  closeOverflowMenu()
   contextCaller = caller ?? button
   contextMenu.value = { id, x, y }
 }
@@ -188,21 +259,41 @@ async function handleContextMenuKeydown(id: string, event: KeyboardEvent): Promi
   const menu = document.getElementById(menuId)
   if (menu !== null) (contextMenuOptions(menu)[0] ?? menu).focus({ preventScroll: true })
 }
+function restoreOverflowCaller(): void {
+  if (overflowCaller?.isConnected === true && overflowCaller.closest('[inert]') === null)
+    overflowCaller.focus({ preventScroll: true })
+}
 function handleMenuKeydown(event: KeyboardEvent): void {
   if (event.defaultPrevented || isComposingKey(event)) return
   const menu = event.currentTarget
-  if (!(menu instanceof HTMLElement) || contextMenu.value.id === null) return
+  const contextOpen = contextMenu.value.id !== null
+  const overflowOpen = overflowAnchor.value.open
+  if (!(menu instanceof HTMLElement) || (!contextOpen && !overflowOpen)) return
   if (event.key === 'Tab') {
     // Resume native traversal at the caller, not at the teleported overlay root.
-    restoreContextCaller()
+    if (overflowOpen) restoreOverflowCaller()
+    else restoreContextCaller()
     closeContextMenu()
+    closeOverflowMenu()
     return
   }
   if (event.key === 'Escape') {
     event.preventDefault()
     event.stopPropagation()
-    restoreContextCaller()
+    if (overflowOpen) restoreOverflowCaller()
+    else restoreContextCaller()
     closeContextMenu()
+    closeOverflowMenu()
+    return
+  }
+  if (overflowOpen && (event.key === 'Delete' || event.key === 'Backspace')) {
+    const current = document.activeElement
+    const id = current instanceof HTMLElement ? current.dataset['tabId'] : undefined
+    const item = id === undefined ? undefined : props.items.find((entry) => entry.id === id)
+    if (!item?.closable) return
+    event.preventDefault()
+    event.stopPropagation()
+    closeOverflowTab(item.id)
     return
   }
   const options = contextMenuOptions(menu)
@@ -246,6 +337,7 @@ function dismissContextMenu(event?: MouseEvent): void {
   )
     return
   closeContextMenu()
+  closeOverflowMenu()
 }
 function selectContextAction(key: string | number): void {
   const item = contextItem.value
@@ -255,6 +347,57 @@ function selectContextAction(key: string | number): void {
   if (key === 'refresh' && item.refreshable) emit('refresh', item.id)
   else if (key === 'close' && item.closable) emit('close', item.id)
 }
+function closeOverflowTab(id: string): void {
+  emit('close', id)
+  void nextTick(() => {
+    if (!overflowAnchor.value.open) return
+    const menu = document.getElementById(menuId)
+    const option = menu?.querySelector<HTMLElement>('[role="menuitem"]')
+    if (option !== null && option !== undefined) option.focus({ preventScroll: true })
+    else restoreOverflowCaller()
+  })
+}
+function openOverflowFromKey(event: KeyboardEvent): void {
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  openOverflowMenu(event)
+}
+function openOverflowMenu(event: MouseEvent | KeyboardEvent): void {
+  const target =
+    event.currentTarget instanceof HTMLElement
+      ? event.currentTarget
+      : event.target instanceof Element
+        ? event.target.closest('button')
+        : null
+  if (target === null || !overflowing.value) return
+  event.preventDefault()
+  event.stopPropagation()
+  closeContextMenu()
+  const bounds = target.getBoundingClientRect()
+  overflowCaller = target
+  const point = { x: bounds.left + bounds.width / 2, y: bounds.bottom }
+  // Open after the triggering click so the menu's outside-press does not close it immediately.
+  void nextTick(() => {
+    if (overflowCaller !== target || !overflowing.value) return
+    overflowAnchor.value = { open: true, ...point }
+    void nextTick(() => {
+      if (!overflowAnchor.value.open) return
+      document
+        .getElementById(menuId)
+        ?.querySelector<HTMLElement>('[role="menuitem"]')
+        ?.focus({ preventScroll: true })
+    })
+  })
+}
+function selectMenuAction(key: string | number): void {
+  if (!overflowAnchor.value.open) {
+    selectContextAction(key)
+    return
+  }
+  const id = String(key)
+  restoreOverflowCaller()
+  closeOverflowMenu()
+  if (props.items.some((item) => item.id === id)) emit('activate', id)
+}
 watch(
   contextItem,
   (item) => {
@@ -262,8 +405,15 @@ watch(
   },
   { flush: 'sync' },
 )
-watch(() => props.activeId, closeContextMenu, { flush: 'sync' })
-onBeforeUnmount(closeContextMenu)
+function dismissOpenMenus(): void {
+  closeContextMenu()
+  closeOverflowMenu()
+}
+watch(overflowing, (value) => {
+  if (!value) closeOverflowMenu()
+})
+watch(() => props.activeId, dismissOpenMenus, { flush: 'sync' })
+onBeforeUnmount(dismissOpenMenus)
 const { dispose, features, featureReady, startAfterStableMount } = createMotionFeatureRuntime()
 const policy = computed(() => projectMotionPolicy(props.motion, featureReady.value))
 const full = computed(() => policy.value.movement)
@@ -276,6 +426,14 @@ const edgeSurfaceVariants = projectMotionPolicy('none').workspace.edgeSurfaceVar
 const tabSurfaceVariants = computed(() => policy.value.workspace.tabSurfaceVariants)
 const edgeGestures = projectMotionPolicy('none').workspace.edgeGestures
 const edgeMarkVariants = computed(() => policy.value.workspace.edgeMarkVariants)
+const indicator = ref<{ readonly x: number; readonly width: number } | null>(null)
+const indicatorAnimated = ref(false)
+let indicatorGeneration = 0
+let geometryObserver: ResizeObserver | undefined
+const indicatorTransition = computed(() => {
+  if (!indicatorAnimated.value || !full.value) return { duration: 0 }
+  return transition.value.layout ?? { duration: transition.value.duration }
+})
 const interruption = createMotionInterruptionOwner(() => policy.value)
 watch(
   () => props.motion,
@@ -285,6 +443,93 @@ watch(
   { flush: 'sync' },
 )
 
+function measureIndicator(): { readonly x: number; readonly width: number } | null {
+  const root = strip.value
+  const id = props.activeId
+  if (root === undefined || id === null) return null
+  const button = findTabButton(id)
+  const item = button?.closest<HTMLElement>('.pavp-workspace-tabs__item') ?? null
+  if (item === null || !root.contains(item)) return null
+  const rootBox = root.getBoundingClientRect()
+  const itemBox = item.getBoundingClientRect()
+  if (itemBox.width < 1 || rootBox.width < 1) return null
+  const rtl = getComputedStyle(root).direction === 'rtl'
+  // Strip and tab share scroll, sidebar, and font-scale movement, so this delta stays on the tab.
+  const x = rtl ? itemBox.right - rootBox.right : itemBox.left - rootBox.left
+  return { x, width: itemBox.width }
+}
+function syncIndicator(animated: boolean): void {
+  const next = measureIndicator()
+  const generation = ++indicatorGeneration
+  if (next === null && props.activeId !== null) return
+  if (next === null) {
+    indicatorAnimated.value = false
+    indicator.value = null
+    return
+  }
+  const current = indicator.value
+  const moved =
+    current !== null &&
+    (Math.abs(current.x - next.x) > 0.5 || Math.abs(current.width - next.width) > 0.5)
+  const slide = animated && moved && full.value
+  indicatorAnimated.value = slide
+  indicator.value = next
+  if (!slide) return
+  const layout = transition.value.layout
+  const windowMs =
+    layout !== undefined && 'visualDuration' in layout ? layout.visualDuration * 1000 + 40 : 200
+  window.setTimeout(() => {
+    if (generation !== indicatorGeneration) return
+    const settled = measureIndicator()
+    if (settled === null) return
+    indicatorAnimated.value = false
+    indicator.value = settled
+  }, windowMs)
+}
+function tabScrollport(): HTMLElement | undefined {
+  return viewport.value?.querySelector<HTMLElement>('.pavp-scroll-area__viewport') ?? viewport.value
+}
+function measureOverflow(): void {
+  const port = tabScrollport()
+  overflowing.value = port !== undefined && port.scrollWidth - port.clientWidth > 1
+}
+function revealTab(
+  button: HTMLElement,
+  behavior: 'smooth' | 'instant' = 'smooth',
+  placement: 'center' | 'contain' = 'contain',
+): void {
+  const owner = tabScrollport()
+  const item = button.closest<HTMLElement>('.pavp-workspace-tabs__item')
+  if (owner === undefined || item === null || strip.value?.contains(item) !== true) return
+  const bounds = owner.getBoundingClientRect()
+  const target = item.getBoundingClientRect()
+  const rtl = getComputedStyle(owner).direction === 'rtl'
+  let delta = 0
+  if (placement === 'center' && target.width <= bounds.width)
+    delta = target.left + target.width / 2 - (bounds.left + bounds.width / 2)
+  else if (target.width > bounds.width)
+    delta = rtl ? target.right - bounds.right : target.left - bounds.left
+  else if (target.left < bounds.left) delta = target.left - bounds.left
+  else if (target.right > bounds.right) delta = target.right - bounds.right
+  if (Math.abs(delta) >= 1) scrollController?.scrollBy({ left: delta, behavior })
+}
+function observeGeometry(): void {
+  geometryObserver ??= new ResizeObserver(() => {
+    syncIndicator(false)
+    measureOverflow()
+    const id = props.activeId
+    const button = id === null ? null : findTabButton(id)
+    if (button !== null) revealTab(button, 'instant', 'contain')
+  })
+  geometryObserver.disconnect()
+  const port = tabScrollport()
+  if (port !== undefined) geometryObserver.observe(port)
+  if (strip.value !== undefined) {
+    geometryObserver.observe(strip.value)
+    for (const item of strip.value.querySelectorAll<HTMLElement>('.pavp-workspace-tabs__item'))
+      geometryObserver.observe(item)
+  }
+}
 function setStrip(value: unknown): void {
   interruption.bind('strip', value)
   strip.value =
@@ -294,6 +539,11 @@ function setStrip(value: unknown): void {
     value.$el instanceof HTMLElement
       ? value.$el
       : undefined
+  void nextTick(() => {
+    observeGeometry()
+    syncIndicator(false)
+    measureOverflow()
+  })
 }
 function retireTab(element: Element): void {
   if (element instanceof HTMLElement) element.inert = true
@@ -303,27 +553,17 @@ function revealEnteringTab(element: Element): void {
 }
 onMounted(() => {
   void startAfterStableMount()
+  void nextTick(() => {
+    observeGeometry()
+    syncIndicator(false)
+    measureOverflow()
+  })
 })
 onBeforeUnmount(() => {
+  geometryObserver?.disconnect()
   interruption.dispose(projectMotionPolicy('none'))
   dispose()
 })
-
-function revealTab(button: HTMLElement, behavior: 'smooth' | 'instant' = 'smooth'): void {
-  const owner = viewport.value
-  const item = button.closest<HTMLElement>('.pavp-workspace-tabs__item')
-  if (owner === undefined || item === null || strip.value?.contains(item) !== true) return
-  const bounds = owner.getBoundingClientRect()
-  // Reveal the complete tab, including its separate close target.
-  const target = item.getBoundingClientRect()
-  const offset =
-    target.left < bounds.left
-      ? target.left - bounds.left
-      : target.right > bounds.right
-        ? target.right - bounds.right
-        : 0
-  if (offset !== 0) scrollController?.scrollBy({ left: offset, behavior })
-}
 
 function focusTab(id: string): void {
   const button = findTabButton(id)
@@ -358,7 +598,12 @@ watch(
   async (ids, previousIds) => {
     const focused = document.activeElement
     const menu = document.getElementById(menuId)
-    const caller = menu?.contains(focused) === true ? contextCaller : focused
+    const caller =
+      menu?.contains(focused) === true
+        ? overflowAnchor.value.open
+          ? null
+          : contextCaller
+        : focused
     const item = caller instanceof HTMLElement ? caller.closest('.pavp-workspace-tabs__item') : null
     if (item === null || strip.value?.contains(item) !== true) return
     const removedIndex = previousIds.findIndex(
@@ -376,14 +621,27 @@ watch(
 )
 
 watch(
+  () =>
+    props.items
+      .map((item) => `${item.id}\u0000${item.label}\u0000${String(item.closable)}`)
+      .join('\n'),
+  async () => {
+    await nextTick()
+    observeGeometry()
+    syncIndicator(false)
+    measureOverflow()
+  },
+)
+watch(
   () => props.activeId,
   async (id) => {
     await nextTick()
     if (id !== props.activeId) return
+    syncIndicator(true)
     const button = id === null ? null : findTabButton(id)
-    if (button !== null) revealTab(button)
+    if (button !== null) revealTab(button, props.motion === 'full' ? 'smooth' : 'instant', 'center')
   },
-  // The controller supplies the initial default before shell restoration. Later activation reveals it.
+  // The controller supplies the initial default before shell restoration. Later activation centers it.
 )
 </script>
 
@@ -439,117 +697,137 @@ watch(
               </m.span>
             </NButton>
           </M>
-          <div
-            ref="viewport"
-            class="pavp-workspace-tabs-viewport"
-          >
-            <UiScrollArea
-              owner-id="workspace-tabs"
-              x-scrollable
-              @controller="connectScrollController"
-              @viewport="emit('viewport', $event)"
+          <div class="pavp-workspace-tabs-viewport">
+            <div
+              ref="viewport"
+              class="pavp-workspace-tabs-scroller"
             >
-              <m.div
-                :ref="setStrip"
-                :layout="full ? 'position' : false"
-                :data-motion="motion"
-                :data-layout-motion="full"
-                class="pavp-workspace-tabs"
-                :aria-label="label"
-                role="tablist"
-                tabindex="-1"
-                aria-orientation="horizontal"
+              <UiScrollArea
+                owner-id="workspace-tabs"
+                x-scrollable
+                @controller="connectScrollController"
+                @viewport="emit('viewport', $event)"
               >
-                <AnimatePresence
-                  :initial="false"
-                  mode="popLayout"
-                  @before-leave="retireTab"
-                  @before-enter="revealEnteringTab"
+                <m.div
+                  :ref="setStrip"
+                  :layout="full ? 'position' : false"
+                  :data-motion="motion"
+                  :data-layout-motion="full"
+                  class="pavp-workspace-tabs"
+                  :aria-label="label"
+                  role="tablist"
+                  tabindex="-1"
+                  aria-orientation="horizontal"
                 >
                   <m.div
-                    v-for="item in items"
-                    :key="item.id"
-                    class="pavp-workspace-tabs__item data-[active=true]:text-text-primary focus-within:text-text-primary hover:text-text-primary"
+                    v-if="indicator !== null"
+                    class="pavp-workspace-tabs__lens"
                     role="presentation"
-                    :data-active="item.id === activeId"
-                    :data-closable="item.closable"
-                    :layout="full ? 'position' : false"
-                    :initial="featureReady && motion !== 'none' ? entering : false"
-                    :variants="{ rest: { ...resting, y: 0 } }"
-                    animate="rest"
-                    while-hover="hover"
-                    while-press="press"
-                    :exit="leaving"
-                    :transition="transition"
-                    @contextmenu.prevent="openContextMenu(item.id, $event.clientX, $event.clientY)"
-                    @keydown="handleContextMenuKeydown(item.id, $event)"
+                    aria-hidden="true"
+                    :initial="false"
+                    :animate="{ x: indicator.x, width: indicator.width }"
+                    :transition="indicatorTransition"
+                  />
+                  <AnimatePresence
+                    :initial="false"
+                    mode="popLayout"
+                    @before-leave="retireTab"
+                    @before-enter="revealEnteringTab"
                   >
                     <m.div
-                      v-if="full && item.id === activeId"
-                      class="pavp-workspace-tabs__lens"
-                      aria-hidden="true"
-                      layout-id="active-surface"
-                      :initial="false"
-                      :transition="transition"
-                    />
-                    <div
-                      v-else-if="item.id === activeId"
-                      class="pavp-workspace-tabs__lens"
-                      aria-hidden="true"
-                    />
-                    <m.span
-                      class="pavp-workspace-tabs__hover"
-                      aria-hidden="true"
-                      :variants="tabSurfaceVariants"
-                      :transition="transition"
-                    />
-                    <NButton
-                      :id="`${item.id}-tab`"
-                      attr-type="button"
-                      text
-                      role="tab"
-                      class="pavp-workspace-tabs__tab"
-                      :aria-selected="item.id === activeId"
-                      :aria-controls="panelId"
-                      aria-haspopup="menu"
-                      :aria-expanded="contextMenu.id === item.id"
-                      :tabindex="item.id === tabStopId ? 0 : -1"
-                      @focus="rovingId = item.id"
-                      @keydown="handleTabKeydown(item.id, $event)"
-                      @click="emit('activate', item.id)"
-                    >
-                      <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
-                    </NButton>
-                    <M
-                      v-if="item.closable"
-                      :initial="false"
+                      v-for="item in items"
+                      :key="item.id"
+                      class="pavp-workspace-tabs__item data-[active=true]:text-text-primary focus-within:text-text-primary hover:text-text-primary"
+                      role="presentation"
+                      :data-active="item.id === activeId"
+                      :data-closable="item.closable"
+                      :initial="featureReady && motion !== 'none' ? entering : false"
+                      :variants="{ rest: { ...resting, y: 0 } }"
                       animate="rest"
                       while-hover="hover"
                       while-press="press"
+                      :exit="leaving"
                       :transition="transition"
-                      as-child
+                      @contextmenu.prevent="
+                        openContextMenu(item.id, $event.clientX, $event.clientY)
+                      "
+                      @keydown="handleContextMenuKeydown(item.id, $event)"
                     >
+                      <m.span
+                        class="pavp-workspace-tabs__hover"
+                        aria-hidden="true"
+                        :variants="tabSurfaceVariants"
+                        :transition="transition"
+                      />
                       <NButton
+                        :id="`${item.id}-tab`"
                         attr-type="button"
                         text
-                        class="pavp-workspace-tabs__close"
-                        :aria-label="item.closeLabel"
-                        native-focus-behavior
-                        @click.stop="emit('close', item.id)"
+                        role="tab"
+                        class="pavp-workspace-tabs__tab"
+                        :aria-selected="item.id === activeId"
+                        :aria-controls="panelId"
+                        aria-haspopup="menu"
+                        :aria-expanded="contextMenu.id === item.id"
+                        :tabindex="item.id === tabStopId ? 0 : -1"
+                        @focus="rovingId = item.id"
+                        @keydown="handleTabKeydown(item.id, $event)"
+                        @click="emit('activate', item.id)"
                       >
-                        <m.span
-                          class="pavp-workspace-tabs__close-mark"
-                          aria-hidden="true"
-                          :initial="false"
-                          :variants="closeMarkVariants"
-                          :transition="transition"
-                        />
+                        <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
                       </NButton>
-                    </M>
-                  </m.div>
-                </AnimatePresence>
-              </m.div>
-            </UiScrollArea>
+                      <M
+                        v-if="item.closable"
+                        :initial="false"
+                        animate="rest"
+                        while-hover="hover"
+                        while-press="press"
+                        :transition="transition"
+                        as-child
+                      >
+                        <NButton
+                          attr-type="button"
+                          text
+                          class="pavp-workspace-tabs__close"
+                          :aria-label="item.closeLabel"
+                          native-focus-behavior
+                          @click.stop="emit('close', item.id)"
+                        >
+                          <m.span
+                            class="pavp-workspace-tabs__close-mark"
+                            aria-hidden="true"
+                            :initial="false"
+                            :variants="closeMarkVariants"
+                            :transition="transition"
+                          />
+                        </NButton>
+                      </M>
+                    </m.div>
+                  </AnimatePresence>
+                </m.div>
+              </UiScrollArea>
+            </div>
+            <NButton
+              v-if="overflowing"
+              :id="overflowButtonId"
+              attr-type="button"
+              text
+              class="pavp-workspace-tabs-edge"
+              :aria-label="overflowLabel"
+              aria-haspopup="menu"
+              :aria-expanded="overflowAnchor.open"
+              :aria-controls="menuId"
+              native-focus-behavior
+              @click.stop="openOverflowMenu"
+              @keydown="openOverflowFromKey"
+            >
+              <span
+                class="pavp-workspace-tabs-edge__mark"
+                aria-hidden="true"
+              >
+                <span class="pavp-workspace-tabs-edge__icon i-lucide-list" />
+              </span>
+            </NButton>
           </div>
           <M
             :ref="(element) => interruption.bind('next', element)"
@@ -595,18 +873,19 @@ watch(
     class="pavp-workspace-context-menu"
     role="menu"
     tabindex="-1"
-    :aria-labelledby="contextMenu.id === null ? undefined : `${contextMenu.id}-tab`"
+    :aria-labelledby="menuLabelledBy"
     trigger="manual"
     :keyboard="false"
+    scrollable
     size="large"
     :to="overlayTarget"
-    :show="contextMenu.id !== null"
-    :x="contextMenu.x"
-    :y="contextMenu.y"
-    :options="contextOptions"
+    :show="menuVisible"
+    :x="menuX"
+    :y="menuY"
+    :options="menuOptions"
     @update:show="updateContextMenu"
     @clickoutside="dismissContextMenu"
-    @select="selectContextAction"
+    @select="selectMenuAction"
     @keydown="handleMenuKeydown"
   />
 </template>
@@ -628,8 +907,15 @@ watch(
     padding-inline-end: var(--pavp-safe-area-left);
   }
   .pavp-workspace-tabs-viewport {
+    display: flex;
+    align-items: center;
     min-inline-size: 0;
     flex: 1 1 0;
+  }
+  .pavp-workspace-tabs-scroller {
+    container-type: inline-size;
+    flex: 1 1 auto;
+    min-inline-size: 0;
   }
   .pavp-workspace-tabs-edge {
     position: relative;
@@ -715,6 +1001,8 @@ watch(
     display: flex;
     flex: 0 0 auto;
     align-items: center;
+    max-inline-size: 100cqi;
+    min-inline-size: 0;
   }
   .pavp-workspace-tabs button {
     position: relative;
@@ -743,9 +1031,17 @@ watch(
   .pavp-workspace-tabs__label {
     position: relative;
     z-index: var(--ui-z-base);
+    display: block;
+    overflow: hidden;
+    min-inline-size: calc(var(--ui-font-size-body) * 2);
+    max-inline-size: calc(var(--ui-control-height) * 6);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .pavp-workspace-tabs .pavp-workspace-tabs__tab {
     border-radius: inherit;
+    flex: 1 1 auto;
+    min-inline-size: 0;
   }
   .pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab {
     border-start-end-radius: 0;
@@ -754,9 +1050,9 @@ watch(
   }
   .pavp-workspace-tabs__lens {
     position: absolute;
-    inset: 0;
-    z-index: var(--ui-z-base);
-    border-radius: inherit;
+    inset-block: 0;
+    inset-inline-start: 0;
+    border-radius: var(--ui-radius-control);
     background: color-mix(
       in srgb,
       var(--ui-admin-navigation-selected) 20%,
@@ -786,6 +1082,7 @@ watch(
   }
   .pavp-workspace-tabs .pavp-workspace-tabs__close {
     border-radius: var(--ui-radius-small);
+    flex: 0 0 auto;
     padding-inline: 0;
   }
   /* Center the small mark inside the full close target, keeping the rail geometry stable. */
@@ -820,9 +1117,41 @@ watch(
   }
   .pavp-workspace-tabs button:focus-visible,
   .pavp-workspace-context-menu:focus-visible,
-  .pavp-workspace-context-menu :deep([role='menuitem']:focus-visible) {
+  .pavp-workspace-context-menu :deep([role='menuitem']:focus-visible),
+  .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__close:focus-visible) {
     outline: none;
     box-shadow: var(--ui-admin-shadow-focus-ring);
+  }
+  .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__row) {
+    display: flex;
+    align-items: center;
+    gap: var(--ui-space-content-gap);
+    min-inline-size: 0;
+  }
+  .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__name) {
+    overflow: hidden;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__current) {
+    color: var(--ui-color-text-primary);
+  }
+  .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__close) {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    padding: var(--ui-space-content-gap);
+    border: 0;
+    border-radius: var(--ui-radius-small);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__icon) {
+    inline-size: var(--ui-font-size-body);
+    block-size: var(--ui-font-size-body);
   }
   @media (forced-colors: active) {
     .pavp-workspace-tabs [aria-selected='true'] {
@@ -832,7 +1161,8 @@ watch(
     .pavp-workspace-tabs button:focus-visible,
     .pavp-workspace-tabs-edge:focus-visible,
     .pavp-workspace-context-menu:focus-visible,
-    .pavp-workspace-context-menu :deep([role='menuitem']:focus-visible) {
+    .pavp-workspace-context-menu :deep([role='menuitem']:focus-visible),
+    .pavp-workspace-context-menu :deep(.pavp-workspace-tabs-overflow__close:focus-visible) {
       outline: var(--ui-admin-focus-width) solid Highlight;
       outline-offset: calc(var(--ui-admin-focus-width) * -1);
       box-shadow: none;
@@ -852,6 +1182,13 @@ watch(
 .pavp-workspace-tabs__tab.n-button {
   padding-inline: var(--ui-space-content-gap);
   border-radius: inherit;
+  min-inline-size: 0;
+}
+.pavp-workspace-tabs__tab.n-button :deep(.n-button__content) {
+  display: block;
+  overflow: hidden;
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 .pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab.n-button {
   padding-inline-end: 0;

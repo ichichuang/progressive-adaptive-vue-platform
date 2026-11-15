@@ -16,6 +16,7 @@
   "workspace.label": "Workspaces",
   "workspace.previousLabel": "Previous tab",
   "workspace.nextLabel": "Next tab",
+  "workspace.overflowLabel": "All tabs",
   "workspace.refreshLabel": "Refresh",
   "shell.consoleTitle": "Developer Workbench",
   "shell.navigationLabel": "Workbench navigation",

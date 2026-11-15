@@ -10,6 +10,7 @@ const props = defineProps<{
   readonly label: string
   readonly previousLabel: string
   readonly nextLabel: string
+  readonly overflowLabel: string
   readonly refreshLabel: string
   readonly closeLabel: string
   readonly panelId: string
