@@ -157,7 +157,7 @@ function update(): void {
           ref="boardHost"
           class="display-preview-board grid h-full min-h-0 min-w-0"
           :class="{
-            'rounded-panel bg-surface-panel shadow-panel': fixed,
+            'rounded-panel bg-surface-panel shadow-panel display-preview-board-fixed': fixed,
             'display-preview-board-portrait': portrait === true,
             'display-preview-board-fluid': !fixed,
           }"
@@ -348,6 +348,32 @@ function update(): void {
 }
 .display-preview-rank-meter {
   min-width: 0;
+}
+/* Let a short fixed-ratio stage keep shrinking type with the board. The shared floor stays for other modes. */
+.display-preview-board-fixed:not(.display-preview-board-portrait) {
+  font-size: clamp(
+    calc(var(--ui-font-size-caption) * 0.3),
+    min(1.7cqi, 7cqb),
+    calc(var(--ui-font-size-title) * 1.2)
+  );
+}
+.display-preview-board-fixed .display-preview-heading,
+.display-preview-board-fixed .display-preview-metric > span,
+.display-preview-board-fixed .display-preview-readout > strong,
+.display-preview-board-fixed .display-preview-readout > span,
+.display-preview-board-fixed .display-preview-rank > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.display-preview-board-fixed .display-preview-rank {
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content);
+}
+.display-preview-board-fixed .display-preview-metric,
+.display-preview-board-fixed .display-preview-ranking,
+.display-preview-board-fixed .display-preview-rank {
+  overflow: hidden;
 }
 
 .display-preview-page-fluid {

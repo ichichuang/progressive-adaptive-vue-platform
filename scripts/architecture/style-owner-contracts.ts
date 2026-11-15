@@ -1150,6 +1150,57 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {
+    path: 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue',
+    block: 0,
+    context: [],
+    selector: '.display-preview-board-fixed:not(.display-preview-board-portrait)',
+    declarations: [
+      [
+        'font-size',
+        'clamp( calc(var(--ui-font-size-caption) * 0.3), min(1.7cqi, 7cqb), calc(var(--ui-font-size-title) * 1.2) )',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue',
+    block: 0,
+    context: [],
+    selector:
+      '.display-preview-board-fixed .display-preview-heading,\n.display-preview-board-fixed .display-preview-metric > span,\n.display-preview-board-fixed .display-preview-readout > strong,\n.display-preview-board-fixed .display-preview-readout > span,\n.display-preview-board-fixed .display-preview-rank > span',
+    declarations: [
+      ['min-width', '0', false],
+      ['overflow', 'hidden', false],
+      ['text-overflow', 'ellipsis', false],
+      ['white-space', 'nowrap', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue',
+    block: 0,
+    context: [],
+    selector: '.display-preview-board-fixed .display-preview-rank',
+    declarations: [
+      [
+        'grid-template-columns',
+        'minmax(0, max-content) minmax(0, 1fr) minmax(0, max-content)',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue',
+    block: 0,
+    context: [],
+    selector:
+      '.display-preview-board-fixed .display-preview-metric,\n.display-preview-board-fixed .display-preview-ranking,\n.display-preview-board-fixed .display-preview-rank',
+    declarations: [['overflow', 'hidden', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
     path: 'packages/ui/src/components/UiDashboardGrid.vue',
     block: 0,
     context: [],
