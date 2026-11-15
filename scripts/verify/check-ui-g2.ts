@@ -200,6 +200,41 @@ assert.equal(defaultTiming.update.duration, metrics.duration * 4)
 assert.equal(defaultTiming.exit.duration, metrics.duration * 2)
 assert.equal(defaultTiming.enter.fill, 'both')
 assert.equal(defaultTiming.update.fill, 'both')
+const firstFrame = projectG2Options(
+  {
+    type: 'view',
+    children: [{ type: 'interval' }, { type: 'line' }, { type: 'area' }, { type: 'point' }],
+  },
+  appearance,
+  metrics,
+  600,
+  320,
+)
+for (const child of children(firstFrame)) {
+  const enter = record(record(child)['animate'])['enter']
+  assert.equal(typeof record(enter)['type'], 'function')
+  assert.equal(record(enter)['duration'], 0)
+  assert.equal(record(enter)['delay'], 0)
+}
+const explicitFade = projectG2Options(
+  { type: 'interval', animate: { enter: { type: 'fadeIn' } } },
+  appearance,
+  metrics,
+  600,
+  320,
+)
+assert.equal(record(record(record(explicitFade)['animate'])['enter'])['type'], 'fadeIn')
+const nestedTimeline = projectG2Options(
+  {
+    type: 'timingKeyframe',
+    children: [{ type: 'view', children: [{ type: 'line' }] }],
+  },
+  appearance,
+  metrics,
+  600,
+  320,
+)
+assert.equal(record(children(children(nestedTimeline)[0])[0])['animate'], undefined)
 assert.equal(
   record(projectG2Options({ type: 'timingKeyframe', children: [] }, appearance, metrics, 600, 300))[
     'duration'
@@ -865,6 +900,70 @@ const thetaSpec: UiG2ChartOptions = {
 }
 const thetaDefault = projectG2Options(thetaSpec, appearance, metrics, 600, 320)
 assert.equal(typeof record(record(record(thetaDefault)['animate'])['update'])['type'], 'function')
+assert.equal(record(record(record(thetaDefault)['animate'])['enter'])['duration'], 0)
+assert.equal(record(record(record(thetaDefault)['animate'])['enter'])['delay'], 0)
+const { createG2VisibleEnter } = await import('../../packages/ui/src/adapters/g2/pavp-g2-enter')
+const { createG2ThetaEnter } = await import('../../packages/ui/src/adapters/g2/pavp-g2-theta')
+function playedEnter(
+  play: (
+    from: readonly {
+      animate: (frames: readonly Record<string, number>[], timing: { duration?: number }) => object
+    }[],
+  ) => void,
+  shape: {
+    readonly style?: Readonly<Record<string, unknown>>
+    getAttribute: (name: string) => unknown
+  },
+): { frames: readonly Record<string, number>[]; duration: number | undefined } {
+  let frames: readonly Record<string, number>[] = []
+  let duration: number | undefined
+  play([
+    {
+      ...shape,
+      animate: (next, timing) => {
+        frames = next
+        duration = timing.duration
+        return {}
+      },
+    },
+  ])
+  return { frames, duration }
+}
+const visibleEnter = playedEnter(
+  (from) => {
+    createG2VisibleEnter()({})(from as never, [], { duration: 1000, fill: 'both' })
+  },
+  {
+    style: { opacity: 0.8, fillOpacity: 0.2, strokeOpacity: 1 },
+    getAttribute: () => undefined,
+  },
+)
+assert.equal(visibleEnter.duration, 0)
+const visibleStart = visibleEnter.frames[0]
+const visibleEnd = visibleEnter.frames[1]
+assert.ok(visibleStart && visibleEnd)
+assert.equal(visibleStart['opacity'], 0.8)
+assert.equal(visibleStart['fillOpacity'], 0.2)
+assert.equal(visibleEnd['opacity'], 0.8)
+const thetaEnter = playedEnter(
+  (from) => {
+    createG2ThetaEnter()({})(from as never, [], { duration: 1000, fill: 'both' })
+  },
+  {
+    getAttribute: (name) =>
+      name === 'opacity'
+        ? 1
+        : name === 'd'
+          ? 'M0,-100A100,100,0,0,1,100,0L60,0A60,60,0,0,0,0,-60Z'
+          : undefined,
+  },
+)
+assert.equal(thetaEnter.duration, 0)
+const thetaStart = thetaEnter.frames[0]
+const thetaEnd = thetaEnter.frames[1]
+assert.ok(thetaStart && thetaEnd)
+assert.equal(thetaStart['opacity'], 1)
+assert.equal(thetaEnd['opacity'], 1)
 const thetaExplicit = projectG2Options(
   { ...thetaSpec, animate: { update: { type: 'fadeIn' } } },
   appearance,

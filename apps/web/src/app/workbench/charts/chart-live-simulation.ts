@@ -179,7 +179,6 @@ export function liveChartExample(kind: LiveChartKind, tick: number, t: ConsoleTr
         { text: 'name', position: 'left' },
         { text: 'value', position: 'right' },
       ],
-      animate: { enter: { type: 'fadeIn' } },
       interaction: { elementHighlight: true },
     }
     return {

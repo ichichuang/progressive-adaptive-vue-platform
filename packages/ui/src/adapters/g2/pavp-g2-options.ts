@@ -2,6 +2,7 @@ import { createG2InnerContrast } from './pavp-g2-label-contrast'
 import type { UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiG2ChartOptions } from '../../components/g2-chart-contracts'
 import { projectG2Theme, type G2ThemeMetrics } from './pavp-g2-theme'
+import { createG2VisibleEnter } from './pavp-g2-enter'
 import { createG2ThetaEnter, createG2ThetaUpdate } from './pavp-g2-theta'
 import { createG2Hover, type G2TourFocus } from './pavp-g2-hover'
 import type { G2TooltipViewport } from './pavp-g2-tooltip'
@@ -84,6 +85,28 @@ function hasFocusOverride(value: unknown): boolean {
   )
 }
 
+// These shapes default to scaleInY or fadeIn, whose first keyframe has no visible geometry.
+const emptyEnterMarks = new Set([
+  'area',
+  'box',
+  'boxplot',
+  'cell',
+  'density',
+  'edge',
+  'heatmap',
+  'image',
+  'interval',
+  'line',
+  'path',
+  'point',
+  'polygon',
+  'range',
+  'rect',
+  'schema',
+  'text',
+  'vector',
+])
+
 function hasLabelTheme(value: unknown): boolean {
   if (!record(value)) return false
   const theme = record(value['theme']) ? value['theme'] : {}
@@ -155,6 +178,7 @@ export function projectG2Options(
     inheritedHover = false,
     inheritedTooltip?: unknown,
     inheritedTheta?: OptionsRecord,
+    timelineOwned = false,
   ): unknown {
     if (Array.isArray(value))
       return value.map((child: unknown) =>
@@ -165,6 +189,7 @@ export function projectG2Options(
           inheritedHover,
           inheritedTooltip,
           inheritedTheta,
+          timelineOwned,
         ),
       )
     if (!record(value)) return value
@@ -205,6 +230,8 @@ export function projectG2Options(
         inheritedGuides,
         inheritedHover,
         inheritedTooltip,
+        undefined,
+        timelineOwned,
       )
     }
     const ownInteraction = record(node['interaction']) ? node['interaction'] : {}
@@ -285,11 +312,26 @@ export function projectG2Options(
       node['animate'] = {
         ...animate,
         ...(animate['enter'] === undefined && encode['enterType'] === undefined
-          ? { enter: { type: createG2ThetaEnter(origin) } }
+          ? { enter: { type: createG2ThetaEnter(origin), duration: 0, delay: 0 } }
           : {}),
         ...(animate['update'] === undefined && encode['updateType'] === undefined
           ? { update: { type: createG2ThetaUpdate(origin) } }
           : {}),
+      }
+    }
+    const animate = record(node['animate']) ? node['animate'] : {}
+    if (
+      movement &&
+      !timelineOwned &&
+      node['animate'] !== false &&
+      typeof node['type'] === 'string' &&
+      emptyEnterMarks.has(node['type']) &&
+      animate['enter'] === undefined &&
+      encode['enterType'] === undefined
+    ) {
+      node['animate'] = {
+        ...animate,
+        enter: { type: createG2VisibleEnter(), duration: 0, delay: 0 },
       }
     }
     if (movement && record(node['animate'])) {
@@ -418,9 +460,18 @@ export function projectG2Options(
       node['interaction'] = { ...interaction, pavpHover: false }
     }
     const guides = { axis: node['axis'], legend: node['legend'] }
+    const childTimeline = timelineOwned || node['type'] === 'timingKeyframe'
     if (Array.isArray(node['children']))
       node['children'] = node['children'].map((child: unknown) =>
-        project(child, resolvedTheme, guides, hoverRequested, resolvedTooltip, theta),
+        project(
+          child,
+          resolvedTheme,
+          guides,
+          hoverRequested,
+          resolvedTooltip,
+          theta,
+          childTimeline,
+        ),
       )
     else if (typeof node['children'] === 'function') {
       const children = node['children'] as (...args: unknown[]) => unknown
@@ -432,6 +483,7 @@ export function projectG2Options(
           hoverRequested,
           resolvedTooltip,
           theta,
+          childTimeline,
         )
     }
     // A resized canvas clips old pixel coordinates. Reflow its scene immediately,

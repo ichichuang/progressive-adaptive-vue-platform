@@ -89,6 +89,7 @@ let tooltipViewport: ReturnType<typeof createG2TooltipViewport> | undefined
 const caption = ref<HTMLElement | null>(null)
 const title = ref<HTMLElement | null>(null)
 const busy = ref(false)
+const revealed = ref(false)
 let chart: Chart | undefined
 let chartHost: HTMLElement | undefined
 let observer: ResizeObserver | undefined
@@ -105,6 +106,7 @@ let timeline = false
 let dirty = false
 let labelFrames: ReturnType<typeof captureG2Labels> | undefined
 let paintedSize: { width: number; height: number } | undefined
+let presentData = false
 
 function readMetrics(): G2ThemeMetrics {
   if (!metric.value || !caption.value || !title.value) throw new Error('Chart metrics unavailable.')
@@ -222,6 +224,13 @@ function hasTimeline(options: unknown): boolean {
   )
 }
 function painted(): void {
+  // The initializer is an empty view. Reveal on the frame after the data scene is
+  // committed so the first visible pixels are that scene, not the blank canvas.
+  if (presentData && active && !revealed.value) {
+    requestAnimationFrame(() => {
+      if (presentData && active) revealed.value = true
+    })
+  }
   if (resizing.value && resizeFrame === undefined && !dirty) {
     // AFTER_PAINT is a scene event; retain the preview through the canvas paint frame.
     previewFrame = requestAnimationFrame(() => {
@@ -284,6 +293,7 @@ async function render(): Promise<void> {
     height = host.value.clientHeight
     if (width <= 0 || height <= 0) return
     dirty = false
+    presentData = true
     const resized =
       paintedSize !== undefined && (paintedSize.width !== width || paintedSize.height !== height)
     paintedSize = { width, height }
@@ -462,6 +472,8 @@ function stop(): void {
   timeline = false
   labelFrames = undefined
   paintedSize = undefined
+  presentData = false
+  revealed.value = false
   busy.value = false
 }
 watch(
@@ -525,6 +537,7 @@ onBeforeUnmount(() => {
       v-show="!resizing"
       ref="container"
       class="inset-0 absolute"
+      :class="{ invisible: !revealed }"
       aria-hidden="true"
     />
     <canvas

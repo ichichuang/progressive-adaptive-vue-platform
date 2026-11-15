@@ -72,7 +72,7 @@ function sectorOf(element: Element, path: unknown, origin: number): Sector | und
   return sector
 }
 
-/** Reveal one complete composition, rather than growing every wedge separately. */
+/** Record the finished sector and show it on the first frame, rather than fading from empty. */
 export function createG2ThetaEnter(origin = -Math.PI / 2): AnimationFactory {
   return (options) => (from, _to, defaults) => {
     const shape = from[0]
@@ -81,7 +81,15 @@ export function createG2ThetaEnter(origin = -Math.PI / 2): AnimationFactory {
     const sector = sectorOf(shape, path, origin)
     if (sector) displayed.set(shape, { path, sector })
     const opacity = Number(shape.getAttribute('opacity') ?? 1)
-    return shape.animate([{ opacity: 0 }, { opacity }], { ...defaults, ...options }) ?? []
+    const visible = Number.isFinite(opacity) ? opacity : 1
+    return (
+      shape.animate([{ opacity: visible }, { opacity: visible }], {
+        ...defaults,
+        ...options,
+        delay: 0,
+        duration: 0,
+      }) ?? []
+    )
   }
 }
 
