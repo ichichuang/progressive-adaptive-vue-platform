@@ -125,6 +125,22 @@
     max-inline-size: calc(var(--ui-workbench-specimen-minimum-inline-size) * 2);
   }
 
+  .wb-page-heading__title {
+    font-size: var(--ui-font-size-title);
+  }
+
+  @container pavp-admin-content (inline-size > 0px) {
+    .wb-page-heading__title {
+      font-size: min(var(--ui-font-size-title), calc(var(--ui-font-size-heading) + 0.75cqi));
+    }
+  }
+
+  @media (height < 36rem) {
+    .wb-page.wb-form-page .wb-form-panel-header {
+      padding-block: var(--ui-space-component-unit);
+    }
+  }
+
   .wb-page.wb-form-page {
     gap: var(--ui-space-content-gap);
   }

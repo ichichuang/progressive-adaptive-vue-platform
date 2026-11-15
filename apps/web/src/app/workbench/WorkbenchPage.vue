@@ -28,7 +28,7 @@ defineSlots<{ default: () => unknown; actions?: () => unknown }>()
       >
         <div class="wb-page-heading__copy grid min-w-0 gap-component-unit">
           <p
-            class="wb-page-heading__title leading-title font-title-weight m-0 text-text-primary text-title"
+            class="wb-page-heading__title leading-title font-title-weight m-0 text-text-primary"
             aria-hidden="true"
           >
             {{ title }}

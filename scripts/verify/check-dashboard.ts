@@ -10,10 +10,49 @@ import {
   dashboardEntranceIds,
   dashboardToneIds,
   dashboardStoragePortKey,
+  type DashboardCatalogDefinition,
   type DashboardDocument,
   type DashboardStoragePort,
 } from '../../apps/web/src/app/dashboard/dashboard-contract'
 import { useDashboard } from '../../apps/web/src/app/dashboard/use-dashboard'
+
+const catalog = [
+  {
+    id: 'clock',
+    kind: 'builtin',
+    size: { wide: { w: 4, h: 2 }, narrow: { h: 2 } },
+    panel: { type: 'clock', config: {} },
+  },
+  {
+    id: 'notes',
+    kind: 'builtin',
+    size: { wide: { w: 4, h: 3 }, narrow: { h: 3 } },
+    panel: { type: 'notes', config: { text: '' } },
+  },
+  {
+    id: 'capabilities',
+    kind: 'builtin',
+    size: { wide: { w: 4, h: 3 }, narrow: { h: 3 } },
+    panel: { type: 'capabilities', config: {} },
+  },
+  {
+    id: 'chart',
+    kind: 'builtin',
+    size: { wide: { w: 8, h: 5 }, narrow: { h: 5 } },
+    panel: { type: 'chart', config: { series: 'traffic' } },
+  },
+  {
+    id: 'delivery',
+    kind: 'builtin',
+    size: { wide: { w: 6, h: 5 }, narrow: { h: 4 } },
+    panel: { type: 'chart', config: { series: 'delivery' } },
+  },
+  { id: 'route-time', kind: 'route', size: { wide: { w: 3, h: 2 }, narrow: { h: 2 } } },
+  { id: 'theme-palette', kind: 'module', size: { wide: { w: 5, h: 4 }, narrow: { h: 3 } } },
+] as const satisfies readonly DashboardCatalogDefinition[]
+function createDashboard() {
+  return useDashboard(catalog)
+}
 import { createDashboardLayoutStorage } from '../../apps/web/src/app/storage/dashboard-layout-storage'
 import { createStorageErrorAdapter } from '../../apps/web/src/app/storage/storage-error'
 import { createStartupAttemptId } from '../../apps/web/src/app/bootstrap/lifecycle'
@@ -50,7 +89,7 @@ export function verifyDashboard(): void {
     read: () => ({ status: 'found', document: customDocument }),
     write: () => assert.fail('Restoring saved geometry must not rewrite it.'),
   } satisfies DashboardStoragePort)
-  assert.equal(restoredApp.runWithContext(useDashboard).document.value, customDocument)
+  assert.equal(restoredApp.runWithContext(createDashboard).document.value, customDocument)
 
   const invalid: unknown[] = [
     { ...original, extra: true },
@@ -152,7 +191,7 @@ export function verifyDashboard(): void {
   }
   const app = createProbeApp()
   app.provide(dashboardStoragePortKey, port)
-  const controller = app.runWithContext(useDashboard)
+  const controller = app.runWithContext(createDashboard)
   assert.equal(controller.canUndo.value, false)
   const initialDocument = controller.document.value
   assert.equal(
@@ -257,7 +296,7 @@ export function verifyDashboard(): void {
 
   const placementApp = createProbeApp()
   placementApp.provide(dashboardStoragePortKey, port)
-  const placement = placementApp.runWithContext(useDashboard)
+  const placement = placementApp.runWithContext(createDashboard)
   placement.remove('capabilities')
   assert.equal(placement.add('clock'), true)
   assert.deepEqual(placement.document.value.layouts.wide.at(-1), {
@@ -279,9 +318,60 @@ export function verifyDashboard(): void {
   assert.equal(placement.add('chart'), true)
   assert.equal(dashboardSchema.safeParse(placement.document.value).success, true)
 
+  const catalogApp = createProbeApp()
+  catalogApp.provide(dashboardStoragePortKey, port)
+  const catalogBoard = catalogApp.runWithContext(createDashboard)
+  const beforeUnknown = catalogBoard.document.value
+  assert.equal(catalogBoard.add('unknown-feature'), false)
+  assert.equal(catalogBoard.document.value, beforeUnknown)
+  for (const entryId of ['delivery', 'route-time', 'theme-palette']) {
+    assert.equal(catalogBoard.add(entryId), true)
+    assert.equal(dashboardSchema.safeParse(catalogBoard.document.value).success, true)
+  }
+  const delivery = catalogBoard.document.value.panels.find(
+    (item) => item.type === 'chart' && item.config.series === 'delivery',
+  )
+  assert.ok(delivery)
+  assert.equal(
+    catalogBoard.document.value.layouts.wide.find((item) => item.id === delivery.id)?.w,
+    6,
+  )
+  assert.equal(
+    catalogBoard.document.value.layouts.narrow.find((item) => item.id === delivery.id)?.h,
+    4,
+  )
+  const modulePanel = catalogBoard.document.value.panels.find((item) => item.type === 'module')
+  assert.ok(modulePanel)
+  assert.deepEqual(modulePanel.config, { entryId: 'theme-palette' })
+  assert.equal(JSON.stringify(catalogBoard.document.value).includes('component'), false)
+  const moduleDocument = catalogBoard.document.value
+  assert.equal(catalogBoard.updatePanel(structuredClone(modulePanel)), true)
+  assert.equal(catalogBoard.document.value, moduleDocument)
+  const routePanel = catalogBoard.document.value.panels.find((item) => item.type === 'route')
+  assert.ok(routePanel)
+  assert.deepEqual(routePanel.config, { entryId: 'route-time' })
+  assert.equal(catalogBoard.updatePanel(structuredClone(routePanel)), true)
+  assert.equal(catalogBoard.document.value, moduleDocument)
+  const restoredCatalogApp = createProbeApp()
+  restoredCatalogApp.provide(dashboardStoragePortKey, {
+    read: () => ({ status: 'found', document: structuredClone(moduleDocument) }),
+    write: () => assert.fail('Restoring modules must not rewrite persistent state.'),
+  } satisfies DashboardStoragePort)
+  assert.deepEqual(
+    restoredCatalogApp.runWithContext(createDashboard).document.value,
+    moduleDocument,
+  )
+  catalogBoard.undo()
+  assert.equal(
+    catalogBoard.document.value.panels.some((item) => item.type === 'module'),
+    false,
+  )
+  assert.equal(catalogBoard.restoreLayout(), true)
+  assert.equal(dashboardSchema.safeParse(catalogBoard.document.value).success, true)
+
   const appearanceApp = createProbeApp()
   appearanceApp.provide(dashboardStoragePortKey, port)
-  const appearance = appearanceApp.runWithContext(useDashboard)
+  const appearance = appearanceApp.runWithContext(createDashboard)
   const appearanceInitial = appearance.document.value
   assert.equal(appearance.setStyle('contrast'), true)
   assert.equal(appearance.document.value.style, 'contrast')
@@ -314,7 +404,7 @@ export function verifyDashboard(): void {
 
   const layoutRecoveryApp = createProbeApp()
   layoutRecoveryApp.provide(dashboardStoragePortKey, port)
-  const layoutRecovery = layoutRecoveryApp.runWithContext(useDashboard)
+  const layoutRecovery = layoutRecoveryApp.runWithContext(createDashboard)
   layoutRecovery.remove('clock')
   assert.equal(layoutRecovery.add('chart'), true)
   layoutRecovery.setStyle('brand')
@@ -387,7 +477,7 @@ export function verifyDashboard(): void {
       return { status: 'saved' }
     },
   } satisfies DashboardStoragePort)
-  const recovery = recoveryApp.runWithContext(useDashboard)
+  const recovery = recoveryApp.runWithContext(createDashboard)
   assert.equal(recovery.readFailure.value, true)
   assert.equal(recovery.failure.value, false)
   recovery.retry()
@@ -401,7 +491,7 @@ export function verifyDashboard(): void {
   assert.equal(recoveryWrites, 0)
   assert.deepEqual(recovery.document.value, original)
   readsAvailable = false
-  const explicitReset = recoveryApp.runWithContext(useDashboard)
+  const explicitReset = recoveryApp.runWithContext(createDashboard)
   explicitReset.reset()
   assert.equal(explicitReset.readFailure.value, false)
   assert.equal(recoveryWrites, 1, 'Only explicit reset replaces a rejected stored document.')

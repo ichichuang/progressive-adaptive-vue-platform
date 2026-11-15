@@ -59,6 +59,16 @@ const dashboardPanelSchema = z.discriminatedUnion('type', [
   z.strictObject({ ...presentation, type: z.literal('clock'), config: z.strictObject({}) }),
   z.strictObject({
     ...presentation,
+    type: z.literal('route'),
+    config: z.strictObject({ entryId: id }),
+  }),
+  z.strictObject({
+    ...presentation,
+    type: z.literal('module'),
+    config: z.strictObject({ entryId: id }),
+  }),
+  z.strictObject({
+    ...presentation,
     type: z.literal('capabilities'),
     config: z.strictObject({
       destinations: z
@@ -142,17 +152,57 @@ export const dashboardSchema = z
   })
 export type DashboardDocument = z.infer<typeof dashboardSchema>
 export type DashboardPanel = z.infer<typeof dashboardPanelSchema>
+interface DashboardCatalogSize {
+  readonly wide: { readonly w: number; readonly h: number }
+  readonly narrow: { readonly h: number }
+}
+type BuiltInPanel = Exclude<DashboardPanel, { type: 'route' | 'module' }>
+type BuiltInPanelTemplate = {
+  [K in BuiltInPanel['type']]: Omit<Extract<BuiltInPanel, { type: K }>, 'id'>
+}[BuiltInPanel['type']]
+/** Data-only authoring contract; Vue renderers and router destinations stay in the application catalog. */
+export type DashboardCatalogDefinition = {
+  readonly id: string
+  readonly size: DashboardCatalogSize
+} & (
+  | { readonly kind: 'builtin'; readonly panel: BuiltInPanelTemplate }
+  | { readonly kind: 'module' | 'route' }
+)
+
 export const dashboardPresetTones: Readonly<
   Record<DashboardStyle, Readonly<Record<DashboardPanel['type'], DashboardTone>>>
 > = {
-  theme: { capabilities: 'accent-b', clock: 'accent-a', notes: 'theme', chart: 'theme' },
-  brand: { capabilities: 'brand', clock: 'accent-a-strong', notes: 'theme', chart: 'accent-b' },
-  soft: { capabilities: 'accent-a', clock: 'accent-b', notes: 'accent-b', chart: 'accent-a' },
+  theme: {
+    capabilities: 'accent-b',
+    clock: 'accent-a',
+    notes: 'theme',
+    chart: 'theme',
+    route: 'accent-b',
+    module: 'theme',
+  },
+  brand: {
+    capabilities: 'brand',
+    clock: 'accent-a-strong',
+    notes: 'theme',
+    chart: 'accent-b',
+    route: 'brand',
+    module: 'accent-a',
+  },
+  soft: {
+    capabilities: 'accent-a',
+    clock: 'accent-b',
+    notes: 'accent-b',
+    chart: 'accent-a',
+    route: 'accent-a',
+    module: 'accent-b',
+  },
   contrast: {
     capabilities: 'accent-b-strong',
     clock: 'quiet',
     notes: 'accent-a-strong',
     chart: 'brand',
+    route: 'accent-b-strong',
+    module: 'quiet',
   },
 }
 export function createDefaultDashboard(): DashboardDocument {

@@ -50,6 +50,11 @@ import { useConsoleI18n } from '../../shared/i18n'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
 import { useAppearanceMutationBoundary } from '../appearance/appearance-mutation-boundary'
 import {
+  playAppearanceTransition,
+  readAppearanceTransitionOrigin,
+  type AppearanceTransitionOrigin,
+} from '../appearance/appearance-transition'
+import {
   registeredRouteDestination,
   resolveRegisteredDestination,
   sameRouteAddress,
@@ -59,6 +64,7 @@ import {
   consoleNavigationRegistry,
   consoleNavigationGroups,
   consoleNavigationItems,
+  isDisplayLayoutPreview,
   type ConsoleNavigationGroup,
   getRouteRecord,
 } from '../router/route-registry'
@@ -72,8 +78,13 @@ import { useShellScrollRestoration } from '../scroll/use-shell-scroll-restoratio
 
 defineOptions({ name: 'ConsoleRouteFrame' })
 let routeActivation: { readonly origin: RouteMotionOrigin; readonly capturedAt: number } | undefined
+let colorModeOrigin: AppearanceTransitionOrigin | undefined
 function captureRouteActivation(event: MouseEvent): void {
   const target = event.target
+  colorModeOrigin =
+    target instanceof Element && target.closest('[data-pavp-color-mode-control]') !== null
+      ? readAppearanceTransitionOrigin(event)
+      : undefined
   const affordance =
     target instanceof Element
       ? target.closest(
@@ -120,6 +131,14 @@ defineSlots<{
 
 const { t } = useConsoleI18n()
 const colorModeSwitchFailed = ref(false)
+const contentLayout = computed(() => {
+  if (!props.containedContent) return 'scroll'
+  return props.activeRouteName === 'workbench-dashboard' ||
+    props.activeRouteName === 'workbench-welcome' ||
+    isDisplayLayoutPreview(props.activeRouteName)
+    ? 'contained-flush'
+    : 'contained'
+})
 function projectNavigation(group: ConsoleNavigationGroup): UiAdminNavigationGroup {
   return {
     id: group.id,
@@ -131,9 +150,11 @@ function projectNavigation(group: ConsoleNavigationGroup): UiAdminNavigationGrou
       return {
         iconClass: item.iconClass,
         routeName: item.destination.name,
-        label: t(getRouteRecord(item.destination.name).meta.titleKey),
+        label: t(item.labelKey ?? getRouteRecord(item.destination.name).meta.titleKey),
         isCurrentDestination:
-          resolved !== undefined && sameRouteAddress(router.currentRoute.value, resolved),
+          item.openIn !== 'new-page' &&
+          resolved !== undefined &&
+          sameRouteAddress(router.currentRoute.value, resolved),
       }
     }),
   }
@@ -515,19 +536,28 @@ const appearance = useAppearanceReadBoundary()
 const appearanceMutation = useAppearanceMutationBoundary()
 
 function toggleColorMode(): void {
-  const current = explicitThemePreferenceSchema.safeParse(appearanceMutation.preference.value)
-  if (!current.success) {
-    colorModeSwitchFailed.value = true
-    return
-  }
-  const result = appearanceMutation.commitPreference({
-    ...current.data,
-    appearance: {
-      ...current.data.appearance,
-      colorMode: appearance.snapshot.value.colorMode === 'dark' ? 'light' : 'dark',
+  const origin = colorModeOrigin
+  colorModeOrigin = undefined
+  playAppearanceTransition({
+    kind: 'mode',
+    motion: appearance.snapshot.value.motion,
+    origin,
+    commit: () => {
+      const current = explicitThemePreferenceSchema.safeParse(appearanceMutation.preference.value)
+      if (!current.success) {
+        colorModeSwitchFailed.value = true
+        return
+      }
+      const result = appearanceMutation.commitPreference({
+        ...current.data,
+        appearance: {
+          ...current.data.appearance,
+          colorMode: appearance.snapshot.value.colorMode === 'dark' ? 'light' : 'dark',
+        },
+      })
+      colorModeSwitchFailed.value = result.status !== 'committed'
     },
   })
-  colorModeSwitchFailed.value = result.status !== 'committed'
 }
 
 onScopeDispose(() => {
@@ -579,7 +609,12 @@ async function navigate(routeName: string): Promise<void> {
   }
   const item = consoleNavigationItems.find((candidate) => candidate.destination.name === routeName)
   if (item === undefined) return
-  await applicationNavigation.navigate(registeredRouteDestination(item.destination))
+  const destination = registeredRouteDestination(item.destination)
+  if (item.openIn === 'new-page') {
+    await applicationNavigation.navigate(destination, { openIn: 'new-page' })
+    return
+  }
+  await applicationNavigation.navigate(destination)
 }
 </script>
 
@@ -642,13 +677,7 @@ async function navigate(routeName: string): Promise<void> {
     :composition="composition"
     :prepare-navigation-focus="prepareNavigationFocus"
     :navigation-focus-request="navigationFocusRequest"
-    :content-layout="
-      !containedContent
-        ? 'scroll'
-        : activeRouteName === 'workbench-dashboard' || activeRouteName === 'workbench-welcome'
-          ? 'contained-flush'
-          : 'contained'
-    "
+    :content-layout="contentLayout"
     :active-route-name="activeRouteName"
     :navigation="navigation"
     :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
@@ -733,7 +762,15 @@ async function navigate(routeName: string): Promise<void> {
       </div>
     </template>
     <template #footer>
-      <slot name="footer" />
+      <slot name="footer">
+        <div
+          v-if="activeRouteName.startsWith('preview-layout-') && composition?.endsWith('-footer')"
+          class="flex flex-wrap min-w-0 items-center justify-between bg-surface-panel gap-component-unit px-page-inline py-section-block text-caption text-text-secondary"
+        >
+          <span>{{ t('layoutPreview.footer') }}</span>
+          <span>{{ t('layoutPreview.workspace') }}</span>
+        </div>
+      </slot>
     </template>
     <slot />
   </UiAdminShell>

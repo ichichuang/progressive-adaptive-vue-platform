@@ -8,6 +8,7 @@ import type {
   RouteRevealBoundary,
 } from './route-motion-player'
 import type { AppearanceReadBoundary } from '../../appearance/appearance-read-boundary'
+import { settleAppearanceTransition } from '../../appearance/appearance-transition'
 import { getRouteRecord } from '../route-registry'
 import {
   acceptRouterNavigation,
@@ -358,6 +359,13 @@ export function createRouteTransitionCoordinator(input: {
     request: RouterNavigationRequest,
     options?: RouteTransitionNavigationOptions,
   ): Promise<TypedNavigationResult> => {
+    const appearanceSettled = settleAppearanceTransition()
+    if (appearanceSettled !== undefined) {
+      await appearanceSettled
+      if (!requestIsCurrent(request)) {
+        return request.completion
+      }
+    }
     const resolvedTarget = request.resolvedTarget
     if (resolvedTarget === undefined) return navigateDirectly(request)
     const fromRoute = getRouteRecord(input.router.currentRoute.value.name)

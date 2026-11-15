@@ -52,6 +52,7 @@ import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell
 import UiScrollArea from './UiScrollArea.vue'
 import UiColorScope from '../providers/UiColorScope.vue'
 import type { UiScrollController } from './scroll-contracts'
+import { trackThemePickerPointer } from './theme-picker-pointer'
 import type {
   UiAdminNavigationExpansionUpdate,
   UiAdminNavigationGroup,
@@ -202,6 +203,35 @@ const themePickerPinned = ref(false)
 const themePickerTrigger = ref<HTMLElement | null>(null)
 const themePickerPanel = ref<HTMLElement | null>(null)
 const themePickerId = `pavp-theme-picker-${useId()}`
+let themePickerPointer: { readonly x: number; readonly y: number } | undefined
+watch(
+  themePickerOpen,
+  (open, _previous, onCleanup) => {
+    if (open) {
+      onCleanup(
+        trackThemePickerPointer((point) => {
+          themePickerPointer = point
+        }),
+      )
+    }
+  },
+  { flush: 'sync' },
+)
+function pointerOverThemePicker(pointer = themePickerPointer): boolean {
+  const popup = themePickerPanel.value?.closest('.pavp-admin-shell__theme-picker-popover')
+  return [themePickerTrigger.value, popup].some((surface) => {
+    if (!surface) return false
+    if (pointer === undefined) return surface.matches(':hover')
+    const box = surface.getBoundingClientRect()
+    return (
+      pointer.x >= box.left &&
+      pointer.x < box.right &&
+      pointer.y >= box.top &&
+      pointer.y < box.bottom
+    )
+  })
+}
+
 function closeThemePicker(restoreFocus = false): void {
   themePickerOpen.value = false
   themePickerPinned.value = false
@@ -215,7 +245,25 @@ function closeThemePicker(restoreFocus = false): void {
       ?.focus()
 }
 function updateThemePicker(show: boolean): void {
-  if (show || !themePickerPinned.value) themePickerOpen.value = show
+  if (show) {
+    themePickerOpen.value = true
+    return
+  }
+  if (themePickerPinned.value) return
+
+  // A document snapshot briefly moves pointer hit testing off the live popover.
+  const transition = document.activeViewTransition
+  if (transition) {
+    void transition.finished
+      .catch(() => undefined)
+      .then(() => {
+        if (!themePickerPinned.value && !pointerOverThemePicker()) {
+          themePickerOpen.value = false
+        }
+      })
+    return
+  }
+  if (!pointerOverThemePicker()) themePickerOpen.value = false
 }
 async function openThemePickerFromKeyboard(): Promise<void> {
   themePickerPinned.value = true
@@ -266,6 +314,12 @@ function handleThemePickerOutside(event: MouseEvent): void {
     (themePickerTrigger.value?.contains(target) || themePickerPanel.value?.contains(target))
   )
     return
+  if (
+    document.activeViewTransition &&
+    event.detail > 0 &&
+    pointerOverThemePicker({ x: event.clientX, y: event.clientY })
+  )
+    return
   closeThemePicker()
 }
 function closeThemePickerForViewport(): void {
@@ -302,6 +356,7 @@ const navigationIconClasses = [
   'i-lucide-route',
   'i-lucide-database',
   'i-lucide-list-tree',
+  'i-lucide-external-link',
   'i-lucide-link',
   'i-lucide-component',
   'i-lucide-panels-top-left',
@@ -1262,6 +1317,7 @@ watch(
     ref="shell"
     :class="enabled ? 'pavp-admin-shell flex flex-col min-w-0' : 'pavp-admin-shell-document'"
     :data-header="hasHeader"
+    :data-adaptive-ui="administration ? 'admin' : undefined"
     :data-layout-profile="enabled ? profile : undefined"
     :data-navigation-collapsed="persistentNavigationCollapsed ? 'true' : 'false'"
     @keydown.capture="handleThemePickerEscape"
@@ -2144,6 +2200,11 @@ watch(
     background: var(--pavp-region-background, var(--ui-admin-surface-content));
   }
 
+  .pavp-admin-shell__content:not([data-content-flush]) {
+    container-name: pavp-admin-content;
+    container-type: inline-size;
+  }
+
   .pavp-admin-shell__content[data-content-flush] {
     overflow: visible;
   }
@@ -2208,8 +2269,21 @@ watch(
     gap: calc(var(--ui-space-content-gap) / 2);
   }
 
-  .pavp-admin-shell[data-layout-profile='narrow'] .pavp-admin-shell__content-inner {
-    padding: var(--ui-space-content-gap);
+  @container pavp-admin-content (width < 50em) {
+    .pavp-admin-shell__content-inner:not([data-content-flush]) {
+      padding-inline: max(var(--ui-space-content-gap), var(--pavp-safe-area-left))
+        max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
+      padding-block: var(--ui-space-content-gap)
+        max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
+    }
+  }
+
+  @media (height < 36rem) {
+    .pavp-admin-shell__content-inner:not([data-content-flush]) {
+      padding-block: var(--ui-space-content-gap)
+        max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
+      gap: var(--ui-space-content-gap);
+    }
   }
 
   .pavp-admin-shell .pavp-admin-shell__content-inner[data-content-flush] {

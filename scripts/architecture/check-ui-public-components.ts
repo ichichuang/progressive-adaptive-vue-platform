@@ -2064,7 +2064,13 @@ function dismiss(event?: MouseEvent): void {
             'UiTableEditor',
             'UiScrollArea',
           ].includes(component) ||
-          !new RegExp(`<${component}\\b`, 'u').test(source)
+          (!new RegExp(`<${component}\\b`, 'u').test(source) &&
+            !(
+              component === 'UiDisplayStage' &&
+              routeName === 'preview-layout-fixed-display' &&
+              path === resolve(workbenchDirectory, 'layout/DisplayLayoutPreview.vue') &&
+              /<component\b[^>]*:is="props\.fixed \? UiDisplayStage : 'div'"/u.test(source)
+            ))
         )
           continue
         // UiForm's recursive field renderer is itself a UiFormField consumer.

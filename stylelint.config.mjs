@@ -1,6 +1,9 @@
 import tokenManifest from './packages/design-system/src/generated/tokens.manifest.json' with { type: 'json' }
 import { structuralColorKeywords } from './scripts/architecture/style-ownership.ts'
-import { privateStyleVariables } from './scripts/architecture/style-owner-contracts.ts'
+import {
+  ownedStyleContracts,
+  privateStyleVariables,
+} from './scripts/architecture/style-owner-contracts.ts'
 import { mappingCssProperties } from './scripts/eslint-rules/style-authority.ts'
 
 // color-mix() has current declaration-level owners. The owner-aware PAVP rule
@@ -322,6 +325,37 @@ const shellVisualAuthorityRules = {
     ...shellMaterialColorVariables,
   ]),
 }
+const displayPreviewStylePath = 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue'
+// The scoped display computes stage-relative sizes. Exact declaration ownership
+// still applies; the generic visual rule admits only the values in that contract.
+function displayPreviewPatterns(...properties) {
+  return ownedStyleContracts
+    .filter((contract) => contract.path === displayPreviewStylePath)
+    .flatMap((contract) =>
+      contract.declarations
+        .filter(([property]) => properties.includes(property))
+        .map(([, value]) =>
+          value
+            .trim()
+            .split(/\s+/u)
+            .map(escapeRegularExpression)
+            .join(String.raw`\s+`),
+        ),
+    )
+}
+const displayPreviewVisualAuthorityRules = {
+  ...visualAuthorityRules,
+  'font-size': [
+    disallowOutsideAuthorities(fontSizeVariables, ['0'], displayPreviewPatterns('font-size')),
+  ],
+  [spacingProperties]: [
+    disallowOutsideAuthorities(
+      spacingVariables,
+      ['0', 'auto', 'normal'],
+      [...approvedSpacingPatterns, ...displayPreviewPatterns('gap', 'padding')],
+    ),
+  ],
+}
 const providerVisualAuthorityRules = {
   ...visualAuthorityRules,
   color: colorAuthorityRules(textColorVariables),
@@ -392,6 +426,7 @@ const workbenchVisualAuthorityRules = {
       [
         zeroLengthPattern,
         String.raw`clamp\(\s*var\(--ui-font-size-title\),\s*min\(10cqi,\s*14cqb\),\s*calc\(var\(--ui-workbench-display-font-size\)\s*\*\s*2\)\s*\)`,
+        String.raw`min\(\s*var\(--ui-font-size-title\),\s*calc\(var\(--ui-font-size-heading\)\s*\+\s*0\.75cqi\)\s*\)`,
       ],
     ),
   ],
@@ -437,6 +472,12 @@ const workbenchVisualAuthorityRules = {
 export default {
   plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
+    {
+      files: [`**/${displayPreviewStylePath}.style-*.css`],
+      rules: {
+        'declaration-property-value-disallowed-list': displayPreviewVisualAuthorityRules,
+      },
+    },
     {
       files: ['**/packages/ui/src/components/UiReportPreview.vue.style-2.css'],
       rules: {

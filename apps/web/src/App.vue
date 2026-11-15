@@ -19,7 +19,11 @@ import {
   provideRouteRevealBoundary,
 } from './app/router/route-transition/route-motion-player'
 import { createRouteTransitionCoordinator } from './app/router/route-transition/route-transition-coordinator'
-import { getRouteLayoutCapability, getRouteRecord } from './app/router/route-registry'
+import {
+  getRouteLayoutCapability,
+  getRouteRecord,
+  isDisplayLayoutPreview,
+} from './app/router/route-registry'
 
 import { useSystemTimeZone } from './app/date-time/use-system-time-zone'
 import { useDateTimeStore } from './app/date-time/date-time.store'
@@ -71,6 +75,7 @@ const containedContent = computed(() => {
   return (
     (routeRecord.value.name === 'control-center' ||
       routeRecord.value.name === 'workbench-welcome' ||
+      isDisplayLayoutPreview(routeRecord.value.name) ||
       routeRecord.value.name === 'workbench-dashboard' ||
       routeRecord.value.name === 'workbench-motion' ||
       routeRecord.value.name === 'workbench-date-time' ||
@@ -96,6 +101,10 @@ const tabpanel = computed(
 </script>
 
 <template>
+  <div
+    class="pavp-appearance-rift-edge"
+    aria-hidden="true"
+  />
   <UiProvider
     :appearance="appearance.snapshot.value"
     :locale="locale"

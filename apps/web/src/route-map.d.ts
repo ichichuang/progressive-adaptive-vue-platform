@@ -626,6 +626,69 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'preview-layout-admin': RouteRecordInfo<
+      'preview-layout-admin',
+      '/previews/layout/admin',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-admin-footer': RouteRecordInfo<
+      'preview-layout-admin-footer',
+      '/previews/layout/admin-footer',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-content': RouteRecordInfo<
+      'preview-layout-content',
+      '/previews/layout/content',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-content-footer': RouteRecordInfo<
+      'preview-layout-content-footer',
+      '/previews/layout/content-footer',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-display': RouteRecordInfo<
+      'preview-layout-display',
+      '/previews/layout/display',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-fixed-display': RouteRecordInfo<
+      'preview-layout-fixed-display',
+      '/previews/layout/fixed-display',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-header': RouteRecordInfo<
+      'preview-layout-header',
+      '/previews/layout/header',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layout-header-footer': RouteRecordInfo<
+      'preview-layout-header-footer',
+      '/previews/layout/header-footer',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-status-404': RouteRecordInfo<
+      'preview-status-404',
+      '/previews/status/404',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'api-advanced': RouteRecordInfo<
       'api-advanced',
       '/requests/advanced',
@@ -1391,6 +1454,78 @@ declare module 'vue-router/auto-routes' {
     'src/pages/motion.vue': {
       routes:
         | 'workbench-motion'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-admin.vue': {
+      routes:
+        | 'preview-layout-admin'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-admin-footer.vue': {
+      routes:
+        | 'preview-layout-admin-footer'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-content.vue': {
+      routes:
+        | 'preview-layout-content'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-content-footer.vue': {
+      routes:
+        | 'preview-layout-content-footer'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-display.vue': {
+      routes:
+        | 'preview-layout-display'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-fixed-display.vue': {
+      routes:
+        | 'preview-layout-fixed-display'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-header.vue': {
+      routes:
+        | 'preview-layout-header'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layout-header-footer.vue': {
+      routes:
+        | 'preview-layout-header-footer'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-status-404.vue': {
+      routes:
+        | 'preview-status-404'
       views:
         | never
       pathParamNames:

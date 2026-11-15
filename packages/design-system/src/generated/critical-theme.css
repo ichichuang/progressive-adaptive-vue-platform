@@ -1875,6 +1875,12 @@
     font-size: calc(100% * var(--ui-font-scale));
   }
 
+  /* Fit the reading scale to both axes without scaling non-administration displays.
+     Keep the browser default as the floor and user font preference as a multiplier. */
+  html:has([data-adaptive-ui='admin']) {
+    font-size: calc(clamp(100%, min(55% + 0.5vw, 55% + 0.92svh), 150%) * var(--ui-font-scale));
+  }
+
   html[data-color-mode='light'] {
     color-scheme: light;
   }

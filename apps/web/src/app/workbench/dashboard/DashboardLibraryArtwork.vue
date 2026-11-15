@@ -1,0 +1,333 @@
+<script setup lang="ts">
+import type { DashboardLibraryPreview } from './dashboard-card-presentation'
+
+defineProps<{ readonly preview: DashboardLibraryPreview }>()
+</script>
+
+<template>
+  <svg
+    class="dashboard-library-preview rounded-control w-full bg-surface-page"
+    viewBox="0 0 240 136"
+    aria-hidden="true"
+  >
+    <g v-if="preview === 'clock'">
+      <circle
+        cx="71"
+        cy="68"
+        r="45"
+        fill="var(--ui-color-expression-accent-a-soft-background)"
+      />
+      <circle
+        cx="71"
+        cy="68"
+        r="34"
+        fill="none"
+        stroke="var(--ui-color-expression-accent-a-soft-foreground)"
+        stroke-width="2"
+      />
+      <path
+        d="M71 43 V68 L87 78"
+        fill="none"
+        stroke="var(--ui-color-expression-accent-a-soft-foreground)"
+        stroke-width="4"
+        stroke-linecap="round"
+      />
+      <g fill="var(--ui-color-text-primary)">
+        <rect
+          x="132"
+          y="44"
+          width="79"
+          height="12"
+          rx="6"
+        />
+        <rect
+          x="132"
+          y="65"
+          width="49"
+          height="7"
+          rx="3.5"
+          opacity=".5"
+        />
+        <rect
+          x="132"
+          y="82"
+          width="68"
+          height="7"
+          rx="3.5"
+          opacity=".25"
+        />
+      </g>
+    </g>
+    <g v-else-if="preview === 'chart'">
+      <g
+        stroke="var(--ui-color-border-default)"
+        stroke-width="1"
+      >
+        <path d="M20 28 H220 M20 62 H220 M20 96 H220" />
+      </g>
+      <path
+        d="M20 93 C45 93 40 50 67 66 S99 105 121 63 S151 81 174 43 S200 54 220 24 V116 H20 Z"
+        fill="var(--ui-color-expression-accent-a-soft-background)"
+      />
+      <path
+        d="M20 93 C45 93 40 50 67 66 S99 105 121 63 S151 81 174 43 S200 54 220 24"
+        fill="none"
+        stroke="var(--ui-color-action-primary)"
+        stroke-width="3"
+        stroke-linecap="round"
+      />
+      <path
+        d="M20 102 C50 102 60 80 89 86 S125 103 150 77 S195 75 220 52"
+        fill="none"
+        stroke="var(--ui-color-expression-accent-b-soft-foreground)"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </g>
+    <g v-else-if="preview === 'comparison'">
+      <path
+        d="M22 112 H218"
+        fill="none"
+        stroke="var(--ui-color-border-default)"
+      />
+      <g fill="var(--ui-color-action-primary)">
+        <rect
+          x="36"
+          y="60"
+          width="23"
+          height="52"
+          rx="5"
+        />
+        <rect
+          x="96"
+          y="42"
+          width="23"
+          height="70"
+          rx="5"
+        />
+        <rect
+          x="156"
+          y="22"
+          width="23"
+          height="90"
+          rx="5"
+        />
+      </g>
+      <g fill="var(--ui-color-expression-accent-b-solid-background)">
+        <rect
+          x="63"
+          y="76"
+          width="16"
+          height="36"
+          rx="5"
+        />
+        <rect
+          x="123"
+          y="58"
+          width="16"
+          height="54"
+          rx="5"
+        />
+        <rect
+          x="183"
+          y="41"
+          width="16"
+          height="71"
+          rx="5"
+        />
+      </g>
+    </g>
+    <g v-else-if="preview === 'notes'">
+      <rect
+        x="25"
+        y="20"
+        width="190"
+        height="96"
+        rx="12"
+        fill="var(--ui-color-expression-accent-b-soft-background)"
+      />
+      <g fill="var(--ui-color-expression-accent-b-soft-foreground)">
+        <rect
+          x="42"
+          y="39"
+          width="80"
+          height="9"
+          rx="4"
+        />
+        <rect
+          x="42"
+          y="63"
+          width="145"
+          height="5"
+          rx="2.5"
+          opacity=".55"
+        />
+        <rect
+          x="42"
+          y="77"
+          width="126"
+          height="5"
+          rx="2.5"
+          opacity=".4"
+        />
+        <rect
+          x="42"
+          y="91"
+          width="91"
+          height="5"
+          rx="2.5"
+          opacity=".3"
+        />
+      </g>
+    </g>
+    <g v-else-if="preview === 'capabilities'">
+      <g fill="var(--ui-color-expression-accent-a-soft-background)">
+        <rect
+          x="24"
+          y="22"
+          width="88"
+          height="42"
+          rx="9"
+        />
+        <rect
+          x="24"
+          y="73"
+          width="88"
+          height="42"
+          rx="9"
+        />
+      </g>
+      <g fill="var(--ui-color-expression-accent-b-soft-background)">
+        <rect
+          x="126"
+          y="22"
+          width="88"
+          height="42"
+          rx="9"
+        />
+        <rect
+          x="126"
+          y="73"
+          width="88"
+          height="42"
+          rx="9"
+        />
+      </g>
+      <g
+        fill="none"
+        stroke="var(--ui-color-action-primary)"
+        stroke-width="3"
+        stroke-linecap="round"
+      >
+        <path d="M41 43 H62 M126 43 H146 M42 94 H63 M144 94 H165" />
+        <path
+          d="M88 39 L92 43 L88 47 M191 39 L195 43 L191 47 M88 90 L92 94 L88 98 M191 90 L195 94 L191 98"
+        />
+      </g>
+    </g>
+    <g v-else-if="preview === 'module'">
+      <rect
+        x="24"
+        y="24"
+        width="56"
+        height="88"
+        rx="12"
+        fill="var(--ui-color-action-primary)"
+      />
+      <rect
+        x="92"
+        y="24"
+        width="56"
+        height="88"
+        rx="12"
+        fill="var(--ui-color-expression-accent-a-solid-background)"
+      />
+      <rect
+        x="160"
+        y="24"
+        width="56"
+        height="88"
+        rx="12"
+        fill="var(--ui-color-expression-accent-b-solid-background)"
+      />
+      <circle
+        cx="52"
+        cy="90"
+        r="7"
+        fill="var(--ui-color-text-on-action)"
+      />
+      <circle
+        cx="120"
+        cy="90"
+        r="7"
+        fill="var(--ui-color-expression-accent-a-solid-foreground)"
+      />
+      <circle
+        cx="188"
+        cy="90"
+        r="7"
+        fill="var(--ui-color-expression-accent-b-solid-foreground)"
+      />
+    </g>
+    <g v-else>
+      <rect
+        x="25"
+        y="20"
+        width="190"
+        height="96"
+        rx="12"
+        fill="var(--ui-color-expression-accent-a-soft-background)"
+      />
+      <rect
+        x="39"
+        y="34"
+        width="33"
+        height="68"
+        rx="5"
+        fill="var(--ui-color-action-primary)"
+      />
+      <rect
+        x="83"
+        y="34"
+        width="117"
+        height="12"
+        rx="5"
+        fill="var(--ui-color-expression-accent-a-soft-foreground)"
+        opacity=".24"
+      />
+      <rect
+        x="83"
+        y="56"
+        width="53"
+        height="46"
+        rx="5"
+        fill="var(--ui-color-surface-panel)"
+      />
+      <rect
+        x="146"
+        y="56"
+        width="54"
+        height="46"
+        rx="5"
+        fill="var(--ui-color-expression-accent-b-soft-background)"
+      />
+      <path
+        v-if="preview === 'route'"
+        d="M160 72 H183 V94 M183 72 L160 95"
+        fill="none"
+        stroke="var(--ui-color-expression-accent-b-soft-foreground)"
+        stroke-width="3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        v-else
+        d="M160 74 H185 M160 84 H180 M160 94 H175"
+        fill="none"
+        stroke="var(--ui-color-expression-accent-b-soft-foreground)"
+        stroke-width="3"
+        stroke-linecap="round"
+      />
+    </g>
+  </svg>
+</template>

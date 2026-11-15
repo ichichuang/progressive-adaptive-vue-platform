@@ -118,7 +118,26 @@ const allProductRoutes = Object.freeze([
   'component-chart-stage',
 ] as const)
 
-const contentRoutes = Object.freeze([...allProductRoutes, 'control-center'] as const)
+const layoutPreviewRoutes = Object.freeze([
+  'preview-layout-admin',
+  'preview-layout-admin-footer',
+  'preview-layout-header',
+  'preview-layout-header-footer',
+  'preview-layout-content-footer',
+  'preview-layout-content',
+] as const)
+
+const displayPreviewRoutes = Object.freeze([
+  'preview-layout-display',
+  'preview-layout-fixed-display',
+] as const)
+
+const contentRoutes = Object.freeze([
+  ...allProductRoutes,
+  ...layoutPreviewRoutes,
+  ...displayPreviewRoutes,
+  'control-center',
+] as const)
 
 const formExampleRoutes = Object.freeze([
   'api-integration',
@@ -144,6 +163,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
     ]),
     UiReportPreview: Object.freeze(['component-combination-report']),
     UiG2Chart: Object.freeze([
+      ...displayPreviewRoutes,
       'component-combination-report',
       'workbench-date-time',
       'workbench-welcome',
@@ -216,7 +236,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-form-controls',
     ]),
     UiSection: Object.freeze(['workbench-interactions', 'workbench-date-time', 'component-layout']),
-    UiDisplayStage: Object.freeze(['component-chart-stage']),
+    UiDisplayStage: Object.freeze(['component-chart-stage', 'preview-layout-fixed-display']),
     UiDashboardGrid: Object.freeze(['workbench-dashboard', 'component-chart-stage']),
     UiStatusBadge: Object.freeze(['component-showcase', 'component-data']),
   },

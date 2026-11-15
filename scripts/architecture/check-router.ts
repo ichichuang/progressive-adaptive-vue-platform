@@ -18,7 +18,7 @@ import {
 import {
   activeDynamicRouteRegistry,
   activeRedirectRegistry,
-  consoleNavigationItems,
+  consoleWorkspaceNavigationItems,
   errorRouteRegistry,
   focusContractRegistry,
   routeLayoutCapabilityRegistry,
@@ -163,6 +163,15 @@ const expectedPageSources = [
   'apps/web/src/pages/error/500.vue',
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
+  'apps/web/src/pages/preview-status-404.vue',
+  'apps/web/src/pages/preview-layout-admin.vue',
+  'apps/web/src/pages/preview-layout-admin-footer.vue',
+  'apps/web/src/pages/preview-layout-header.vue',
+  'apps/web/src/pages/preview-layout-header-footer.vue',
+  'apps/web/src/pages/preview-layout-content-footer.vue',
+  'apps/web/src/pages/preview-layout-content.vue',
+  'apps/web/src/pages/preview-layout-display.vue',
+  'apps/web/src/pages/preview-layout-fixed-display.vue',
 ] as const
 const expectedProductPageSources = expectedPageSources.slice(0, 89)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
@@ -1140,7 +1149,107 @@ const expectedRouteRecords = [
     'route.error.service-unavailable',
     'application-boundary',
   ],
+  [
+    'apps/web/src/pages/preview-status-404.vue',
+    'preview-status-404',
+    '/previews/status/404',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-route-not-found',
+    'route.preview.status.not-found',
+    'application-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-admin.vue',
+    'preview-layout-admin',
+    '/previews/layout/admin',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-admin',
+    'route.preview.layout.admin',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-admin-footer.vue',
+    'preview-layout-admin-footer',
+    '/previews/layout/admin-footer',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-admin-footer',
+    'route.preview.layout.admin-footer',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-header.vue',
+    'preview-layout-header',
+    '/previews/layout/header',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-header',
+    'route.preview.layout.header',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-header-footer.vue',
+    'preview-layout-header-footer',
+    '/previews/layout/header-footer',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-header-footer',
+    'route.preview.layout.header-footer',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-content-footer.vue',
+    'preview-layout-content-footer',
+    '/previews/layout/content-footer',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-content-footer',
+    'route.preview.layout.content-footer',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-content.vue',
+    'preview-layout-content',
+    '/previews/layout/content',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-content',
+    'route.preview.layout.content',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-display.vue',
+    'preview-layout-display',
+    '/previews/layout/display',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-display',
+    'route.preview.layout.display',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layout-fixed-display.vue',
+    'preview-layout-fixed-display',
+    '/previews/layout/fixed-display',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layout-fixed-display',
+    'route.preview.layout.fixed-display',
+    'route-boundary',
+  ],
 ] as const
+const previewLayoutCapabilities: Readonly<Record<string, string>> = {
+  'preview-layout-admin': 'route-layout.architecture-admin-console',
+  'preview-layout-admin-footer': 'route-layout.architecture-admin-console-footer',
+  'preview-layout-header': 'route-layout.header-content',
+  'preview-layout-header-footer': 'route-layout.header-content-footer',
+  'preview-layout-content-footer': 'route-layout.content-footer',
+  'preview-layout-content': 'route-layout.content-only',
+  'preview-layout-display': 'route-layout.content-only',
+  'preview-layout-fixed-display': 'route-layout.content-only',
+}
 const expectedReadingCommonMeta = {
   layout: 'reading',
   layoutCapabilityId: 'route-layout.reading-document',
@@ -1380,6 +1489,28 @@ const expectedRouteTitles = {
   'route-title.error-application-route-failure': '页面不可用',
   'route-title.error-network-unavailable': '当前离线',
   'route-title.error-service-unavailable': '服务不可用',
+  'route-title.preview-layout-admin': getDefaultConsoleMessage('route-title.preview-layout-admin'),
+  'route-title.preview-layout-admin-footer': getDefaultConsoleMessage(
+    'route-title.preview-layout-admin-footer',
+  ),
+  'route-title.preview-layout-header': getDefaultConsoleMessage(
+    'route-title.preview-layout-header',
+  ),
+  'route-title.preview-layout-header-footer': getDefaultConsoleMessage(
+    'route-title.preview-layout-header-footer',
+  ),
+  'route-title.preview-layout-content-footer': getDefaultConsoleMessage(
+    'route-title.preview-layout-content-footer',
+  ),
+  'route-title.preview-layout-content': getDefaultConsoleMessage(
+    'route-title.preview-layout-content',
+  ),
+  'route-title.preview-layout-display': getDefaultConsoleMessage(
+    'route-title.preview-layout-display',
+  ),
+  'route-title.preview-layout-fixed-display': getDefaultConsoleMessage(
+    'route-title.preview-layout-fixed-display',
+  ),
 } as const
 const expectedMessages = [
   [
@@ -1851,6 +1982,51 @@ const expectedMessages = [
     '当前处于离线状态，无法访问此页面。',
   ],
   ['error-service-unavailable', 'route-message.error-service-unavailable', '此服务暂时不可用。'],
+  [
+    'preview-status-404',
+    'route-message.preview-status-404',
+    getDefaultConsoleMessage('route-message.preview-status-404'),
+  ],
+  [
+    'preview-layout-admin',
+    'route-message.preview-layout-admin-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-admin-summary'),
+  ],
+  [
+    'preview-layout-admin-footer',
+    'route-message.preview-layout-admin-footer-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-admin-footer-summary'),
+  ],
+  [
+    'preview-layout-header',
+    'route-message.preview-layout-header-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-header-summary'),
+  ],
+  [
+    'preview-layout-header-footer',
+    'route-message.preview-layout-header-footer-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-header-footer-summary'),
+  ],
+  [
+    'preview-layout-content-footer',
+    'route-message.preview-layout-content-footer-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-content-footer-summary'),
+  ],
+  [
+    'preview-layout-content',
+    'route-message.preview-layout-content-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-content-summary'),
+  ],
+  [
+    'preview-layout-display',
+    'route-message.preview-layout-display-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-display-summary'),
+  ],
+  [
+    'preview-layout-fixed-display',
+    'route-message.preview-layout-fixed-display-summary',
+    getDefaultConsoleMessage('route-message.preview-layout-fixed-display-summary'),
+  ],
 ] as const
 const expectedErrorRoutes = [
   ['400', 'invalid-route-input', 'error-invalid-route-input'],
@@ -1932,6 +2108,7 @@ interface RouterInteractionNegativeProbeResult {
 interface RouteTransitionSourceSnapshot {
   readonly appSource: string
   readonly applicationSource: string
+  readonly appearanceTransitionSource: string
   readonly applicationNavigationSource: string
   readonly boundarySource: string
   readonly checkBundleSource: string
@@ -2084,7 +2261,7 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
   }
 
   const currentRouteGuard =
-    /isCurrentDestination:\s*resolved !== undefined && sameRouteAddress\(router.currentRoute.value, resolved\)/u.exec(
+    /isCurrentDestination:\s*item.openIn !== 'new-page' &&\s*resolved !== undefined &&\s*sameRouteAddress\(router.currentRoute.value, resolved\)/u.exec(
       snapshot.frameSource,
     )
   const navigationCall = frameMenuNavigation(snapshot.frameSource)
@@ -4269,7 +4446,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact eighty-one-record authority.')
+    violations.push('Router Route Registry diverged from the exact 105-record authority.')
   }
 
   if (
@@ -4289,8 +4466,18 @@ function registryViolations(): string[] {
               ...expectedConsoleCommonMeta,
               keepAlive: 'never',
             }
-          : expectedReadingCommonMeta
+          : record.name.startsWith('preview-layout-')
+            ? {
+                ...expectedConsoleCommonMeta,
+                layout: record.name.startsWith('preview-layout-admin')
+                  ? 'workspace'
+                  : 'focused-task',
+                layoutCapabilityId: previewLayoutCapabilities[record.name],
+                keepAlive: 'never',
+              }
+            : expectedReadingCommonMeta
     const expectedBreadcrumbKey =
+      !record.name.startsWith('preview-') &&
       record.meta.routeTransitionFamilyId === 'route-family.architecture-workspace'
         ? `route-breadcrumb.${record.name}`
         : null
@@ -4298,7 +4485,11 @@ function registryViolations(): string[] {
       .slice(0, 88)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
-      record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
+      record.name === 'control-center'
+        ? 'appearance'
+        : expectedWorkspace || record.name.startsWith('preview-layout-')
+          ? 'console'
+          : 'common'
     if (
       !isDeepStrictEqual(commonMeta, expectedCommonMeta) ||
       !isDeepStrictEqual(record.capabilityStatus, 'ACTIVE') ||
@@ -4696,9 +4887,7 @@ async function pageViolations(): Promise<string[]> {
     .map((path) => relative(rootDirectory, path).split('\\').join('/'))
 
   if (!exactSet(pageFiles, expectedPageSources)) {
-    return [
-      'Official Router page source root must contain exactly the eighty-one admitted Vue files.',
-    ]
+    return ['Official Router page source root must contain exactly the 105 admitted Vue files.']
   }
 
   const workbenchOwner = await readFile(
@@ -4779,6 +4968,41 @@ async function pageViolations(): Promise<string[]> {
       )
   }
 
+  const notFoundView = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/errors/RouteNotFoundView.vue'),
+    'utf8',
+  )
+  if (
+    count(notFoundView, /<main\b/gu) !== 1 ||
+    count(notFoundView, /<h1\b/gu) !== 1 ||
+    count(notFoundView, /data-route-focus="primary-heading"/gu) !== 1 ||
+    count(notFoundView, /tabindex="-1"/gu) !== 1
+  )
+    violations.push(
+      'Shared not-found view must preserve its reading-document heading and focus owner.',
+    )
+  const layoutPreviewView = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/workbench/layout/LayoutPreview.vue'),
+    'utf8',
+  )
+  if (
+    count(layoutPreviewView, /<WorkbenchPage\b/gu) !== 1 ||
+    count(layoutPreviewView, /<(?:main|h1|UiPageHeader)\b/gu) !== 0
+  )
+    violations.push('Layout previews must preserve the single WorkbenchPage heading owner.')
+  const displayPreviewView = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue'),
+    'utf8',
+  )
+  if (
+    count(displayPreviewView, /<h1\b/gu) !== 1 ||
+    count(displayPreviewView, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
+    count(displayPreviewView, /tabindex="-1"/gu) !== 1 ||
+    count(displayPreviewView, /<(?:main|WorkbenchPage|UiPageHeader)\b/gu) !== 0
+  )
+    violations.push(
+      'Display previews must own one named shell-focus heading without another page shell.',
+    )
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
     const productPage = expectedProductPageSources.includes(sourcePath)
@@ -4902,8 +5126,54 @@ async function pageViolations(): Promise<string[]> {
                                             !source.includes(
                                               "from '../app/workbench/WorkbenchPage.vue'",
                                             )) || count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
+    const layoutPreview = sourcePath.startsWith('apps/web/src/pages/preview-layout-')
+    const displayPreview =
+      sourcePath === 'apps/web/src/pages/preview-layout-display.vue' ||
+      sourcePath === 'apps/web/src/pages/preview-layout-fixed-display.vue'
+    if (
+      displayPreview &&
+      (count(source, /<DisplayLayoutPreview\b/gu) !== 1 ||
+        !source.includes('../app/workbench/layout/DisplayLayoutPreview.vue') ||
+        !source.includes(':title="title"') ||
+        !source.includes(':message="message"') ||
+        /<DisplayLayoutPreview\b[^>]*\sfixed(?:\s|\/?>)/u.test(source) !==
+          sourcePath.endsWith('preview-layout-fixed-display.vue') ||
+        count(source, /<(?:main|h1|UiPageHeader|WorkbenchPage)\b/gu) !== 0)
+    )
+      violations.push(
+        `${sourcePath}: Display wrapper must forward route props and its exact scaling mode.`,
+      )
+    const notFoundWrapper =
+      sourcePath === 'apps/web/src/pages/[...path].vue' ||
+      sourcePath === 'apps/web/src/pages/preview-status-404.vue'
+    if (
+      layoutPreview &&
+      !displayPreview &&
+      (count(source, /<LayoutPreview\b/gu) !== 1 ||
+        !source.includes('../app/workbench/layout/LayoutPreview.vue') ||
+        !source.includes(
+          `variant="${basename(sourcePath, '.vue').replace(/^preview-layout-/u, '')}"`,
+        ) ||
+        count(source, /<(?:main|h1|UiPageHeader|WorkbenchPage)\b/gu) !== 0)
+    )
+      violations.push(
+        `${sourcePath}: Layout wrapper must use the shared preview with its exact variant.`,
+      )
+    if (
+      notFoundWrapper &&
+      (count(source, /<RouteNotFoundView\b/gu) !== 1 ||
+        !source.includes('app/errors/RouteNotFoundView.vue') ||
+        !source.includes(':title="title"') ||
+        !source.includes(':message="message"') ||
+        count(source, /<(?:main|h1)\b/gu) !== 0)
+    )
+      violations.push(
+        `${sourcePath}: Not-found wrapper must forward its route props to the shared focus owner.`,
+      )
     const errorPageInvalid =
       !productPage &&
+      !layoutPreview &&
+      !notFoundWrapper &&
       (count(source, /<main\b/gu) !== 1 ||
         count(source, /<h1\b/gu) !== 1 ||
         count(source, /data-route-focus="primary-heading"/gu) !== 1 ||
@@ -5930,6 +6200,10 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     appSource,
     applicationNavigationSource,
     applicationSource: applicationSources.join('\n'),
+    appearanceTransitionSource: await readFile(
+      resolve(applicationDirectory, 'app/appearance/appearance-transition.ts'),
+      'utf8',
+    ),
     boundarySource,
     checkBundleSource,
     coordinatorSource,
@@ -5962,10 +6236,14 @@ function routeTransitionSourceProofResults(
   snapshot: RouteTransitionSourceSnapshot,
 ): readonly RouteTransitionSourceProofResult[] {
   const productRoutes = routeRegistry.filter(
-    (route) => route.meta.routeTransitionFamilyId === 'route-family.architecture-workspace',
+    (route) =>
+      !route.name.startsWith('preview-') &&
+      route.meta.routeTransitionFamilyId === 'route-family.architecture-workspace',
   )
   const errorRoutes = routeRegistry.filter(
-    (route) => route.meta.routeTransitionFamilyId === 'route-family.error',
+    (route) =>
+      !route.name.startsWith('preview-') &&
+      route.meta.routeTransitionFamilyId === 'route-family.error',
   )
   const presetIds = routeTransitionPresetRegistry.map((preset) => preset.id)
   const presetRecords: readonly {
@@ -6232,7 +6510,8 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_13_NATIVE_CALL_OWNER',
       passed:
-        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 1 &&
+        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 2 &&
+        count(snapshot.appearanceTransitionSource, /document\.startViewTransition\s*\(/gu) === 1 &&
         count(snapshot.coordinatorSource, /\.startViewTransition\s*\(/gu) === 1 &&
         !/document(?:\.documentElement)?\.startViewTransition|document\.documentElement/.test(
           snapshot.coordinatorSource,
@@ -6487,9 +6766,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -6622,7 +6901,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
@@ -7685,8 +7964,13 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const chartRangeScope = '**/packages/ui/src/components/UiChartTimeRange.vue.style-*.css'
   const chartRangePath = 'packages/ui/src/components/UiChartTimeRange.vue.style-0.css'
   const reportPrintScope = '**/packages/ui/src/components/UiReportPreview.vue.style-2.css'
+  const displayPreviewScope =
+    '**/apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue.style-*.css'
+  const displayPreviewPath =
+    'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue.style-0.css'
   const expectedOverrideScopes = [
     [reportPrintScope],
+    [displayPreviewScope],
     [routePath],
     [previewScope],
     [workbenchScope],
@@ -7706,6 +7990,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     tablePath,
     chartRangePath,
     colorStylePath,
+    displayPreviewPath,
   ]
   const configModule: unknown = await import(
     pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
@@ -7842,6 +8127,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         const tableStyleScope = isDeepStrictEqual(files, [tableScope])
         const chartRangeStyleScope = isDeepStrictEqual(files, [chartRangeScope])
         const colorStylePreviewScope = isDeepStrictEqual(files, [colorStyleScope])
+        const displayFitScope = isDeepStrictEqual(files, [displayPreviewScope])
         return (
           (reportScope ||
             routeScope ||
@@ -7851,13 +8137,16 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             providerStyleScope ||
             tableStyleScope ||
             chartRangeStyleScope ||
-            colorStylePreviewScope) &&
+            colorStylePreviewScope ||
+            displayFitScope) &&
           isDeepStrictEqual(
             ruleKeys,
             reportScope ? ['color-named', declarationPolicyRule] : [declarationPolicyRule],
           ) &&
           (!reportScope || (await check(config, globalPath, 'color', 'black', false))) &&
           (!reportScope || (await check(config, globalPath, 'color', 'red', true))) &&
+          (await check(config, globalPath, 'font-size', '1.55em', !displayFitScope)) &&
+          (await check(config, globalPath, 'font-size', '1.83em', true)) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&
           (await check(config, globalPath, 'transition-duration', full, true)) &&
@@ -7920,7 +8209,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
                 providerStyleScope ||
                 tableStyleScope ||
                 chartRangeStyleScope ||
-                colorStylePreviewScope,
+                colorStylePreviewScope ||
+                displayFitScope,
             )))
         )
       }),
@@ -8675,7 +8965,7 @@ function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): st
     axis?.ruleId !== 'route-transition-rule.architecture-workspace-axis' ||
     !isDeepStrictEqual(axis.routeNames, workspaceAxisRouteNames) ||
     !isDeepStrictEqual(
-      consoleNavigationItems.map((item) => item.destination.name),
+      consoleWorkspaceNavigationItems.map((item) => item.destination.name),
       workspaceAxisRouteNames,
     ) ||
     axis.forwardPresetId !== 'route-transition.axis-inline-soft' ||

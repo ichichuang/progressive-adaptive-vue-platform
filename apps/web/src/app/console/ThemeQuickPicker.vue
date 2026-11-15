@@ -5,11 +5,15 @@ import {
   projectAccessibleCustomAppearanceThemePreviews,
   type AppearanceThemePreviewProjection,
 } from '@platform/design-system'
-import { type ButtonHTMLAttributes, computed, ref, type HTMLAttributes } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref, shallowRef, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NIcon } from 'naive-ui/es/icon'
 import { useAppearanceMutationBoundary } from '../appearance/appearance-mutation-boundary'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
+import {
+  playAppearanceTransition,
+  readAppearanceTransitionOrigin,
+} from '../appearance/appearance-transition'
 import { useConsoleI18n } from '../../shared/i18n'
 
 const mutation = useAppearanceMutationBoundary()
@@ -17,6 +21,7 @@ const effective = useAppearanceReadBoundary()
 const { t } = useConsoleI18n()
 const rejected = ref(false)
 const hovered = ref<AppearanceThemePreviewProjection | null>(null)
+const heldHover = shallowRef<{ readonly key: string }>()
 const preview = computed(() => hovered.value ?? themes.value.find(selected) ?? themes.value[0])
 const previewColors = computed(() => (preview.value === undefined ? null : swatches(preview.value)))
 const choiceLayout = Object.freeze({ heightSmall: 'auto', paddingSmall: '0' })
@@ -33,17 +38,44 @@ function selected(theme: AppearanceThemePreviewProjection): boolean {
 function swatches(theme: AppearanceThemePreviewProjection) {
   return theme.planes[effective.snapshot.value.colorMode][effective.snapshot.value.contrast]
 }
-function choose(theme: AppearanceThemePreviewProjection): void {
-  const current = explicitThemePreferenceSchema.safeParse(mutation.preference.value)
-  if (!current.success) {
-    rejected.value = true
-    return
+function themeKey(theme: AppearanceThemePreviewProjection): string {
+  return `${theme.registryKind}:${theme.themeId}`
+}
+function choose(theme: AppearanceThemePreviewProjection, event: MouseEvent): void {
+  const trigger = event.currentTarget
+  const holdPointer =
+    event.detail > 0 && trigger instanceof HTMLElement && trigger.matches(':hover')
+  const transition = playAppearanceTransition({
+    kind: 'palette',
+    motion: effective.snapshot.value.motion,
+    origin: readAppearanceTransitionOrigin(event),
+    commit: () => {
+      if (selected(theme)) return
+      const current = explicitThemePreferenceSchema.safeParse(mutation.preference.value)
+      if (!current.success) {
+        rejected.value = true
+        return
+      }
+      rejected.value =
+        mutation.commitPreference({
+          ...current.data,
+          appearance: { ...current.data.appearance, theme: theme.reference },
+        }).status !== 'committed'
+    },
+  })
+  if (!holdPointer || transition === undefined) return
+
+  // Browser snapshots temporarily remove native :hover from the live card.
+  const hold = { key: themeKey(theme) }
+  heldHover.value = hold
+  const release = (): void => {
+    requestAnimationFrame(() => {
+      if (heldHover.value !== hold) return
+      heldHover.value = undefined
+      if (hovered.value === theme && !trigger.matches(':hover')) hovered.value = null
+    })
   }
-  rejected.value =
-    mutation.commitPreference({
-      ...current.data,
-      appearance: { ...current.data.appearance, theme: theme.reference },
-    }).status !== 'committed'
+  void transition.finished.then(release, release)
 }
 </script>
 
@@ -176,22 +208,23 @@ function choose(theme: AppearanceThemePreviewProjection): void {
     >
       <NButton
         v-for="theme in themes"
-        :key="`${theme.registryKind}:${theme.themeId}`"
+        :key="themeKey(theme)"
         v-bind="
           {
             'aria-label': theme.label,
             'aria-pressed': selected(theme),
             onMouseenter: () => {
+              if (heldHover?.key !== themeKey(theme)) heldHover = undefined
               hovered = theme
             },
             onMouseleave: () => {
-              hovered = null
+              if (heldHover?.key !== themeKey(theme)) hovered = null
             },
             onFocus: () => {
               hovered = theme
             },
             onBlur: () => {
-              hovered = null
+              if (heldHover?.key !== themeKey(theme)) hovered = null
             },
           } satisfies ButtonHTMLAttributes
         "
@@ -204,7 +237,8 @@ function choose(theme: AppearanceThemePreviewProjection): void {
         class="theme-quick-choice min-h-target-enhanced min-w-target-enhanced"
         attr-type="button"
         data-pavp-quick-theme
-        @click="choose(theme)"
+        :data-pavp-quick-theme-held="heldHover?.key === themeKey(theme) ? '' : undefined"
+        @click="choose(theme, $event)"
       >
         <span class="theme-quick-choice-content grid justify-items-center gap-component-unit">
           <svg
@@ -276,6 +310,8 @@ function choose(theme: AppearanceThemePreviewProjection): void {
 }
 .theme-quick-choice-content {
   padding: var(--ui-space-component-unit);
+  pointer-events: none;
+  transition: transform var(--ui-motion-duration) var(--ui-motion-easing);
 }
 .theme-quick-palette {
   inline-size: calc(
@@ -288,10 +324,10 @@ function choose(theme: AppearanceThemePreviewProjection): void {
     fill var(--ui-motion-duration) var(--ui-motion-easing),
     stroke var(--ui-motion-duration) var(--ui-motion-easing);
 }
-.theme-quick-choice {
-  transition: transform var(--ui-motion-duration) var(--ui-motion-easing);
-}
-html[data-motion='full'] .theme-quick-choice:hover {
+/* Move the artwork, not the button hit area or its focus outline. */
+html[data-motion='full']
+  .theme-quick-choice:is(:hover, [data-pavp-quick-theme-held])
+  .theme-quick-choice-content {
   transform: translateY(calc(var(--ui-space-component-unit) * -1));
 }
 </style>

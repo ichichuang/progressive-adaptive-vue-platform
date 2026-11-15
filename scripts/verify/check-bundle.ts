@@ -102,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 96
+const expectedLazyRouteCount = 105
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -122,7 +122,7 @@ const localizationResourceManifestKeys = [
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
 const cinematicGpuManifestKey = '../../packages/ui/src/adapters/motion/cinematic-gpu-stage.ts'
-const expectedDynamicRootCount = 110
+const expectedDynamicRootCount = 119
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
@@ -762,6 +762,9 @@ async function validateProductionCssLayers(cssFiles: ReadonlySet<string>): Promi
     readonly type: string
     readonly name?: string
     readonly params?: string
+    readonly selector?: string
+    readonly prop?: string
+    readonly value?: string
     readonly nodes?: readonly CssNode[]
   }
   const { parse } = createRequire(import.meta.resolve('stylelint'))('postcss') as {
@@ -772,6 +775,18 @@ async function validateProductionCssLayers(cssFiles: ReadonlySet<string>): Promi
     const root = parse(await readFile(resolve(distributionDirectory, path), 'utf8'))
     const layerNodes: CssNode[] = []
     const visit = (node: CssNode, inLayer = false): void => {
+      if (
+        node.type === 'rule' &&
+        node.selector?.split(',').some((selector) => selector.trim() === '#pavp-overlay-root') &&
+        node.nodes?.some(
+          (child) =>
+            child.type === 'decl' &&
+            (child.prop === 'transform' || child.prop === 'translate') &&
+            !['none', 'initial', 'unset'].includes(child.value ?? ''),
+        )
+      ) {
+        throw new Error(`${path}: the overlay root must not create a transform stacking context.`)
+      }
       const isLayer = node.type === 'atrule' && node.name === 'layer'
       if (isLayer) {
         layerNodes.push(node)

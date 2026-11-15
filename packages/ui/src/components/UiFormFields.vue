@@ -87,8 +87,8 @@ const nodes = computed(() =>
 
 <template>
   <div
-    class="grid grid-cols-1 min-w-0 gap-field-gap"
-    :class="columns === 2 ? 'layout-regular:grid-cols-2 layout-wide:grid-cols-2' : ''"
+    class="pavp-form-fields grid min-w-0 gap-field-gap"
+    :class="columns === 1 ? 'grid-cols-1' : ''"
     :data-columns="columns"
   >
     <template
@@ -324,6 +324,22 @@ const nodes = computed(() =>
 
 <style>
 @layer components {
+  .pavp-form-fields[data-columns='2'] {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(
+          100%,
+          max(
+            var(--ui-layout-admin-content-minimum-inline-size),
+            (100% - var(--ui-space-field-gap)) / 2
+          )
+        ),
+        1fr
+      )
+    );
+  }
+
   .pavp-form-section:focus-visible {
     outline: var(--ui-admin-border-focus);
     outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));

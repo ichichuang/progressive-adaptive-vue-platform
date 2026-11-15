@@ -2540,6 +2540,27 @@ const noUnapprovedVisualLiterals = {
             return
           }
           if (sinks.dom(object) && method === 'animate') {
+            if (filename === 'apps/web/src/app/appearance/appearance-transition.ts') {
+              const frames = singleStyleProperty(arguments_[0])
+              const options = resolveLocalExpression(arguments_[1])
+              if (
+                frames !== undefined &&
+                getStaticPropertyName(frames.key, frames.computed) === 'clipPath' &&
+                options?.type === 'ObjectExpression' &&
+                options.properties.some(
+                  (property) =>
+                    property.type === 'Property' &&
+                    getStaticPropertyName(property.key, property.computed) === 'pseudoElement' &&
+                    property.value.type === 'Literal' &&
+                    [
+                      '::view-transition-new(root)',
+                      '::view-transition-new(pavp-rift-edge)',
+                    ].includes(String(property.value.value)),
+                )
+              ) {
+                return
+              }
+            }
             if (
               [
                 'packages/ui/src/adapters/motion/cinematic-theme-rift.ts',

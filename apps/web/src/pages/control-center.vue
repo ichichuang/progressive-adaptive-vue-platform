@@ -30,6 +30,11 @@ import ColorModePreview from '../app/workbench/ColorModePreview.vue'
 
 import { useAppearanceMutationBoundary } from '../app/appearance/appearance-mutation-boundary'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
+import {
+  playAppearanceTransition,
+  readAppearanceTransitionOrigin,
+  type AppearanceTransitionOrigin,
+} from '../app/appearance/appearance-transition'
 import { useNavigationPreferenceStore } from '../app/navigation/navigation-preference.store'
 import { consoleNavigationRegistry } from '../app/router/route-registry'
 import { useSettingsReturn } from '../app/router/settings-return'
@@ -250,8 +255,40 @@ function selectedTheme(reference: ThemeReference): boolean {
   return current?.registryKind === reference.registryKind && current.themeId === reference.themeId
 }
 
-function chooseTheme(reference: ThemeReference): void {
-  commitAppearance({ theme: { ...reference } })
+let modeActivation:
+  { readonly origin: AppearanceTransitionOrigin; readonly time: number } | undefined
+
+function captureModeOrigin(event: MouseEvent | KeyboardEvent): void {
+  if (!(event.target instanceof Element) || !event.target.closest('.wb-mode-options')) return
+  if (event instanceof MouseEvent && event.button !== 0) return
+  const origin = readAppearanceTransitionOrigin(event)
+  modeActivation = origin === undefined ? undefined : { origin, time: performance.now() }
+}
+
+function chooseMode(value: string): void {
+  const activation = modeActivation
+  modeActivation = undefined
+  const origin =
+    activation !== undefined && performance.now() - activation.time < 1500
+      ? activation.origin
+      : undefined
+  playAppearanceTransition({
+    kind: 'mode',
+    motion: effective.snapshot.value.motion,
+    origin,
+    commit: () => commitAppearance({ colorMode: value }),
+  })
+}
+
+function chooseTheme(reference: ThemeReference, event: MouseEvent): void {
+  playAppearanceTransition({
+    kind: 'palette',
+    motion: effective.snapshot.value.motion,
+    origin: readAppearanceTransitionOrigin(event),
+    commit: () => {
+      if (!selectedTheme(reference)) commitAppearance({ theme: { ...reference } })
+    },
+  })
 }
 
 function themeStyle(theme: AppearanceThemePreviewProjection): Readonly<Record<string, string>> {
@@ -485,7 +522,13 @@ onScopeDispose(() => {
               {{ t('settings.color-mode-note') }}
             </p>
           </div>
-          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
+          <div
+            class="wb-settings-controls grid min-w-0 gap-field-gap"
+            v-bind="{
+              onPointerdownCapture: captureModeOrigin,
+              onKeydownCapture: captureModeOrigin,
+            }"
+          >
             <UiRadioCardGroup
               v-if="activePreview && preference !== null"
               class="wb-mode-options wb-mode-options-compact layout-regular:grid-cols-3 layout-wide:grid-cols-3"
@@ -493,7 +536,7 @@ onScopeDispose(() => {
               :model-value="preference.appearance.colorMode"
               :options="colorModeOptions"
               :disabled="returning"
-              @update:model-value="updateAppearance('colorMode', $event)"
+              @update:model-value="chooseMode"
             >
               <template #option="{ option, selected }">
                 <ColorModePreview
@@ -545,7 +588,7 @@ onScopeDispose(() => {
                     } satisfies ButtonHTMLAttributes
                   "
                   :disabled="preference === null || returning"
-                  @click="chooseTheme(theme.reference)"
+                  @click="chooseTheme(theme.reference, $event)"
                 >
                   <span
                     class="wb-theme-swatch grid place-items-center min-h-target-enhanced min-w-target-enhanced"

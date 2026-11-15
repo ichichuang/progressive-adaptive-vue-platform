@@ -5,8 +5,9 @@ import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { projectMotionPolicy } from './motion-policy'
 import { createMotionFeatureRuntime, LazyMotion, MotionConfig } from './motion-feature-runtime'
 const props = defineProps<{ readonly motion: EffectiveAppearanceState['motion'] }>()
-const policy = computed(() => projectMotionPolicy(props.motion))
-const { features, startAfterStableMount, dispose } = createMotionFeatureRuntime()
+// Reuse already-loaded motion on open; never start a usable panel hidden before motion is ready.
+const { features, featureReady, startAfterStableMount, dispose } = createMotionFeatureRuntime(true)
+const policy = computed(() => projectMotionPolicy(props.motion, featureReady.value))
 onMounted(() => {
   void startAfterStableMount()
 })
@@ -19,10 +20,10 @@ onBeforeUnmount(dispose)
   >
     <MotionConfig
       :reduced-motion="policy.reducedMotion"
-      :skip-animations="motion === 'none'"
+      :skip-animations="policy.skipAnimations"
     >
       <m.div
-        :initial="motion === 'none' ? false : policy.themePicker.entering"
+        :initial="policy.skipAnimations ? false : policy.themePicker.entering"
         :animate="policy.themePicker.visible"
         :transition="policy.themePicker.transition"
       >

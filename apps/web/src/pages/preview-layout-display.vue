@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import DisplayLayoutPreview from '../app/workbench/layout/DisplayLayoutPreview.vue'
+defineOptions({ name: 'LayoutPreviewDisplayPage' })
+defineProps<{ readonly title: string; readonly message: string }>()
+</script>
+<template>
+  <DisplayLayoutPreview
+    :title="title"
+    :message="message"
+  />
+</template>

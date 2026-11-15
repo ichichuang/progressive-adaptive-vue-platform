@@ -1,35 +1,44 @@
 import { LayoutGroup, LazyMotion, MotionConfig, mountedStates, type domMax } from 'motion-v'
-import { nextTick, readonly, ref, type Ref } from 'vue'
+import { computed, nextTick, ref, type Ref } from 'vue'
 import { projectMotionPolicy, type MotionPolicy } from './motion-policy'
 
 type MotionDomMaxFeaturePackage = typeof domMax
 
 let motionDomMaxPromise: Promise<MotionDomMaxFeaturePackage | undefined> | undefined
+let resolvedMotionDomMax: MotionDomMaxFeaturePackage | undefined
 
 function loadMotionDomMax(): Promise<MotionDomMaxFeaturePackage | undefined> {
   motionDomMaxPromise ??= import('./admin-navigation-dom-max')
-    .then(({ default: features }) => features)
+    .then(({ default: features }) => {
+      resolvedMotionDomMax = features
+      return features
+    })
     .catch(() => undefined)
 
   return motionDomMaxPromise
 }
 
-export function createMotionFeatureRuntime(): {
+export function createMotionFeatureRuntime(reuseResolved = false): {
   readonly dispose: () => void
   readonly featureReady: Readonly<Ref<boolean>>
-  readonly features: Promise<MotionDomMaxFeaturePackage>
+  readonly features: MotionDomMaxFeaturePackage | Promise<MotionDomMaxFeaturePackage>
   readonly startAfterStableMount: () => Promise<void>
 } {
+  const preloaded = reuseResolved ? resolvedMotionDomMax : undefined
   const mutableFeatureReady = ref(false)
-  const featureReady: Readonly<Ref<boolean>> = readonly(mutableFeatureReady)
+  const featureReady: Readonly<Ref<boolean>> = computed(
+    () => preloaded !== undefined || mutableFeatureReady.value,
+  )
   const runtimeState = {
     disposed: false,
-    started: false,
+    started: preloaded !== undefined,
   }
   let resolveFeatures!: (features: MotionDomMaxFeaturePackage) => void
-  const features = new Promise<MotionDomMaxFeaturePackage>((resolve) => {
-    resolveFeatures = resolve
-  })
+  const features =
+    preloaded ??
+    new Promise<MotionDomMaxFeaturePackage>((resolve) => {
+      resolveFeatures = resolve
+    })
 
   function isDisposed(): boolean {
     return runtimeState.disposed

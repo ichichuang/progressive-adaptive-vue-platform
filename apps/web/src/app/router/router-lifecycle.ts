@@ -1393,7 +1393,12 @@ export async function createAndReadyRouter(input: {
             navigation.operation.workspaceActivation.instance === workspaceEntry.instance
           const preserve = samePage && navigation.operation.kind !== 'pop' && !workspaceActivation
           let documentPosition: { readonly left: number; readonly top: number } | false = false
-          if (!locked && entryIsCurrent(entry)) {
+          // A contained stage can declare no scrolling while still owning its route focus.
+          if (
+            !locked &&
+            entryIsCurrent(entry) &&
+            (owner === undefined || routeRecord.scrollRestoration !== 'none')
+          ) {
             if (presentation === 'component-fallback') {
               hasComponentFailure(entry)
               if (owner === undefined) documentPosition = { left: 0, top: 0 }

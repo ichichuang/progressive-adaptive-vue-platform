@@ -46,6 +46,13 @@ import { useDashboardActionTheme, useDashboardCheckboxTheme } from './use-dashbo
 import DashboardWidget from './DashboardWidget.vue'
 import DashboardContextMenu from './DashboardContextMenu.vue'
 import DashboardAppearanceOptions from './DashboardAppearanceOptions.vue'
+import DashboardLibraryDrawer, { type DashboardLibraryEntry } from './DashboardLibraryDrawer.vue'
+import {
+  dashboardCatalog,
+  matchesDashboardCatalogEntry,
+  type DashboardCatalogEntry,
+} from '../../dashboard/dashboard-catalog'
+import { catalogCardTitle, dashboardCardTitle } from './dashboard-card-presentation'
 import { routerScrollControllerKey } from '../../router/router-scroll-controller'
 defineProps<{ readonly title: string }>()
 const { t } = useConsoleI18n()
@@ -77,7 +84,7 @@ onDeactivated(() => {
 onScopeDispose(() => {
   connectScroll(null)
 })
-const board = useDashboard()
+const board = useDashboard(dashboardCatalog)
 const editing = ref(false)
 const host = ref<HTMLElement>()
 const grid = ref<UiDashboardGridHandle>()
@@ -91,7 +98,10 @@ const context = shallowRef<{
   caller: HTMLElement | null
   pointer: boolean
 } | null>(null)
-type Inspector = 'appearance' | 'properties' | 'library' | 'layout'
+const libraryOpen = ref(false)
+let libraryCaller: HTMLElement | null = null
+let libraryAddedId: string | undefined
+type Inspector = 'appearance' | 'properties' | 'layout'
 const inspector = ref<Inspector>()
 const inspectorOpen = ref(false)
 const inspectorCaller = shallowRef<HTMLElement | null>(null)
@@ -117,7 +127,6 @@ const motionSample = ref<HTMLElement>()
 const showMotionSample = ref(false)
 const inspectorTitle = computed(() => {
   if (inspector.value === 'properties' && propertyPanel.value) return cardTitle(propertyPanel.value)
-  if (inspector.value === 'library') return t('dashboardBoard.add')
   if (inspector.value === 'layout') return t('dashboardBoard.layoutTools')
   return t('dashboardBoard.appearanceStyle')
 })
@@ -148,7 +157,7 @@ async function clearInspector(): Promise<void> {
   inspectorOffset = undefined
   showMotionSample.value = false
   await nextTick()
-  if (!active) return
+  if (!active || libraryOpen.value) return
   if (offset) currentScroll.value?.scrollTo({ ...offset, behavior: 'instant' })
   if (caller?.isConnected) caller.focus({ preventScroll: true })
 }
@@ -245,7 +254,10 @@ function contextAction(
       break
     case 'add':
       rejected.value = false
-      void openInspector('library', caller)
+      setInspectorOpen(false)
+      libraryCaller = caller
+      libraryAddedId = undefined
+      libraryOpen.value = true
       break
     case 'appearance':
       void openInspector('appearance', caller)
@@ -259,6 +271,9 @@ function closeOverlays(): void {
   touchPressEnd()
   showMotionSample.value = false
   setInspectorOpen(false)
+  libraryOpen.value = false
+  libraryAddedId = undefined
+  libraryCaller = null
 }
 onDeactivated(closeOverlays)
 
@@ -359,6 +374,8 @@ const dashboardArrivals = {
   notes: 'card-expand',
   clock: 'camera-push',
   chart: 'card-expand',
+  route: 'camera-push',
+  module: 'card-expand',
 } as const satisfies Readonly<Record<DashboardPanel['type'], UiMotionPreset>>
 const boardStyle = computed(() => board.document.value.style ?? 'theme')
 const boardEntrance = computed(() => board.document.value.entrance ?? 'balanced')
@@ -532,16 +549,19 @@ onScopeDispose(() => observer?.disconnect())
 const panels = computed(
   () => new Map(board.document.value.panels.map((panel) => [panel.id, panel])),
 )
-const panelLabels = {
-  clock: 'dashboardBoard.clock',
-  capabilities: 'dashboardBoard.capabilities',
-  chart: 'dashboardBoard.chart',
-  notes: 'dashboardBoard.notes',
-} as const
-const options = computed(() =>
-  (['clock', 'capabilities', 'chart', 'notes'] as const).map((value) => ({
-    value,
-    label: t(panelLabels[value]),
+const libraryEntries = computed<readonly DashboardLibraryEntry[]>(() =>
+  dashboardCatalog.map((entry: DashboardCatalogEntry) => ({
+    id: entry.id,
+    title: catalogCardTitle(entry, t),
+    category: entry.category,
+    preview:
+      entry.kind !== 'builtin'
+        ? entry.kind
+        : entry.panel.type === 'chart' && entry.panel.config.series === 'delivery'
+          ? 'comparison'
+          : entry.panel.type,
+    ...(entry.descriptionKey !== undefined ? { description: t(entry.descriptionKey) } : {}),
+    added: board.document.value.panels.some((panel) => matchesDashboardCatalogEntry(entry, panel)),
   })),
 )
 function keydown(event: KeyboardEvent, id: string): void {
@@ -558,23 +578,34 @@ function keydown(event: KeyboardEvent, id: string): void {
   if (event.shiftKey) grid.value?.resize(id, direction[0], direction[1])
   else grid.value?.move(id, direction[0], direction[1])
 }
-async function add(type: DashboardPanel['type']): Promise<void> {
+function add(entryId: string): void {
   const before = new Set(board.document.value.panels.map(({ id }) => id))
-  rejected.value = !board.add(type)
+  rejected.value = !board.add(entryId)
   if (rejected.value) return
-  const id = board.document.value.panels.find((panel) => !before.has(panel.id))?.id
-  if (!id) return
-  adjustedPanel.value = id
-  await nextTick()
-  const element = panelSurface(id)
-  const panel = panels.value.get(id)
-  if (!element || !panel) return
-  const preset = resolvedEntrance(panel)
-  if (preset !== 'none') arrive(element, preset)
+  libraryAddedId = board.document.value.panels.find((panel) => !before.has(panel.id))?.id
+  adjustedPanel.value = libraryAddedId
+}
+function finishLibrary(): void {
+  if (libraryOpen.value) return
+  const added = libraryAddedId
+  const caller = libraryCaller
+  libraryAddedId = undefined
+  libraryCaller = null
+  if (!active) return
+  const element = added ? panelSurface(added) : undefined
+  const panel = added ? panels.value.get(added) : undefined
+  if (added && element && panel) {
+    revealPanel(added)
+    element.focus({ preventScroll: true })
+    const preset = resolvedEntrance(panel)
+    if (preset !== 'none') arrive(element, preset)
+  } else if (caller?.isConnected) {
+    caller.focus({ preventScroll: true })
+  }
 }
 function cardTitle(id: string): string {
   const panel = panels.value.get(id)
-  return panel ? (panel.title ?? t(panelLabels[panel.type])) : ''
+  return panel ? dashboardCardTitle(panel, t) : ''
 }
 const announcement = computed(() => {
   const item = board.document.value.layouts[mode.value].find(
@@ -692,6 +723,8 @@ const announcement = computed(() => {
                       'i-lucide-compass': panels.get(id)?.type === 'capabilities',
                       'i-lucide-chart-no-axes-combined': panels.get(id)?.type === 'chart',
                       'i-lucide-notebook-pen': panels.get(id)?.type === 'notes',
+                      'i-lucide-arrow-up-right': panels.get(id)?.type === 'route',
+                      'i-lucide-panels-top-left': panels.get(id)?.type === 'module',
                     }"
                   />
                 </span>
@@ -833,32 +866,6 @@ const announcement = computed(() => {
               @update:board-style="board.setStyle"
               @update:entrance="chooseBoardEntrance"
             />
-            <template v-else-if="inspector === 'library'">
-              <NButton
-                v-for="option in options"
-                :key="option.value"
-                :theme-overrides="actionTheme"
-                type="primary"
-                block
-                secondary
-                :disabled="board.document.value.panels.length >= 24"
-                @click="add(option.value)"
-              >
-                <span class="flex w-full items-center justify-between gap-component-unit">
-                  <span>{{ option.label }}</span>
-                  <span
-                    class="i-lucide-plus shrink-0"
-                    aria-hidden="true"
-                  />
-                </span>
-              </NButton>
-              <span
-                v-if="rejected"
-                role="status"
-                class="text-caption text-text-secondary"
-                v-text="t('dashboardBoard.full')"
-              />
-            </template>
             <div
               v-else-if="inspector === 'layout'"
               class="flex flex-wrap gap-component-unit"
@@ -980,6 +987,15 @@ const announcement = computed(() => {
         </UiScrollArea>
       </section>
     </Transition>
+    <DashboardLibraryDrawer
+      :show="libraryOpen"
+      :entries="libraryEntries"
+      :can-add="board.document.value.panels.length < 24"
+      :rejected="rejected"
+      @close="libraryOpen = false"
+      @after-leave="finishLibrary"
+      @add="add"
+    />
     <DashboardContextMenu
       :show="context !== null"
       :x="context?.x ?? 0"

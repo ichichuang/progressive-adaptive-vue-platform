@@ -1,6 +1,7 @@
 @layer reset, tokens, base, components, app, utilities, vendor-overrides;
 
 @import '@platform/design-system/tokens.css';
+@import '../appearance/appearance-transition.css';
 @import '../router/route-transition/route-transition.css';
 @import '../workbench/workbench.css';
 
@@ -52,7 +53,8 @@
   .pavp-admin-shell__sidebar,
   .pavp-admin-shell__content {
     transform: none;
-    translate: none;
+    /* Reset the individual property without letting minification create a stacking context. */
+    translate: initial;
   }
 
   .pavp-route-content {

@@ -355,6 +355,34 @@ function defineErrorRoute<const Category extends string, const Segment extends s
   } as const)
 }
 
+function defineLayoutPreview<const Segment extends string>(
+  segment: Segment,
+  layoutId: string,
+  scrollRestoration: 'build-static' | 'none' = 'build-static',
+) {
+  const name = `preview-layout-${segment}` as const
+  return defineRoute({
+    name,
+    pathPattern: `/previews/layout/${segment}`,
+    sourcePath: `apps/web/src/pages/preview-layout-${segment}.vue`,
+    contentReadiness: 'route-dom',
+    scrollRestoration,
+    messageScope: 'console',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: null,
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      ...layoutMeta(layoutId),
+      keepAlive: 'never',
+      titleKey: `route-title.${name}`,
+      breadcrumbKey: null,
+      telemetryName: `route.preview.layout.${segment}`,
+    }),
+  } as const)
+}
+
 const formWorkspaceRoutes = Object.freeze([
   defineFormWorkspaceRoute('overview'),
   defineFormWorkspaceRoute('basics'),
@@ -524,9 +552,38 @@ export const routeRegistry = Object.freeze([
   defineErrorRoute('application-route-failure', '500'),
   defineErrorRoute('network-unavailable', 'offline'),
   defineErrorRoute('service-unavailable', 'maintenance'),
+  defineRoute({
+    name: 'preview-status-404',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
+    pathPattern: '/previews/status/404',
+    sourcePath: 'apps/web/src/pages/preview-status-404.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...commonRouteMeta,
+      titleKey: 'route-title.error-route-not-found',
+      telemetryName: 'route.preview.status.not-found',
+      errorPolicy: 'application-boundary',
+    }),
+  }),
+  defineLayoutPreview('admin', 'route-layout.architecture-admin-console'),
+  defineLayoutPreview('admin-footer', 'route-layout.architecture-admin-console-footer'),
+  defineLayoutPreview('header', 'route-layout.header-content'),
+  defineLayoutPreview('header-footer', 'route-layout.header-content-footer'),
+  defineLayoutPreview('content-footer', 'route-layout.content-footer'),
+  defineLayoutPreview('content', 'route-layout.content-only'),
+  defineLayoutPreview('display', 'route-layout.content-only', 'none'),
+  defineLayoutPreview('fixed-display', 'route-layout.content-only', 'none'),
 ] as const satisfies readonly RouteRegistryRecord[])
 
 export type RouteName = (typeof routeRegistry)[number]['name']
+export function isDisplayLayoutPreview(name: string): boolean {
+  return name === 'preview-layout-display' || name === 'preview-layout-fixed-display'
+}
+
 export type RouteTitleKey = (typeof routeRegistry)[number]['meta']['titleKey']
 export type RouteBreadcrumbKey = Exclude<
   (typeof routeRegistry)[number]['meta']['breadcrumbKey'],
@@ -689,6 +746,8 @@ export const focusContractRegistry = Object.freeze([
 
 export interface ConsoleNavigationItem {
   readonly iconClass: string
+  readonly openIn?: 'new-page'
+  readonly labelKey?: ConsoleCommonMessageKey
   readonly destination: {
     [
       Name in Extract<
@@ -713,6 +772,16 @@ function defineNavigationItem<
   const Icon extends string,
 >(name: Name, iconClass: Icon) {
   return Object.freeze({ iconClass, destination: Object.freeze({ name }) })
+}
+
+function definePreviewNavigationItem<
+  const Name extends ConsoleNavigationItem['destination']['name'],
+>(name: Name, labelKey?: ConsoleCommonMessageKey) {
+  return Object.freeze({
+    ...defineNavigationItem(name, 'i-lucide-external-link'),
+    openIn: 'new-page' as const,
+    ...(labelKey === undefined ? {} : { labelKey }),
+  })
 }
 
 export const consoleNavigationRegistry = Object.freeze([
@@ -849,6 +918,39 @@ export const consoleNavigationRegistry = Object.freeze([
       }),
     ]),
   }),
+  Object.freeze({
+    id: 'architecture-previews',
+    labelKey: 'navigation.architecturePreviews',
+    items: Object.freeze([
+      Object.freeze({
+        id: 'status-previews',
+        labelKey: 'navigation.statusPreviews',
+        items: Object.freeze([
+          definePreviewNavigationItem('error-invalid-route-input', 'navigation.preview400'),
+          definePreviewNavigationItem('error-authentication-required', 'navigation.preview401'),
+          definePreviewNavigationItem('error-permission-denied', 'navigation.preview403'),
+          definePreviewNavigationItem('preview-status-404', 'navigation.preview404'),
+          definePreviewNavigationItem('error-application-route-failure', 'navigation.preview500'),
+          definePreviewNavigationItem('error-network-unavailable'),
+          definePreviewNavigationItem('error-service-unavailable'),
+        ]),
+      }),
+      Object.freeze({
+        id: 'layout-previews',
+        labelKey: 'navigation.layoutPreviews',
+        items: Object.freeze([
+          definePreviewNavigationItem('preview-layout-display'),
+          definePreviewNavigationItem('preview-layout-fixed-display'),
+          definePreviewNavigationItem('preview-layout-admin'),
+          definePreviewNavigationItem('preview-layout-admin-footer'),
+          definePreviewNavigationItem('preview-layout-header'),
+          definePreviewNavigationItem('preview-layout-header-footer'),
+          definePreviewNavigationItem('preview-layout-content-footer'),
+          definePreviewNavigationItem('preview-layout-content'),
+        ]),
+      }),
+    ]),
+  }),
 ] as const satisfies readonly ConsoleNavigationGroup[])
 
 function flattenNavigationGroups(
@@ -879,6 +981,9 @@ export const consoleNavigationGroups = Object.freeze(
 )
 export const consoleNavigationItems = Object.freeze(
   getConsoleNavigationItems(consoleNavigationRegistry),
+)
+export const consoleWorkspaceNavigationItems = Object.freeze(
+  consoleNavigationItems.filter((item) => item.openIn !== 'new-page'),
 )
 
 export const activeRedirectRegistry = /* @__PURE__ */ Object.freeze([] as const)

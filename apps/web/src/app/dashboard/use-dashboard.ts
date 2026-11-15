@@ -8,6 +8,7 @@ import {
   type DashboardPanel,
   type DashboardStyle,
   type DashboardEntrance,
+  type DashboardCatalogDefinition,
 } from './dashboard-contract'
 
 function samePanel(left: DashboardPanel, right: DashboardPanel): boolean {
@@ -36,6 +37,9 @@ function samePanel(left: DashboardPanel, right: DashboardPanel): boolean {
       )
     case 'clock':
       return true
+    case 'route':
+    case 'module':
+      return right.type === left.type && left.config.entryId === right.config.entryId
   }
 }
 
@@ -68,6 +72,8 @@ function firstPosition(
   w: number,
   h: number,
 ): UiDashboardItemPosition | undefined {
+  if (!Number.isInteger(w) || !Number.isInteger(h) || w < 1 || w > columns || h < 2 || h > 128)
+    return undefined
   for (let y = 0; y + h <= 128; y += 1) {
     for (let x = 0; x + w <= columns; x += 1) {
       if (
@@ -82,7 +88,10 @@ function firstPosition(
   return undefined
 }
 
-export function useDashboard() {
+export function useDashboard(catalog: readonly DashboardCatalogDefinition[]) {
+  function getDashboardCatalogDefinition(id: string): DashboardCatalogDefinition | undefined {
+    return catalog.find((entry) => entry.id === id)
+  }
   const storage = useDashboardStoragePort()
   const restored = storage.read()
   const document = shallowRef<DashboardDocument>(
@@ -156,27 +165,25 @@ export function useDashboard() {
       },
     })
   }
-  function add(type: DashboardPanel['type']): boolean {
-    if (document.value.panels.length >= 24) return false
+  function add(entryId: string): boolean {
+    const entry = getDashboardCatalogDefinition(entryId)
+    if (!entry || document.value.panels.length >= 24) return false
     let sequence = 1
     while (document.value.panels.some((panel) => panel.id === `panel-${String(sequence)}`))
       sequence += 1
     const id = `panel-${String(sequence)}`
     const panel: DashboardPanel =
-      type === 'chart'
-        ? { id, type, config: { series: 'traffic' } }
-        : type === 'notes'
-          ? { id, type, config: { text: '' } }
-          : { id, type, config: {} }
-    const height = type === 'chart' ? 5 : type === 'clock' ? 2 : 3
+      entry.kind === 'builtin'
+        ? { ...entry.panel, id }
+        : { id, type: entry.kind, config: { entryId: entry.id } }
     const wide = firstPosition(
       id,
       document.value.layouts.wide,
       12,
-      type === 'chart' ? 8 : 4,
-      height,
+      entry.size.wide.w,
+      entry.size.wide.h,
     )
-    const narrow = firstPosition(id, document.value.layouts.narrow, 1, 1, height)
+    const narrow = firstPosition(id, document.value.layouts.narrow, 1, 1, entry.size.narrow.h)
     if (!wide || !narrow) return false
     return commit({
       ...document.value,
@@ -203,9 +210,17 @@ export function useDashboard() {
     }
     for (const panel of panels) {
       if (defaults.has(panel.id)) continue
-      const height = panel.type === 'chart' ? 5 : panel.type === 'clock' ? 2 : 3
-      const wide = firstPosition(panel.id, layouts.wide, 12, panel.type === 'chart' ? 8 : 4, height)
-      const narrow = firstPosition(panel.id, layouts.narrow, 1, 1, height)
+      const entry =
+        panel.type === 'route' || panel.type === 'module'
+          ? getDashboardCatalogDefinition(panel.config.entryId)
+          : getDashboardCatalogDefinition(
+              panel.type === 'chart' && panel.config.series === 'delivery'
+                ? 'delivery'
+                : panel.type,
+            )
+      const height = entry?.size.wide.h ?? 3
+      const wide = firstPosition(panel.id, layouts.wide, 12, entry?.size.wide.w ?? 4, height)
+      const narrow = firstPosition(panel.id, layouts.narrow, 1, 1, entry?.size.narrow.h ?? height)
       if (!wide || !narrow) return false
       layouts.wide.push(wide)
       layouts.narrow.push(narrow)

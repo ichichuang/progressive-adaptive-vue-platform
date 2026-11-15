@@ -34,6 +34,9 @@ import {
   useApplicationLinkActivation,
 } from '../../router/application-navigation'
 import { registeredRouteDestination } from '../../router/route-input'
+import { getDashboardCatalogEntry } from '../../dashboard/dashboard-catalog'
+import { getRoutePresentation } from '../../router/route-registry'
+import { catalogCardTitle } from './dashboard-card-presentation'
 const props = defineProps<{ readonly panel: DashboardPanel; readonly tone: DashboardTone }>()
 const emit = defineEmits<{ update: [panel: DashboardPanel] }>()
 const { t } = useConsoleI18n()
@@ -125,6 +128,27 @@ const destinations = computed<readonly DashboardDestination[]>(() =>
     ? (props.panel.config.destinations ?? defaultDashboardDestinations)
     : [],
 )
+const routeCard = computed(() => {
+  if (props.panel.type !== 'route') return undefined
+  const entry = getDashboardCatalogEntry(props.panel.config.entryId)
+  if (entry?.kind !== 'route') return undefined
+  return {
+    destination: entry.destination,
+    title: catalogCardTitle(entry, t),
+    description:
+      entry.descriptionKey === undefined
+        ? getRoutePresentation(entry.destination.name, t).message
+        : t(entry.descriptionKey),
+  }
+})
+const embeddedModule = computed(() => {
+  if (props.panel.type !== 'module') return undefined
+  const entry = getDashboardCatalogEntry(props.panel.config.entryId)
+  return entry?.kind === 'module' ? entry.component : undefined
+})
+function openRouteCard(event: MouseEvent): void {
+  if (routeCard.value) void activate(event, routeCard.value.destination)
+}
 function note(text: string): void {
   if (props.panel.type === 'notes') emit('update', { ...props.panel, config: { text } })
 }
@@ -218,7 +242,7 @@ function series(value: string | number | boolean): void {
       </div>
     </div>
     <div
-      v-else
+      v-else-if="panel.type === 'capabilities'"
       class="wb-dashboard-shortcuts grid min-w-0 gap-component-unit"
     >
       <NCard
@@ -270,5 +294,42 @@ function series(value: string | number | boolean): void {
         {{ t('dashboardBoard.noDestinations') }}
       </p>
     </div>
+    <NCard
+      v-else-if="routeCard"
+      tag="a"
+      size="small"
+      :bordered="false"
+      hoverable
+      class="wb-link min-w-0"
+      v-bind="
+        {
+          href: navigation.resolveHref(routeCard.destination),
+          'aria-label': `${t('dashboardBoard.openDestination')} · ${routeCard.title}`,
+          onClick: openRouteCard,
+        } satisfies AnchorHTMLAttributes
+      "
+    >
+      <span class="flex min-w-0 items-center gap-content-gap">
+        <span
+          class="text-action-primary i-lucide-link-2 shrink-0"
+          aria-hidden="true"
+        />
+        <span class="flex-1 min-w-0 text-body">{{ routeCard.description }}</span>
+        <span
+          class="i-lucide-arrow-up-right shrink-0 text-text-secondary"
+          aria-hidden="true"
+        />
+      </span>
+    </NCard>
+    <component
+      :is="embeddedModule"
+      v-else-if="embeddedModule"
+    />
+    <p
+      v-else
+      class="m-0 text-body text-text-secondary"
+    >
+      {{ t('dashboardBoard.libraryUnavailable') }}
+    </p>
   </UiScrollArea>
 </template>

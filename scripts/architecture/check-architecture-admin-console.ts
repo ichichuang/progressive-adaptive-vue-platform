@@ -62,6 +62,7 @@ import {
 import {
   consoleNavigationRegistry,
   consoleNavigationItems,
+  consoleWorkspaceNavigationItems,
   getConsoleNavigationItems,
   errorRouteRegistry,
   getRouteRecord,
@@ -8069,7 +8070,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 96 ||
+    runtimeNumber(routeRegistry.length) !== 105 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
@@ -8142,7 +8143,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('ADMIN_WORKSPACE_MAX_WIDTH')
   }
 
-  const navigationIconRecords = consoleNavigationItems.map((item) => item.iconClass)
+  const navigationIconRecords = consoleWorkspaceNavigationItems.map((item) => item.iconClass)
   const shellNavigationIconClasses = [
     ...snapshot.shellSource.matchAll(/['"](i-lucide-[a-z0-9-]+)['"]/gu),
   ].map((match) => match[1])
@@ -8763,8 +8764,8 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') &&
-        snapshot.routeCount === 96 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') &&
+        snapshot.routeCount === 105 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 13,
@@ -9159,7 +9160,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 96) {
+  if (snapshot.routeCount !== 105) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -9176,8 +9177,10 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     snapshot.registeredPublicComponents.map((record) => [record.exportName, record.consumerCount]),
   )
   if (
-    registered.get('UiG2Chart') !== 16 ||
+    registered.get('UiG2Chart') !== 18 ||
     !isDeepStrictEqual(componentExampleConsumers['UiG2Chart'], [
+      'preview-layout-display',
+      'preview-layout-fixed-display',
       'component-combination-report',
       'workbench-date-time',
       'workbench-welcome',
@@ -9576,11 +9579,14 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       /\bcontent-visibility\s*:\s*hidden\b/iu.test(rule.declarations)
     const geometryValues = [
       ...rule.declarations.matchAll(
-        /(?:^|;)\s*(?:transform|translate|scale|rotate)\s*:\s*([^;]+)/gimu,
+        /(?:^|;)\s*(transform|translate|scale|rotate)\s*:\s*([^;]+)/gimu,
       ),
-    ].map((match) => (match[1] ?? '').trim())
+    ]
     const changesGeometry =
-      geometryValues.some((value) => value !== 'none') ||
+      geometryValues.some((match) => {
+        const value = (match[2] ?? '').trim()
+        return value !== 'none' && !(match[1] === 'translate' && value === 'initial')
+      }) ||
       /\b(?:clip|clip-path|filter|backdrop-filter|mask|mask-image)\s*:/iu.test(rule.declarations)
 
     if (targetsDirectChild && hasDelay) {
@@ -9664,7 +9670,7 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
               .split(',')
               .some((selector) => selectorTargetsPersistentOwner(selector, owner)) &&
             /\btransform\s*:\s*none\s*;/u.test(rule.declarations) &&
-            /\btranslate\s*:\s*none\s*;/u.test(rule.declarations),
+            /\btranslate\s*:\s*(?:none|initial)\s*;/u.test(rule.declarations),
         ),
     )
   ) {
@@ -9684,9 +9690,10 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
     const geometryValues = [
       ...rule.declarations.matchAll(/(?:^|;)\s*(transform|translate)\s*:\s*([^;]+)/gimu),
     ]
-    const nonNoneGeometryValues = geometryValues
-      .map((match) => (match[2] ?? '').trim())
-      .filter((value) => value !== 'none')
+    const nonNoneGeometryValues = geometryValues.flatMap((match) => {
+      const value = (match[2] ?? '').trim()
+      return value === 'none' || (match[1] === 'translate' && value === 'initial') ? [] : [value]
+    })
     if (nonNoneGeometryValues.length > 0) {
       violations.push('PERSISTENT_OWNER_TRANSFORM')
     }
@@ -12422,9 +12429,9 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes('to: `#${sidebarOverlayId}`') &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -12523,7 +12530,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 96,
+      passed: snapshot.routeCount === 105,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -13550,7 +13557,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 96',
+          'const expectedLazyRouteCount = 105',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -14903,9 +14910,9 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 96',
+    'const expectedLazyRouteCount = 105',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 110',
+    'const expectedDynamicRootCount = 119',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14927,10 +14934,10 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 96 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 96') ||
+    snapshot.routeCount !== 105 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 110') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -15410,7 +15417,9 @@ async function validateTokensAndLayout(): Promise<string[]> {
 async function validateRoutesShellAndMotion(): Promise<string[]> {
   const violations: string[] = []
   const errorNames = new Set<string>(errorRouteRegistry.map((record) => record.routeName))
-  const productRoutes = routeRegistry.filter((record) => !errorNames.has(record.name))
+  const productRoutes = routeRegistry.filter(
+    (record) => !errorNames.has(record.name) && !record.name.startsWith('preview-'),
+  )
   const breadcrumbRegistry: Readonly<Record<RouteBreadcrumbKey, string>> = routeBreadcrumbRegistry
   const layoutPresets: readonly LayoutPresetId[] = [
     ...new Set(
@@ -15444,14 +15453,17 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 96 ||
+    runtimeCount(routeRegistry) !== 105 ||
     runtimeCount(productRoutes) !== 89 ||
+    routeRegistry.filter((record) => record.name.startsWith('preview-')).length !== 9 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
     Object.keys(breadcrumbRegistry).length !== 89 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 96/89/7 workbench Route Registry closure drifted.')
+    violations.push(
+      'The exact 105 total / 89 workbench / 7 error / 9 preview Route Registry closure drifted.',
+    )
   }
 
   if (
@@ -15711,6 +15723,14 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
           !specifier.includes('/workbench/') &&
           !factImports.has(specifier) &&
           !(
+            path === 'apps/web/src/pages/preview-status-404.vue' &&
+            specifier === '../app/errors/RouteNotFoundView.vue'
+          ) &&
+          !(
+            path === 'apps/web/src/pages/control-center.vue' &&
+            specifier === '../app/appearance/appearance-transition'
+          ) &&
+          !(
             path === 'apps/web/src/pages/dashboard.vue' &&
             specifier === '../app/router/route-transition/route-motion-player'
           ) &&
@@ -15834,10 +15854,16 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
         "CSS.supports('selector(:active-view-transition-type(pavp-route-content-crossfade))')",
       ) &&
       !/\bmatchMedia\s*\(/u.test(source)
+    const admittedAppearanceTransitionSupportCheck =
+      repositoryPath === 'apps/web/src/app/appearance/appearance-transition.ts' &&
+      [...source.matchAll(/\bCSS\.supports\s*\(/gu)].length === 1 &&
+      source.includes("CSS.supports('selector(:active-view-transition-type(pavp-appearance))')") &&
+      !/\bmatchMedia\s*\(/u.test(source)
     defineStoreCount += [...source.matchAll(/\bdefineStore\s*\(/gu)].length
     if (
       repositoryPath !== 'apps/web/src/app/appearance/appearance-bootstrap.ts' &&
       !admittedRouteTransitionSupportCheck &&
+      !admittedAppearanceTransitionSupportCheck &&
       /\b(?:matchMedia|CSS\.supports)\s*\(/u.test(source)
     ) {
       competingEnvironmentSources.push(source)
@@ -16150,10 +16176,10 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 96 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 89 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 105 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 98 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 96 ||
+    runtimeCount(routerRecords) !== 105 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
     runtimeCount(storageRecords) !== 13 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 18 ||
@@ -16256,13 +16282,52 @@ function validateInspectorProjections(): string[] {
       'Form capabilities must remain a second-level submenu with eighteen route leaves.',
     )
 
-  const navigationProjection = consoleNavigationRegistry.map((group) => [
-    getDefaultConsoleMessage(group.labelKey),
-    getConsoleNavigationItems([group]).map((item) =>
-      getDefaultConsoleMessage(getRouteRecord(item.destination.name).meta.titleKey),
-    ),
-  ])
-  const navigationIconProjection = consoleNavigationItems.map((item) => item.iconClass)
+  const previewGroup = consoleNavigationRegistry.find(
+    (group) => group.id === 'architecture-previews',
+  )
+  const previewItems = previewGroup === undefined ? [] : getConsoleNavigationItems([previewGroup])
+  const expectedPreviewNames = [
+    'error-invalid-route-input',
+    'error-authentication-required',
+    'error-permission-denied',
+    'preview-status-404',
+    'error-application-route-failure',
+    'error-network-unavailable',
+    'error-service-unavailable',
+    'preview-layout-display',
+    'preview-layout-fixed-display',
+    'preview-layout-admin',
+    'preview-layout-admin-footer',
+    'preview-layout-header',
+    'preview-layout-header-footer',
+    'preview-layout-content-footer',
+    'preview-layout-content',
+  ]
+  if (
+    !isDeepStrictEqual(
+      previewItems.map((item) => item.destination.name),
+      expectedPreviewNames,
+    ) ||
+    previewItems.some(
+      (item) => item.openIn !== 'new-page' || item.iconClass !== 'i-lucide-external-link',
+    ) ||
+    consoleNavigationItems.length !==
+      consoleWorkspaceNavigationItems.length + expectedPreviewNames.length ||
+    consoleWorkspaceNavigationItems.some((item) => item.openIn !== undefined)
+  )
+    violations.push(
+      'Architecture previews must retain fifteen new-page actions, isolated from the workspace transition axis.',
+    )
+
+  const navigationProjection = consoleNavigationRegistry
+    .filter((group) => group.id !== 'architecture-previews')
+    .map((group) => [
+      getDefaultConsoleMessage(group.labelKey),
+      getConsoleNavigationItems([group]).map((item) =>
+        getDefaultConsoleMessage(getRouteRecord(item.destination.name).meta.titleKey),
+      ),
+    ])
+  const navigationIconProjection = consoleWorkspaceNavigationItems.map((item) => item.iconClass)
   if (
     !isDeepStrictEqual(navigationProjection, [
       ['工作台', ['欢迎', '仪表盘']],
@@ -16935,7 +17000,7 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
 
   console.log('Architecture Admin Console check: passed')
   console.log(
-    `Workspace Axis default check: passed (${String(consoleNavigationItems.length * (consoleNavigationItems.length - 1))} directed edges across 3 layout profiles; Full/Reduced/None/typed fallback; ${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)}/${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)} reversible in-memory negative probes)`,
+    `Workspace Axis default check: passed (${String(consoleWorkspaceNavigationItems.length * (consoleWorkspaceNavigationItems.length - 1))} directed edges across 3 layout profiles; Full/Reduced/None/typed fallback; ${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)}/${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)} reversible in-memory negative probes)`,
   )
   console.log(
     `Route-transition routing capability source check: passed (${String(expectedRouteTransitionSourceProofCount)} source proofs; ${String(expectedRouteTransitionSourceNegativeProbeCount)}/${String(expectedRouteTransitionSourceNegativeProbeCount)} retained reversible in-memory source negative probes; ${String(expectedRouterPresentationCommitNegativeProbeCount)}/${String(expectedRouterPresentationCommitNegativeProbeCount)} Router Presentation Commit reversible in-memory negative probes; ${String(expectedRouteTransitionPresetSelectionNegativeProbeCount)}/${String(expectedRouteTransitionPresetSelectionNegativeProbeCount)} preset-selection reversible in-memory negative probes; ${String(expectedRouteTransitionFullPaceNegativeProbeCount)}/${String(expectedRouteTransitionFullPaceNegativeProbeCount)} Full pace reversible in-memory negative probes; ${String(expectedRouteTransitionStylelintPolicyNegativeProbeCount)}/${String(expectedRouteTransitionStylelintPolicyNegativeProbeCount)} Stylelint policy reversible in-memory negative probes)`,
