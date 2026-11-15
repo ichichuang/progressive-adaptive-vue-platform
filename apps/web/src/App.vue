@@ -72,6 +72,12 @@ provideApplicationNavigation(router, routeTransitionCoordinator)
 const routeRecord = computed(() => getRouteRecord(route.name))
 const containedContent = computed(() => {
   const snapshot = retentionPort.read()
+  if (
+    snapshot?.routeName === routeRecord.value.name &&
+    retention.readFailure(snapshot) !== undefined &&
+    getRouteLayoutCapability(routeRecord.value.meta.layoutCapabilityId).composition !== null
+  )
+    return true
   return (
     (routeRecord.value.name === 'control-center' ||
       routeRecord.value.name === 'workbench-welcome' ||

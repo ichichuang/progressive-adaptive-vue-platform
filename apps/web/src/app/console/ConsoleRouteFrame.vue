@@ -16,6 +16,7 @@ import { createRuntimeUpdateMonitor } from '../config/runtime-update-monitor'
 import { runtimeUpdateKey, type RuntimeUpdateStatus } from '../config/runtime-update-context'
 import type { CompiledBuildIdentity } from '../config/runtime-configuration'
 import { NButton } from 'naive-ui/es/button'
+import { NFlex } from 'naive-ui/es/flex'
 import { NIcon } from 'naive-ui/es/icon'
 import { NTooltip } from 'naive-ui/es/tooltip'
 import {
@@ -131,6 +132,7 @@ defineSlots<{
 
 const { t } = useConsoleI18n()
 const colorModeSwitchFailed = ref(false)
+const layoutPreview = computed(() => props.activeRouteName.startsWith('preview-layout-'))
 const contentLayout = computed(() => {
   if (!props.containedContent) return 'scroll'
   return props.activeRouteName === 'workbench-dashboard' ||
@@ -674,6 +676,7 @@ async function navigate(routeName: string): Promise<void> {
     />
   </div>
   <UiAdminShell
+    :class="{ 'p-0': isDisplayLayoutPreview(activeRouteName) }"
     :composition="composition"
     :prepare-navigation-focus="prepareNavigationFocus"
     :navigation-focus-request="navigationFocusRequest"
@@ -702,7 +705,7 @@ async function navigate(routeName: string): Promise<void> {
     </template>
     <template #workspace>
       <UiWorkspaceTabs
-        v-if="activeRouteName !== 'control-center'"
+        v-if="activeRouteName !== 'control-center' && !layoutPreview"
         :items="workspaceTabs"
         :active-id="workspaceTabActiveId"
         :motion="appearance.snapshot.value.motion"
@@ -764,13 +767,19 @@ async function navigate(routeName: string): Promise<void> {
     </template>
     <template #footer>
       <slot name="footer">
-        <div
-          v-if="activeRouteName.startsWith('preview-layout-') && composition?.endsWith('-footer')"
-          class="flex flex-wrap min-w-0 items-center justify-between bg-surface-panel gap-component-unit px-page-inline py-section-block text-caption text-text-secondary"
+        <NFlex
+          v-if="layoutPreview && composition?.endsWith('-footer')"
+          align="center"
+          justify="space-between"
+          class="min-w-0 text-caption"
         >
-          <span>{{ t('layoutPreview.footer') }}</span>
-          <span>{{ t('layoutPreview.workspace') }}</span>
-        </div>
+          <NFlex :size="0">
+            {{ t('layoutPreview.footer') }}
+          </NFlex>
+          <NFlex :size="0">
+            {{ t('layoutPreview.workspace') }}
+          </NFlex>
+        </NFlex>
       </slot>
     </template>
     <slot />

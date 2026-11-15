@@ -16,11 +16,17 @@ import {
   onScopeDispose,
   ref,
   shallowRef,
+  watch,
   type HTMLAttributes,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { UiRadioCardGroup, UiScrollArea, type UiScrollController } from '@platform/ui'
 import { NCard } from 'naive-ui/es/card'
+import {
+  NMessageProvider,
+  type MessageProviderInst,
+  type MessageReactive,
+} from 'naive-ui/es/message'
 import { NScrollbar } from 'naive-ui/es/scrollbar'
 import { NSwitch } from 'naive-ui/es/switch'
 import RuntimeVersionSettings from '../app/workbench/RuntimeVersionSettings.vue'
@@ -46,7 +52,6 @@ defineOptions({ name: 'ControlCenterPage' })
 
 type AppearanceAxis = Exclude<keyof ExplicitThemePreference['appearance'], 'theme' | 'colorStyle'>
 type FeedbackKey = Extract<ConsoleMessageKey, `settings.feedback.${string}`>
-type FeedbackTone = 'neutral' | 'success' | 'warning' | 'error'
 
 const mutation = useAppearanceMutationBoundary()
 const effective = useAppearanceReadBoundary()
@@ -87,10 +92,7 @@ function connectContentScroll(controller: UiScrollController | null): void {
   contentScroll.value = controller
   if (controller !== null) unregisterScrollController = registerScrollController?.(controller)
 }
-const feedback = ref<{ readonly key: FeedbackKey; readonly tone: FeedbackTone }>({
-  key: 'settings.feedback.automatic',
-  tone: 'neutral',
-})
+const feedback = ref<FeedbackKey | null>(null)
 const feedbackRevision = ref(0)
 const returning = ref(false)
 const localeNoticeKeys = {
@@ -131,29 +133,46 @@ const activePreview = computed(() =>
       theme.themeId === effective.snapshot.value.theme.themeId,
   ),
 )
-const showSaveError = computed(
-  () => feedback.value.tone === 'error' || feedback.value.tone === 'warning',
-)
+const showSaveError = computed(() => feedback.value !== null)
 const feedbackMessage = computed(() => {
-  if (returning.value) return t('settings.returning')
-  if (language.pendingLocale.value !== null)
-    return showSaveError.value
-      ? `${t(feedback.value.key)} · ${t('i18n.loading')}`
-      : t('i18n.loading')
+  const current = feedback.value
   if (
-    showSaveError.value &&
+    current !== null &&
     ['not-saved', 'unsupported-locale', 'message-load-failed', 'commit-failed'].includes(
       language.notice.value,
     )
   )
-    return `${t(feedback.value.key)} · ${t(localeNoticeKeys[language.notice.value])}`
+    return `${t(current)} · ${t(localeNoticeKeys[language.notice.value])}`
   if (
     feedbackRevision.value === 0 &&
     ['preference-unavailable', 'saved-choice-unavailable'].includes(language.notice.value)
   )
     return t(localeNoticeKeys[language.notice.value])
-  return t(feedback.value.key)
+  return current === null ? null : t(current)
 })
+const messageProvider = ref<MessageProviderInst>()
+let feedbackNotice: MessageReactive | undefined
+watch(
+  [messageProvider, feedbackMessage, feedbackRevision],
+  ([provider, message]) => {
+    if (message === null) {
+      feedbackNotice?.destroy()
+      feedbackNotice = undefined
+    } else if (feedbackNotice) {
+      feedbackNotice.content = message
+    } else if (provider) {
+      const notice = provider.warning(message, {
+        duration: 0,
+        closable: true,
+        onClose: () => {
+          if (feedbackNotice === notice) feedbackNotice = undefined
+        },
+      })
+      feedbackNotice = notice
+    }
+  },
+  { immediate: true, flush: 'post' },
+)
 const colorModes = [
   { value: 'light', label: 'settings.light' },
   { value: 'dark', label: 'settings.dark' },
@@ -212,16 +231,16 @@ const choices = computed(() => ({
 let pendingSection: SectionId | undefined
 let disposed = false
 
-function announce(key: FeedbackKey, tone: FeedbackTone): void {
+function announce(key: FeedbackKey | null): void {
   if (disposed) return
-  feedback.value = { key, tone }
+  feedback.value = key
   feedbackRevision.value += 1
 }
 
 function commitAppearance(change: Readonly<Record<string, unknown>>): boolean {
   const current = explicitThemePreferenceSchema.safeParse(preference.value)
   if (!current.success) {
-    announce('settings.feedback.unavailable', 'error')
+    announce('settings.feedback.unavailable')
     return false
   }
   const candidate = {
@@ -229,10 +248,7 @@ function commitAppearance(change: Readonly<Record<string, unknown>>): boolean {
     appearance: { ...current.data.appearance, ...change },
   }
   const result = mutation.commitPreference(candidate)
-  announce(
-    result.status === 'committed' ? 'settings.feedback.saved' : 'settings.feedback.rejected',
-    result.status === 'committed' ? 'success' : 'error',
-  )
+  announce(result.status === 'committed' ? null : 'settings.feedback.rejected')
   return result.status === 'committed'
 }
 
@@ -302,10 +318,7 @@ function themeStyle(theme: AppearanceThemePreviewProjection): Readonly<Record<st
 
 function resetAppearance(): void {
   const result = mutation.resetPreference()
-  announce(
-    result.status === 'committed' ? 'settings.feedback.reset' : 'settings.feedback.rejected',
-    result.status === 'committed' ? 'success' : 'error',
-  )
+  announce(result.status === 'committed' ? null : 'settings.feedback.rejected')
 }
 
 function announcePersistence(result: {
@@ -313,15 +326,10 @@ function announcePersistence(result: {
   readonly persistence?: 'saved' | 'failed'
 }): void {
   if (result.status !== 'applied') {
-    announce('settings.feedback.unavailable', 'error')
+    announce('settings.feedback.unavailable')
     return
   }
-  announce(
-    result.persistence === 'saved'
-      ? 'settings.feedback.saved'
-      : 'settings.feedback.applied-not-saved',
-    result.persistence === 'saved' ? 'success' : 'warning',
-  )
+  announce(result.persistence === 'saved' ? null : 'settings.feedback.applied-not-saved')
 }
 
 function updateNavigation(axis: 'collapsed' | 'accordion', value: boolean): void {
@@ -344,16 +352,13 @@ function updateScroll(value: boolean): void {
 }
 
 async function updateLanguage(value: unknown): Promise<void> {
-  announce('settings.feedback.automatic', 'neutral')
+  announce(null)
   const revision = feedbackRevision.value
   const result = await language.switchLocale(value)
   if (disposed) return
   if (feedbackRevision.value !== revision && showSaveError.value) return
   if (result.status === 'applied') announcePersistence(result)
-  else if (result.status === 'unchanged')
-    announce('settings.feedback.language-unchanged', 'neutral')
-  else if (result.status === 'failed') announce('settings.feedback.language-failed', 'error')
-  else announce('settings.feedback.cancelled', 'neutral')
+  else if (result.status === 'failed') announce('settings.feedback.language-failed')
 }
 
 function jumpTo(id: SectionId): void {
@@ -363,7 +368,7 @@ function jumpTo(id: SectionId): void {
   const result = contentScroll.value?.scrollToAnchor(id, { behavior: 'smooth' })
   if (result?.kind !== 'scrolled') {
     pendingSection = undefined
-    announce('settings.feedback.unavailable', 'error')
+    announce('settings.feedback.unavailable')
     return
   }
   activeSection.value = id
@@ -378,10 +383,10 @@ async function finish(): Promise<void> {
       result.kind !== 'duplicated' &&
       !(result.kind === 'allow' && result.presentation === 'page')
     ) {
-      announce('settings.feedback.return-failed', 'error')
+      announce('settings.feedback.return-failed')
     }
   } catch {
-    announce('settings.feedback.return-failed', 'error')
+    announce('settings.feedback.return-failed')
   } finally {
     if (!disposed) returning.value = false
   }
@@ -432,6 +437,7 @@ function interruptSectionScroll(event: Event): void {
 
 onScopeDispose(() => {
   disposed = true
+  feedbackNotice?.destroy()
   unregisterScrollController?.()
 })
 </script>
@@ -466,34 +472,6 @@ onScopeDispose(() => {
           >
             {{ t('settings.title') }}
           </p>
-          <div
-            class="wb-settings-summary flex flex-wrap items-center justify-between gap-content-gap"
-          >
-            <div class="wb-settings-save">
-              <UiScrollArea owner-id="settings-feedback">
-                <span
-                  class="flex items-center gap-content-gap"
-                  :data-tone="feedback.tone"
-                  role="status"
-                  aria-live="polite"
-                >
-                  <span
-                    v-if="feedback.tone === 'success' && language.pendingLocale.value === null"
-                    class="i-lucide-check text-control-success"
-                    aria-hidden="true"
-                  />
-                  <span
-                    v-else-if="showSaveError"
-                    class="i-lucide-circle-alert text-control-error"
-                    aria-hidden="true"
-                  />
-                  <span :key="feedbackRevision">
-                    {{ feedbackMessage }}
-                  </span>
-                </span>
-              </UiScrollArea>
-            </div>
-          </div>
         </header>
 
         <NCard
@@ -636,7 +614,7 @@ onScopeDispose(() => {
         >
           <h2
             id="settings-style-title"
-            class="sr-only"
+            class="font-title-weight m-0 text-subheading"
             tabindex="-1"
           >
             {{ t('settings.styles.title') }}
@@ -1073,6 +1051,10 @@ onScopeDispose(() => {
         </span>
       </NButton>
     </aside>
+    <NMessageProvider
+      ref="messageProvider"
+      to="#pavp-overlay-root"
+    />
   </div>
 </template>
 

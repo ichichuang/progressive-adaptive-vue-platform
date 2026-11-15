@@ -412,13 +412,18 @@ interface CommittedEntry {
   readonly marker: RouteEntryMarker | undefined
   presented:
     | {
-        readonly kind: 'page' | 'component-fallback'
+        readonly kind: 'page'
         readonly owner: HTMLElement
         readonly controller: UiScrollController
         readonly workspace: LiveWorkspaceEntry | undefined
         readonly context: readonly (string | number)[] | undefined
         readonly workspaceContext: readonly (string | number)[] | undefined
         readonly workspaceGeneration: number | undefined
+      }
+    | {
+        readonly kind: 'component-fallback'
+        readonly owner: HTMLElement
+        readonly workspace: LiveWorkspaceEntry | undefined
       }
     | undefined
 }
@@ -728,7 +733,12 @@ export async function createAndReadyRouter(input: {
     operation?.presentationAbort.abort()
     refreshLease?.abort()
     // The presented source owns any inertia before route-transition presentation begins.
-    committedEntry?.presented?.controller.cancelMotion()
+    if (
+      committedEntry !== undefined &&
+      committedEntry.presented?.kind === 'page' &&
+      !hasComponentFailure(committedEntry)
+    )
+      committedEntry.presented.controller.cancelMotion()
     operation?.finish({
       kind: 'cancel',
       navigationId: operation.navigationId,
@@ -811,9 +821,10 @@ export async function createAndReadyRouter(input: {
     )
       return undefined
     const presented = entry.presented
-    let controller = hasComponentFailure(entry)
-      ? scrollControllers.read(presented.owner)
-      : presented.controller
+    const failedAtPreparation = hasComponentFailure(entry)
+    if (!failedAtPreparation && presented.kind !== 'page') return undefined
+    let controller =
+      !failedAtPreparation && presented.kind === 'page' ? presented.controller : undefined
     let pendingReplacement: LiveWorkspaceEntry | undefined
     const lease = new AbortController()
     const operationSignal = entry.navigation.operation.presentationAbort.signal
@@ -833,7 +844,11 @@ export async function createAndReadyRouter(input: {
       entry.navigation.operation.result?.kind === 'allow' &&
       regionOwner(entry.navigation.routeName) === presented.owner &&
       (pendingReplacement === undefined
-        ? scrollControllers.read(presented.owner) === controller && controller.readState().ready
+        ? controller === undefined
+          ? failedAtPreparation && hasComponentFailure(entry)
+          : !hasComponentFailure(entry) &&
+            scrollControllers.read(presented.owner) === controller &&
+            controller.readState().ready
         : entry.workspace === pendingReplacement &&
           renderSnapshot?.workspace === pendingReplacement &&
           workspace.active === pendingReplacement) &&
@@ -971,6 +986,8 @@ export async function createAndReadyRouter(input: {
         // DOM readiness is sampled again after content settles; it is not a reactive promise.
         if (!isCurrent() || workspace.active !== replacement || hasComponentFailure(entry))
           return false
+        if (failedAtPreparation) await nextTick()
+        if (!isCurrent() || hasComponentFailure(entry)) return false
         controller = scrollControllers.read(presented.owner)
         pendingReplacement = undefined
         if (!isCurrent() || hasComponentFailure(entry)) return false
@@ -1001,8 +1018,8 @@ export async function createAndReadyRouter(input: {
           throw new TypeError('The locally refreshed Workspace scroll owner is unavailable.')
         if (!isCurrent() || hasComponentFailure(entry)) return false
         entry.presented = {
-          ...presented,
           kind: 'page',
+          owner: presented.owner,
           controller,
           workspace: replacement,
           context: regionContext(entry.to, entry.navigation, presented.owner),
@@ -1394,28 +1411,16 @@ export async function createAndReadyRouter(input: {
           const preserve = samePage && navigation.operation.kind !== 'pop' && !workspaceActivation
           let documentPosition: { readonly left: number; readonly top: number } | false = false
           // A contained stage can declare no scrolling while still owning its route focus.
-          if (
+          if (!locked && entryIsCurrent(entry) && presentation === 'component-fallback') {
+            hasComponentFailure(entry)
+            if (owner !== undefined)
+              entry.presented = { kind: 'component-fallback', owner, workspace: workspaceEntry }
+          } else if (
             !locked &&
             entryIsCurrent(entry) &&
             (owner === undefined || routeRecord.scrollRestoration !== 'none')
           ) {
-            if (presentation === 'component-fallback') {
-              hasComponentFailure(entry)
-              if (owner === undefined) documentPosition = { left: 0, top: 0 }
-              else {
-                const controller = scrollControllers.read(owner)
-                if (entryIsCurrent(entry)) writeRegionPosition(controller, { left: 0, top: 0 })
-                entry.presented = {
-                  kind: 'component-fallback',
-                  owner,
-                  controller,
-                  workspace: workspaceEntry,
-                  context: undefined,
-                  workspaceContext: undefined,
-                  workspaceGeneration: undefined,
-                }
-              }
-            } else if (owner === undefined) {
+            if (owner === undefined) {
               const documentOwner = document.scrollingElement
               if (documentOwner === null)
                 throw new TypeError('The document scroll owner is unavailable.')

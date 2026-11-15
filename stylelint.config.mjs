@@ -325,7 +325,7 @@ const shellVisualAuthorityRules = {
     ...shellMaterialColorVariables,
   ]),
 }
-const displayPreviewStylePath = 'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue'
+const displayPreviewStylePath = 'apps/web/src/app/workbench/layout/DisplayOperationsBoard.vue'
 // The scoped display computes stage-relative sizes. Exact declaration ownership
 // still applies; the generic visual rule admits only the values in that contract.
 function displayPreviewPatterns(...properties) {

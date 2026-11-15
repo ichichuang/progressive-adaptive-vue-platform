@@ -147,7 +147,7 @@ const ShellFooter: FunctionalComponent<{ content: Slot | undefined }> = ({ conte
     ? h(
         'footer',
         {
-          class: 'pavp-admin-shell__footer mt-auto shrink-0',
+          class: 'pavp-admin-shell__footer shrink-0',
           'data-shell-region': 'architecture-console-footer',
         },
         content,
@@ -1839,12 +1839,12 @@ watch(
                 :data-content-flush="flushContent || undefined"
               >
                 <slot />
-                <UiColorScope region="footer">
-                  <ShellFooter :content="$slots['footer']" />
-                </UiColorScope>
               </div>
             </UiScrollArea>
           </div>
+        </UiColorScope>
+        <UiColorScope region="sidebar">
+          <ShellFooter :content="$slots['footer']" />
         </UiColorScope>
       </div>
     </NLayout>
@@ -2010,10 +2010,6 @@ watch(
 
 <style scoped>
 @layer components {
-  .pavp-admin-shell__footer {
-    background: var(--pavp-region-background);
-    color: var(--pavp-region-foreground);
-  }
   .pavp-admin-shell {
     --pavp-safe-area-top: env(safe-area-inset-top, 0px);
     --pavp-safe-area-right: env(safe-area-inset-right, 0px);
@@ -2117,6 +2113,16 @@ watch(
     background: var(--pavp-region-background, var(--ui-color-surface-panel));
     border-radius: var(--ui-radius-panel);
     box-shadow: var(--ui-admin-shadow-chrome);
+  }
+
+  .pavp-admin-shell__footer {
+    padding-block: var(--ui-space-content-gap)
+      max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
+    padding-inline: max(var(--ui-space-content-gap), var(--pavp-safe-area-left))
+      max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
+    border-radius: var(--ui-radius-panel);
+    background: var(--pavp-region-background, var(--ui-color-surface-panel));
+    color: var(--pavp-region-foreground, var(--ui-color-text-primary));
   }
 
   .pavp-admin-shell__sidebar-controls {
@@ -2286,7 +2292,7 @@ watch(
     }
   }
 
-  .pavp-admin-shell .pavp-admin-shell__content-inner[data-content-flush] {
+  .pavp-admin-shell .pavp-admin-shell__content-inner[data-contained='true'] {
     padding: 0;
   }
 

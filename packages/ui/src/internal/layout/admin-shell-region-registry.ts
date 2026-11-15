@@ -45,7 +45,7 @@ export const adminShellRegionRegistry = Object.freeze({
       profileAvailability: allProfiles,
       requiredProfiles: Object.freeze([] as const),
       overlayRelationship: 'background-locked-by-navigation-overlay',
-      scrollRelationship: 'inside-route-primary-scroll-owner',
+      scrollRelationship: 'outside-route-primary-scroll-owner',
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({

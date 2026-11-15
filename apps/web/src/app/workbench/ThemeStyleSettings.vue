@@ -52,61 +52,53 @@ function previewStyle(style: ColorStyle): Record<string, string> {
 }
 </script>
 <template>
-  <section
-    class="grid min-w-0 gap-content-gap"
-    :aria-label="t('settings.styles.title')"
+  <UiRadioCardGroup
+    class="theme-style-grid"
+    :accessible-label="t('settings.styles.title')"
+    :model-value="modelValue"
+    :options="options"
+    :disabled="disabled"
+    @update:model-value="emit('update:modelValue', colorStyleSchema.parse($event))"
   >
-    <h3 class="font-title-weight m-0 text-subheading">
-      {{ t('settings.styles.title') }}
-    </h3>
-    <UiRadioCardGroup
-      class="theme-style-grid"
-      :accessible-label="t('settings.styles.title')"
-      :model-value="modelValue"
-      :options="options"
-      :disabled="disabled"
-      @update:model-value="emit('update:modelValue', colorStyleSchema.parse($event))"
-    >
-      <template #option="{ option, selected }">
-        <span class="theme-style-card grid gap-content-gap">
-          <span
-            class="theme-style-scene rounded-control"
-            :style="previewStyle(colorStyleSchema.parse(option.value))"
-            aria-hidden="true"
-          >
-            <span class="theme-style-header"><i /><i /><i /></span>
-            <span class="theme-style-sidebar">
-              <b><em /></b>
-              <i />
-              <i />
-              <i />
-            </span>
-            <span class="theme-style-tabs">
-              <b><em /></b>
-              <i />
-            </span>
-            <span class="theme-style-content">
-              <span class="theme-style-metric" />
-              <span class="theme-style-metric" />
-              <span class="theme-style-panel">
-                <i />
-                <i />
-                <b><em /></b>
-              </span>
-            </span>
+    <template #option="{ option, selected }">
+      <span class="theme-style-card grid gap-content-gap">
+        <span
+          class="theme-style-scene rounded-control"
+          :style="previewStyle(colorStyleSchema.parse(option.value))"
+          aria-hidden="true"
+        >
+          <span class="theme-style-header"><i /><i /><i /></span>
+          <span class="theme-style-sidebar">
+            <b><em /></b>
+            <i />
+            <i />
+            <i />
           </span>
-          <span class="flex items-center justify-center gap-content-gap">
-            <span
-              v-if="selected"
-              class="i-lucide-circle-check"
-              aria-hidden="true"
-            />
-            {{ option.label }}
+          <span class="theme-style-tabs">
+            <b><em /></b>
+            <i />
+          </span>
+          <span class="theme-style-content">
+            <span class="theme-style-metric" />
+            <span class="theme-style-metric" />
+            <span class="theme-style-panel">
+              <i />
+              <i />
+              <b><em /></b>
+            </span>
           </span>
         </span>
-      </template>
-    </UiRadioCardGroup>
-  </section>
+        <span class="flex items-center justify-center gap-content-gap">
+          <span
+            v-if="selected"
+            class="i-lucide-circle-check"
+            aria-hidden="true"
+          />
+          {{ option.label }}
+        </span>
+      </span>
+    </template>
+  </UiRadioCardGroup>
 </template>
 <style scoped>
 .theme-style-grid {

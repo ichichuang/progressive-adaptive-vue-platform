@@ -14,10 +14,12 @@ import {
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
-import { NCheckbox } from 'naive-ui/es/checkbox'
 import { NEmpty } from 'naive-ui/es/empty'
-import { NInput } from 'naive-ui/es/input'
-import { NFormItem } from 'naive-ui/es/form'
+import {
+  NMessageProvider,
+  type MessageProviderInst,
+  type MessageReactive,
+} from 'naive-ui/es/message'
 import {
   UiDashboardGrid,
   UiScrollArea,
@@ -42,10 +44,9 @@ import {
 import { useRouteRevealBoundary } from '../../router/route-transition/route-motion-player'
 import { useAppearanceReadBoundary } from '../../appearance/appearance-read-boundary'
 import { useConsoleI18n } from '../../../shared/i18n'
-import { useDashboardActionTheme, useDashboardCheckboxTheme } from './use-dashboard-action-theme'
+import { useDashboardActionTheme } from './use-dashboard-action-theme'
 import DashboardWidget from './DashboardWidget.vue'
 import DashboardContextMenu from './DashboardContextMenu.vue'
-import DashboardAppearanceOptions from './DashboardAppearanceOptions.vue'
 import DashboardLibraryDrawer, { type DashboardLibraryEntry } from './DashboardLibraryDrawer.vue'
 import {
   dashboardCatalog,
@@ -57,7 +58,6 @@ import { routerScrollControllerKey } from '../../router/router-scroll-controller
 defineProps<{ readonly title: string }>()
 const { t } = useConsoleI18n()
 const actionTheme = useDashboardActionTheme()
-const checkboxTheme = useDashboardCheckboxTheme()
 const motion = useUiMotion()
 const reveal = useRouteRevealBoundary()
 const appearance = useAppearanceReadBoundary()
@@ -74,10 +74,15 @@ onActivated(() => {
   const returning = !active
   active = true
   connectScroll(currentScroll.value)
-  if (returning) void playBoardArrival()
+  if (returning) {
+    void playBoardArrival()
+    if (board.readFailure.value) showStorageFailure('read')
+    else if (board.failure.value) showStorageFailure('save')
+  }
 })
 onDeactivated(() => {
   active = false
+  clearStorageMessage()
   unregisterScroll?.()
   unregisterScroll = undefined
 })
@@ -85,6 +90,48 @@ onScopeDispose(() => {
   connectScroll(null)
 })
 const board = useDashboard(dashboardCatalog)
+const messageProvider = ref<MessageProviderInst>()
+let storageMessage: MessageReactive | undefined
+function clearStorageMessage(): void {
+  const previous = storageMessage
+  storageMessage = undefined
+  if (!previous) return
+  previous.destroy()
+  void nextTick(() => {
+    previous.destroy()
+  })
+}
+function showStorageFailure(kind: 'read' | 'save'): void {
+  if (!active) return
+  const content = t(
+    kind === 'read' ? 'dashboardBoard.readFailedHint' : 'dashboardBoard.saveFailedHint',
+  )
+  if (storageMessage) {
+    storageMessage.content = content
+    return
+  }
+  const message = messageProvider.value?.warning(content, {
+    duration: 0,
+    closable: true,
+    onClose: () => {
+      if (storageMessage === message) storageMessage = undefined
+    },
+  })
+  storageMessage = message
+}
+watch([board.readFailure, board.failure], ([readFailed, saveFailed]) => {
+  if (readFailed) showStorageFailure('read')
+  else if (saveFailed) showStorageFailure('save')
+  else clearStorageMessage()
+})
+watch(
+  () => board.document.value.panels.length,
+  (count, previous) => {
+    if (count === 0 && previous > 0) {
+      void nextTick(() => currentScroll.value?.scrollTo({ top: 0, behavior: 'instant' }))
+    }
+  },
+)
 const editing = ref(false)
 const host = ref<HTMLElement>()
 const grid = ref<UiDashboardGridHandle>()
@@ -101,66 +148,7 @@ const context = shallowRef<{
 const libraryOpen = ref(false)
 let libraryCaller: HTMLElement | null = null
 let libraryAddedId: string | undefined
-type Inspector = 'appearance' | 'properties' | 'layout'
-const inspector = ref<Inspector>()
-const inspectorOpen = ref(false)
-const inspectorCaller = shallowRef<HTMLElement | null>(null)
-const inspectorElement = ref<HTMLElement>()
 const boardDescriptionId = useId()
-const inspectorTitleId = useId()
-const propertyTitleId = useId()
-watch(inspectorElement, (element, _previous, onCleanup) => {
-  if (!element) return
-  const closeWithEscape = (event: KeyboardEvent): void => {
-    if (event.key !== 'Escape' || event.isComposing || event.defaultPrevented) return
-    event.preventDefault()
-    event.stopPropagation()
-    setInspectorOpen(false)
-  }
-  element.addEventListener('keydown', closeWithEscape)
-  onCleanup(() => {
-    element.removeEventListener('keydown', closeWithEscape)
-  })
-})
-let inspectorOffset: ReturnType<UiScrollController['readOffset']> | undefined
-const motionSample = ref<HTMLElement>()
-const showMotionSample = ref(false)
-const inspectorTitle = computed(() => {
-  if (inspector.value === 'properties' && propertyPanel.value) return cardTitle(propertyPanel.value)
-  if (inspector.value === 'layout') return t('dashboardBoard.layoutTools')
-  return t('dashboardBoard.appearanceStyle')
-})
-async function openInspector(kind: Inspector, caller: HTMLElement | null): Promise<void> {
-  if (!inspectorOpen.value) inspectorOffset = currentScroll.value?.readOffset()
-  showMotionSample.value = false
-  inspectorCaller.value = caller
-  inspector.value = kind
-  inspectorOpen.value = true
-  await nextTick()
-  inspectorElement.value?.focus({ preventScroll: true })
-  if (kind === 'properties' && propertyPanel.value) revealPanel(propertyPanel.value)
-}
-function setInspectorOpen(show: boolean): void {
-  if (!show && inspectorOpen.value) {
-    if (propertyPanel.value) commitTitle(propertyPanel.value)
-    clearArrivals()
-  }
-  inspectorOpen.value = show
-}
-async function clearInspector(): Promise<void> {
-  if (inspectorOpen.value) return
-  inspector.value = undefined
-  propertyPanel.value = undefined
-  const caller = inspectorCaller.value
-  const offset = inspectorOffset
-  inspectorCaller.value = null
-  inspectorOffset = undefined
-  showMotionSample.value = false
-  await nextTick()
-  if (!active || libraryOpen.value) return
-  if (offset) currentScroll.value?.scrollTo({ ...offset, behavior: 'instant' })
-  if (caller?.isConnected) caller.focus({ preventScroll: true })
-}
 const toneOverrides = computed(
   () => board.document.value.panels.filter((panel) => panel.tone !== undefined).length,
 )
@@ -169,6 +157,13 @@ const entranceOverrides = computed(
 )
 function closeContext(): void {
   context.value = null
+}
+function openLibrary(caller: HTMLElement | null): void {
+  if (board.readFailure.value) return
+  rejected.value = false
+  libraryCaller = caller
+  libraryAddedId = undefined
+  libraryOpen.value = true
 }
 function finishEditing(): void {
   editing.value = false
@@ -226,16 +221,21 @@ function contextKeydown(event: KeyboardEvent): void {
   }
 }
 function contextAction(
-  action: 'edit' | 'finish' | 'properties' | 'remove' | 'add' | 'appearance' | 'layout',
+  action:
+    | 'edit'
+    | 'finish'
+    | 'remove'
+    | 'add'
+    | 'undo'
+    | 'compact'
+    | 'restore-layout'
+    | 'retry-read'
+    | 'replace-invalid'
+    | 'retry-save',
 ): void {
   const cardId = context.value?.cardId
   const caller = context.value?.caller ?? null
-  closeContext()
-  if (board.readFailure.value) return
-  if (inspectorOpen.value && ['properties', 'appearance', 'add', 'layout'].includes(action)) {
-    if (propertyPanel.value) commitTitle(propertyPanel.value)
-    propertyPanel.value = undefined
-  }
+  if (board.readFailure.value && action !== 'retry-read' && action !== 'replace-invalid') return
   switch (action) {
     case 'edit':
       editing.value = true
@@ -253,32 +253,36 @@ function contextAction(
         )
       }
       break
-    case 'properties':
-      if (cardId) {
-        propertyPanel.value = cardId
-        propertyTitle.value = panels.value.get(cardId)?.title ?? ''
-        void openInspector('properties', caller)
-      }
-      break
     case 'add':
-      rejected.value = false
-      setInspectorOpen(false)
-      libraryCaller = caller
-      libraryAddedId = undefined
-      libraryOpen.value = true
+      openLibrary(caller)
       break
-    case 'appearance':
-      void openInspector('appearance', caller)
+    case 'undo':
+      board.undo()
       break
-    case 'layout':
-      void openInspector('layout', caller)
+    case 'compact':
+      grid.value?.compact()
+      break
+    case 'restore-layout':
+      board.restoreLayout()
+      break
+    case 'retry-read':
+      board.retryRead()
+      if (board.readFailure.value) showStorageFailure('read')
+      break
+    case 'replace-invalid':
+      board.reset()
+      if (board.failure.value) showStorageFailure('save')
+      break
+    case 'retry-save':
+      board.retry()
+      if (board.failure.value) showStorageFailure('save')
+      break
   }
 }
 function closeOverlays(): void {
   closeContext()
   touchPressEnd()
-  showMotionSample.value = false
-  setInspectorOpen(false)
+  clearArrivals()
   libraryOpen.value = false
   libraryAddedId = undefined
   libraryCaller = null
@@ -322,7 +326,6 @@ const arrivalMotions = new Set<UiMotionHandle>()
 let arrivalGeneration = 0
 function clearArrivals(): void {
   arrivalGeneration += 1
-  showMotionSample.value = false
   for (const timer of arrivalTimers) clearTimeout(timer)
   arrivalTimers.clear()
   for (const animation of arrivalMotions) animation.cancel()
@@ -435,39 +438,35 @@ async function playBoardArrival(): Promise<void> {
 }
 onMounted(() => {
   void playBoardArrival()
+  if (board.readFailure.value) showStorageFailure('read')
+  else if (board.failure.value) showStorageFailure('save')
 })
-async function previewSample(preset: DashboardMotion): Promise<void> {
-  const generation = arrivalGeneration
-  showMotionSample.value = true
-  await nextTick()
-  if (generation === arrivalGeneration && inspectorOpen.value && motionSample.value) {
-    playEntrance(motionSample.value, preset)
-  }
+function previewSample(preset: DashboardMotion, target: HTMLElement | null): void {
+  const sample = target?.querySelector<HTMLElement>('[data-dashboard-motion-preview]')
+  if (sample) playEntrance(sample, preset)
 }
-function previewCard(id: string): void {
+function previewCard(id: string, target: HTMLElement | null): void {
   clearArrivals()
-  if (!active || !mayPlay.value || !inspectorOpen.value) return
+  if (!active || !mayPlay.value || !context.value) return
   const panel = panels.value.get(id)
   if (!panel) return
   const preset = resolvedEntrance(panel)
   if (preset === 'none') return
   const element = panelSurface(id)
   if (element && panelIsVisible(element, true)) arrive(element, preset)
-  else void previewSample(preset)
+  else previewSample(preset, target)
 }
-function chooseBoardEntrance(entrance: DashboardEntrance): void {
+function chooseBoardEntrance(entrance: DashboardEntrance, target: HTMLElement | null): void {
   board.setEntrance(entrance)
   if (!playVisibleCards('preview') && active && mayPlay.value && entrance !== 'none') {
-    void previewSample(entrance === 'balanced' ? dashboardArrivals.capabilities : entrance)
+    previewSample(entrance === 'balanced' ? dashboardArrivals.capabilities : entrance, target)
   }
 }
-const propertyPanel = ref<string>()
-const propertyTitle = ref('')
-function commitTitle(id: string): void {
+function commitTitle(id: string, value: string): void {
   const panel = panels.value.get(id)
   if (!panel) return
   const next = { ...panel }
-  const title = propertyTitle.value.trim()
+  const title = value.trim()
   if (title) next.title = title
   else delete next.title
   board.updatePanel(next)
@@ -480,20 +479,28 @@ function setTone(id: string, tone: DashboardTone): void {
   const panel = panels.value.get(id)
   if (panel) board.updatePanel({ ...panel, tone })
 }
-function setPanelEntrance(id: string, entrance: DashboardEntrance): void {
+function setPanelEntrance(
+  id: string,
+  entrance: DashboardEntrance,
+  target: HTMLElement | null,
+): void {
   const panel = panels.value.get(id)
   if (!panel) return
   board.updatePanel({ ...panel, entrance })
-  previewCard(id)
+  previewCard(id, target)
 }
-function resetPanelAppearance(id: string, key: 'tone' | 'entrance'): void {
+function resetPanelAppearance(
+  id: string,
+  key: 'tone' | 'entrance',
+  target: HTMLElement | null = null,
+): void {
   const panel = panels.value.get(id)
   if (!panel) return
   const inherited = { ...panel }
   if (key === 'tone') delete inherited.tone
   else delete inherited.entrance
   board.updatePanel(inherited)
-  if (key === 'entrance') previewCard(id)
+  if (key === 'entrance') previewCard(id, target)
 }
 function destinations(id: string): readonly DashboardDestination[] {
   const panel = panels.value.get(id)
@@ -627,7 +634,7 @@ const announcement = computed(() => {
 <template>
   <div
     ref="host"
-    class="flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap"
+    class="flex-1 grid grid-rows-1 min-h-0 min-w-0 gap-content-gap"
     @contextmenu.capture.prevent
   >
     <h1
@@ -645,7 +652,7 @@ const announcement = computed(() => {
     </p>
     <UiScrollArea
       owner-id="architecture-console-content"
-      class="wb-dashboard-scroll rounded-panel flex-1 min-h-0 min-w-0"
+      class="wb-dashboard-scroll rounded-panel col-start-1 row-start-1 min-h-0 min-w-0"
       :class="{
         'bg-surface-panel': boardStyle === 'theme' || boardStyle === 'brand',
         'bg-expression-accent-a-soft-background': boardStyle === 'soft',
@@ -693,7 +700,6 @@ const announcement = computed(() => {
             }"
             :aria-label="cardTitle(id)"
             :data-dashboard-panel="id"
-            :data-dashboard-configuring="inspectorOpen && propertyPanel === id ? 'true' : undefined"
             tabindex="0"
             :data-dashboard-tone="tone(id)"
           >
@@ -764,8 +770,37 @@ const announcement = computed(() => {
       </UiDashboardGrid>
       <NEmpty
         v-if="board.document.value.panels.length === 0"
+        class="text-center flex-1 justify-center p-panel-narrow"
         :description="t('dashboardBoard.empty')"
-      />
+        :theme-overrides="{ iconSizeMedium: 'var(--ui-control-height)' }"
+      >
+        <template #icon>
+          <span
+            class="rounded-panel flex h-full w-full items-center justify-center bg-expression-accent-a-soft-background text-expression-accent-a-soft-foreground"
+          >
+            <span
+              class="i-lucide-layout-dashboard size-icon-large"
+              aria-hidden="true"
+            />
+          </span>
+        </template>
+        <template #extra>
+          <NButton
+            :theme-overrides="actionTheme"
+            type="primary"
+            :disabled="!!board.readFailure.value"
+            @click="openLibrary($event.currentTarget as HTMLElement)"
+          >
+            <template #icon>
+              <span
+                class="i-lucide-plus"
+                aria-hidden="true"
+              />
+            </template>
+            {{ t('dashboardBoard.add') }}
+          </NButton>
+        </template>
+      </NEmpty>
     </UiScrollArea>
     <span
       class="sr-only"
@@ -773,238 +808,10 @@ const announcement = computed(() => {
       aria-live="polite"
       v-text="announcement"
     />
-    <footer
-      v-if="editing || board.readFailure.value || board.failure.value"
-      class="flex shrink-0 flex-wrap items-center gap-component-unit"
-    >
-      <template v-if="board.readFailure.value">
-        <span
-          role="status"
-          class="text-caption text-text-secondary"
-          v-text="t('dashboardBoard.readFailed')"
-        />
-        <NButton
-          :theme-overrides="actionTheme"
-          type="primary"
-          size="small"
-          secondary
-          @click="board.retryRead"
-        >
-          {{ t('dashboardBoard.retryRead') }}
-        </NButton>
-        <NButton
-          size="small"
-          type="warning"
-          secondary
-          @click="board.reset"
-        >
-          {{ t('dashboardBoard.replaceInvalid') }}
-        </NButton>
-      </template>
-      <NButton
-        v-if="board.failure.value"
-        size="small"
-        type="warning"
-        secondary
-        @click="board.retry"
-      >
-        {{ t('dashboardBoard.saveFailed') }}
-      </NButton>
-      <NButton
-        v-if="editing"
-        class="ml-auto"
-        :theme-overrides="actionTheme"
-        type="primary"
-        size="small"
-        @click="finishEditing"
-      >
-        {{ t('dashboardBoard.finish') }}
-      </NButton>
-    </footer>
-    <Transition
-      name="wb-dashboard-dock"
-      :css="mayPlay"
-      @after-leave="clearInspector"
-    >
-      <section
-        v-if="inspectorOpen && inspector"
-        ref="inspectorElement"
-        class="wb-dashboard-dock rounded-panel flex shrink-0 flex-col min-h-0 min-w-0 shadow-panel overflow-clip bg-surface-panel gap-component-unit p-panel-narrow"
-        role="dialog"
-        aria-modal="false"
-        tabindex="-1"
-        :aria-labelledby="inspectorTitleId"
-      >
-        <header class="flex shrink-0 min-w-0 items-center justify-between gap-component-unit">
-          <h2
-            :id="inspectorTitleId"
-            class="m-0 min-w-0 truncate text-subheading"
-            v-text="inspectorTitle"
-          />
-          <div class="flex shrink-0 items-center gap-component-unit">
-            <span
-              v-if="showMotionSample"
-              ref="motionSample"
-              class="min-h-control rounded-control flex items-center bg-expression-accent-a-soft-background px-button-inline text-expression-accent-a-soft-foreground"
-              aria-hidden="true"
-            >
-              <span class="i-lucide-layout-dashboard" />
-            </span>
-            <NButton
-              type="primary"
-              quaternary
-              :theme-overrides="actionTheme"
-              size="small"
-              v-bind="
-                { 'aria-label': t('dashboardBoard.closeSettings') } satisfies ButtonHTMLAttributes
-              "
-              @click="setInspectorOpen(false)"
-            >
-              <span
-                class="i-lucide-x"
-                aria-hidden="true"
-              />
-            </NButton>
-          </div>
-        </header>
-        <UiScrollArea
-          :key="inspector"
-          :owner-id="`dashboard-inspector-${inspector}`"
-          class="min-h-0"
-          contained
-        >
-          <div class="grid min-w-0 gap-component-unit">
-            <DashboardAppearanceOptions
-              v-if="inspector === 'appearance'"
-              :board-style="boardStyle"
-              :entrance="boardEntrance"
-              :tone-overrides="toneOverrides"
-              :entrance-overrides="entranceOverrides"
-              :preview-enabled="mayPlay"
-              @update:board-style="board.setStyle"
-              @update:entrance="chooseBoardEntrance"
-            />
-            <div
-              v-else-if="inspector === 'layout'"
-              class="flex flex-wrap gap-component-unit"
-            >
-              <NButton
-                :theme-overrides="actionTheme"
-                type="primary"
-                :disabled="!board.canUndo.value"
-                secondary
-                @click="board.undo"
-              >
-                {{ t('dashboardBoard.undo') }}
-              </NButton>
-              <NButton
-                :theme-overrides="actionTheme"
-                type="primary"
-                secondary
-                @click="grid?.compact()"
-              >
-                {{ t('dashboardBoard.compact') }}
-              </NButton>
-              <NButton
-                :theme-overrides="actionTheme"
-                type="primary"
-                secondary
-                @click="board.restoreLayout"
-              >
-                {{ t('dashboardBoard.restoreLayout') }}
-              </NButton>
-            </div>
-            <DashboardAppearanceOptions
-              v-else-if="propertyPanel && panels.get(propertyPanel)"
-              :key="propertyPanel"
-              :tone="tone(propertyPanel)"
-              :entrance="panels.get(propertyPanel)?.entrance ?? boardEntrance"
-              :tone-inherited="panels.get(propertyPanel)?.tone === undefined"
-              :entrance-inherited="panels.get(propertyPanel)?.entrance === undefined"
-              :preview-enabled="mayPlay"
-              @update:tone="setTone(propertyPanel, $event)"
-              @update:entrance="setPanelEntrance(propertyPanel, $event)"
-              @reset:tone="resetPanelAppearance(propertyPanel, 'tone')"
-              @reset:entrance="resetPanelAppearance(propertyPanel, 'entrance')"
-            >
-              <NFormItem
-                :label="t('dashboardBoard.cardTitle')"
-                :show-feedback="false"
-                :label-props="{ for: propertyTitleId }"
-              >
-                <NInput
-                  v-model:value="propertyTitle"
-                  :maxlength="60"
-                  :input-props="{
-                    id: propertyTitleId,
-                    'aria-label': t('dashboardBoard.cardTitle'),
-                  }"
-                  @keydown.enter="commitTitle(propertyPanel)"
-                />
-              </NFormItem>
-              <div
-                v-if="panels.get(propertyPanel)?.type === 'capabilities'"
-                class="grid gap-component-unit"
-              >
-                <strong class="text-body">{{ t('dashboardBoard.destinations') }}</strong>
-                <div
-                  v-for="option in destinationChoices(propertyPanel)"
-                  :key="option.value"
-                  class="flex min-w-0 items-center gap-component-unit"
-                >
-                  <NCheckbox
-                    class="wb-dashboard-choice min-h-control rounded-control flex-1 min-w-0 px-button-inline"
-                    :theme-overrides="checkboxTheme"
-                    :checked="option.selected"
-                    @update:checked="toggleDestination(propertyPanel, option.value, $event)"
-                  >
-                    {{ option.label }}
-                  </NCheckbox>
-                  <template v-if="option.selected">
-                    <NButton
-                      type="primary"
-                      size="small"
-                      quaternary
-                      :theme-overrides="actionTheme"
-                      :disabled="option.index === 0"
-                      v-bind="
-                        {
-                          'aria-label': `${t('dashboardBoard.earlier')} · ${option.label}`,
-                        } satisfies ButtonHTMLAttributes
-                      "
-                      @click="reorderDestination(propertyPanel, option.index, -1)"
-                    >
-                      <span
-                        class="i-lucide-arrow-up"
-                        aria-hidden="true"
-                      />
-                    </NButton>
-                    <NButton
-                      type="primary"
-                      size="small"
-                      quaternary
-                      :theme-overrides="actionTheme"
-                      :disabled="option.isLast"
-                      v-bind="
-                        {
-                          'aria-label': `${t('dashboardBoard.later')} · ${option.label}`,
-                        } satisfies ButtonHTMLAttributes
-                      "
-                      @click="reorderDestination(propertyPanel, option.index, 1)"
-                    >
-                      <span
-                        class="i-lucide-arrow-down"
-                        aria-hidden="true"
-                      />
-                    </NButton>
-                  </template>
-                </div>
-              </div>
-            </DashboardAppearanceOptions>
-          </div>
-        </UiScrollArea>
-      </section>
-    </Transition>
+    <NMessageProvider
+      ref="messageProvider"
+      to="#pavp-overlay-root"
+    />
     <DashboardLibraryDrawer
       :show="libraryOpen"
       :entries="libraryEntries"
@@ -1018,13 +825,33 @@ const announcement = computed(() => {
       :show="context !== null"
       :x="context?.x ?? 0"
       :y="context?.y ?? 0"
+      :card-id="context?.cardId"
       :card-label="context?.cardId ? cardTitle(context.cardId) : undefined"
+      :panel="context?.cardId ? panels.get(context.cardId) : undefined"
+      :card-tone="context?.cardId ? tone(context.cardId) : undefined"
+      :board-style="boardStyle"
+      :board-entrance="boardEntrance"
+      :tone-overrides="toneOverrides"
+      :entrance-overrides="entranceOverrides"
+      :preview-enabled="mayPlay"
+      :destinations="context?.cardId ? destinationChoices(context.cardId) : []"
+      :can-undo="board.canUndo.value"
       :caller="context?.caller ?? null"
       :pointer="context?.pointer ?? false"
       :editing="editing"
-      :disabled="board.readFailure.value"
+      :read-failure="board.readFailure.value"
+      :save-failure="board.failure.value"
       @close="closeContext"
       @action="contextAction"
+      @board-style="board.setStyle"
+      @board-entrance="chooseBoardEntrance"
+      @card-tone="setTone"
+      @card-entrance="setPanelEntrance"
+      @reset-tone="(id) => resetPanelAppearance(id, 'tone')"
+      @reset-entrance="(id, target) => resetPanelAppearance(id, 'entrance', target)"
+      @title="commitTitle"
+      @toggle-destination="toggleDestination"
+      @reorder-destination="reorderDestination"
     />
   </div>
 </template>

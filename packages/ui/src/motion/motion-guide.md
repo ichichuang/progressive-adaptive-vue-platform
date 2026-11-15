@@ -1,8 +1,12 @@
 # Cinematic motion
 
-`useUiMotion()` is opt-in inside a component under `UiProvider`. It follows the nearest color
-scope and the effective full/reduced/none preference. It does not navigate, update data, change
-focus, scroll, or remove elements.
+`useUiMotion()` is opt-in inside a Vue component. By default it uses the nearest `UiProvider`
+appearance. A caller outside that provider can pass an existing read-only reactive
+`UiAppearanceSnapshot` reference as `useUiMotion(appearance)`; the explicit reference also takes
+precedence if a provider exists. It follows that snapshot's full/reduced/none preference, interrupts
+on changes, and releases effects with the component scope. The caller remains responsible for
+supplying the canonical appearance; no new preference or fallback appearance is created. It does
+not navigate, update data, change focus, scroll, or remove elements.
 
 ```ts
 const motion = useUiMotion()

@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import type { AnchorHTMLAttributes } from 'vue'
-import { NButton } from 'naive-ui/es/button'
 import { useConsoleI18n } from '../../shared/i18n'
-import {
-  useApplicationNavigation,
-  useApplicationLinkActivation,
-} from '../../app/router/application-navigation'
-import { registeredRouteDestination } from '../../app/router/route-input'
+import ErrorActions from '../../app/errors/ErrorActions.vue'
+import ErrorIllustration from '../../app/errors/ErrorIllustration.vue'
 
 defineOptions({ name: 'RouteApplicationFailurePage' })
 defineProps<{
@@ -15,26 +10,26 @@ defineProps<{
 }>()
 
 const { t } = useConsoleI18n()
-const navigation = useApplicationNavigation()
-const activate = useApplicationLinkActivation()
-const destination = registeredRouteDestination({ name: 'workbench-welcome' })
 </script>
 
 <template>
   <main
-    class="leading-body font-body-family grid place-items-center min-h-dvh bg-surface-page px-page-inline py-section-block text-body text-text-primary"
+    class="leading-body font-body-family grid min-h-0 place-items-center overflow-hidden h-dvh bg-surface-page px-page-inline py-section-block text-body text-text-primary"
   >
-    <section class="wb-api mx-auto grid min-w-0 w-full items-stretch gap-content-gap max-w-content">
-      <div
-        class="rounded-panel grid content-center justify-items-center bg-action-primary gap-content-gap p-page-inline py-section-block text-text-on-action"
-      >
+    <section
+      class="mx-auto flex flex-col h-full min-h-0 min-w-0 w-full items-center justify-center gap-content-gap max-w-content"
+    >
+      <ErrorIllustration code="500" />
+      <div class="text-center shrink-0 grid min-w-0 w-full justify-items-center gap-content-gap">
         <span
-          class="i-lucide-circle-alert size-icon-large"
-          aria-hidden="true"
-        />
-        <span class="leading-title font-title-weight text-title">500</span>
-      </div>
-      <div class="grid min-w-0 content-center justify-items-start gap-content-gap p-page-inline">
+          class="font-title-weight inline-flex items-center gap-control-segment-gap text-control-primary"
+        >
+          <span
+            class="i-lucide-sparkles"
+            aria-hidden="true"
+          />
+          {{ t('error.eyebrow') }}
+        </span>
         <h1
           class="leading-title font-title-weight m-0 text-title"
           data-route-focus="primary-heading"
@@ -45,22 +40,15 @@ const destination = registeredRouteDestination({ name: 'workbench-welcome' })
         <p class="m-0 text-pretty text-text-secondary">
           {{ message }}
         </p>
-        <NButton
-          tag="a"
-          type="primary"
-          class="min-h-target-enhanced"
-          v-bind="{ href: navigation.resolveHref(destination) } satisfies AnchorHTMLAttributes"
-          @click="activate($event, destination)"
-        >
-          <template #icon>
-            <span
-              class="i-lucide-arrow-left"
-              aria-hidden="true"
-            />
-          </template>
-          {{ t('error.backToWorkbench') }}
-        </NButton>
+        <p class="m-0 text-pretty text-text-secondary">
+          {{ t('error.adviceFailure') }}
+        </p>
+        <ErrorActions code="500" />
       </div>
+      <div
+        class="flex-1 min-h-0"
+        aria-hidden="true"
+      />
     </section>
   </main>
 </template>

@@ -11,6 +11,7 @@ import {
 import { getCoreErrorMessage } from './core-error-messages'
 import { getCoreErrorRecord } from './core-error-registry'
 import { normalizeVueComponentFailure, resolveVueLifecyclePhase } from './error-normalizer'
+import ErrorIllustration from './ErrorIllustration.vue'
 
 const props = defineProps<{
   rootComponent: Component
@@ -55,19 +56,34 @@ onErrorCaptured((source, _instance, info) => {
   />
   <main
     v-else
-    class="leading-body font-body-family min-h-dvh bg-surface-page px-page-inline py-section-block text-body text-text-primary"
+    class="leading-body font-body-family grid min-h-0 place-items-center overflow-hidden h-dvh bg-surface-page px-page-inline py-section-block text-body text-text-primary"
     role="alert"
     aria-live="assertive"
   >
     <section
-      class="mx-auto border rounded-panel shadow-panel bg-surface-panel border-border-default max-w-content"
+      class="mx-auto flex flex-col h-full min-h-0 min-w-0 w-full items-center justify-center gap-content-gap max-w-content"
     >
-      <h1 class="leading-title font-title-weight m-0 text-title">
-        {{ message?.title }}
-      </h1>
-      <p class="text-text-secondary">
-        {{ message?.description }}
-      </p>
+      <ErrorIllustration
+        code="ERROR"
+        standalone
+      />
+      <div class="text-center shrink-0 grid min-w-0 w-full justify-items-center gap-content-gap">
+        <span
+          class="font-title-weight rounded-control bg-action-primary px-button-inline text-text-on-action"
+        >
+          {{ t('error.eyebrow') }}
+        </span>
+        <h1 class="leading-title font-title-weight m-0 text-title">
+          {{ message?.title }}
+        </h1>
+        <p class="m-0 text-pretty text-text-secondary">
+          {{ message?.description }}
+        </p>
+      </div>
+      <div
+        class="flex-1 min-h-0"
+        aria-hidden="true"
+      />
     </section>
   </main>
 </template>

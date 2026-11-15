@@ -14,13 +14,13 @@ import {
   UiG2Chart,
   UiScrollArea,
   type UiG2ChartHandle,
-  type UiG2ChartOptions,
   type UiScrollController,
   type UiChartTourState,
 } from '@platform/ui'
 import WorkbenchPage from '../WorkbenchPage.vue'
 import { useConsoleI18n } from '../../../shared/i18n'
 import { routerScrollControllerKey } from '../../router/router-scroll-controller'
+import { chartTourConfiguration, chartTourExample, chartTourRows } from './chart-tour-example'
 
 defineProps<{ readonly title: string; readonly message: string }>()
 const { t } = useConsoleI18n()
@@ -44,67 +44,9 @@ const reasonKeys = {
   rendering: 'chartTour.rendering',
   empty: 'chartTour.empty',
 } as const
-const names = ['09:00', '10:00', '11:00', '12:00', '13:00']
-const rows = computed(() =>
-  names.map((name, index) => ({
-    name,
-    value: Math.round(60 + index * 12 + Math.sin(index + revision.value) * 20),
-  })),
-)
-const tour = computed(() => ({
-  autoplay: true,
-  intervalMs: 4000,
-  loop: true,
-  targets: names.map((name) => ({ id: name, field: 'name', value: name })),
-}))
-const options = computed<UiG2ChartOptions>(() => {
-  const data = rows.value
-  if (kind.value === 'line') {
-    const points = data.flatMap((row) => [
-      { ...row, channel: t('chartTour.direct'), key: `A-${row.name}` },
-      {
-        ...row,
-        value: Math.round(row.value * 0.65),
-        channel: t('chartTour.partner'),
-        key: `B-${row.name}`,
-      },
-    ])
-    return {
-      type: 'view',
-      data: points,
-      encode: { x: 'name', y: 'value', color: 'channel' },
-      axis: { x: { title: false }, y: { title: false } },
-      children: [
-        {
-          type: 'line',
-          encode: { shape: 'smooth' },
-          tooltip: { title: 'name', items: [{ channel: 'y' }] },
-        },
-        { type: 'point', encode: { key: 'key' }, tooltip: false },
-      ],
-    }
-  }
-  if (kind.value === 'donut')
-    return {
-      type: 'interval',
-      data,
-      coordinate: { type: 'theta', innerRadius: 0.65 },
-      transform: [{ type: 'stackY' }],
-      encode: { y: 'value', color: 'name', key: 'name' },
-      tooltip: { title: 'name', items: [{ field: 'value', name: t('chartExamples.value') }] },
-      legend: false,
-    }
-  return {
-    type: 'interval',
-    data,
-    encode: { x: 'name', y: 'value', color: 'name', key: 'name' },
-    tooltip: { title: 'name', items: [{ field: 'value', name: t('chartExamples.value') }] },
-    legend: false,
-    axis: { x: { title: false }, y: { title: false } },
-    scale: { y: { domain: [0, 160], nice: false } },
-    labels: [{ text: 'value', position: 'top' }],
-  }
-})
+const rows = computed(() => chartTourRows(revision.value))
+const tour = chartTourConfiguration
+const options = computed(() => chartTourExample(kind.value, revision.value, t))
 const focusedValue = computed(() => {
   const row = rows.value.find((item) => item.name === state.value.targetId)
   return row
@@ -119,7 +61,7 @@ const copy = computed(() =>
       component: 'UiG2Chart',
       label: t(modeKeys[kind.value]),
       options: options.value,
-      tour: tour.value,
+      tour,
     },
     null,
     2,

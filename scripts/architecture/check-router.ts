@@ -4995,9 +4995,9 @@ async function pageViolations(): Promise<string[]> {
     'utf8',
   )
   if (
-    count(displayPreviewView, /<h1\b/gu) !== 1 ||
+    count(displayPreviewView, /<NText\b[^>]*\btag="h1"/gu) !== 1 ||
     count(displayPreviewView, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
-    count(displayPreviewView, /tabindex="-1"/gu) !== 1 ||
+    count(displayPreviewView, /tabindex:\s*-1/gu) !== 1 ||
     count(displayPreviewView, /<(?:main|WorkbenchPage|UiPageHeader)\b/gu) !== 0
   )
     violations.push(
@@ -7965,9 +7965,9 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const chartRangePath = 'packages/ui/src/components/UiChartTimeRange.vue.style-0.css'
   const reportPrintScope = '**/packages/ui/src/components/UiReportPreview.vue.style-2.css'
   const displayPreviewScope =
-    '**/apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue.style-*.css'
+    '**/apps/web/src/app/workbench/layout/DisplayOperationsBoard.vue.style-*.css'
   const displayPreviewPath =
-    'apps/web/src/app/workbench/layout/DisplayLayoutPreview.vue.style-0.css'
+    'apps/web/src/app/workbench/layout/DisplayOperationsBoard.vue.style-0.css'
   const expectedOverrideScopes = [
     [reportPrintScope],
     [displayPreviewScope],
@@ -8145,7 +8145,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           ) &&
           (!reportScope || (await check(config, globalPath, 'color', 'black', false))) &&
           (!reportScope || (await check(config, globalPath, 'color', 'red', true))) &&
-          (await check(config, globalPath, 'font-size', '1.55em', !displayFitScope)) &&
+          (await check(config, globalPath, 'font-size', '1.75em', !displayFitScope)) &&
           (await check(config, globalPath, 'font-size', '1.83em', true)) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&

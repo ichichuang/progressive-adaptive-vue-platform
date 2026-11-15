@@ -34,7 +34,7 @@ function renderFatalBoundary(input: {
 
   const boundary = document.createElement('main')
   boundary.className =
-    'leading-body font-body-family min-h-dvh px-page-inline py-section-block text-body text-text-primary bg-surface-page'
+    'leading-body font-body-family grid place-items-center h-dvh min-h-0 overflow-hidden px-page-inline py-section-block text-body text-text-primary bg-surface-page'
   boundary.setAttribute('lang', 'zh-CN')
   boundary.setAttribute('dir', 'ltr')
   boundary.setAttribute('role', 'alert')
@@ -42,18 +42,36 @@ function renderFatalBoundary(input: {
 
   const panel = document.createElement('section')
   panel.className =
-    'mx-auto border rounded-panel shadow-panel bg-surface-panel border-border-default max-w-content'
+    'mx-auto flex flex-col h-full min-h-0 min-w-0 w-full items-center justify-center gap-content-gap max-w-content'
+
+  const illustration = document.createElement('div')
+  illustration.className =
+    'flex shrink min-h-0 min-w-0 w-full items-center justify-center overflow-hidden'
+  illustration.setAttribute('aria-hidden', 'true')
+
+  const illustrationCard = document.createElement('div')
+  illustrationCard.className = 'rounded-panel shadow-panel bg-surface-panel p-panel'
+  const illustrationIcon = document.createElement('span')
+  illustrationIcon.className =
+    'i-lucide-circle-alert size-icon-extra-large text-control-primary block'
+  illustrationCard.append(illustrationIcon)
+  illustration.append(illustrationCard)
+
+  const content = document.createElement('div')
+  content.className =
+    'text-center grid shrink-0 min-w-0 w-full justify-items-center gap-content-gap'
 
   const title = document.createElement('h1')
   title.className = 'leading-title font-title-weight m-0 text-title'
   title.textContent = message.title
 
   const description = document.createElement('p')
-  description.className = 'text-text-secondary'
+  description.className = 'm-0 text-pretty text-text-secondary'
   description.textContent = message.description
 
   const action = document.createElement('button')
-  action.className = 'h-control bg-action-primary text-text-on-action'
+  action.className =
+    'h-control min-h-target-enhanced rounded-control border-0 bg-action-primary px-button-inline text-text-on-action cursor-pointer'
   action.type = 'button'
   action.textContent = actionLabel
 
@@ -108,7 +126,8 @@ function renderFatalBoundary(input: {
   try {
     listenerInstalled = true
     action.addEventListener('click', runAction)
-    panel.append(title, description, action)
+    content.append(title, description, action)
+    panel.append(illustration, content)
     boundary.append(panel)
     boundaryInstalled = true
     input.target.replaceChildren(boundary)

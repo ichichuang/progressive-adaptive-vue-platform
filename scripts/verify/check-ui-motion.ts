@@ -3,7 +3,11 @@ import {
   ProductPreferenceDefault,
   projectUiAppearance,
   resolveThemeReference,
+  type UiAppearanceSnapshot,
 } from '@platform/design-system'
+import { createRenderer, defineComponent, shallowRef } from 'vue'
+import { useUiMotion } from '../../packages/ui/src/composables/use-ui-motion'
+import { pavpNaiveAppearanceKey } from '../../packages/ui/src/adapters/naive/pavp-naive-runtime-context'
 import {
   createCinematicController,
   type CinematicPlatform,
@@ -71,6 +75,79 @@ const runtime = createCinematicController(
   platform,
 )
 const options = { preset: 'theme-rift', phase: 'enter' } as const
+
+// An explicitly supplied read-only appearance can drive motion outside UiProvider.
+const renderer = createRenderer<object, object>({
+  createElement: () => ({}),
+  createText: () => ({}),
+  createComment: () => ({}),
+  setText: () => undefined,
+  setElementText: () => undefined,
+  parentNode: () => null,
+  nextSibling: () => null,
+  insert: () => undefined,
+  remove: () => undefined,
+  patchProp: () => undefined,
+})
+const explicitAppearance = shallowRef<Readonly<UiAppearanceSnapshot>>({
+  ...appearance,
+  motion: 'none',
+})
+let probeController: UiMotionController | undefined
+const MotionProbe = defineComponent({
+  props: { explicit: { type: Boolean, default: false } },
+  setup(props) {
+    probeController = props.explicit ? useUiMotion(explicitAppearance) : useUiMotion()
+    return () => null
+  },
+})
+const standaloneApp = renderer.createApp(MotionProbe, { explicit: true })
+standaloneApp.mount({})
+const standalone = probeController
+assert.ok(standalone)
+assert.deepEqual(await standalone.play(target, options).finished, {
+  ...options,
+  kind: 'skipped',
+  reason: 'motion-disabled',
+})
+explicitAppearance.value = { ...appearance, motion: 'full' }
+assert.deepEqual(await standalone.play(target, options).finished, {
+  ...options,
+  kind: 'skipped',
+  reason: 'unsupported-browser',
+})
+standaloneApp.unmount()
+assert.deepEqual(await standalone.play(target, options).finished, {
+  ...options,
+  kind: 'skipped',
+  reason: 'inactive-owner',
+})
+
+explicitAppearance.value = { ...appearance, motion: 'none' }
+const overrideApp = renderer.createApp(MotionProbe, { explicit: true })
+overrideApp.provide(pavpNaiveAppearanceKey, shallowRef({ ...appearance, motion: 'full' }))
+overrideApp.mount({})
+const override = probeController
+assert.ok(override)
+assert.deepEqual(await override.play(target, options).finished, {
+  ...options,
+  kind: 'skipped',
+  reason: 'motion-disabled',
+})
+overrideApp.unmount()
+
+const scopedApp = renderer.createApp(MotionProbe)
+scopedApp.provide(pavpNaiveAppearanceKey, shallowRef({ ...appearance, motion: 'none' }))
+scopedApp.mount({})
+const scoped = probeController
+assert.ok(scoped)
+assert.deepEqual(await scoped.play(target, options).finished, {
+  ...options,
+  kind: 'skipped',
+  reason: 'motion-disabled',
+})
+scopedApp.unmount()
+
 const initial = runtime.controller.play(target, options)
 assert.equal(jobs.at(-1)?.input.durationMs, 600)
 jobs.at(-1)?.finish()

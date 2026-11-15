@@ -323,7 +323,7 @@ const expectedVueUseCoreVersion = '14.4.0'
 const expectedArchitectureAdminConsoleNegativeProbeCount = 76
 const expectedMotionGeometryNegativeProbeCount = 9
 const expectedRuntime002NegativeProbeCount = 10
-const expectedRuntime005NegativeProbeCount = 14
+const expectedRuntime005NegativeProbeCount = 15
 const expectedAdminNavigationNativeSourceInvariantCount = 24
 const expectedAdminNavigationNativeSourceNegativeProbeCount = 27
 const expectedAdminNavigationExpansionMotionInvariantCount = 22
@@ -9398,11 +9398,20 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   let addsRouteTransition = false
   const vueRenderImports = new Set<string>()
   const vueComponentImports = new Set<string>()
+  const fallbackComponentImports = new Map<string, string>()
   const nativeRenderCalls: ts.CallExpression[] = []
   const retentionCalls: ts.CallExpression[] = []
   for (const statement of retention.statements) {
     if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
       continue
+    const defaultImport = statement.importClause?.name
+    if (
+      defaultImport !== undefined &&
+      ['../errors/ErrorActions.vue', '../errors/ErrorIllustration.vue'].includes(
+        statement.moduleSpecifier.text,
+      )
+    )
+      fallbackComponentImports.set(defaultImport.text, statement.moduleSpecifier.text)
     const bindings = statement.importClause?.namedBindings
     if (bindings === undefined || !ts.isNamedImports(bindings)) continue
     for (const binding of bindings.elements) {
@@ -9431,7 +9440,7 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   }
   inspectRetentionBoundary(retention)
 
-  // Only the admitted section/h1/p fallback is native DOM in this otherwise hostless owner.
+  // Only the admitted error fallback may add native DOM in this otherwise hostless owner.
   // Inline and shared render functions are equivalent; no private helper name is normative.
   const isNativeCall = (node: ts.Node | undefined, tag: string): node is ts.CallExpression =>
     node !== undefined &&
@@ -9465,24 +9474,45 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   for (const root of fallbackRoots) {
     const children = root.arguments[2]
     const props = root.arguments[1]
-    const heading =
-      children !== undefined && ts.isArrayLiteralExpression(children)
-        ? children.elements[0]
-        : undefined
-    const description =
-      children !== undefined && ts.isArrayLiteralExpression(children)
-        ? children.elements[1]
-        : undefined
+    const insideRoot = (node: ts.Node): boolean => {
+      for (let parent = node.parent; !ts.isSourceFile(parent); parent = parent.parent)
+        if (parent === root) return true
+      return false
+    }
+    const descendants = nativeRenderCalls.filter(insideRoot)
+    const headings = descendants.filter((call) => isNativeCall(call, 'h1'))
+    const descriptions = descendants.filter((call) => isNativeCall(call, 'p'))
+    const wrappers = descendants.filter((call) => isNativeCall(call, 'div'))
+    const heading = headings[0]
     const headingProps =
       heading !== undefined && ts.isCallExpression(heading) ? heading.arguments[1] : undefined
     const headingTabIndex =
       headingProps !== undefined && ts.isObjectLiteralExpression(headingProps)
         ? objectPropertyInitializer(headingProps, 'tabindex')
         : undefined
+    const componentCalls = retentionCalls.filter(
+      (call) =>
+        insideRoot(call) &&
+        ts.isIdentifier(call.expression) &&
+        vueRenderImports.has(call.expression.text) &&
+        call.arguments[0] !== undefined &&
+        !ts.isStringLiteral(call.arguments[0]),
+    )
+    const componentSource = (call: ts.CallExpression): string | undefined => {
+      const component = call.arguments[0]
+      return component !== undefined && ts.isIdentifier(component)
+        ? fallbackComponentImports.get(component.text)
+        : undefined
+    }
+    const actions = componentCalls.filter(
+      (call) => componentSource(call) === '../errors/ErrorActions.vue',
+    )
+    const illustrations = componentCalls.filter(
+      (call) => componentSource(call) === '../errors/ErrorIllustration.vue',
+    )
     const structureValid =
       children !== undefined &&
       ts.isArrayLiteralExpression(children) &&
-      children.elements.length === 2 &&
       props !== undefined &&
       ts.isObjectLiteralExpression(props) &&
       objectPropertyInitializer(props, 'role')?.getText() === "'alert'" &&
@@ -9490,21 +9520,39 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       !props.properties.some((property) =>
         ['id', 'style', 'data-scroll-owner'].includes(objectPropertyName(property) ?? ''),
       ) &&
-      isNativeCall(heading, 'h1') &&
-      isNativeCall(description, 'p') &&
+      headings.length === 1 &&
+      descriptions.length === 1 &&
+      descendants.length === headings.length + descriptions.length + wrappers.length &&
+      wrappers.every((wrapper) => {
+        const wrapperProps = wrapper.arguments[1]
+        return (
+          wrapperProps !== undefined &&
+          ts.isObjectLiteralExpression(wrapperProps) &&
+          wrapperProps.properties.every(
+            (property) =>
+              !ts.isSpreadAssignment(property) &&
+              !['id', 'style', 'role', 'data-scroll-owner'].includes(
+                objectPropertyName(property) ?? '',
+              ),
+          )
+        )
+      }) &&
+      componentCalls.length === 2 &&
+      actions.length === 1 &&
+      actions[0]?.arguments.length === 1 &&
+      illustrations.length === 1 &&
       headingProps !== undefined &&
       ts.isObjectLiteralExpression(headingProps) &&
       objectPropertyInitializer(headingProps, 'data-route-focus') !== undefined &&
       headingTabIndex !== undefined &&
       ts.isPropertyAccessExpression(headingTabIndex) &&
       headingTabIndex.name.text === 'targetTabIndex'
-    if (!structureValid || !ts.isCallExpression(heading) || !ts.isCallExpression(description)) {
+    if (!structureValid) {
       fallbackStructureValid = false
       continue
     }
     allowedFallbackCalls.add(root)
-    allowedFallbackCalls.add(heading)
-    allowedFallbackCalls.add(description)
+    for (const call of descendants) allowedFallbackCalls.add(call)
     if (isOwnRenderCall(root)) {
       boundaryRenderCalls.add(root)
       continue
@@ -9907,6 +9955,16 @@ function runRuntime005NegativeProbes(
         workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
           /h\(\s*'p'/u,
           "h('button'",
+        ),
+      },
+    ],
+    [
+      'page-fallback-adds-scroll-owner',
+      'PAGE_COMPONENT_FALLBACK_STRUCTURE',
+      {
+        workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
+          /h\(\s*'div',\s*\{/u,
+          "$& 'data-scroll-owner': 'unowned',",
         ),
       },
     ],
@@ -15520,7 +15578,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
       profileAvailability: ['narrow', 'regular', 'wide'],
       requiredProfiles: [],
       overlayRelationship: 'background-locked-by-navigation-overlay',
-      scrollRelationship: 'inside-route-primary-scroll-owner',
+      scrollRelationship: 'outside-route-primary-scroll-owner',
       capabilityStatus: 'ACTIVE',
     }) ||
     shellRegions.some(
@@ -15529,7 +15587,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     )
   ) {
     violations.push(
-      'Footer must be the only optional region and remain inside the route primary scroll owner.',
+      'Footer must be the only optional region and remain outside the route primary scroll owner.',
     )
   }
 

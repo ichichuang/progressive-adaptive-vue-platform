@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { type ButtonHTMLAttributes, computed, ref } from 'vue'
-import { UiScrollArea } from '@platform/ui'
+import { type ButtonHTMLAttributes, computed } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import {
   dashboardStyleIds,
@@ -12,8 +11,10 @@ import {
   type DashboardEntrance,
 } from '../../dashboard/dashboard-contract'
 import { useConsoleI18n } from '../../../shared/i18n'
+import { useDashboardActionTheme } from './use-dashboard-action-theme'
 
 const props = defineProps<{
+  readonly section: 'color' | 'motion'
   readonly boardStyle?: DashboardStyle
   readonly tone?: DashboardTone
   readonly entrance: DashboardEntrance
@@ -26,13 +27,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:boardStyle': [value: DashboardStyle]
   'update:tone': [value: DashboardTone]
-  'update:entrance': [value: DashboardEntrance]
+  'update:entrance': [value: DashboardEntrance, target: HTMLElement | null]
   'reset:tone': []
-  'reset:entrance': []
+  'reset:entrance': [target: HTMLElement | null]
 }>()
-const slots = defineSlots<{ default?: () => unknown }>()
-const section = ref<'color' | 'motion' | 'content'>('color')
 const { t } = useConsoleI18n()
+const actionTheme = useDashboardActionTheme()
 const styleLabels = {
   theme: 'dashboardBoard.styleTheme',
   brand: 'dashboardBoard.styleBrand',
@@ -78,8 +78,7 @@ const toneSwatchClasses = {
   quiet: 'bg-surface-page text-text-secondary',
 } as const satisfies Record<DashboardTone, string>
 const colorOptions = computed(() => {
-  const boardStyle = props.boardStyle
-  if (boardStyle !== undefined) {
+  if (props.boardStyle !== undefined) {
     return dashboardStyleIds.map((value) => {
       const preset = dashboardPresetTones[value]
       return {
@@ -87,7 +86,7 @@ const colorOptions = computed(() => {
         value,
         label: t(styleLabels[value]),
         tones: [preset.capabilities, preset.notes, preset.clock, preset.chart],
-        selected: boardStyle === value,
+        selected: props.boardStyle === value,
       }
     })
   }
@@ -98,185 +97,173 @@ const colorOptions = computed(() => {
     selected: !props.toneInherited && props.tone === value,
   }))
 })
-const colorGroupLabel = computed(() =>
-  t(
-    props.boardStyle === undefined ? 'dashboardBoard.appearance' : 'dashboardBoard.appearanceStyle',
-  ),
-)
-const entranceOptions = computed(() =>
-  dashboardEntranceIds.map((value) => ({ value, label: t(entranceLabels[value]) })),
-)
 function selectColor(option: (typeof colorOptions.value)[number]): void {
   if (option.kind === 'board') emit('update:boardStyle', option.value)
   else emit('update:tone', option.value)
 }
 </script>
+
 <template>
-  <div class="grid min-w-0 gap-component-unit">
-    <div
-      class="flex items-center gap-component-unit"
-      role="group"
-      :aria-label="t('dashboardBoard.appearance')"
+  <template v-if="section === 'color'">
+    <NButton
+      v-if="boardStyle === undefined"
+      class="wb-dashboard-context-action wb-dashboard-choice"
+      type="primary"
+      quaternary
+      size="small"
+      block
+      :theme-overrides="actionTheme"
+      v-bind="
+        {
+          role: 'menuitemradio',
+          tabindex: -1,
+          'aria-checked': toneInherited === true,
+        } satisfies ButtonHTMLAttributes
+      "
+      @click="emit('reset:tone')"
     >
-      <NButton
-        v-for="tab in (['color', 'motion', 'content'] as const).filter(
-          (tab) => tab !== 'content' || slots.default,
-        )"
-        :key="tab"
-        class="wb-dashboard-choice"
-        type="primary"
-        quaternary
-        size="small"
-        v-bind="{ 'aria-pressed': section === tab } satisfies ButtonHTMLAttributes"
-        @click="section = tab"
-      >
-        {{
-          t(
-            tab === 'color'
-              ? 'dashboardBoard.colorTab'
-              : tab === 'motion'
-                ? 'dashboardBoard.motionTab'
-                : 'dashboardBoard.contentTab',
-          )
-        }}
-      </NButton>
-    </div>
-    <div
-      v-if="section === 'content'"
-      class="grid min-w-0 gap-component-unit"
+      <span class="flex w-full items-center justify-between gap-content-gap">
+        <span>{{ t('dashboardBoard.boardDefault') }}</span>
+        <span
+          class="i-lucide-check shrink-0"
+          :class="{ invisible: !toneInherited }"
+          aria-hidden="true"
+        />
+      </span>
+    </NButton>
+    <NButton
+      v-for="option in colorOptions"
+      :key="option.value"
+      class="wb-dashboard-context-action wb-dashboard-choice"
+      type="primary"
+      quaternary
+      size="small"
+      block
+      :theme-overrides="actionTheme"
+      v-bind="
+        {
+          role: 'menuitemradio',
+          tabindex: -1,
+          'aria-checked': option.selected,
+        } satisfies ButtonHTMLAttributes
+      "
+      @click="selectColor(option)"
     >
-      <slot />
-    </div>
-    <section
-      v-if="section === 'color' && (boardStyle !== undefined || tone !== undefined)"
-      class="grid min-w-0 gap-component-unit"
-      :aria-label="colorGroupLabel"
-    >
-      <UiScrollArea
-        x-scrollable
-        owner-id="dashboard-appearance-options"
-        class="min-w-0 w-full"
-      >
-        <div
-          class="flex min-w-full w-max gap-component-unit"
-          role="group"
-          :aria-label="colorGroupLabel"
-        >
-          <NButton
-            v-if="boardStyle === undefined"
-            type="primary"
-            quaternary
-            class="wb-dashboard-choice shrink-0"
-            v-bind="{ 'aria-pressed': toneInherited === true } satisfies ButtonHTMLAttributes"
-            @click="emit('reset:tone')"
+      <span class="flex w-full items-center justify-between gap-content-gap">
+        <span class="flex items-center gap-component-unit">
+          <span
+            v-if="option.kind === 'board'"
+            class="rounded-control shrink-0 grid grid-cols-2 grid-rows-2 overflow-hidden size-icon-medium"
+            aria-hidden="true"
           >
-            {{ t('dashboardBoard.boardDefault') }}
-          </NButton>
-          <NButton
-            v-for="option in colorOptions"
-            :key="option.value"
-            class="wb-dashboard-choice shrink-0"
-            type="primary"
-            quaternary
-            v-bind="{ 'aria-pressed': option.selected } satisfies ButtonHTMLAttributes"
-            @click="selectColor(option)"
+            <span
+              v-for="(previewTone, index) in option.tones"
+              :key="index"
+              :class="toneSwatchClasses[previewTone]"
+            />
+          </span>
+          <span
+            v-else
+            class="rounded-control shrink-0 grid place-items-center size-icon-medium"
+            :class="toneSwatchClasses[option.value]"
+            aria-hidden="true"
           >
-            <span class="flex items-center gap-component-unit">
-              <span
-                v-if="option.kind === 'board'"
-                class="rounded-control shrink-0 grid grid-cols-2 grid-rows-2 overflow-hidden size-icon-medium"
-                aria-hidden="true"
-              >
-                <span
-                  v-for="(previewTone, index) in option.tones"
-                  :key="index"
-                  :class="toneSwatchClasses[previewTone]"
-                />
-              </span>
-              <span
-                v-else
-                class="rounded-control shrink-0 grid place-items-center size-icon-medium"
-                :class="toneSwatchClasses[option.value]"
-                aria-hidden="true"
-              >
-                <span class="i-lucide-palette" />
-              </span>
-              <span v-text="option.label" />
-              <span
-                class="i-lucide-check shrink-0"
-                :class="{ invisible: !option.selected }"
-                aria-hidden="true"
-              />
-            </span>
-          </NButton>
-        </div>
-      </UiScrollArea>
-    </section>
-    <section
-      v-if="section === 'motion'"
-      class="grid min-w-0 gap-component-unit"
-      :aria-label="t('dashboardBoard.entrance')"
-    >
-      <p
-        v-if="!previewEnabled"
-        class="m-0 text-caption text-text-secondary"
-        v-text="t('dashboardBoard.motionUnavailable')"
-      />
-      <UiScrollArea
-        x-scrollable
-        owner-id="dashboard-appearance-motion"
-        class="min-w-0 w-full"
-      >
-        <div
-          class="flex min-w-full w-max items-center gap-component-unit"
-          role="group"
-          :aria-label="t('dashboardBoard.entrance')"
-        >
-          <NButton
-            v-if="tone !== undefined"
-            type="primary"
-            quaternary
-            class="wb-dashboard-choice shrink-0"
-            v-bind="{ 'aria-pressed': entranceInherited === true } satisfies ButtonHTMLAttributes"
-            @click="emit('reset:entrance')"
-          >
-            {{ t('dashboardBoard.boardDefault') }}
-          </NButton>
-          <NButton
-            v-for="option in entranceOptions"
-            :key="option.value"
-            type="primary"
-            quaternary
-            class="wb-dashboard-choice shrink-0"
-            v-bind="
-              {
-                'aria-pressed': !entranceInherited && entrance === option.value,
-              } satisfies ButtonHTMLAttributes
-            "
-            @click="emit('update:entrance', option.value)"
-          >
-            <template #icon>
-              <span
-                :class="entranceIcons[option.value]"
-                aria-hidden="true"
-              />
-            </template>
-            <span v-text="option.label" />
-          </NButton>
-        </div>
-      </UiScrollArea>
-    </section>
+            <span class="i-lucide-palette" />
+          </span>
+          <span v-text="option.label" />
+        </span>
+        <span
+          class="i-lucide-check shrink-0"
+          :class="{ invisible: !option.selected }"
+          aria-hidden="true"
+        />
+      </span>
+    </NButton>
     <p
-      v-if="boardStyle !== undefined && section === 'color' && toneOverrides"
-      class="m-0 text-caption text-text-secondary"
+      v-if="boardStyle !== undefined && toneOverrides"
+      class="m-0 px-button-inline text-caption text-text-secondary"
     >
       {{ toneOverrides }} {{ t('dashboardBoard.colorOverrides') }}
     </p>
+  </template>
+  <template v-else>
     <p
-      v-if="boardStyle !== undefined && section === 'motion' && entranceOverrides"
-      class="m-0 text-caption text-text-secondary"
+      v-if="!previewEnabled"
+      class="m-0 px-button-inline text-caption text-text-secondary"
+      v-text="t('dashboardBoard.motionUnavailable')"
+    />
+    <NButton
+      v-if="tone !== undefined"
+      class="wb-dashboard-context-action wb-dashboard-choice"
+      type="primary"
+      quaternary
+      size="small"
+      block
+      :theme-overrides="actionTheme"
+      v-bind="
+        {
+          role: 'menuitemradio',
+          tabindex: -1,
+          'aria-checked': entranceInherited === true,
+        } satisfies ButtonHTMLAttributes
+      "
+      @click="emit('reset:entrance', $event.currentTarget as HTMLElement)"
+    >
+      <span class="flex w-full items-center justify-between gap-content-gap">
+        <span class="flex items-center gap-component-unit">
+          <span
+            class="i-lucide-sparkles"
+            data-dashboard-motion-preview
+            aria-hidden="true"
+          />
+          <span>{{ t('dashboardBoard.boardDefault') }}</span>
+        </span>
+        <span
+          class="i-lucide-check shrink-0"
+          :class="{ invisible: !entranceInherited }"
+          aria-hidden="true"
+        />
+      </span>
+    </NButton>
+    <NButton
+      v-for="value in dashboardEntranceIds"
+      :key="value"
+      class="wb-dashboard-context-action wb-dashboard-choice"
+      type="primary"
+      quaternary
+      size="small"
+      block
+      :theme-overrides="actionTheme"
+      v-bind="
+        {
+          role: 'menuitemradio',
+          tabindex: -1,
+          'aria-checked': !entranceInherited && entrance === value,
+        } satisfies ButtonHTMLAttributes
+      "
+      @click="emit('update:entrance', value, $event.currentTarget as HTMLElement)"
+    >
+      <span class="flex w-full items-center justify-between gap-content-gap">
+        <span class="flex items-center gap-component-unit">
+          <span
+            :class="entranceIcons[value]"
+            data-dashboard-motion-preview
+            aria-hidden="true"
+          />
+          <span>{{ t(entranceLabels[value]) }}</span>
+        </span>
+        <span
+          class="i-lucide-check shrink-0"
+          :class="{ invisible: entranceInherited || entrance !== value }"
+          aria-hidden="true"
+        />
+      </span>
+    </NButton>
+    <p
+      v-if="boardStyle !== undefined && entranceOverrides"
+      class="m-0 px-button-inline text-caption text-text-secondary"
     >
       {{ entranceOverrides }} {{ t('dashboardBoard.entranceOverrides') }}
     </p>
-  </div>
+  </template>
 </template>

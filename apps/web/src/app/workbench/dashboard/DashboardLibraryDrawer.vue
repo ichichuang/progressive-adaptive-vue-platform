@@ -85,9 +85,6 @@ function updateShow(show: boolean): void {
       body-content-class="flex h-full min-h-0 min-w-0 flex-col gap-content-gap"
     >
       <div class="shrink-0 grid min-w-0 gap-component-unit">
-        <p class="m-0 text-body text-text-secondary">
-          {{ t('dashboardBoard.libraryDescription') }}
-        </p>
         <NInput
           v-model:value="search"
           :placeholder="t('dashboardBoard.librarySearch')"
@@ -108,7 +105,10 @@ function updateShow(show: boolean): void {
         :enabled="show"
         contained
       >
-        <div class="grid min-w-0 gap-content-gap">
+        <div
+          class="grid min-w-0 gap-content-gap"
+          :class="{ 'flex-1': groups.length === 0 }"
+        >
           <section
             v-for="group in groups"
             :key="group.category"
@@ -178,8 +178,16 @@ function updateShow(show: boolean): void {
           </section>
           <NEmpty
             v-if="groups.length === 0"
+            class="text-center justify-center px-page-inline"
             :description="t('dashboardBoard.libraryEmpty')"
-          />
+          >
+            <template #icon>
+              <span
+                class="i-lucide-search-x block"
+                aria-hidden="true"
+              />
+            </template>
+          </NEmpty>
         </div>
       </UiScrollArea>
       <p

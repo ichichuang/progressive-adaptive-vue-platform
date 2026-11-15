@@ -11,6 +11,11 @@ import {
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import {
+  NMessageProvider,
+  type MessageProviderInst,
+  type MessageReactive,
+} from 'naive-ui/es/message'
 import { NSelect } from 'naive-ui/es/select'
 import { NRadioGroup } from 'naive-ui/es/radio'
 import {
@@ -57,9 +62,11 @@ const error = ref(false)
 const rendered = ref(false)
 const chart = ref<UiG2ChartHandle | null>(null)
 const exporting = ref(false)
-const exportFailed = ref(false)
+const messageProvider = ref<MessageProviderInst>()
+let exportNotice: MessageReactive | undefined
 const timelineStopped = ref(false)
 const active = ref(true)
+let activationRevision = 0
 const range = ref<[number, number]>([0, chartSampleHours - 1])
 const committedRange = ref<[number, number]>([...range.value])
 const trackingRange = ref(false)
@@ -208,11 +215,8 @@ const label = computed(
   () => `${t(chartKindCopy[kind.value].title)}. ${t(chartKindCopy[kind.value].description)}`,
 )
 const status = computed(() => {
-  if (exportFailed.value) return t('chartExamples.exportFailed')
-  if (error.value) return t('chartExamples.renderFailed')
-  if (showData.value) return t('chartExamples.dataView')
   if (trackingRange.value) return t('chartExamples.trackingRange')
-  return rendered.value ? t('chartExamples.ready') : t('chartExamples.rendering')
+  return !rendered.value && !error.value && !showData.value ? t('chartExamples.rendering') : ''
 })
 const copyValue = computed(() =>
   [
@@ -250,8 +254,10 @@ function restoreView(): void {
 }
 async function exportImage(): Promise<void> {
   if (!chart.value || exporting.value) return
+  const requestRevision = activationRevision
   exporting.value = true
-  exportFailed.value = false
+  exportNotice?.destroy()
+  exportNotice = undefined
   let url: string | undefined
   let link: HTMLAnchorElement | undefined
   try {
@@ -264,7 +270,16 @@ async function exportImage(): Promise<void> {
     document.body.append(link)
     link.click()
   } catch {
-    exportFailed.value = true
+    if (active.value && requestRevision === activationRevision) {
+      const notice = messageProvider.value?.error(t('chartExamples.exportFailed'), {
+        duration: 0,
+        closable: true,
+        onClose: () => {
+          if (exportNotice === notice) exportNotice = undefined
+        },
+      })
+      exportNotice = notice
+    }
   } finally {
     link?.remove()
     if (url) {
@@ -447,7 +462,6 @@ function isRangeSelected(hours: number): boolean {
 }
 watch(options, () => {
   rendered.value = false
-  exportFailed.value = false
 })
 watch(kind, () => {
   stopWheel()
@@ -471,10 +485,16 @@ onActivated(() => {
 })
 onDeactivated(() => {
   active.value = false
+  activationRevision += 1
+  exportNotice?.destroy()
+  exportNotice = undefined
   stopWheel()
   connect(null)
 })
 onScopeDispose(() => {
+  active.value = false
+  activationRevision += 1
+  exportNotice?.destroy()
   stopWheel()
   connect(null)
 })
@@ -738,21 +758,13 @@ onScopeDispose(() => {
         </div>
       </UiScrollArea>
       <footer
-        class="wb-form-panel-header flex shrink-0 flex-wrap items-center justify-between gap-content-gap"
+        class="wb-form-panel-header flex shrink-0 flex-wrap items-center justify-end gap-content-gap"
       >
-        <div class="grid min-w-0 gap-component-unit">
-          <span
-            class="text-caption text-text-secondary"
-            v-text="
-              `${t('chartExamples.sampleData')} · ${t('chartExamples.revision')} ${numberFormat.format(revision + 1)}`
-            "
-          />
-          <span
-            role="status"
-            class="text-caption text-text-secondary"
-            v-text="status"
-          />
-        </div>
+        <span
+          role="status"
+          class="sr-only"
+          v-text="status"
+        />
         <div class="flex flex-wrap gap-component-unit">
           <NButton
             v-if="kind === 'timeline'"
@@ -783,5 +795,9 @@ onScopeDispose(() => {
         </div>
       </footer>
     </section>
+    <NMessageProvider
+      ref="messageProvider"
+      to="#pavp-overlay-root"
+    />
   </WorkbenchPage>
 </template>

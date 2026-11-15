@@ -136,6 +136,8 @@ const expectedDynamicRootKeys = new Set([
 ])
 
 const richTextDynamicRootKey = '../../packages/ui/src/adapters/naive/PavpFormRichText.vue'
+const welcomeRouteKey = 'src/pages/index.vue'
+const welcomeChartDynamicRootKey = 'src/app/workbench/WelcomeInteractiveChart.vue'
 
 // Attachment processors are loaded only when their form controls are used.
 const mediaDynamicRootKeys = new Set([
@@ -1104,8 +1106,10 @@ if (
 
 const mediaOwners = collectStaticChunkClosure(manifest, 'src/pages/component-form-media.vue')
 const richTextOwners = collectStaticChunkClosure(manifest, 'src/pages/component-form-rich-text.vue')
+const welcomeOwners = collectStaticChunkClosure(manifest, welcomeRouteKey)
 const mediaReferences = new Map<string, number>()
 let richTextReferences = 0
+let welcomeChartReferences = 0
 for (const [ownerKey, chunk] of Object.entries(manifest)) {
   if ((chunk.dynamicImports?.length ?? 0) !== 0 && !initialChunkKeys.has(ownerKey)) {
     for (const key of chunk.dynamicImports ?? []) {
@@ -1113,6 +1117,8 @@ for (const [ownerKey, chunk] of Object.entries(manifest)) {
         mediaReferences.set(key, (mediaReferences.get(key) ?? 0) + 1)
       } else if (key === richTextDynamicRootKey && richTextOwners.has(ownerKey)) {
         richTextReferences += 1
+      } else if (key === welcomeChartDynamicRootKey && welcomeOwners.has(ownerKey)) {
+        welcomeChartReferences += 1
       } else {
         throw new Error(`Unadmitted deferred dependency owner: ${ownerKey}.`)
       }
@@ -1131,6 +1137,14 @@ if (richTextReferences !== 1 || initialChunkKeys.has(richTextDynamicRootKey)) {
   )
 }
 
+if (
+  welcomeChartReferences !== 1 ||
+  initialChunkKeys.has(welcomeChartDynamicRootKey) ||
+  welcomeOwners.has(welcomeChartDynamicRootKey)
+) {
+  throw new Error('The welcome interaction chart must stay behind one welcome-owned lazy entry.')
+}
+
 if (dynamicImportOwnerKeys.size === 0) {
   throw new Error('Initial Static Closure must own the exact production dynamic-root union.')
 }
@@ -1144,11 +1158,16 @@ const dynamicEntryKeys = new Set(
 if (
   !setsEqual(
     dynamicEntryKeys,
-    new Set([...expectedDynamicRootKeys, ...mediaDynamicRootKeys, richTextDynamicRootKey]),
+    new Set([
+      ...expectedDynamicRootKeys,
+      ...mediaDynamicRootKeys,
+      richTextDynamicRootKey,
+      welcomeChartDynamicRootKey,
+    ]),
   )
 ) {
   throw new Error(
-    `Vite dynamic entry set drifted: expected ${String(expectedDynamicRootKeys.size + mediaDynamicRootKeys.size + 1)} exact roots, received ${String(dynamicEntryKeys.size)}.`,
+    `Vite dynamic entry set drifted: expected ${String(expectedDynamicRootKeys.size + mediaDynamicRootKeys.size + 2)} exact roots, received ${String(dynamicEntryKeys.size)}.`,
   )
 }
 
@@ -1170,9 +1189,16 @@ for (const routeRootKey of expectedLazyRouteKeys) {
     throw new Error(`Router lazy route ${routeRootKey} must emit exactly one JavaScript chunk.`)
   }
 
-  if ((chunk.dynamicImports?.length ?? 0) !== 0) {
+  const childRoots = new Set(chunk.dynamicImports ?? [])
+  const allowedChildRoots = new Set(
+    routeRootKey === welcomeRouteKey ? [welcomeChartDynamicRootKey] : [],
+  )
+  if (
+    childRoots.size !== (chunk.dynamicImports?.length ?? 0) ||
+    !setsEqual(childRoots, allowedChildRoots)
+  ) {
     throw new Error(
-      `Router lazy route ${routeRootKey} may not own dynamic child roots: ${(chunk.dynamicImports ?? []).join(', ')}.`,
+      `Router lazy route ${routeRootKey} has unexpected dynamic child roots: ${(chunk.dynamicImports ?? []).join(', ')}.`,
     )
   }
 

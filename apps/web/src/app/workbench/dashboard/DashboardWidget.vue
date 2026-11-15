@@ -12,6 +12,7 @@ import {
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
 import { NCard } from 'naive-ui/es/card'
+import { NEmpty } from 'naive-ui/es/empty'
 import { NRadioGroup, NRadioButton } from 'naive-ui/es/radio'
 import {
   UiG2Chart,
@@ -244,6 +245,7 @@ function series(value: string | number | boolean): void {
     <div
       v-else-if="panel.type === 'capabilities'"
       class="wb-dashboard-shortcuts grid min-w-0 gap-component-unit"
+      :class="{ 'flex-1': destinations.length === 0 }"
     >
       <NCard
         v-for="destination in destinations"
@@ -287,12 +289,18 @@ function series(value: string | number | boolean): void {
           />
         </span>
       </NCard>
-      <p
+      <NEmpty
         v-if="destinations.length === 0"
-        class="m-0 text-body text-text-secondary"
+        class="text-center justify-center"
+        :description="t('dashboardBoard.noDestinations')"
       >
-        {{ t('dashboardBoard.noDestinations') }}
-      </p>
+        <template #icon>
+          <span
+            class="i-lucide-compass block"
+            aria-hidden="true"
+          />
+        </template>
+      </NEmpty>
     </div>
     <NCard
       v-else-if="routeCard"

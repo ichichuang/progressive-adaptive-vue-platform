@@ -9,7 +9,6 @@ import {
   onScopeDispose,
   ref,
   useId,
-  watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NRadioGroup } from 'naive-ui/es/radio'
@@ -17,6 +16,7 @@ import { UiCopyAction, UiG2Chart, UiScrollArea, type UiScrollController } from '
 import WorkbenchPage from '../WorkbenchPage.vue'
 import ChartMetricValue from './ChartMetricValue.vue'
 import { liveChartExample, liveSampleTime, type LiveChartKind } from './chart-live-simulation'
+import { useLiveChartClock } from './use-live-chart-clock'
 import { useConsoleI18n } from '../../../shared/i18n'
 import { routerScrollControllerKey } from '../../router/router-scroll-controller'
 
@@ -27,7 +27,6 @@ const props = defineProps<{
 }>()
 const { t, locale } = useConsoleI18n()
 const speedGroupName = useId()
-const tick = ref(0)
 const running = ref(true)
 const active = ref(false)
 const visible = ref(true)
@@ -37,7 +36,6 @@ const narrow = ref(false)
 const error = ref(false)
 const replay = ref(0)
 const numberFormat = computed(() => new Intl.NumberFormat(locale.value))
-const example = computed(() => liveChartExample(props.kind, tick.value, t))
 const speedOptions = computed(() => [
   { value: 4000, label: t('chartLive.speedSlow') },
   { value: 2000, label: t('chartLive.speedNormal') },
@@ -62,6 +60,8 @@ const method = computed(() =>
   ),
 )
 const playing = computed(() => running.value && active.value && visible.value && !error.value)
+const tick = useLiveChartClock(playing, interval)
+const example = computed(() => liveChartExample(props.kind, tick.value, t))
 const status = computed(() =>
   error.value
     ? t('chartExamples.renderFailed')
@@ -93,23 +93,6 @@ const copyValue = computed(() =>
     ),
   ].join('\n\n'),
 )
-// Exactly one pending tick. Hidden/cached pages freeze rather than accumulating missed work.
-let timer: ReturnType<typeof setTimeout> | undefined
-function clearTimer(): void {
-  if (timer !== undefined) clearTimeout(timer)
-  timer = undefined
-}
-function schedule(): void {
-  clearTimer()
-  if (!playing.value) return
-  timer = setTimeout(() => {
-    timer = undefined
-    if (!playing.value) return
-    tick.value += 1
-    schedule()
-  }, interval.value)
-}
-watch([playing, interval], schedule, { flush: 'sync' })
 function toggleRunning(): void {
   if (!running.value) showData.value = false
   running.value = !running.value
@@ -164,7 +147,6 @@ onDeactivated(() => {
 })
 onScopeDispose(() => {
   active.value = false
-  clearTimer()
   unregister?.()
   document.removeEventListener('visibilitychange', visibilityChanged)
 })

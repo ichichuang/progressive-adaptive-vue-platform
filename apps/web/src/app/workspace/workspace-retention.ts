@@ -25,8 +25,11 @@ import { appErrorBoundaryHooksKey, type NormalizedCoreError } from '../errors/co
 import { getCoreErrorMessage } from '../errors/core-error-messages'
 import { getCoreErrorRecord } from '../errors/core-error-registry'
 import { normalizeVueComponentFailure, resolveVueLifecyclePhase } from '../errors/error-normalizer'
+import ErrorActions from '../errors/ErrorActions.vue'
+import ErrorIllustration from '../errors/ErrorIllustration.vue'
 import {
   focusContractRegistry,
+  getRouteLayoutCapability,
   getRoutePresentation,
   getRouteRecord,
 } from '../router/route-registry'
@@ -498,28 +501,40 @@ function renderPageFailure(
   if (error === undefined || focus === undefined || target === undefined)
     throw new TypeError('The page error presentation is unavailable.')
   const message = controller.message(error)
-  // These semantic classes are already extracted from AppErrorBoundary.vue.
+  const shell =
+    getRouteLayoutCapability(getRouteRecord(snapshot.routeName).meta.layoutCapabilityId)
+      .composition !== null
   return h(
     'section',
     {
-      class:
-        'leading-body font-body-family px-page-inline py-section-block text-body text-text-primary',
+      class: shell
+        ? 'leading-body font-body-family flex flex-1 flex-col h-full min-h-0 min-w-0 w-full items-center justify-center overflow-hidden gap-content-gap px-page-inline py-section-block text-body text-text-primary'
+        : 'leading-body font-body-family flex flex-col h-dvh min-h-0 min-w-0 w-full items-center justify-center overflow-hidden bg-surface-page gap-content-gap px-page-inline py-section-block text-body text-text-primary',
       role: 'alert',
       'aria-live': 'assertive',
       onVnodeMounted,
       onVnodeUnmounted,
     },
     [
+      h(ErrorIllustration, { code: 'ERROR' }),
       h(
-        'h1',
-        {
-          class: 'leading-title font-title-weight m-0 text-title',
-          'data-route-focus': target,
-          tabindex: focus.targetTabIndex,
-        },
-        message.title,
+        'div',
+        { class: 'text-center shrink-0 grid min-w-0 w-full justify-items-center gap-content-gap' },
+        [
+          h(
+            'h1',
+            {
+              class: 'leading-title font-title-weight m-0 text-title',
+              'data-route-focus': target,
+              tabindex: focus.targetTabIndex,
+            },
+            message.title,
+          ),
+          h('p', { class: 'm-0 text-pretty text-text-secondary' }, message.description),
+          h(ErrorActions),
+        ],
       ),
-      h('p', { class: 'text-text-secondary' }, message.description),
+      h('div', { class: 'flex-1 min-h-0', 'aria-hidden': 'true' }),
     ],
   )
 }
