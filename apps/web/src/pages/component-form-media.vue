@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, ref } from 'vue'
+import { computed, onScopeDispose, ref, type HTMLAttributes } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -44,7 +44,12 @@ onScopeDispose(example.dispose)
       <NRadioGroup
         v-model:value="mode"
         :disabled="form.hasPendingInput.value"
-        :aria-label="t('formCapabilities.media.controls')"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('formCapabilities.media.controls'),
+          } satisfies HTMLAttributes
+        "
       >
         <NRadioButton value="edit">
           {{ t('configuredForm.edit') }}

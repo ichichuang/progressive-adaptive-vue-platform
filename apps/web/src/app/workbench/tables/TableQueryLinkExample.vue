@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { type HTMLAttributes, type ButtonHTMLAttributes, computed } from 'vue'
+
 import type { ConsoleMessageKey } from '../../../shared/i18n'
 import { UiCopyAction, UiForm, UiTable, useUiTable, useUiTableQuery } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
@@ -94,7 +95,7 @@ const copyValue = computed(() =>
         <NButton
           type="primary"
           attr-type="submit"
-          :form="query.formId"
+          v-bind="{ form: query.formId } satisfies ButtonHTMLAttributes"
           :disabled="table.loading.value"
         >
           {{ t('tableShowcase.search') }}
@@ -102,7 +103,7 @@ const copyValue = computed(() =>
         <NButton
           secondary
           attr-type="reset"
-          :form="query.formId"
+          v-bind="{ form: query.formId } satisfies ButtonHTMLAttributes"
           :disabled="table.loading.value"
         >
           {{ t('configuredForm.reset') }}
@@ -110,12 +111,16 @@ const copyValue = computed(() =>
         <UiCopyAction
           class="ml-auto"
           variant="text"
-          :title="sharing.error.value ? t('tableQueryLink.failed') : t('tableQueryLink.hint')"
           :value="sharing.link.value"
           :label="t('tableQueryLink.copy')"
           :copy-label="t('workbench.copy')"
           :success-label="t('workbench.copied')"
           :failure-label="t('workbench.copyFailed')"
+          v-bind="
+            {
+              title: sharing.error.value ? t('tableQueryLink.failed') : t('tableQueryLink.hint'),
+            } satisfies HTMLAttributes
+          "
         />
       </div>
     </template>

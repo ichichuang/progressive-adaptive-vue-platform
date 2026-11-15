@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onDeactivated, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, onDeactivated, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCheckbox } from 'naive-ui/es/checkbox'
 import { NPopover } from 'naive-ui/es/popover'
@@ -33,7 +33,7 @@ onDeactivated(() => {
       <NButton
         quaternary
         class="min-h-target-enhanced min-w-target-enhanced"
-        :aria-expanded="open"
+        v-bind="{ 'aria-expanded': open === true } satisfies ButtonHTMLAttributes"
       >
         <span class="flex items-center gap-component-unit">
           <span
@@ -83,8 +83,12 @@ onDeactivated(() => {
           <NButton
             quaternary
             class="min-h-target-enhanced min-w-target-enhanced"
-            :aria-label="`${table.text(column.title)} · ${copy.actions()}`"
-            aria-haspopup="menu"
+            v-bind="
+              {
+                'aria-label': `${table.text(column.title)} · ${copy.actions()}`,
+                'aria-haspopup': 'menu',
+              } satisfies ButtonHTMLAttributes
+            "
           >
             <span
               class="i-lucide-ellipsis-vertical"

@@ -154,6 +154,40 @@ function hasAttributeOrBinding(
   return element.props.some((property) => propertyTargetsName(property, name))
 }
 
+/** Admit the same native boundary through a literal, typed Vue attribute bag. */
+function hasNativeNovalidate(
+  element: VueTemplateNode & { readonly props: readonly VueTemplateProperty[] },
+): boolean {
+  if (hasAttributeOrBinding(element, 'novalidate')) return true
+  return element.props.some((property) => {
+    if (property.type !== 7 || property.name !== 'bind' || property.arg !== undefined) return false
+    const expression = property.exp?.content
+    if (expression === undefined) return false
+    const parsed = sourceFile('form-native-attributes.ts', `const attributes = ${expression}`)
+    const statement = parsed.statements[0]
+    if (statement === undefined || !ts.isVariableStatement(statement)) return false
+    let value = statement.declarationList.declarations[0]?.initializer
+    while (
+      value !== undefined &&
+      (ts.isParenthesizedExpression(value) || ts.isSatisfiesExpression(value))
+    ) {
+      value = value.expression
+    }
+    if (value === undefined || !ts.isObjectLiteralExpression(value)) return false
+    // An unknown later spread/computed key could replace the native flag.
+    for (const entry of [...value.properties].reverse()) {
+      if (ts.isSpreadAssignment(entry) || ts.isComputedPropertyName(entry.name)) return false
+      const name =
+        ts.isIdentifier(entry.name) || ts.isStringLiteral(entry.name) ? entry.name.text : undefined
+      if (name === 'novalidate')
+        return (
+          ts.isPropertyAssignment(entry) && entry.initializer.kind === ts.SyntaxKind.TrueKeyword
+        )
+    }
+    return false
+  })
+}
+
 function stringLiteralExpression(expression: string | undefined): string | undefined {
   if (expression === undefined) {
     return undefined
@@ -1795,11 +1829,7 @@ function dismiss(event?: MouseEvent): void {
     walkVueElements(template.root, (element) => {
       if (element.tag === 'form' || element.tag === 'NForm') {
         forms += 1
-        if (
-          name !== 'PavpNaiveForm' ||
-          element.tag !== 'NForm' ||
-          !hasAttributeOrBinding(element, 'novalidate')
-        ) {
+        if (name !== 'PavpNaiveForm' || element.tag !== 'NForm' || !hasNativeNovalidate(element)) {
           violations.push('Only PavpNaiveForm may own the single native novalidate form boundary.')
         }
       }
@@ -2350,7 +2380,54 @@ function dismiss(event?: MouseEvent): void {
 
       for (const element of importClause.namedBindings.elements) {
         if (element.propertyName !== undefined && element.propertyName.text !== element.name.text) {
-          violations.push(`${relativePath}: use the official Naive import name.`)
+          // These two native-root owners retain official template names while filling vendor
+          // declaration gaps. The original vendor props must remain in the local intersection.
+          const nativeRootOwner =
+            relativePath === uiAdminShellPath ||
+            relativePath === `${motionAdapterDirectory}/WorkspaceTabsSurface.vue`
+          const nativeRootComponent = ['NButton', 'NIcon', 'NDropdown'].includes(
+            element.propertyName.text,
+          )
+          const restoredOfficialName = parsed.statements.some((candidate) => {
+            if (
+              !ts.isVariableStatement(candidate) ||
+              (candidate.declarationList.flags & ts.NodeFlags.Const) === 0
+            )
+              return false
+            return candidate.declarationList.declarations.some((declaration) => {
+              if (
+                !ts.isIdentifier(declaration.name) ||
+                declaration.name.text !== element.propertyName?.text ||
+                declaration.initializer === undefined ||
+                !ts.isAsExpression(declaration.initializer)
+              )
+                return false
+              const assertion = declaration.initializer
+              if (
+                !ts.isIdentifier(assertion.expression) ||
+                assertion.expression.text !== element.name.text ||
+                !ts.isIntersectionTypeNode(assertion.type) ||
+                assertion.type.types.length !== 2
+              )
+                return false
+              const [vendor, rootType] = assertion.type.types
+              const root =
+                rootType !== undefined && ts.isParenthesizedTypeNode(rootType)
+                  ? rootType.type
+                  : rootType
+              return (
+                vendor !== undefined &&
+                ts.isTypeQueryNode(vendor) &&
+                ts.isIdentifier(vendor.exprName) &&
+                vendor.exprName.text === element.name.text &&
+                root !== undefined &&
+                ts.isConstructorTypeNode(root)
+              )
+            })
+          })
+          if (!(nativeRootOwner && nativeRootComponent && restoredOfficialName)) {
+            violations.push(`${relativePath}: use the official Naive import name.`)
+          }
         }
         if (
           element.name.text === 'NConfigProvider' &&

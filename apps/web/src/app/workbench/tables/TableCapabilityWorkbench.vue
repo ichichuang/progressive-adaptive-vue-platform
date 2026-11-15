@@ -52,9 +52,9 @@ onScopeDispose(() => {
       />
     </template>
     <section
-      :data-scroll-controls="scrollControls || undefined"
       :class="scrollControls ? 'layout-narrow:grid layout-regular:flex layout-wide:flex' : 'flex'"
       class="wb-table-stage rounded-panel flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+      v-bind="{ 'data-scroll-controls': scrollControls || undefined }"
     >
       <UiScrollArea
         v-if="$slots['controls'] && scrollControls"

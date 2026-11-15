@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref } from 'vue'
+import {
+  type AnchorHTMLAttributes,
+  type HTMLAttributes,
+  computed,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onScopeDispose,
+  ref,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
 import { NCard } from 'naive-ui/es/card'
@@ -134,7 +143,7 @@ function series(value: string | number | boolean): void {
         :value="panel.config.series"
         size="small"
         :name="`${panel.id}-series`"
-        :aria-label="t('dashboardBoard.series')"
+        v-bind="{ 'aria-label': t('dashboardBoard.series') } satisfies HTMLAttributes"
         @update:value="series"
       >
         <NRadioButton
@@ -181,7 +190,6 @@ function series(value: string | number | boolean): void {
       :resizable="false"
       :input-props="{ 'aria-label': t('dashboardBoard.notes') }"
       :placeholder="t('dashboardBoard.notesEmpty')"
-      :aria-label="t('dashboardBoard.notes')"
       class="h-full min-h-0"
       @update:value="note"
     />
@@ -217,12 +225,17 @@ function series(value: string | number | boolean): void {
         v-for="destination in destinations"
         :key="destination"
         tag="a"
-        :href="navigation.resolveHref(registeredRouteDestination({ name: destination }))"
+        v-bind="
+          {
+            href: navigation.resolveHref(registeredRouteDestination({ name: destination })),
+            onClick: (event: MouseEvent) =>
+              activate(event, registeredRouteDestination({ name: destination })),
+          } satisfies AnchorHTMLAttributes
+        "
         size="small"
         :bordered="false"
         hoverable
         class="wb-link min-w-0"
-        @click="activate($event, registeredRouteDestination({ name: destination }))"
       >
         <span class="flex min-w-0 w-full items-center justify-between gap-content-gap">
           <span class="flex min-w-0 items-center gap-component-unit">

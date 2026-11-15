@@ -122,8 +122,7 @@ defineExpose({ open, close })
       :title="title || props.copy.previewTitle()"
       content-class="min-h-0 flex-1 overflow-hidden"
       role="dialog"
-      aria-modal="true"
-      :aria-label="props.copy.previewTitle()"
+      v-bind="{ 'aria-modal': true, 'aria-label': props.copy.previewTitle() }"
     >
       <UiScrollArea
         owner-id="attachment-preview"

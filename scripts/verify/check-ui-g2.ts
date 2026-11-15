@@ -8,6 +8,7 @@ import {
 import assert from 'node:assert/strict'
 import { ESLint } from 'eslint'
 import {
+  chartTimeRangeExtent,
   normalizeUiChartTimeRange,
   panUiChartTimeRange,
   zoomUiChartTimeRange,
@@ -1008,6 +1009,14 @@ assert.equal(record(record(record(children(resizedChart)[0])['axis'])['x'])['ani
 assert.equal(record(record(resizedChart.theme)['update'])['duration'], metrics.duration * 4)
 
 // The overview and plot share bounded, integer domains with at least two samples.
+assert.deepEqual(chartTimeRangeExtent([]), [0, 1])
+assert.deepEqual(chartTimeRangeExtent([12, 18, 4]), [0, 18])
+assert.deepEqual(chartTimeRangeExtent([-12, -3]), [-12, 1])
+assert.deepEqual(chartTimeRangeExtent([NaN, Infinity, -Infinity, -2, 7]), [-2, 7])
+const largeOverview = Array.from({ length: 160_000 }, (_, index) => index - 80_000)
+assert.deepEqual(chartTimeRangeExtent(largeOverview), [-80_000, 79_999])
+assert.equal(largeOverview[0], -80_000)
+assert.equal(largeOverview.length, 160_000)
 assert.deepEqual(normalizeUiChartTimeRange([-3, 110], 0, 95), [0, 95])
 assert.deepEqual(normalizeUiChartTimeRange([47.1, 47.2], 0, 95), [47, 48])
 assert.deepEqual(panUiChartTimeRange([72, 95], 10, 0, 95), [72, 95])

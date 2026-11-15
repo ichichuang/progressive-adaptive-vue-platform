@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { type HTMLAttributes, computed, onBeforeUnmount, ref, watch } from 'vue'
+
 import { UiRadioCardGroup, type UiFormFieldBinding } from '@platform/ui'
 import { NCheckbox, NCheckboxGroup } from 'naive-ui/es/checkbox'
 import { useConsoleI18n } from '../../../shared/i18n'
@@ -72,7 +73,7 @@ onBeforeUnmount(() => {
       v-else
       :value="selected"
       :disabled="disabled"
-      :aria-label="t('formCapabilities.controls.channels')"
+      v-bind="{ 'aria-label': t('formCapabilities.controls.channels') } satisfies HTMLAttributes"
       @update:value="update"
     >
       <div class="flex flex-wrap items-center gap-content-gap">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type HTMLAttributes, type ButtonHTMLAttributes, computed, ref } from 'vue'
+
 import type { UiTableSchema } from '@platform/ui'
 import { NRadioGroup, NRadioButton } from 'naive-ui/es/radio'
 import { NPopover } from 'naive-ui/es/popover'
@@ -39,8 +40,8 @@ const copyValue = computed(() =>
       <div class="flex min-w-0 items-center gap-component-unit">
         <NRadioGroup
           v-model:value="mode"
-          :aria-label="t('tableCapabilities.selection.mode')"
           name="table-selection-mode"
+          v-bind="{ 'aria-label': t('tableCapabilities.selection.mode') } satisfies HTMLAttributes"
         >
           <NRadioButton value="single">
             {{ t('tableCapabilities.selection.single') }}
@@ -57,7 +58,11 @@ const copyValue = computed(() =>
           <template #trigger>
             <NButton
               quaternary
-              :aria-label="t('tableCapabilities.selection.guide')"
+              v-bind="
+                {
+                  'aria-label': t('tableCapabilities.selection.guide'),
+                } satisfies ButtonHTMLAttributes
+              "
             >
               <span
                 class="i-lucide-info"

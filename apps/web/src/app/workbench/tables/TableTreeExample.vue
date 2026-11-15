@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, effectScope, onScopeDispose, ref, shallowRef, watch } from 'vue'
+import {
+  type HTMLAttributes,
+  computed,
+  effectScope,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue'
+
 import {
   UiTable,
   useUiTable,
@@ -209,8 +218,8 @@ onScopeDispose(() => {
         <div class="flex min-w-0 items-center gap-content-gap">
           <NRadioGroup
             v-model:value="mode"
-            :aria-label="t('tableCapabilities.tree.mode')"
             name="table-tree-mode"
+            v-bind="{ 'aria-label': t('tableCapabilities.tree.mode') } satisfies HTMLAttributes"
           >
             <NRadioButton value="static">
               {{ t('tableCapabilities.tree.static') }}

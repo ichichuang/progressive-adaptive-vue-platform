@@ -82,7 +82,7 @@ const radioCardStyle = computed(() => ({
 
 <template>
   <NRadioGroup
-    :aria-label="accessibleLabel"
+    v-bind="{ role: 'radiogroup', 'aria-label': accessibleLabel }"
     class="pavp-radio-card-group min-w-0 grid-cols-auto-fit-admin-content"
     data-ui-radio-card-group
     :data-disabled="disabled"

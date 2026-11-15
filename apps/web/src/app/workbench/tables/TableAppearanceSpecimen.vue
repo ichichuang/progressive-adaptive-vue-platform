@@ -43,7 +43,7 @@ const copyValue = computed(() =>
   <article
     class="wb-form-panel-header rounded-panel grid min-w-0 content-start bg-surface-panel gap-content-gap"
     :aria-labelledby="headingId"
-    :data-table-style="specimen.id"
+    v-bind="{ 'data-table-style': specimen.id }"
   >
     <header class="flex flex-wrap min-w-0 items-center justify-between gap-component-unit">
       <h3

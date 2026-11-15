@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { type HTMLAttributes, computed, ref, watch } from 'vue'
+
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiScrollArea, UiTable, useUiTable, useUiTableForm, type UiTableSchema } from '@platform/ui'
 import { useWorkspaceUnsavedChanges } from '../../workspace/use-workspace-unsaved-changes'
@@ -64,7 +65,7 @@ const copyValue = computed(
           <NRadioGroup
             v-model:value="mode"
             :disabled="session.open.value"
-            :aria-label="t('tableInline.mode')"
+            v-bind="{ 'aria-label': t('tableInline.mode') } satisfies HTMLAttributes"
           >
             <NRadioButton value="cell">
               {{ t('tableInline.cell') }}

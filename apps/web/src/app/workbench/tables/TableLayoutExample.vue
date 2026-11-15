@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onDeactivated, onScopeDispose, ref, shallowRef, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue'
 import { UiTable, useUiTable, type UiTableSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NCheckbox } from 'naive-ui/es/checkbox'
@@ -173,7 +181,8 @@ function updatePinnedRight(value: boolean): void {
             <NSelect
               :value="viewport"
               :options="viewportOptions"
-              :aria-label="t('tableCapabilities.layout.viewport')"
+              filterable
+              :input-props="{ 'aria-label': t('tableCapabilities.layout.viewport') }"
               @update:value="updateViewport"
             />
           </div>
@@ -221,8 +230,7 @@ function updatePinnedRight(value: boolean): void {
     </template>
     <div
       class="wb-layout-preview mx-auto flex flex-1 flex-col min-h-0 min-w-0 w-full gap-content-gap"
-      :data-viewport="viewport"
-      :data-table-layout-example="example"
+      v-bind="{ 'data-viewport': String(viewport), 'data-table-layout-example': example }"
     >
       <UiTable
         :table="table"
@@ -238,7 +246,7 @@ function updatePinnedRight(value: boolean): void {
               <NButton
                 quaternary
                 class="hidden min-h-target-enhanced layout-narrow:inline-flex"
-                :aria-label="hint"
+                v-bind="{ 'aria-label': hint } satisfies ButtonHTMLAttributes"
               >
                 <span
                   class="i-lucide-info"

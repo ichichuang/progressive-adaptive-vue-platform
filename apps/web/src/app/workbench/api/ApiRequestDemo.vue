@@ -7,12 +7,14 @@ import {
   onScopeDispose,
   ref,
   shallowRef,
+  useId,
   watch,
+  type HTMLAttributes,
+  type ButtonHTMLAttributes,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
 import { NInputNumber } from 'naive-ui/es/input-number'
-import { NSelect } from 'naive-ui/es/select'
 import { NTag } from 'naive-ui/es/tag'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
@@ -45,10 +47,15 @@ const available = computed<readonly Scenario[]>(() =>
     : apiDemoScenarioGroups[props.capability],
 )
 const scenario = ref<Scenario>(available.value[0] ?? 'json')
+const scenarioChoiceId = useId()
+function selectScenario(value: string | number | boolean): void {
+  const selected = available.value.find((candidate) => candidate === value)
+  if (selected !== undefined) scenario.value = selected
+}
 const options = computed(() =>
   available.value.map((value) => ({ value, label: t(apiScenarioLabels[value]) })),
 )
-const productId = ref(1)
+const productId = ref<number | null>(1)
 const search = ref('phone')
 const city = ref('Shanghai')
 const panel = ref('request')
@@ -115,12 +122,13 @@ function reset(): void {
   panel.value = 'request'
 }
 async function send(): Promise<void> {
+  if (invalidRequest.value) return
   stop()
   const current = ++revision
   const request = new AbortController()
   controller = request
   const selected = scenario.value
-  const id = productId.value
+  const id = productId.value ?? 1
   const term = search.value
   const selectedCity = city.value
   sent.value = signature.value
@@ -198,12 +206,16 @@ const status = computed(() =>
           ? 'apiShowcase.accepted'
           : 'apiShowcase.success',
 )
-const sendDisabled = computed(
+const invalidRequest = computed(
   () =>
-    pending.value ||
     (scenario.value === 'world-time' && (!boundary.configured || !city.value.trim())) ||
-    (scenario.value === 'product' && !productId.value),
+    (scenario.value === 'product' &&
+      (productId.value === null ||
+        !Number.isSafeInteger(productId.value) ||
+        productId.value < 1 ||
+        productId.value > 10000)),
 )
+const sendDisabled = computed(() => pending.value || invalidRequest.value)
 const primaryLabel = computed(() =>
   t(
     outcome.value?.result.status === 'failure'
@@ -268,7 +280,9 @@ onScopeDispose(() => {
           v-model:value="panel"
           size="small"
           :name="`api-${capability}-panel`"
-          :aria-label="t('apiShowcase.result')"
+          v-bind="
+            { role: 'radiogroup', 'aria-label': t('apiShowcase.result') } satisfies HTMLAttributes
+          "
         >
           <NRadioButton value="request">
             {{ t('apiShowcase.request') }}
@@ -308,11 +322,18 @@ onScopeDispose(() => {
                 class="text-caption text-text-secondary"
                 v-text="t('apiShowcase.scenarioLabel')"
               />
-              <NSelect
-                v-model:value="scenario"
+              <NRadioGroup
+                :value="scenario"
+                :name="`api-scenario-${scenarioChoiceId}`"
                 :options="options"
-                :aria-label="t('apiShowcase.scenarioLabel')"
-                to="#pavp-overlay-root"
+                class="flex flex-wrap min-w-0 gap-content-gap"
+                v-bind="
+                  {
+                    role: 'radiogroup',
+                    'aria-label': t('apiShowcase.scenarioLabel'),
+                  } satisfies HTMLAttributes
+                "
+                @update:value="selectScenario"
               />
             </div>
             <div
@@ -329,7 +350,7 @@ onScopeDispose(() => {
                 :max="10000"
                 :precision="0"
                 :show-button="false"
-                :aria-label="t('apiShowcase.productId')"
+                :input-props="{ 'aria-label': t('apiShowcase.productId') }"
               />
             </div>
             <div
@@ -343,7 +364,7 @@ onScopeDispose(() => {
               <NInput
                 v-model:value="search"
                 :maxlength="100"
-                :aria-label="t('apiShowcase.search')"
+                :input-props="{ 'aria-label': t('apiShowcase.search') }"
               />
             </div>
             <div
@@ -357,7 +378,7 @@ onScopeDispose(() => {
               <NInput
                 v-model:value="city"
                 :maxlength="100"
-                :aria-label="t('apiShowcase.city')"
+                :input-props="{ 'aria-label': t('apiShowcase.city') }"
               />
             </div>
             <p class="m-0 text-body text-text-secondary">
@@ -435,7 +456,7 @@ onScopeDispose(() => {
       <NButton
         type="primary"
         attr-type="submit"
-        :form="`api-${capability}-form`"
+        v-bind="{ form: `api-${capability}-form` } satisfies ButtonHTMLAttributes"
         class="min-h-target-enhanced"
         :disabled="sendDisabled"
       >

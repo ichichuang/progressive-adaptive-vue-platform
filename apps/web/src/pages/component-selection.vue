@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, h, ref, useId, type HTMLAttributes } from 'vue'
 import { NCascader } from 'naive-ui/es/cascader'
 import { NButton } from 'naive-ui/es/button'
-import { NCheckbox, NCheckboxGroup } from 'naive-ui/es/checkbox'
+import { NCheckbox, NCheckboxGroup, type CheckboxGroupProps } from 'naive-ui/es/checkbox'
 import { NRadio, NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { NPopselect } from 'naive-ui/es/popselect'
 import { NRate } from 'naive-ui/es/rate'
 import { NSelect } from 'naive-ui/es/select'
 import { NSlider } from 'naive-ui/es/slider'
 import { NSwitch } from 'naive-ui/es/switch'
-import { NTransfer } from 'naive-ui/es/transfer'
+import { NTransfer, type TransferProps, type TransferRenderSourceList } from 'naive-ui/es/transfer'
 import { NTreeSelect } from 'naive-ui/es/tree-select'
 import { UiChartTimeRange, UiRadioCardGroup } from '@platform/ui'
 import { useConsoleI18n } from '../shared/i18n'
@@ -19,11 +19,12 @@ import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 defineOptions({ name: 'ComponentSelectionPage' })
 defineProps<{ readonly title: string; readonly breadcrumb?: string; readonly message: string }>()
 const { t } = useConsoleI18n()
+const specimenId = useId()
 const enabled = ref(true)
 const radio = ref('first')
 const radioButton = ref('first')
 const card = ref('first')
-const checked = ref<string[]>(['first'])
+const checked = ref<NonNullable<CheckboxGroupProps['value']>>(['first'])
 const slider = ref(40)
 const timeRangeOverview = [
   18, 14, 12, 10, 13, 21, 34, 48, 62, 70, 65, 58, 54, 60, 72, 84, 76, 66, 57, 48, 39, 31, 25, 20,
@@ -39,12 +40,32 @@ const selection = ref<string | null>(null)
 const popSelection = ref<string | null>(null)
 const treeSelection = ref<string | null>(null)
 const cascaderSelection = ref<string | null>(null)
-const transfer = ref<string[]>([])
+const transfer = ref<NonNullable<TransferProps['value']>>([])
 const options = computed(() => [
   { label: t('showcase.first'), value: 'first' },
   { label: t('showcase.second'), value: 'second' },
   { label: t('showcase.third'), value: 'third' },
 ])
+// Use the supported source-list renderer so each checkbox owns its visible label.
+const renderTransferSource: TransferRenderSourceList = ({ checkedOptions, onCheck, pattern }) =>
+  h(
+    NCheckboxGroup,
+    {
+      value: checkedOptions.map((option) => option.value),
+      'onUpdate:value': onCheck,
+      class: 'grid gap-component-unit px-button-inline',
+    },
+    {
+      default: () =>
+        options.value
+          .filter((option) =>
+            option.label.toLocaleLowerCase().includes(pattern.toLocaleLowerCase()),
+          )
+          .map((option) =>
+            h(NCheckbox, { key: option.value, value: option.value, label: option.label }),
+          ),
+    },
+  )
 const cascaderOptions = computed(() => [
   {
     label: t('showcase.regionNorth'),
@@ -102,12 +123,12 @@ const popSelectionLabel = computed(
           >
             <NSwitch
               v-model:value="enabled"
-              :aria-label="t('showcase.selected')"
+              v-bind="{ 'aria-label': t('showcase.selected') }"
             />
             <NSwitch
               :value="false"
               disabled
-              :aria-label="t('showcase.disabled')"
+              v-bind="{ 'aria-label': t('showcase.disabled') }"
             />
             <span class="text-text-secondary">{{
               enabled ? t('showcase.on') : t('showcase.off')
@@ -116,7 +137,8 @@ const popSelectionLabel = computed(
           <ComponentSpecimen name="NRadioGroup · NRadio">
             <NRadioGroup
               v-model:value="radio"
-              :aria-label="t('showcase.selected')"
+              :name="`radio-${specimenId}`"
+              v-bind="{ role: 'radiogroup', 'aria-label': t('showcase.selected') }"
             >
               <NRadio
                 v-for="option in options"
@@ -133,8 +155,9 @@ const popSelectionLabel = computed(
           >
             <NRadioGroup
               v-model:value="radioButton"
+              :name="`radio-button-${specimenId}`"
               size="small"
-              :aria-label="t('showcase.selected')"
+              v-bind="{ role: 'radiogroup', 'aria-label': t('showcase.selected') }"
             >
               <NRadioButton
                 v-for="option in options.slice(0, 2)"
@@ -159,7 +182,7 @@ const popSelectionLabel = computed(
           <ComponentSpecimen name="NCheckbox · NCheckboxGroup">
             <NCheckboxGroup
               v-model:value="checked"
-              :aria-label="t('showcase.selected')"
+              v-bind="{ role: 'group', 'aria-label': t('showcase.selected') }"
             >
               <NCheckbox
                 v-for="option in options"
@@ -185,7 +208,7 @@ const popSelectionLabel = computed(
           >
             <NSlider
               v-model:value="slider"
-              :aria-label="t('showcase.selected')"
+              v-bind="{ 'aria-label': t('showcase.selected') } satisfies HTMLAttributes"
             />
             <span class="text-text-secondary">{{ slider }}</span>
           </ComponentSpecimen>
@@ -258,7 +281,7 @@ const popSelectionLabel = computed(
             <NRate
               v-model:value="rate"
               allow-half
-              :aria-label="t('showcase.selected')"
+              v-bind="{ 'aria-label': t('showcase.selected') } satisfies HTMLAttributes"
             />
           </ComponentSpecimen>
         </div>
@@ -327,6 +350,7 @@ const popSelectionLabel = computed(
             <NTransfer
               v-model:value="transfer"
               :options="options"
+              :render-source-list="renderTransferSource"
             />
           </ComponentSpecimen>
         </div>

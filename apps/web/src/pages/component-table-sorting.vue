@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, type HTMLAttributes } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { NSelect } from 'naive-ui/es/select'
 import type { TableSortExample } from '../app/workbench/tables/table-data-capabilities'
@@ -29,7 +29,12 @@ const options = computed(() =>
       <NRadioGroup
         v-model:value="sorting"
         name="table-sort-mode"
-        :aria-label="t('tableCapabilities.data.sortMode')"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('tableCapabilities.data.sortMode'),
+          } satisfies HTMLAttributes
+        "
       >
         <NRadioButton value="single">
           {{ t('tableCapabilities.data.singleSort') }}
@@ -44,7 +49,12 @@ const options = computed(() =>
       <NRadioGroup
         v-model:value="mode"
         name="table-query-mode"
-        :aria-label="t('tableCapabilities.data.queryMode')"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('tableCapabilities.data.queryMode'),
+          } satisfies HTMLAttributes
+        "
       >
         <NRadioButton value="submit">
           {{ t('tableCapabilities.data.submitMode') }}
@@ -63,7 +73,7 @@ const options = computed(() =>
         <NSelect
           v-model:value="debounce"
           :options="options"
-          :aria-label="t('tableCapabilities.data.debounce')"
+          v-bind="{ 'aria-label': t('tableCapabilities.data.debounce') } satisfies HTMLAttributes"
         />
       </div>
     </template>

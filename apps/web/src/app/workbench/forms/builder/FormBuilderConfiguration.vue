@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ButtonHTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NPopconfirm } from 'naive-ui/es/popconfirm'
 import { UiScrollArea } from '@platform/ui'
@@ -56,7 +57,11 @@ const { t } = useConsoleI18n()
                 size="small"
                 quaternary
                 :disabled="builder.pending.value"
-                :aria-label="`${t('formBuilder.remove')} ${builder.selectedNode.value.label}`"
+                v-bind="
+                  {
+                    'aria-label': `${t('formBuilder.remove')} ${builder.selectedNode.value.label}`,
+                  } satisfies ButtonHTMLAttributes
+                "
               >
                 <template #icon>
                   <span

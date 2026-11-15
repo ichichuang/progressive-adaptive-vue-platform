@@ -1028,7 +1028,7 @@ function validateConfigurationLoader(source: ParsedSource): string[] {
   }
   const expectedCauseCounts: Readonly<Record<string, number>> = {
     'configuration-source-missing': 1,
-    'configuration-network-failure': 3,
+    'configuration-network-failure': 4,
     'configuration-malformed-json': 1,
     'configuration-schema-rejected': 1,
     'configuration-environment-mismatch': 1,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, withKeys, type HTMLAttributes } from 'vue'
 import { NBreadcrumb, NBreadcrumbItem } from 'naive-ui/es/breadcrumb'
 import { NButton } from 'naive-ui/es/button'
 import { NDropdown } from 'naive-ui/es/dropdown'
@@ -151,7 +151,7 @@ const dropdownLabel = computed(
               v-model:page="page"
               :page-count="pageCount"
               simple
-              @keydown.enter="confirmPage"
+              v-bind="{ onKeydown: withKeys(confirmPage, ['enter']) } satisfies HTMLAttributes"
             />
             <template #detail>
               {{ t('showcase.page') + ' ' + page }}

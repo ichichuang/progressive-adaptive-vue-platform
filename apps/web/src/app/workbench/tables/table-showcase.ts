@@ -181,6 +181,7 @@ export function useTableShowcase() {
     discardChanges: () => t('tableShowcase.discardChanges'),
     loading: tableCopy.loading,
     error: tableCopy.error,
+    inlineScopeError: () => t('tableShowcase.inlineScopeError'),
     closeBlocked: () => t('tableShowcase.closeBlocked'),
   }
   return {

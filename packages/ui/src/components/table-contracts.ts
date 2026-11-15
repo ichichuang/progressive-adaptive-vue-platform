@@ -426,5 +426,7 @@ export interface UiTableEditorCopy {
   readonly close: () => string
   readonly loading: () => string
   readonly error: () => string
+  /** Shown when the chosen inline fields cannot be edited independently. */
+  readonly inlineScopeError?: () => string
   readonly closeBlocked: () => string
 }

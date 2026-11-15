@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { type ButtonHTMLAttributes, ref, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NButtonGroup } from 'naive-ui/es/button-group'
 import { NFloatButton } from 'naive-ui/es/float-button'
@@ -147,14 +147,18 @@ const groupSelection = ref('first')
             <NButtonGroup size="small">
               <NButton
                 :type="groupSelection === 'first' ? 'primary' : 'default'"
-                :aria-pressed="groupSelection === 'first'"
+                v-bind="
+                  { 'aria-pressed': groupSelection === 'first' } satisfies ButtonHTMLAttributes
+                "
                 @click="groupSelection = 'first'"
               >
                 {{ t('showcase.first') }}
               </NButton>
               <NButton
                 :type="groupSelection === 'second' ? 'primary' : 'default'"
-                :aria-pressed="groupSelection === 'second'"
+                v-bind="
+                  { 'aria-pressed': groupSelection === 'second' } satisfies ButtonHTMLAttributes
+                "
                 @click="groupSelection = 'second'"
               >
                 {{ t('showcase.second') }}
@@ -165,8 +169,14 @@ const groupSelection = ref('first')
             <NFloatButtonGroup position="relative">
               <NFloatButton
                 type="primary"
-                :aria-label="t('showcase.primary')"
-                @click="floatClicks++"
+                v-bind="
+                  {
+                    'aria-label': t('showcase.primary'),
+                    onClick: () => {
+                      floatClicks++
+                    },
+                  } satisfies HTMLAttributes
+                "
               >
                 <span
                   class="i-lucide-sparkles"
@@ -174,8 +184,15 @@ const groupSelection = ref('first')
                 />
               </NFloatButton>
               <NFloatButton
-                :aria-label="t('showcase.secondary')"
-                @click="floatClicks++"
+                type="default"
+                v-bind="
+                  {
+                    'aria-label': t('showcase.secondary'),
+                    onClick: () => {
+                      floatClicks++
+                    },
+                  } satisfies HTMLAttributes
+                "
               >
                 <span
                   class="i-lucide-component"

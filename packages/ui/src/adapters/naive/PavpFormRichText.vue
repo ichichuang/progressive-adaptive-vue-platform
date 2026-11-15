@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="I">
-import { computed, onBeforeUnmount, watch, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, onBeforeUnmount, watch, ref } from 'vue'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { normalizeRichTextDocument as documentValue } from './rich-text-value'
 import StarterKit from '@tiptap/starter-kit'
@@ -26,6 +26,9 @@ const config = computed(() => props.form.fields.find((field) => field.name === p
 const tools = computed(() =>
   config.value?.kind === 'rich-text' ? (config.value.tools ?? richTextTools) : [],
 )
+function preserveEditorSelection(event: MouseEvent): void {
+  event.preventDefault()
+}
 const linkUrl = ref('')
 const linkOpen = ref(false)
 const linkInvalid = ref(false)
@@ -247,9 +250,13 @@ onBeforeUnmount(() => {
         size="small"
         :quaternary="!active(tool)"
         :type="active(tool) ? 'primary' : 'default'"
-        :aria-pressed="active(tool)"
+        v-bind="
+          {
+            'aria-pressed': active(tool),
+            onMousedown: preserveEditorSelection,
+          } satisfies ButtonHTMLAttributes
+        "
         :disabled="binding.disabled"
-        @mousedown.prevent
         @click="act(tool)"
       >
         {{ form.copy.richText?.[tool]() ?? tool }}
@@ -264,7 +271,7 @@ onBeforeUnmount(() => {
             size="small"
             quaternary
             :disabled="binding.disabled"
-            @mousedown.prevent
+            v-bind="{ onMousedown: preserveEditorSelection } satisfies ButtonHTMLAttributes"
           >
             {{ form.copy.richText?.link() }}
           </NButton>
@@ -272,7 +279,7 @@ onBeforeUnmount(() => {
         <div class="grid gap-component-unit">
           <NInput
             v-model:value="linkUrl"
-            :aria-label="form.copy.richTextLinkLabel?.() ?? ''"
+            :input-props="{ 'aria-label': form.copy.richTextLinkLabel?.() ?? '' }"
             :placeholder="form.copy.richTextLinkLabel?.() ?? ''"
             :status="linkInvalid ? 'error' : 'success'"
             @update:value="linkInvalid = false"

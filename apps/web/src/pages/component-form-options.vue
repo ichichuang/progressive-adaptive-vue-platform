@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFormExampleUndo } from '../app/workbench/forms/use-form-example-undo'
-import { computed, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref } from 'vue'
 import {
   UiForm,
   useUiForm,
@@ -120,7 +120,7 @@ const history = useFormExampleUndo(() => form)
         secondary
         :bordered="false"
         :type="mode === view ? 'primary' : 'default'"
-        :aria-pressed="mode === view"
+        v-bind="{ 'aria-pressed': mode === view } satisfies ButtonHTMLAttributes"
         :disabled="view === 'detail' && form.hasPendingInput.value"
         @click="mode = view"
       >
@@ -188,7 +188,7 @@ const history = useFormExampleUndo(() => form)
           <span>{{ t('formOptions.reader') }}</span>
           <NSwitch
             v-model:value="readerAvailable"
-            :aria-label="t('formOptions.reader')"
+            v-bind="{ 'aria-label': t('formOptions.reader') }"
           />
           <NButton
             secondary

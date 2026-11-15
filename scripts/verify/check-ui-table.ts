@@ -1,4 +1,7 @@
+import { verifyTableFormSession } from './check-table-form-session'
 import { verifyRuntimeUpdate } from './check-runtime-update'
+import { verifyRuntimeConfigurationLoad } from './check-runtime-configuration'
+import { verifyTableQueryRestoration } from './check-table-query-restoration'
 import { verifyWorkspaceReload } from './check-workspace-reload'
 import { verifyReportForm } from './check-report-form'
 import { verifyReportTable } from './check-report-table'
@@ -2612,6 +2615,7 @@ verifyColumnDisplay()
 verifyPublicValueTypes()
 await verifyFormValueBoundaries()
 await verifyTableFormSources()
+await verifyTableFormSession(formCopy)
 await verifyTableReadonlySnapshots()
 await verifyFormBindingLifecycle()
 await verifyGroupedQueries()
@@ -2623,7 +2627,9 @@ await verifySorting()
 await verifyRemote()
 await verifyTreeTable()
 await verifyTreeFailureBoundaries()
+await verifyQueryFormFilterOwnership()
 await verifyTableQueryLinks()
+await verifyTableQueryRestoration()
 console.info(
   'Form schema/value types, table option sources and readonly snapshots, UiForm binding lifetimes, grouped table queries, UiTable theme contrast, reading states, summary parser, local calculations, sort icon motion, three-state sorting, state preservation, remote races and tree rows passed.',
 )
@@ -2918,6 +2924,77 @@ async function verifyTreeFailureBoundaries(): Promise<void> {
   race.dispose()
 }
 
+async function verifyQueryFormFilterOwnership(): Promise<void> {
+  for (const mode of ['submit', 'change'] as const) {
+    let calls = 0
+    const initialFilters = { title: 'initial', scopeId: 7, scope: { region: 'north' } }
+    const table = useUiTable({
+      immediate: false,
+      filters: initialFilters,
+      schema: {
+        id: `query-filter-ownership-${mode}`,
+        rowKey: 'id',
+        source: { kind: 'remote', request: { api: 'records', method: 'GET' } },
+        columns: [{ key: 'title', title: 'Title', sortable: true }],
+        pagination: { pageSize: 10 },
+        query: {
+          mode,
+          debounce: 0,
+          form: { fields: [{ name: 'title', kind: 'text', label: 'Title' }] },
+        },
+      },
+      transport: {
+        list: () => {
+          calls++
+          return Promise.resolve({ rows: [], total: 0 })
+        },
+      },
+    })
+    const form = useUiTableQuery(table, formCopy)
+    assert.deepEqual(form.getValues(), { title: 'initial' })
+    assert.equal(calls, 0)
+    const externalFilters = { title: 'external', scopeId: 9, scope: { region: 'south' } }
+    await table.search(externalFilters)
+    await nextTick()
+    assert.deepEqual(form.getValues(), { title: 'external' })
+    assert.equal(calls, 1, 'External synchronization does not submit another query')
+    form.setValue('title', 'edited')
+    if (mode === 'submit') assert.equal(await form.submit(), 'success')
+    else await new Promise<void>((resolve) => setTimeout(resolve, 20))
+    assert.deepEqual(table.query.value.filters, { ...externalFilters, title: 'edited' })
+    assert.equal(calls, 2, 'Submitting changes only form-owned filters in one request')
+    form.reset()
+    await nextTick()
+    assert.deepEqual(table.query.value.filters, initialFilters)
+    assert.deepEqual(form.getValues(), { title: 'initial' })
+    assert.equal(calls, 3, 'Reset retains the table owner initial-filter semantics')
+    form.reset()
+    await nextTick()
+    assert.deepEqual(table.query.value.filters, initialFilters)
+    assert.deepEqual(form.getValues(), { title: 'initial' })
+    assert.equal(calls, 4)
+    if (mode === 'submit') {
+      form.setValue('title', 'unfinished')
+      await table.search({ ...initialFilters, scopeId: 11 })
+      await nextTick()
+      assert.equal(
+        form.getValue('title'),
+        'unfinished',
+        'Non-form filter changes preserve the draft',
+      )
+      assert.equal(await form.submit(), 'success')
+      assert.deepEqual(table.query.value.filters, {
+        ...initialFilters,
+        scopeId: 11,
+        title: 'unfinished',
+      })
+      assert.equal(calls, 6)
+    }
+    form.dispose()
+    table.dispose()
+  }
+}
+
 async function verifyTableQueryLinks(): Promise<void> {
   const codec = tableQuerySharingCodec
   const state = {
@@ -3175,3 +3252,4 @@ await verifyReportTable()
 verifyReportPrint()
 await verifyWorkspaceReload()
 await verifyRuntimeUpdate()
+await verifyRuntimeConfigurationLoad()

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiDynamicForm } from '@platform/ui'
@@ -146,7 +146,12 @@ async function selectPreset(value: string | number | boolean): Promise<void> {
       <NRadioGroup
         :value="preset"
         :disabled="busy"
-        :aria-label="t('formCapabilities.dynamic.controls')"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('formCapabilities.dynamic.controls'),
+          } satisfies HTMLAttributes
+        "
         @update:value="selectPreset"
       >
         <NRadioButton value="simple">

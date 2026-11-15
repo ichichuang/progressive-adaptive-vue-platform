@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, useId } from 'vue'
+import { type AnchorHTMLAttributes, computed, ref, useId, type HTMLAttributes } from 'vue'
 import { NAutoComplete } from 'naive-ui/es/auto-complete'
 import { NButton } from 'naive-ui/es/button'
 import { NColorPicker } from 'naive-ui/es/color-picker'
@@ -45,7 +45,7 @@ const mentionValue = ref('')
 const dateValue = ref<number | null>(null)
 const timeValue = ref<number | null>(null)
 const colorValue = ref<string | null>(null)
-const dynamicValue = ref<string[]>([])
+const dynamicValue = ref<unknown[]>([])
 const tags = ref<string[]>([])
 const componentOptions = ['NButton', 'NInput', 'NSelect']
 const autoOptions = computed(() =>
@@ -67,7 +67,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
         tag="a"
         text
         type="primary"
-        :href="navigation.resolveHref(formCapabilities)"
+        v-bind="{ href: navigation.resolveHref(formCapabilities) } satisfies AnchorHTMLAttributes"
         @click="activate($event, formCapabilities)"
       >
         {{ t('formShowcase.openCapabilities') }} ↗
@@ -142,7 +142,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
             <NInputOtp
               v-model:value="otpValue"
               :length="4"
-              :aria-label="t('showcase.placeholder')"
+              v-bind="{ 'aria-label': t('showcase.placeholder') } satisfies HTMLAttributes"
             />
           </ComponentSpecimen>
           <ComponentSpecimen
@@ -166,7 +166,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
               :options="mentions"
               :to="'#pavp-overlay-root'"
               :placeholder="t('showcase.mentionPlaceholder')"
-              :aria-label="t('showcase.mentionPlaceholder')"
+              v-bind="{ 'aria-label': t('showcase.mentionPlaceholder') } satisfies HTMLAttributes"
             />
           </ComponentSpecimen>
         </div>
@@ -185,7 +185,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
               type="date"
               clearable
               :to="'#pavp-overlay-root'"
-              :aria-label="t('showcase.placeholder')"
+              v-bind="{ 'aria-label': t('showcase.placeholder') } satisfies HTMLAttributes"
             />
           </ComponentSpecimen>
           <ComponentSpecimen
@@ -196,7 +196,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
               v-model:value="timeValue"
               clearable
               :to="'#pavp-overlay-root'"
-              :aria-label="t('showcase.placeholder')"
+              v-bind="{ 'aria-label': t('showcase.placeholder') } satisfies HTMLAttributes"
             />
           </ComponentSpecimen>
           <ComponentSpecimen
@@ -206,7 +206,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
             <NColorPicker
               v-model:value="colorValue"
               :to="'#pavp-overlay-root'"
-              :aria-label="t('showcase.placeholder')"
+              v-bind="{ 'aria-label': t('showcase.placeholder') } satisfies HTMLAttributes"
             />
           </ComponentSpecimen>
         </div>

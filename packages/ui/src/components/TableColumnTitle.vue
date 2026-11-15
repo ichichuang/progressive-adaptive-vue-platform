@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onDeactivated, ref } from 'vue'
+import { type ButtonHTMLAttributes, onBeforeUnmount, onDeactivated, ref } from 'vue'
 import { adjacentVisibleTableColumn } from './table-column-preference'
 import { NButton } from 'naive-ui/es/button'
 import type { UiTableColumn, UiTableController, UiTableCopy } from './table-contracts'
@@ -128,8 +128,7 @@ onDeactivated(cancel)
   <span
     class="flex min-w-0 items-center relative gap-component-unit"
     :class="dropPlacement ? 'text-primary' : ''"
-    :data-table-column-owner="owner"
-    :data-table-column-key="column.key"
+    v-bind="{ 'data-table-column-owner': owner, 'data-table-column-key': column.key }"
   >
     <NButton
       v-if="table.schema.reorderableColumns"
@@ -137,10 +136,18 @@ onDeactivated(cancel)
       size="small"
       class="shrink-0 touch-none"
       :class="dragging ? 'cursor-grabbing text-primary' : 'cursor-grab'"
-      :aria-label="copy.reorderColumn?.(table.text(column.title)) ?? table.text(column.title)"
-      :title="copy.reorderColumn?.(table.text(column.title))"
-      @pointerdown="begin($event, 'reorder')"
-      @keydown="keyboard($event, 'reorder')"
+      v-bind="
+        {
+          onPointerdown: (event: PointerEvent) => {
+            begin(event, 'reorder')
+          },
+          onKeydown: (event: KeyboardEvent) => {
+            keyboard(event, 'reorder')
+          },
+          'aria-label': copy.reorderColumn?.(table.text(column.title)) ?? table.text(column.title),
+          title: copy.reorderColumn?.(table.text(column.title)),
+        } satisfies ButtonHTMLAttributes
+      "
       @click.stop
     >
       <span
@@ -165,10 +172,18 @@ onDeactivated(cancel)
       size="small"
       class="shrink-0 cursor-col-resize touch-none"
       :class="resizing ? 'text-primary' : ''"
-      :aria-label="copy.resizeColumn?.(table.text(column.title)) ?? table.text(column.title)"
-      :title="copy.resizeColumn?.(table.text(column.title))"
-      @pointerdown="begin($event, 'resize')"
-      @keydown="keyboard($event, 'resize')"
+      v-bind="
+        {
+          onPointerdown: (event: PointerEvent) => {
+            begin(event, 'resize')
+          },
+          onKeydown: (event: KeyboardEvent) => {
+            keyboard(event, 'resize')
+          },
+          'aria-label': copy.resizeColumn?.(table.text(column.title)) ?? table.text(column.title),
+          title: copy.resizeColumn?.(table.text(column.title)),
+        } satisfies ButtonHTMLAttributes
+      "
       @click.stop
     >
       <span

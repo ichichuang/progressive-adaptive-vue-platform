@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  watch,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
 import { useConsoleI18n, type ConsoleMessageKey } from '../../../shared/i18n'
@@ -178,7 +187,7 @@ async function navigate(event: MouseEvent): Promise<void> {
             :key="preset"
             :type="selected === preset ? 'primary' : 'default'"
             :secondary="selected !== preset"
-            :aria-pressed="selected === preset"
+            v-bind="{ 'aria-pressed': selected === preset } satisfies ButtonHTMLAttributes"
             :disabled="busy"
             @click="selected = preset"
           >

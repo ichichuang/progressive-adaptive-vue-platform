@@ -5,7 +5,7 @@ import {
   projectAccessibleCustomAppearanceThemePreviews,
   type AppearanceThemePreviewProjection,
 } from '@platform/design-system'
-import { computed, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NIcon } from 'naive-ui/es/icon'
 import { useAppearanceMutationBoundary } from '../appearance/appearance-mutation-boundary'
@@ -58,7 +58,7 @@ function choose(theme: AppearanceThemePreviewProjection): void {
       {{ t('shell.themePickerLabel') }}
       <NIcon
         class="i-lucide-palette"
-        aria-hidden="true"
+        v-bind="{ 'aria-hidden': 'true' } satisfies HTMLAttributes"
       />
     </span>
     <svg
@@ -177,8 +177,24 @@ function choose(theme: AppearanceThemePreviewProjection): void {
       <NButton
         v-for="theme in themes"
         :key="`${theme.registryKind}:${theme.themeId}`"
-        :aria-label="theme.label"
-        :aria-pressed="selected(theme)"
+        v-bind="
+          {
+            'aria-label': theme.label,
+            'aria-pressed': selected(theme),
+            onMouseenter: () => {
+              hovered = theme
+            },
+            onMouseleave: () => {
+              hovered = null
+            },
+            onFocus: () => {
+              hovered = theme
+            },
+            onBlur: () => {
+              hovered = null
+            },
+          } satisfies ButtonHTMLAttributes
+        "
         :color="swatches(theme).surfacePanel"
         :text-color="swatches(theme).actionPrimary"
         :disabled="mutation.preference.value === null"
@@ -188,10 +204,6 @@ function choose(theme: AppearanceThemePreviewProjection): void {
         class="theme-quick-choice min-h-target-enhanced min-w-target-enhanced"
         attr-type="button"
         data-pavp-quick-theme
-        @mouseenter="hovered = theme"
-        @mouseleave="hovered = null"
-        @focus="hovered = theme"
-        @blur="hovered = null"
         @click="choose(theme)"
       >
         <span class="theme-quick-choice-content grid justify-items-center gap-component-unit">
@@ -217,7 +229,7 @@ function choose(theme: AppearanceThemePreviewProjection): void {
           </svg>
           <NIcon
             :class="{ 'opacity-0': !selected(theme) }"
-            aria-hidden="true"
+            v-bind="{ 'aria-hidden': 'true' } satisfies HTMLAttributes"
           >
             <svg viewBox="0 0 24 24">
               <rect

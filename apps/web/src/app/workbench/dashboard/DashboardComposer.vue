@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  type ButtonHTMLAttributes,
   computed,
   inject,
   nextTick,
@@ -95,6 +96,7 @@ const inspector = ref<Inspector>()
 const inspectorOpen = ref(false)
 const inspectorCaller = shallowRef<HTMLElement | null>(null)
 const inspectorElement = ref<HTMLElement>()
+const boardDescriptionId = useId()
 const inspectorTitleId = useId()
 const propertyTitleId = useId()
 watch(inspectorElement, (element, _previous, onCleanup) => {
@@ -596,6 +598,12 @@ const announcement = computed(() => {
     >
       {{ title }}
     </h1>
+    <p
+      :id="boardDescriptionId"
+      class="sr-only"
+    >
+      {{ t(editing ? 'dashboardBoard.editHint' : 'dashboardBoard.browseHint') }}
+    </p>
     <UiScrollArea
       owner-id="architecture-console-content"
       class="wb-dashboard-scroll rounded-panel flex-1 min-h-0 min-w-0"
@@ -610,7 +618,7 @@ const announcement = computed(() => {
       role="region"
       :aria-label="t('dashboardBoard.board')"
       tabindex="0"
-      :aria-description="t(editing ? 'dashboardBoard.editHint' : 'dashboardBoard.browseHint')"
+      :aria-describedby="boardDescriptionId"
       aria-keyshortcuts="Shift+F10"
       @contextmenu="openContext"
       @pointerdown="touchPressStart"
@@ -656,13 +664,17 @@ const announcement = computed(() => {
                   type="primary"
                   class="pavp-dashboard-drag-handle shrink-0"
                   :class="{ invisible: !editing }"
-                  :aria-hidden="!editing"
-                  :tabindex="editing ? 0 : -1"
+                  v-bind="
+                    {
+                      'aria-hidden': !editing,
+                      tabindex: editing ? 0 : -1,
+                      'aria-label': `${t('dashboardBoard.move')} · ${cardTitle(id)}`,
+                      onKeydown: (event: KeyboardEvent) => keydown(event, id),
+                    } satisfies ButtonHTMLAttributes
+                  "
                   quaternary
                   :theme-overrides="actionTheme"
                   size="small"
-                  :aria-label="`${t('dashboardBoard.move')} · ${cardTitle(id)}`"
-                  @keydown="keydown($event, id)"
                 >
                   <span
                     class="i-lucide-grip"
@@ -792,7 +804,9 @@ const announcement = computed(() => {
               quaternary
               :theme-overrides="actionTheme"
               size="small"
-              :aria-label="t('dashboardBoard.closeSettings')"
+              v-bind="
+                { 'aria-label': t('dashboardBoard.closeSettings') } satisfies ButtonHTMLAttributes
+              "
               @click="setInspectorOpen(false)"
             >
               <span
@@ -928,7 +942,11 @@ const announcement = computed(() => {
                       quaternary
                       :theme-overrides="actionTheme"
                       :disabled="option.index === 0"
-                      :aria-label="`${t('dashboardBoard.earlier')} · ${option.label}`"
+                      v-bind="
+                        {
+                          'aria-label': `${t('dashboardBoard.earlier')} · ${option.label}`,
+                        } satisfies ButtonHTMLAttributes
+                      "
                       @click="reorderDestination(propertyPanel, option.index, -1)"
                     >
                       <span
@@ -942,7 +960,11 @@ const announcement = computed(() => {
                       quaternary
                       :theme-overrides="actionTheme"
                       :disabled="option.isLast"
-                      :aria-label="`${t('dashboardBoard.later')} · ${option.label}`"
+                      v-bind="
+                        {
+                          'aria-label': `${t('dashboardBoard.later')} · ${option.label}`,
+                        } satisfies ButtonHTMLAttributes
+                      "
                       @click="reorderDestination(propertyPanel, option.index, 1)"
                     >
                       <span
@@ -966,7 +988,6 @@ const announcement = computed(() => {
       :caller="context?.caller ?? null"
       :pointer="context?.pointer ?? false"
       :editing="editing"
-      :copy-value="JSON.stringify(board.document.value, null, 2)"
       :disabled="board.readFailure.value"
       @close="closeContext"
       @action="contextAction"

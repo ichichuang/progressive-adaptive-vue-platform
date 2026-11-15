@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {
+  type ButtonHTMLAttributes,
   computed,
   Fragment,
   h,
   inject,
   nextTick,
   onBeforeUnmount,
+  onDeactivated,
   ref,
   watch,
   useId,
@@ -214,6 +216,82 @@ function text(value: UiFormValue | undefined): string {
 const inlineMode = computed(
   () => props.inlineEditing?.mode ?? props.table.schema.editor?.inline?.mode ?? 'row',
 )
+const tableSurface = ref<HTMLElement>()
+const inlineSession = computed(() => props.inlineEditing?.session)
+let inlineFocus: { readonly origin: HTMLElement; readonly key: string } | undefined
+
+function mayMoveInlineFocus(surface: HTMLElement, origin: HTMLElement): boolean {
+  const doc = surface.ownerDocument
+  const focused = doc.activeElement
+  return surface.isConnected && (focused === origin || focused === doc.body)
+}
+
+watch(
+  () => inlineSession.value?.open.value,
+  (open) => {
+    if (open || !inlineFocus) return
+    const target = inlineFocus
+    inlineFocus = undefined
+    const surface = tableSurface.value
+    const session = inlineSession.value
+    const focused = surface?.ownerDocument.activeElement
+    if (!surface || !(focused instanceof HTMLElement) || !surface.contains(focused)) return
+    void nextTick(() => {
+      if (
+        inlineSession.value !== session ||
+        session?.open.value !== false ||
+        inlineFocus ||
+        !mayMoveInlineFocus(surface, focused)
+      )
+        return
+      surface
+        .querySelector<HTMLElement>(`[data-inline-edit-trigger="${CSS.escape(target.key)}"]`)
+        ?.focus({ preventScroll: true })
+    })
+  },
+)
+onDeactivated(() => {
+  inlineFocus = undefined
+})
+
+async function activateInline(row: TableRow, field: string | undefined, event: MouseEvent) {
+  const editing = props.inlineEditing
+  if (!editing || editing.session.open.value) return
+  const origin = event.currentTarget
+  const surface = tableSurface.value
+  const key = inlineTriggerKey(row, field)
+  const focus =
+    origin instanceof HTMLElement && origin.ownerDocument.activeElement === origin
+      ? { origin, key }
+      : undefined
+  inlineFocus = focus
+  const opened = await editing.session.showInline(row.record, field)
+  if (!focus || inlineFocus !== focus) return
+  if (!opened) {
+    inlineFocus = undefined
+    return
+  }
+  await nextTick()
+  const currentSession = inlineSession.value
+  if (
+    !surface ||
+    inlineFocus !== focus ||
+    !currentSession?.open.value ||
+    currentSession !== editing.session ||
+    !mayMoveInlineFocus(surface, focus.origin)
+  )
+    return
+  const form = editing.session.form.value
+  const fields = editing.session.inlineFields.value
+  const visibleFields = props.table.columns.value
+    .map((column) => column.key)
+    .filter((key) => fields.includes(key))
+  visibleFields.some((key) => form?.focusField(key))
+}
+
+function inlineTriggerKey(row: TableRow, field?: string): string {
+  return JSON.stringify([row.key, field])
+}
 function inlineButton(row: TableRow, field?: string, label?: string): VNodeChild {
   const editing = props.inlineEditing
   if (!editing) return null
@@ -224,8 +302,9 @@ function inlineButton(row: TableRow, field?: string, label?: string): VNodeChild
       type: 'primary',
       disabled: editing.session.open.value,
       'aria-label': `${editing.copy.title('edit')} · ${field ? props.table.text(props.table.columns.value.find((column) => column.key === field)?.title ?? field) + ' · ' : ''}${String(row.key)}`,
-      onClick: () => {
-        void editing.session.showInline(row.record, field)
+      'data-inline-edit-trigger': inlineTriggerKey(row, field),
+      onClick: (event: MouseEvent) => {
+        void activateInline(row, field, event)
       },
     },
     () => label ?? editing.copy.title('edit'),
@@ -637,9 +716,10 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
       @settled="restoreSurfaceOffset"
     >
       <div
+        ref="tableSurface"
         class="pavp-table flex flex-col min-w-0 gap-content-gap"
         :class="height.mode === 'fill' ? 'flex-1 min-h-0' : ''"
-        :data-height-mode="height.mode"
+        v-bind="{ 'data-height-mode': height.mode }"
       >
         <div
           v-if="slots.query"
@@ -703,15 +783,15 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
             <NButton
               v-if="table.schema.maximizable"
               quaternary
-              :aria-label="
-                expanded
-                  ? (copy.restore?.() ?? copy.resetColumns())
-                  : (copy.maximize?.() ?? copy.columns())
-              "
-              :title="
-                expanded
-                  ? (copy.restore?.() ?? copy.resetColumns())
-                  : (copy.maximize?.() ?? copy.columns())
+              v-bind="
+                {
+                  'aria-label': expanded
+                    ? (copy.restore?.() ?? copy.resetColumns())
+                    : (copy.maximize?.() ?? copy.columns()),
+                  title: expanded
+                    ? (copy.restore?.() ?? copy.resetColumns())
+                    : (copy.maximize?.() ?? copy.columns()),
+                } satisfies ButtonHTMLAttributes
               "
               @click="expanded = !expanded"
             >
@@ -736,9 +816,13 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
               quaternary
               class="min-h-target-enhanced min-w-target-enhanced"
               :disabled="table.loading.value"
-              :aria-label="refreshLabel"
-              :aria-busy="table.loading.value"
-              :title="table.error.value ? copy.error() : refreshLabel"
+              v-bind="
+                {
+                  'aria-label': refreshLabel,
+                  'aria-busy': table.loading.value,
+                  title: table.error.value ? copy.error() : refreshLabel,
+                } satisfies ButtonHTMLAttributes
+              "
               @click="table.refresh()"
             >
               <span class="flex items-center gap-component-unit">
@@ -775,8 +859,8 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
         />
         <div
           class="pavp-table-grid flex flex-col min-w-0"
-          :data-summary="summaryRows.length > 0"
           :class="height.mode === 'fill' ? 'flex-1 min-h-0' : ''"
+          v-bind="{ 'data-summary': summaryRows.length > 0 }"
         >
           <div
             ref="mainElement"
@@ -793,8 +877,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
               :checked-row-keys="checkedKeys"
               :pagination="false"
               :loading="table.loading.value"
-              :aria-busy="table.loading.value"
-              v-bind="{ ...heightBindings, ...treeTableBindings }"
+              v-bind="{ ...heightBindings, ...treeTableBindings, 'aria-busy': table.loading.value }"
               :flex-height="height.mode === 'fill'"
               :virtual-scroll="virtualScroll === true"
               :bordered="presentation.bordered"
@@ -843,6 +926,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
         <TableInlineActions
           v-if="inlineEditing"
           :editing="inlineEditing"
+          :mode="inlineMode"
         />
         <div class="flex shrink-0 min-w-0 justify-end">
           <NButton

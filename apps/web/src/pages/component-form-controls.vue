@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { type ButtonHTMLAttributes, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -88,7 +88,7 @@ function detailValue(name: string, value: unknown): string {
         :bordered="false"
         class="min-h-target-enhanced min-w-target-enhanced"
         :type="mode === 'edit' ? 'primary' : 'default'"
-        :aria-pressed="mode === 'edit'"
+        v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
         @click="mode = 'edit'"
       >
         {{ t('configuredForm.edit') }}
@@ -98,7 +98,7 @@ function detailValue(name: string, value: unknown): string {
         :bordered="false"
         class="min-h-target-enhanced min-w-target-enhanced"
         :type="mode === 'detail' ? 'primary' : 'default'"
-        :aria-pressed="mode === 'detail'"
+        v-bind="{ 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes"
         :disabled="form.hasPendingInput.value"
         @click="mode = 'detail'"
       >

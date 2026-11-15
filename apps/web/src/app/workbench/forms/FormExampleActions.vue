@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="I">
+import type { ButtonHTMLAttributes } from 'vue'
 import type { UiFormController } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { useConsoleI18n } from '../../../shared/i18n'
@@ -17,9 +18,13 @@ function reset(): void {
   <NButton
     class="min-h-target-enhanced min-w-target-enhanced"
     attr-type="submit"
-    :form="form.formId"
+    v-bind="
+      {
+        form: form.formId,
+        'aria-busy': form.phase.value === 'validating' || form.phase.value === 'submitting',
+      } satisfies ButtonHTMLAttributes
+    "
     type="primary"
-    :aria-busy="form.phase.value === 'validating' || form.phase.value === 'submitting'"
     :disabled="form.phase.value !== 'idle'"
   >
     {{ submitLabel ?? t('formShowcase.checkValues') }}
@@ -29,7 +34,11 @@ function reset(): void {
     secondary
     :bordered="false"
     :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-    :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+    v-bind="
+      {
+        title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+      } satisfies ButtonHTMLAttributes
+    "
     @click="reset"
   >
     {{ t('configuredForm.reset') }}
@@ -39,7 +48,11 @@ function reset(): void {
     secondary
     :bordered="false"
     :disabled="!history.canUndo.value"
-    :title="form.hasPendingInput.value ? t('formLifecycle.pending') : t('formShowcase.undoHint')"
+    v-bind="
+      {
+        title: form.hasPendingInput.value ? t('formLifecycle.pending') : t('formShowcase.undoHint'),
+      } satisfies ButtonHTMLAttributes
+    "
     @click="history.undo"
   >
     {{ t('formShowcase.undo') }}

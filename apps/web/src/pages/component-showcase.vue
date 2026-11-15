@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type AnchorHTMLAttributes, computed, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { NInput } from 'naive-ui/es/input'
@@ -153,7 +153,7 @@ const categories = computed(() =>
           v-model:value="search"
           clearable
           :placeholder="t('showcase.search')"
-          :aria-label="t('showcase.search')"
+          :input-props="{ 'aria-label': t('showcase.search') }"
         />
       </NCard>
       <div
@@ -190,7 +190,11 @@ const categories = computed(() =>
                 tag="a"
                 type="primary"
                 secondary
-                :href="navigation.resolveHref(capability.destination)"
+                v-bind="
+                  {
+                    href: navigation.resolveHref(capability.destination),
+                  } satisfies AnchorHTMLAttributes
+                "
                 @click="activate($event, capability.destination)"
               >
                 {{ t('showcase.intent.try') }}
@@ -271,7 +275,9 @@ const categories = computed(() =>
           type="primary"
           secondary
           class="mt-auto self-start justify-self-start min-h-target-enhanced"
-          :href="navigation.resolveHref(category.destination)"
+          v-bind="
+            { href: navigation.resolveHref(category.destination) } satisfies AnchorHTMLAttributes
+          "
           @click="activate($event, category.destination)"
         >
           {{ t('showcase.open') }}

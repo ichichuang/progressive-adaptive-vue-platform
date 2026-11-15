@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { HTMLAttributes } from 'vue'
 import { NInput } from 'naive-ui/es/input'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NSwitch } from 'naive-ui/es/switch'
@@ -60,7 +61,7 @@ function setCompression(enabled: boolean): void {
       <span>{{ t('formBuilder.allowHalf') }}</span>
       <NSwitch
         :value="node.allowHalf ?? false"
-        :aria-label="t('formBuilder.allowHalf')"
+        v-bind="{ 'aria-label': t('formBuilder.allowHalf') } satisfies HTMLAttributes"
         @update:value="emit('patch', 'allowHalf', $event)"
       />
     </div>
@@ -106,7 +107,7 @@ function setCompression(enabled: boolean): void {
       <span>{{ t('formMedia.cropTitle') }}</span>
       <NSwitch
         :value="Boolean(node.imageProcessing?.crop)"
-        :aria-label="t('formMedia.cropTitle')"
+        v-bind="{ 'aria-label': t('formMedia.cropTitle') } satisfies HTMLAttributes"
         @update:value="
           emit(
             'patch',
@@ -124,7 +125,7 @@ function setCompression(enabled: boolean): void {
       <span>{{ t('formMedia.compress') }}</span>
       <NSwitch
         :value="Boolean(node.imageProcessing?.output)"
-        :aria-label="t('formMedia.compress')"
+        v-bind="{ 'aria-label': t('formMedia.compress') } satisfies HTMLAttributes"
         @update:value="setCompression"
       />
     </div>
@@ -132,7 +133,7 @@ function setCompression(enabled: boolean): void {
       <span>{{ t('formMedia.previewTitle') }}</span>
       <NSwitch
         :value="Boolean(node.preview)"
-        :aria-label="t('formMedia.previewTitle')"
+        v-bind="{ 'aria-label': t('formMedia.previewTitle') } satisfies HTMLAttributes"
         @update:value="emit('patch', 'preview', $event ? { types: ['image', 'pdf'] } : undefined)"
       />
     </div>

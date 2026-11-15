@@ -1,7 +1,18 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  useId,
+  watch,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NSelect } from 'naive-ui/es/select'
+import { NRadioGroup } from 'naive-ui/es/radio'
 import {
   UiCopyAction,
   UiChartTimeRange,
@@ -34,6 +45,7 @@ const props = defineProps<{
   readonly group: ChartGroup
 }>()
 const { t, locale } = useConsoleI18n()
+const kindGroupName = useId()
 const appearance = useAppearanceReadBoundary()
 const group = getChartGroup(props.group)
 const kind = ref<ChartKind>(group.kinds[0])
@@ -493,17 +505,19 @@ onScopeDispose(() => {
         class="wb-form-panel-header flex shrink-0 flex-wrap min-w-0 items-center justify-between gap-content-gap"
       >
         <div class="wb-chart-picker min-w-0">
-          <NSelect
+          <NRadioGroup
+            v-bind="{ role: 'radiogroup', 'aria-label': t('chartExamples.kind') }"
+            :name="kindGroupName"
             :value="kind"
             :options="choices"
-            :aria-label="t('chartExamples.kind')"
-            @update:value="selectKind"
+            class="flex flex-wrap gap-component-unit"
+            @update:value="typeof $event === 'string' && selectKind($event)"
           />
         </div>
         <div class="flex flex-wrap gap-component-unit">
           <NButton
             secondary
-            :aria-pressed="narrow"
+            v-bind="{ 'aria-pressed': narrow === true } satisfies ButtonHTMLAttributes"
             @click="toggleWidth"
           >
             {{ t('chartExamples.narrow') }}
@@ -523,7 +537,7 @@ onScopeDispose(() => {
           </NButton>
           <NButton
             secondary
-            :aria-pressed="showData"
+            v-bind="{ 'aria-pressed': showData } satisfies ButtonHTMLAttributes"
             @click="showData = !showData"
           >
             {{ showData ? t('chartExamples.showChart') : t('chartExamples.showData') }}
@@ -633,7 +647,9 @@ onScopeDispose(() => {
             :key="row.key"
             :secondary="!hiddenCategories.includes(row.key)"
             :quaternary="hiddenCategories.includes(row.key)"
-            :aria-pressed="!hiddenCategories.includes(row.key)"
+            v-bind="
+              { 'aria-pressed': !hiddenCategories.includes(row.key) } satisfies ButtonHTMLAttributes
+            "
             :disabled="!hiddenCategories.includes(row.key) && compositionData.length === 1"
             @click="toggleCategory(row.key)"
           >
@@ -684,7 +700,8 @@ onScopeDispose(() => {
                 <NSelect
                   :value="range[0]"
                   :options="startChoices"
-                  :aria-label="t('chartExamples.rangeStart')"
+                  filterable
+                  :input-props="{ 'aria-label': t('chartExamples.rangeStart') }"
                   @update:value="selectStart"
                 />
               </div>
@@ -696,7 +713,8 @@ onScopeDispose(() => {
                 <NSelect
                   :value="range[1]"
                   :options="endChoices"
-                  :aria-label="t('chartExamples.rangeEnd')"
+                  filterable
+                  :input-props="{ 'aria-label': t('chartExamples.rangeEnd') }"
                   @update:value="selectEnd"
                 />
               </div>
@@ -708,7 +726,9 @@ onScopeDispose(() => {
                 size="small"
                 :type="isRangeSelected(preset.hours) ? 'primary' : 'default'"
                 :secondary="isRangeSelected(preset.hours)"
-                :aria-pressed="isRangeSelected(preset.hours)"
+                v-bind="
+                  { 'aria-pressed': isRangeSelected(preset.hours) } satisfies ButtonHTMLAttributes
+                "
                 @click="chooseRange(preset.hours)"
               >
                 {{ preset.label }}

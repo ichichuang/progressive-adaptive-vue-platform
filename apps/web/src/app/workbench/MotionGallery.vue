@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { AnimatePresence, LazyMotion, MotionConfig, domMax, M, m, type PanInfo } from 'motion-v'
-import { computed, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useId,
+  watch,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import type { EffectiveAppearanceState } from '@platform/design-system'
 import { useConsoleI18n } from '../../shared/i18n'
@@ -292,7 +300,7 @@ onBeforeUnmount(() => {
             <NButton
               type="primary"
               size="large"
-              :aria-pressed="selected"
+              v-bind="{ 'aria-pressed': selected } satisfies ButtonHTMLAttributes"
               @click="selected = !selected"
             >
               <template #icon>
@@ -350,7 +358,7 @@ onBeforeUnmount(() => {
             v-else-if="effect === 'icon-swap'"
             text
             type="primary"
-            :aria-pressed="alternate"
+            v-bind="{ 'aria-pressed': alternate } satisfies ButtonHTMLAttributes"
             class="max-w-full min-w-0"
             @click="playExample"
           >
@@ -453,7 +461,11 @@ onBeforeUnmount(() => {
               v-for="(selection, index) in selections"
               :key="selection"
               quaternary
-              :aria-pressed="previewStep % selections.length === index"
+              v-bind="
+                {
+                  'aria-pressed': previewStep % selections.length === index,
+                } satisfies ButtonHTMLAttributes
+              "
               class="min-h-target-enhanced min-w-target-enhanced"
               @click="previewStep = index"
             >
@@ -702,7 +714,7 @@ onBeforeUnmount(() => {
       <NButton
         v-else-if="effect === 'expand'"
         type="primary"
-        :aria-expanded="expanded"
+        v-bind="{ 'aria-expanded': expanded === true } satisfies ButtonHTMLAttributes"
         @click="expanded = !expanded"
       >
         {{ t(expanded ? 'motionGallery.collapse' : 'motionGallery.expand') }}

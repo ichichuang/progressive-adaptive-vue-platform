@@ -41,11 +41,22 @@ export function createTableQueryLinkCodec(
       })
       .optional(),
   })
-  function decode(query: unknown): Omit<UiTableQuery, 'sort'> {
+  function decode(
+    query: unknown,
+    currentFilters: UiTableReadonlyRecord = {},
+  ): Omit<UiTableQuery, 'sort'> {
     const parsed = querySchema.parse(query)
     const value = state.parse(parsed.table === undefined ? defaults : JSON.parse(parsed.table))
+    // Replace the complete public filter set, including omitted optional keys.
+    // Only filters outside the URL allowlist survive from the current query.
+    const privateFilters = Object.fromEntries(
+      Object.entries(currentFilters).filter(([key]) => !Object.hasOwn(filters.shape, key)),
+    )
     // Filter schemas belong to the application and must produce finite JSON records.
-    return { ...value, filters: value.filters as UiTableReadonlyRecord }
+    return {
+      ...value,
+      filters: { ...privateFilters, ...value.filters } as UiTableReadonlyRecord,
+    }
   }
   function encode(query: Omit<UiTableQuery, 'sort'>): { table?: string } {
     const publicFilters = Object.fromEntries(

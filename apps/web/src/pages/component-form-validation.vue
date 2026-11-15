@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { type ButtonHTMLAttributes, computed } from 'vue'
 import { UiForm, useUiForm, type UiFormIssue, type UiFormSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -129,7 +129,11 @@ const history = useFormExampleUndo(() => form)
         secondary
         :bordered="false"
         :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-        :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+        v-bind="
+          {
+            title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+          } satisfies ButtonHTMLAttributes
+        "
         @click="fill(false)"
       >
         {{ t('formShowcase.fillInvalid') }}
@@ -139,7 +143,11 @@ const history = useFormExampleUndo(() => form)
         secondary
         :bordered="false"
         :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-        :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+        v-bind="
+          {
+            title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+          } satisfies ButtonHTMLAttributes
+        "
         @click="fill(true)"
       >
         {{ t('formShowcase.fillValid') }}

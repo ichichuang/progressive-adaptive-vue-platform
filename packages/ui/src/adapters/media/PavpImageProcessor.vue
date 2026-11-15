@@ -218,8 +218,7 @@ defineExpose({ process })
       class="pavp-image-processor min-h-0 min-w-0"
       :title="props.copy.cropTitle()"
       role="dialog"
-      aria-modal="true"
-      :aria-label="props.copy.cropTitle()"
+      v-bind="{ 'aria-modal': true, 'aria-label': props.copy.cropTitle() }"
       content-class="min-h-0 min-w-0"
     >
       <UiScrollArea owner-id="image-processing-workspace">

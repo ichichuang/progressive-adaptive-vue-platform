@@ -4793,11 +4793,19 @@ async function pageViolations(): Promise<string[]> {
           `${sourcePath}: Workspace pages require an explicit component-definition name.`,
         )
     }
-    const settingsPage = sourcePath === 'apps/web/src/pages/control-center.vue'
+    const welcomePage = sourcePath === 'apps/web/src/pages/index.vue'
+    const routeOwnsHeading = welcomePage || sourcePath === 'apps/web/src/pages/control-center.vue'
+    const welcomeDocumentInvalid =
+      welcomePage &&
+      (count(source, /<WorkbenchPage\b/gu) !== 0 ||
+        count(source, /<WelcomeExperience\b/gu) !== 1 ||
+        count(source, /<UiScrollArea\b/gu) !== 1 ||
+        !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*>/u.test(source) ||
+        !/<UiScrollArea\b[^>]*\s@controller=/u.test(source))
     const productPageInvalid =
       productPage &&
       (count(source, /<main\b/gu) !== 0 ||
-        (settingsPage
+        (routeOwnsHeading
           ? count(source, /<h1\b/gu) !== 1 ||
             count(source, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
             !/<h1\b[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>/u.test(source) ||
@@ -4903,6 +4911,7 @@ async function pageViolations(): Promise<string[]> {
 
     if (
       productPageInvalid ||
+      welcomeDocumentInvalid ||
       errorPageInvalid ||
       /\b(?:definePage|fetch|useRoute|useRouter)\s*\(/u.test(source) ||
       /<route\b/gu.test(source)

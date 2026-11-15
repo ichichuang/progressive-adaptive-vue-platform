@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, effectScope, onActivated, onDeactivated, ref, shallowRef } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  effectScope,
+  onActivated,
+  onDeactivated,
+  ref,
+  shallowRef,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
 import { UiCopyAction, useUiForm, type UiFormValue } from '@platform/ui'
@@ -148,7 +156,11 @@ onDeactivated(() => {
               :key="count"
               tertiary
               :type="builder.schema.value.columns === count ? 'primary' : 'default'"
-              :aria-pressed="builder.schema.value.columns === count"
+              v-bind="
+                {
+                  'aria-pressed': builder.schema.value.columns === count,
+                } satisfies ButtonHTMLAttributes
+              "
               :disabled="builder.pending.value"
               @click="builder.columns(count)"
             >
@@ -216,7 +228,11 @@ onDeactivated(() => {
               size="small"
               tertiary
               :type="builder.schema.value.columns === count ? 'primary' : 'default'"
-              :aria-pressed="builder.schema.value.columns === count"
+              v-bind="
+                {
+                  'aria-pressed': builder.schema.value.columns === count,
+                } satisfies ButtonHTMLAttributes
+              "
               :disabled="builder.pending.value"
               @click="builder.columns(count)"
             >

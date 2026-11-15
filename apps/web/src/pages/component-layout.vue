@@ -7,6 +7,7 @@ import {
   onMounted,
   ref,
   shallowRef,
+  type HTMLAttributes,
 } from 'vue'
 import { NAffix } from 'naive-ui/es/affix'
 import { NAnchor, NAnchorLink } from 'naive-ui/es/anchor'
@@ -328,7 +329,14 @@ const carouselItems = computed(() => [
                   <NAnchor
                     :listen-to="anchorViewport"
                     :offset-target="anchorViewport"
-                    @click.prevent="navigateAnchor"
+                    v-bind="
+                      {
+                        onClick: (event: MouseEvent) => {
+                          event.preventDefault()
+                          navigateAnchor(event)
+                        },
+                      } satisfies HTMLAttributes
+                    "
                   >
                     <NAnchorLink
                       href="#showcase-scroll-first"
@@ -364,8 +372,9 @@ const carouselItems = computed(() => [
                 :listen-to="anchorViewport"
                 :visibility-height="1"
                 to="#pavp-overlay-root"
-                role="button"
-                :aria-label="t('workbench.toStart')"
+                v-bind="
+                  { 'aria-label': t('workbench.toStart'), role: 'button' } satisfies HTMLAttributes
+                "
                 class="z-overlay"
               />
             </div>

@@ -66,6 +66,8 @@ export function useUiTable(input: UiTableInput): UiTableController {
     if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
       throw new TypeError('Table filters must be a JSON record.')
     const filters = snapshot(value)
+    if (tree && schema.source.kind === 'local' && Object.keys(filters).length)
+      throw new TypeError('Tree tables do not support local filters.')
     validateLocalFilters(filters, schema.localFilters ?? [])
     return filters
   }
@@ -494,8 +496,6 @@ export function useUiTable(input: UiTableInput): UiTableController {
       if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
         throw new TypeError('Table filters must be a JSON record.')
       const filters = acceptFilters(value.filters)
-      if (tree && Object.keys(filters).length)
-        throw new TypeError('Tree tables do not support local filters.')
       return change({
         page: value.page,
         pageSize: value.pageSize,

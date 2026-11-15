@@ -4,13 +4,20 @@ import {
   colorModePreferenceSchema,
   explicitThemePreferenceSchema,
   fontScaleValues,
-  ProductPreferenceDefault,
   projectAccessibleCustomAppearanceThemePreviews,
   type AppearanceThemePreviewProjection,
   type ExplicitThemePreference,
   type ThemeReference,
 } from '@platform/design-system'
-import { computed, inject, onScopeDispose, ref, shallowRef } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  inject,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  type HTMLAttributes,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { UiRadioCardGroup, UiScrollArea, type UiScrollController } from '@platform/ui'
 import { NCard } from 'naive-ui/es/card'
@@ -257,20 +264,11 @@ function themeStyle(theme: AppearanceThemePreviewProjection): Readonly<Record<st
 }
 
 function resetAppearance(): void {
-  const current = explicitThemePreferenceSchema.safeParse(preference.value)
-  if (!current.success) {
-    announce('settings.feedback.unavailable', 'error')
-    return
-  }
-  const restored = {
-    ...ProductPreferenceDefault,
-    theme: { ...ProductPreferenceDefault.theme },
-    density: {
-      ...current.data.appearance.density,
-      preset: ProductPreferenceDefault.density.preset,
-    },
-  }
-  if (commitAppearance(restored)) announce('settings.feedback.reset', 'success')
+  const result = mutation.resetPreference()
+  announce(
+    result.status === 'committed' ? 'settings.feedback.reset' : 'settings.feedback.rejected',
+    result.status === 'committed' ? 'success' : 'error',
+  )
 }
 
 function announcePersistence(result: {
@@ -462,12 +460,16 @@ onScopeDispose(() => {
         </header>
 
         <NCard
-          id="settings-theme"
           tag="section"
           :bordered="false"
           class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          aria-labelledby="settings-theme-title"
+          v-bind="
+            {
+              id: 'settings-theme',
+              'aria-labelledby': 'settings-theme-title',
+            } satisfies HTMLAttributes
+          "
         >
           <div
             class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
@@ -536,8 +538,12 @@ onScopeDispose(() => {
                   :theme-overrides="themeChoiceLayout"
                   class="wb-theme-option"
                   :style="themeStyle(theme)"
-                  :aria-pressed="selectedTheme(theme.reference)"
-                  :aria-label="theme.label"
+                  v-bind="
+                    {
+                      'aria-pressed': selectedTheme(theme.reference),
+                      'aria-label': theme.label,
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="preference === null || returning"
                   @click="chooseTheme(theme.reference)"
                 >
@@ -561,10 +567,9 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
                   class="wb-setting-choice"
                   :accessible-label="t('settings.contrast')"
-                  :aria-labelledby="field.labelledBy"
                   :model-value="String(appearanceValue('contrast') ?? '')"
                   :options="choices.contrast"
                   :disabled="preference === null || returning"
@@ -575,12 +580,16 @@ onScopeDispose(() => {
           </div>
         </NCard>
         <NCard
-          id="settings-style"
           tag="section"
           :bordered="false"
           class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          aria-labelledby="settings-style-title"
+          v-bind="
+            {
+              id: 'settings-style',
+              'aria-labelledby': 'settings-style-title',
+            } satisfies HTMLAttributes
+          "
         >
           <h2
             id="settings-style-title"
@@ -598,12 +607,16 @@ onScopeDispose(() => {
           />
         </NCard>
         <NCard
-          id="settings-reading"
           tag="section"
           :bordered="false"
           class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          aria-labelledby="settings-reading-title"
+          v-bind="
+            {
+              id: 'settings-reading',
+              'aria-labelledby': 'settings-reading-title',
+            } satisfies HTMLAttributes
+          "
         >
           <div
             class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
@@ -624,14 +637,18 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="
+                    {
+                      id: field.inputProps.id,
+                      'aria-labelledby': field.labelledBy,
+                      'aria-busy': language.pendingLocale.value !== null,
+                    } satisfies HTMLAttributes
+                  "
                   class="wb-setting-choice"
                   :accessible-label="t('settings.language')"
-                  :aria-labelledby="field.labelledBy"
                   :model-value="language.pendingLocale.value ?? language.locale.value"
                   :options="choices.language"
                   :disabled="returning || language.pendingLocale.value !== null"
-                  :aria-busy="language.pendingLocale.value !== null"
                   @update:model-value="updateLanguage"
                 />
               </template>
@@ -702,10 +719,9 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
                   class="wb-setting-choice"
                   :accessible-label="t('settings.font-scale')"
-                  :aria-labelledby="field.labelledBy"
                   :model-value="String(appearanceValue('fontScale') ?? '')"
                   :options="choices.fontScale"
                   :disabled="preference === null || returning"
@@ -716,12 +732,16 @@ onScopeDispose(() => {
           </div>
         </NCard>
         <NCard
-          id="settings-layout"
           tag="section"
           :bordered="false"
           class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          aria-labelledby="settings-layout-title"
+          v-bind="
+            {
+              id: 'settings-layout',
+              'aria-labelledby': 'settings-layout-title',
+            } satisfies HTMLAttributes
+          "
         >
           <div
             class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
@@ -742,10 +762,9 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
                   class="wb-setting-choice"
                   :accessible-label="t('settings.density')"
-                  :aria-labelledby="field.labelledBy"
                   :model-value="String(appearanceValue('density') ?? '')"
                   :options="choices.density"
                   :disabled="preference === null || returning"
@@ -760,7 +779,7 @@ onScopeDispose(() => {
               <template #default="field">
                 <NSwitch
                   :value="navigation.wideNavigationCollapsed"
-                  :aria-labelledby="field.labelledBy"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
                   @update:value="updateNavigation('collapsed', $event)"
                 />
               </template>
@@ -772,7 +791,7 @@ onScopeDispose(() => {
               <template #default="field">
                 <NSwitch
                   :value="navigation.accordion"
-                  :aria-labelledby="field.labelledBy"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
                   @update:value="updateNavigation('accordion', $event)"
                 />
               </template>
@@ -780,12 +799,16 @@ onScopeDispose(() => {
           </div>
         </NCard>
         <NCard
-          id="settings-comfort"
           tag="section"
           :bordered="false"
           class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          aria-labelledby="settings-comfort-title"
+          v-bind="
+            {
+              id: 'settings-comfort',
+              'aria-labelledby': 'settings-comfort-title',
+            } satisfies HTMLAttributes
+          "
         >
           <div
             class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
@@ -806,10 +829,9 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
                   class="wb-setting-choice"
                   :accessible-label="t('settings.material')"
-                  :aria-labelledby="field.labelledBy"
                   :model-value="String(appearanceValue('material') ?? '')"
                   :options="choices.material"
                   :disabled="preference === null || returning"
@@ -824,11 +846,14 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="
+                    {
+                      id: field.inputProps.id,
+                      'aria-describedby': hasCustomRadius ? 'settings-radius-custom' : undefined,
+                    } satisfies HTMLAttributes
+                  "
                   class="wb-setting-choice"
                   :accessible-label="t('settings.radius')"
-                  :aria-labelledby="field.labelledBy"
-                  :aria-describedby="hasCustomRadius ? 'settings-radius-custom' : undefined"
                   :model-value="String(appearanceValue('radius') ?? '')"
                   :options="choices.radius"
                   :disabled="preference === null || returning"
@@ -850,10 +875,9 @@ onScopeDispose(() => {
             >
               <template #default="field">
                 <UiRadioCardGroup
-                  :id="field.inputProps.id"
+                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
                   class="wb-setting-choice"
                   :accessible-label="t('settings.motion')"
-                  :aria-labelledby="field.labelledBy"
                   :model-value="String(appearanceValue('motion') ?? '')"
                   :options="choices.motion"
                   :disabled="preference === null || returning"
@@ -864,12 +888,16 @@ onScopeDispose(() => {
           </div>
         </NCard>
         <NCard
-          id="settings-workspace"
           tag="section"
           :bordered="false"
           class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          aria-labelledby="settings-workspace-title"
+          v-bind="
+            {
+              id: 'settings-workspace',
+              'aria-labelledby': 'settings-workspace-title',
+            } satisfies HTMLAttributes
+          "
         >
           <div
             class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
@@ -890,7 +918,7 @@ onScopeDispose(() => {
               <template #default="field">
                 <NSwitch
                   :value="scroll.restoreOnRefresh"
-                  :aria-labelledby="field.labelledBy"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
                   @update:value="updateScroll"
                 />
               </template>
@@ -933,10 +961,14 @@ onScopeDispose(() => {
             :quaternary="activeSection !== section.id"
             :type="activeSection === section.id ? 'primary' : 'default'"
             :bordered="false"
-            :aria-label="t(section.label)"
+            v-bind="
+              {
+                'aria-label': t(section.label),
+                'aria-current': activeSection === section.id ? 'location' : undefined,
+                'aria-controls': section.id,
+              } satisfies ButtonHTMLAttributes
+            "
             class="wb-section-link"
-            :aria-current="activeSection === section.id ? 'location' : undefined"
-            :aria-controls="section.id"
             @click="jumpTo(section.id)"
           >
             <span class="flex items-center gap-content-gap">
@@ -979,8 +1011,11 @@ onScopeDispose(() => {
         class="wb-done min-h-target-enhanced"
         type="primary"
         :loading="returning && effective.snapshot.value.motion === 'full'"
-        :aria-busy="returning"
-        :aria-label="returning ? t('settings.returning') : t('settings.done')"
+        v-bind="
+          (returning
+            ? { 'aria-busy': true, 'aria-label': t('settings.returning') }
+            : { 'aria-busy': false, 'aria-label': t('settings.done') }) satisfies HTMLAttributes
+        "
         :disabled="returning"
         @click="finish"
       >

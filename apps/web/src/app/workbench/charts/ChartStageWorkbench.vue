@@ -156,14 +156,14 @@ onScopeDispose(() => unregister?.())
               v-model:value="width"
               :min="1"
               :max="100"
-              :aria-label="t('chartStage.width')"
+              :input-props="{ 'aria-label': t('chartStage.width') }"
             />
             <span class="text-caption">{{ t('chartStage.height') }}</span>
             <NInputNumber
               v-model:value="height"
               :min="1"
               :max="100"
-              :aria-label="t('chartStage.height')"
+              :input-props="{ 'aria-label': t('chartStage.height') }"
             />
           </div>
         </NPopover>

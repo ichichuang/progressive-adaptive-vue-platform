@@ -130,7 +130,8 @@ watch(category, (value) => {
         <NSelect
           v-model:value="content"
           :options="contentOptions"
-          :aria-label="t('tableExamples.summary.content')"
+          filterable
+          :input-props="{ 'aria-label': t('tableExamples.summary.content') }"
         />
       </div>
       <div class="grid min-w-0 gap-component-unit">
@@ -140,7 +141,8 @@ watch(category, (value) => {
         <NSelect
           v-model:value="target"
           :options="targetOptions"
-          :aria-label="t('tableExamples.summary.columns')"
+          filterable
+          :input-props="{ 'aria-label': t('tableExamples.summary.columns') }"
         />
       </div>
       <div class="grid min-w-0 gap-component-unit">
@@ -149,7 +151,8 @@ watch(category, (value) => {
           v-model:value="scope"
           :options="scopeOptions"
           :disabled="content !== 'aggregate' && !secondRow"
-          :aria-label="t('tableExamples.summary.scope')"
+          filterable
+          :input-props="{ 'aria-label': t('tableExamples.summary.scope') }"
         />
       </div>
       <div
@@ -162,7 +165,8 @@ watch(category, (value) => {
         <NSelect
           v-model:value="operation"
           :options="operationOptions"
-          :aria-label="t('tableExamples.summary.operation')"
+          filterable
+          :input-props="{ 'aria-label': t('tableExamples.summary.operation') }"
         />
       </div>
       <div
@@ -192,7 +196,8 @@ watch(category, (value) => {
         <NSelect
           v-model:value="category"
           :options="categoryOptions"
-          :aria-label="t('tableShowcase.category')"
+          filterable
+          :input-props="{ 'aria-label': t('tableShowcase.category') }"
         />
       </div>
     </div>

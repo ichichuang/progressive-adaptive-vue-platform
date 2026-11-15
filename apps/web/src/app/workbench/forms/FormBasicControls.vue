@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ButtonHTMLAttributes } from 'vue'
 import { useFormExampleUndo } from './use-form-example-undo'
 import { NPopconfirm } from 'naive-ui/es/popconfirm'
 import { UiForm, parseUiFormSchema, useUiForm, type UiFormSchema } from '@platform/ui'
@@ -207,7 +208,7 @@ const history = useFormExampleUndo(() => form)
             secondary
             :bordered="false"
             :type="source === kind ? 'primary' : 'default'"
-            :aria-pressed="source === kind"
+            v-bind="{ 'aria-pressed': source === kind } satisfies ButtonHTMLAttributes"
             @click="switchSource(kind)"
           >
             {{ t(kind === 'code' ? 'configuredForm.sourceCode' : 'configuredForm.sourceJson') }}

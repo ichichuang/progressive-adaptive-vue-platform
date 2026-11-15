@@ -14,5 +14,10 @@
     "erasableSyntaxOnly": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true
+  },
+  "vueCompilerOptions": {
+    "strictTemplates": true,
+    "fallthroughAttributes": true,
+    "dataAttributes": ["data-*", "gs-id"]
   }
 }

@@ -91,7 +91,10 @@ async function open(
       name: 'component-table-editor',
       query: mode === 'create' ? { mode } : { mode, id: recordId },
     })
-  } else if (!(await session.show(mode, row))) notice.value = t('tableShowcase.closeBlocked')
+  } else {
+    const opened = await session.show(mode, row)
+    notice.value = !opened && !session.error.value ? t('tableShowcase.closeBlocked') : ''
+  }
 }
 async function remove(row: UiTableReadonlyRecord): Promise<void> {
   notice.value = (await session.remove(row, () => true))

@@ -5,7 +5,11 @@ import type {
   UiFormSchema,
   UiFormInput,
 } from '../components/form-contracts'
-import type { UiTableController, UiTableRecord } from '../components/table-contracts'
+import type {
+  UiTableController,
+  UiTableReadonlyRecord,
+  UiTableRecord,
+} from '../components/table-contracts'
 import { invalidLocalFilters } from '../components/table-local-filters'
 import { useUiForm } from './use-ui-form'
 import { createFormValues, sameDraftValue } from './form-draft-values'
@@ -24,9 +28,18 @@ export function useUiTableQuery(
     if (timer !== undefined) clearTimeout(timer)
     timer = undefined
   }
+  const formValues = (filters: UiTableReadonlyRecord) =>
+    createFormValues(
+      config.form.fields,
+      Object.fromEntries(
+        config.form.fields
+          .filter((field) => Object.hasOwn(filters, field.name))
+          .map((field) => [field.name, filters[field.name]]),
+      ),
+    )
   const initial = {
     draftId: table.schema.id,
-    values: createFormValues(config.form.fields, table.query.value.filters),
+    values: formValues(table.query.value.filters),
   }
   const validateQuery: NonNullable<UiFormInput<UiTableRecord>['validation']> = async (
     values,
@@ -56,7 +69,7 @@ export function useUiTableQuery(
     translate: (value) => table.text(value),
     onSubmit: async (values) => {
       clear()
-      await table.search(values)
+      await table.search({ ...table.query.value.filters, ...values })
       return table.error.value
         ? { status: 'failure', message: copy.submitFailed }
         : { status: 'success' }
@@ -73,7 +86,7 @@ export function useUiTableQuery(
       const completion = table.reset()
       form.replaceInitial({
         draftId: table.schema.id,
-        values: createFormValues(config.form.fields, table.query.value.filters),
+        values: formValues(table.query.value.filters),
       })
       void completion
     },
@@ -82,22 +95,16 @@ export function useUiTableQuery(
     () => table.query.value.filters,
     (filters, previous) => {
       if (sameDraftValue(filters, previous)) return
-      clear()
       let values: UiTableRecord
       try {
-        values = createFormValues(
-          config.form.fields,
-          Object.fromEntries(
-            config.form.fields
-              .filter((field) => Object.hasOwn(filters, field.name))
-              .map((field) => [field.name, filters[field.name]]),
-          ),
-        )
+        values = formValues(filters)
+        if (sameDraftValue(values, formValues(previous))) return
       } catch {
         // Programmatic table filters may not be representable by this query form.
         // Preserve its draft rather than turning a valid table operation into a watcher error.
         return
       }
+      clear()
       if (sameDraftValue(values, form.values.value)) return
       form.replaceInitial({
         draftId: table.schema.id,

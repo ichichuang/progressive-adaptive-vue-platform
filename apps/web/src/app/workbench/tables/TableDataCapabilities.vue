@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onDeactivated, ref, shallowRef } from 'vue'
+import {
+  type HTMLAttributes,
+  type ButtonHTMLAttributes,
+  computed,
+  onDeactivated,
+  ref,
+  shallowRef,
+} from 'vue'
+
 import {
   UiForm,
   UiScrollArea,
@@ -278,7 +286,8 @@ function openDetail(row: UiTableReadonlyRecord): void {
               v-model:value="response"
               class="flex-1 min-w-0"
               :options="responseOptions"
-              :aria-label="t('tableCapabilities.data.nextResponse')"
+              filterable
+              :input-props="{ 'aria-label': t('tableCapabilities.data.nextResponse') }"
             />
             <NButton
               type="primary"
@@ -376,7 +385,11 @@ function openDetail(row: UiTableReadonlyRecord): void {
         <NButton
           text
           type="primary"
-          :aria-label="`${t('tableCapabilities.data.details')} ${String(row['title'])}`"
+          v-bind="
+            {
+              'aria-label': `${t('tableCapabilities.data.details')} ${String(row['title'])}`,
+            } satisfies ButtonHTMLAttributes
+          "
           @click="openDetail(row)"
         >
           {{ t('tableCapabilities.data.details') }}
@@ -444,11 +457,15 @@ function openDetail(row: UiTableReadonlyRecord): void {
     <NCard
       class="wb-provider-modal max-h-dvh"
       content-class="flex flex-1 min-h-0 min-w-0 overflow-hidden"
-      :title="t('tableCapabilities.data.filters')"
       role="dialog"
-      aria-modal="true"
-      :aria-label="t('tableCapabilities.data.filters')"
       closable
+      v-bind="
+        {
+          title: t('tableCapabilities.data.filters'),
+          'aria-modal': 'true',
+          'aria-label': t('tableCapabilities.data.filters'),
+        } satisfies HTMLAttributes
+      "
       @close="filtersOpen = false"
     >
       <UiScrollArea
@@ -469,11 +486,15 @@ function openDetail(row: UiTableReadonlyRecord): void {
         <div class="flex flex-wrap items-center gap-component-unit">
           <NButton
             attr-type="submit"
-            :form="query.formId"
+            v-bind="
+              {
+                form: query.formId,
+                'aria-busy': query.submitting.value,
+              } satisfies ButtonHTMLAttributes
+            "
             type="primary"
             class="min-h-target-enhanced min-w-target-enhanced"
             :disabled="query.submitting.value"
-            :aria-busy="query.submitting.value"
           >
             {{ query.copy.submit() }}
           </NButton>

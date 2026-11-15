@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref, watch } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NDropdown } from 'naive-ui/es/dropdown'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
@@ -185,7 +185,11 @@ const history = useFormExampleUndo(() => form)
       <NButton
         class="min-h-target-enhanced min-w-target-enhanced"
         :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-        :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+        v-bind="
+          {
+            title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+          } satisfies ButtonHTMLAttributes
+        "
         @click="loadRows(0)"
       >
         {{ t('formShowcase.loadEmptyRows') }}
@@ -193,7 +197,11 @@ const history = useFormExampleUndo(() => form)
       <NButton
         class="min-h-target-enhanced min-w-target-enhanced"
         :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-        :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+        v-bind="
+          {
+            title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+          } satisfies ButtonHTMLAttributes
+        "
         @click="loadRows(4)"
       >
         {{ t('formShowcase.loadExcessRows') }}

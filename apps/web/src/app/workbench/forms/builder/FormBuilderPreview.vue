@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {
+  type HTMLAttributes,
+  type ButtonHTMLAttributes,
   computed,
   inject,
   nextTick,
@@ -9,6 +11,7 @@ import {
   ref,
   watch,
 } from 'vue'
+
 import { NButton } from 'naive-ui/es/button'
 import {
   UiForm,
@@ -231,9 +234,13 @@ onScopeDispose(() => {
         </h2>
         <NButton
           tertiary
-          :aria-pressed="mode === 'detail'"
+          v-bind="
+            {
+              'aria-pressed': mode === 'detail',
+              title: previewHint || undefined,
+            } satisfies ButtonHTMLAttributes
+          "
           :disabled="form.hasPendingInput.value"
-          :title="previewHint || undefined"
           @click="toggleMode"
         >
           {{ t(mode === 'edit' ? 'formBuilder.view' : 'formBuilder.edit') }}
@@ -243,10 +250,23 @@ onScopeDispose(() => {
         class="flex-1 min-h-0 min-w-0"
         owner-id="architecture-console-content"
         :enabled="active"
+        v-bind="
+          {
+            onDragenter: (event: DragEvent) => {
+              event.preventDefault()
+              acceptField(event)
+            },
+            onDragover: (event: DragEvent) => {
+              event.preventDefault()
+              acceptField(event)
+            },
+            onDrop: (event: DragEvent) => {
+              event.preventDefault()
+              dropField(event)
+            },
+          } satisfies HTMLAttributes
+        "
         @controller="connect"
-        @dragenter.prevent="acceptField"
-        @dragover.prevent="acceptField"
-        @drop.prevent="dropField"
       >
         <div
           ref="controls"
@@ -303,9 +323,13 @@ onScopeDispose(() => {
         <NButton
           type="primary"
           attr-type="submit"
-          :form="form.formId"
+          v-bind="
+            {
+              onPointerdown: (event: PointerEvent) => event.preventDefault(),
+              form: form.formId,
+            } satisfies ButtonHTMLAttributes
+          "
           :disabled="mode === 'detail' || !form.schema.fields.length || form.phase.value !== 'idle'"
-          @pointerdown.prevent
         >
           {{ t('formBuilder.check') }}
         </NButton>
@@ -314,7 +338,11 @@ onScopeDispose(() => {
           :disabled="
             !form.schema.fields.length || form.hasPendingInput.value || form.phase.value !== 'idle'
           "
-          :title="form.hasPendingInput.value ? t('formBuilder.previewPendingHint') : undefined"
+          v-bind="
+            {
+              title: form.hasPendingInput.value ? t('formBuilder.previewPendingHint') : undefined,
+            } satisfies ButtonHTMLAttributes
+          "
           @click="reset"
         >
           {{ t('configuredForm.reset') }}
@@ -322,10 +350,12 @@ onScopeDispose(() => {
         <NButton
           secondary
           :disabled="!history.canUndo.value"
-          :title="
-            form.hasPendingInput.value
-              ? t('formBuilder.previewPendingHint')
-              : t('formShowcase.undoHint')
+          v-bind="
+            {
+              title: form.hasPendingInput.value
+                ? t('formBuilder.previewPendingHint')
+                : t('formShowcase.undoHint'),
+            } satisfies ButtonHTMLAttributes
           "
           @click="history.undo"
         >
@@ -371,12 +401,12 @@ onScopeDispose(() => {
           <div class="wb-form-scroll-content min-w-0">
             <pre
               class="m-0 min-w-0 whitespace-pre-wrap break-all text-caption text-text-primary layout-narrow:hidden"
-              data-builder-schema
+              v-bind="{ 'data-builder-schema': '' }"
               v-text="json"
             />
             <pre
               class="m-0 min-w-0 hidden whitespace-pre-wrap break-all text-caption text-text-primary layout-narrow:block"
-              data-builder-schema-compact
+              v-bind="{ 'data-builder-schema-compact': '' }"
               v-text="compactJson"
             />
           </div>
@@ -395,7 +425,6 @@ onScopeDispose(() => {
               :key="previewHint ? 'pending' : 'accepted'"
               class="col-start-1 row-start-1"
               :class="{ invisible: Boolean(previewHint) }"
-              :aria-hidden="previewHint ? true : undefined"
               variant="text"
               :disabled="Boolean(previewHint)"
               :value="model"
@@ -403,6 +432,7 @@ onScopeDispose(() => {
               :copy-label="t('formShowcase.copyData')"
               :success-label="t('formBuilder.copySuccess')"
               :failure-label="t('formBuilder.copyFailure')"
+              v-bind="{ 'aria-hidden': previewHint ? true : undefined } satisfies HTMLAttributes"
             />
             <span
               v-if="previewHint"
@@ -459,12 +489,12 @@ onScopeDispose(() => {
             <div class="min-w-0">
               <pre
                 class="m-0 min-w-0 whitespace-pre-wrap break-all text-caption text-text-primary layout-narrow:hidden"
-                data-builder-model
+                v-bind="{ 'data-builder-model': '' }"
                 v-text="model"
               />
               <pre
                 class="m-0 min-w-0 hidden whitespace-pre-wrap break-all text-caption text-text-primary layout-narrow:block"
-                data-builder-model-compact
+                v-bind="{ 'data-builder-model-compact': '' }"
                 v-text="compactModel"
               />
             </div>

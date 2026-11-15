@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { type HTMLAttributes, type ButtonHTMLAttributes, computed } from 'vue'
+
 import { NTimePicker } from 'naive-ui/es/time-picker'
-import { computed } from 'vue'
+
 import { NDropdown } from 'naive-ui/es/dropdown'
 import { NButton } from 'naive-ui/es/button'
 import { NSelect } from 'naive-ui/es/select'
@@ -254,7 +256,8 @@ function setValue(value: UiFormValue): void {
         :value="mode"
         :disabled="editor.incomplete.value"
         :options="modes"
-        :aria-label="label"
+        filterable
+        :input-props="{ 'aria-label': label }"
         to="#pavp-overlay-root"
         @update:value="setMode"
       />
@@ -281,7 +284,8 @@ function setValue(value: UiFormValue): void {
         :value="branch"
         :options="groupModes"
         :disabled="editor.incomplete.value"
-        :aria-label="`${accessibleLabel} ${t('formBuilder.groupMode')}`"
+        filterable
+        :input-props="{ 'aria-label': `${accessibleLabel} ${t('formBuilder.groupMode')}` }"
         to="#pavp-overlay-root"
         @update:value="setGroupMode"
       />
@@ -305,7 +309,11 @@ function setValue(value: UiFormValue): void {
           quaternary
           class="min-h-target-enhanced min-w-target-enhanced"
           :disabled="editor.incomplete.value"
-          :aria-label="`${accessibleLabel} ${t('formBuilder.ruleActions')}`"
+          v-bind="
+            {
+              'aria-label': `${accessibleLabel} ${t('formBuilder.ruleActions')}`,
+            } satisfies ButtonHTMLAttributes
+          "
         >
           {{ t('formBuilder.ruleActions') }}
         </NButton>
@@ -344,7 +352,8 @@ function setValue(value: UiFormValue): void {
         :value="referenceIndex"
         :disabled="editor.incomplete.value"
         :options="options"
-        :aria-label="`${accessibleLabel} ${t('formBuilder.reference')}`"
+        filterable
+        :input-props="{ 'aria-label': `${accessibleLabel} ${t('formBuilder.reference')}` }"
         to="#pavp-overlay-root"
         @update:value="selectReference"
       />
@@ -352,7 +361,8 @@ function setValue(value: UiFormValue): void {
         :value="condition.operator"
         :disabled="editor.incomplete.value"
         :options="operators"
-        :aria-label="`${accessibleLabel} ${t('formBuilder.operator')}`"
+        filterable
+        :input-props="{ 'aria-label': `${accessibleLabel} ${t('formBuilder.operator')}` }"
         to="#pavp-overlay-root"
         @update:value="setOperator"
       />
@@ -360,7 +370,11 @@ function setValue(value: UiFormValue): void {
         <NSwitch
           v-if="reference?.node.kind === 'switch'"
           :value="comparison === true"
-          :aria-label="`${accessibleLabel} ${t('formBuilder.compareValue')}`"
+          v-bind="
+            {
+              'aria-label': `${accessibleLabel} ${t('formBuilder.compareValue')}`,
+            } satisfies HTMLAttributes
+          "
           @update:value="setValue"
         />
         <FormBuilderNumber
@@ -371,15 +385,20 @@ function setValue(value: UiFormValue): void {
           :input="input"
           @update:value="setValue"
         />
-        <NTimePicker
+        <div
           v-else-if="reference?.node.kind === 'time'"
-          :formatted-value="typeof comparison === 'string' ? comparison : null"
-          value-format="HH:mm:ss"
+          role="group"
           :aria-label="`${accessibleLabel} ${t('formBuilder.compareValue')}`"
-          clearable
-          to="#pavp-overlay-root"
-          @update:formatted-value="setValue"
-        />
+        >
+          <NTimePicker
+            :formatted-value="typeof comparison === 'string' ? comparison : null"
+            value-format="HH:mm:ss"
+            :placeholder="`${accessibleLabel} ${t('formBuilder.compareValue')}`"
+            clearable
+            to="#pavp-overlay-root"
+            @update:formatted-value="setValue"
+          />
+        </div>
         <FormBuilderDate
           v-else-if="reference?.node.kind === 'date'"
           :key="`${condition?.field}:${condition?.operator}`"
@@ -395,7 +414,8 @@ function setValue(value: UiFormValue): void {
           "
           :options="choiceOptions"
           clearable
-          :aria-label="`${accessibleLabel} ${t('formBuilder.compareValue')}`"
+          filterable
+          :input-props="{ 'aria-label': `${accessibleLabel} ${t('formBuilder.compareValue')}` }"
           to="#pavp-overlay-root"
           @update:value="setValue"
         />

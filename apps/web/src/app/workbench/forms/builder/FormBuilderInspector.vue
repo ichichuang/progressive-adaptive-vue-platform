@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { type HTMLAttributes, computed, useId } from 'vue'
+
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
 import FormBuilderSpecial from './FormBuilderSpecial.vue'
@@ -274,7 +275,8 @@ function removeDefault(): void {
       <NSelect
         :value="node.span ?? (leaf ? 1 : 2)"
         :options="spans"
-        :aria-label="t('formBuilder.span')"
+        filterable
+        :input-props="{ 'aria-label': t('formBuilder.span') }"
         to="#pavp-overlay-root"
         @update:value="patch('span', $event)"
       />
@@ -292,7 +294,8 @@ function removeDefault(): void {
         multiple
         :value="node.tools ?? richTextTools.map((tool) => tool.value)"
         :options="richTextTools"
-        :aria-label="t('formBuilder.richTextTools')"
+        filterable
+        :input-props="{ 'aria-label': t('formBuilder.richTextTools') }"
         to="#pavp-overlay-root"
         @update:value="patch('tools', $event)"
       />
@@ -326,7 +329,7 @@ function removeDefault(): void {
       <NSwitch
         v-else-if="node.kind === 'switch'"
         :value="node.defaultValue ?? false"
-        :aria-label="t('formBuilder.defaultValue')"
+        v-bind="{ 'aria-label': t('formBuilder.defaultValue') } satisfies HTMLAttributes"
         @update:value="defaultValue"
       />
       <FormBuilderDate
@@ -337,32 +340,42 @@ function removeDefault(): void {
         :input="editor.inputState('defaultValue')"
         @update:value="defaultValue"
       />
-      <NDatePicker
+      <div
         v-else-if="node.kind === 'date-range'"
-        type="daterange"
-        :formatted-value="node.defaultValue ?? null"
-        value-format="yyyy-MM-dd"
-        clearable
+        role="group"
         :aria-label="t('formBuilder.defaultValue')"
-        to="#pavp-overlay-root"
-        @update:formatted-value="defaultValue"
-      />
-      <NTimePicker
+      >
+        <NDatePicker
+          type="daterange"
+          :formatted-value="node.defaultValue ?? null"
+          value-format="yyyy-MM-dd"
+          clearable
+          to="#pavp-overlay-root"
+          @update:formatted-value="defaultValue"
+        />
+      </div>
+      <div
         v-else-if="node.kind === 'time'"
-        :formatted-value="node.defaultValue ?? null"
-        value-format="HH:mm:ss"
-        clearable
+        role="group"
         :aria-label="t('formBuilder.defaultValue')"
-        to="#pavp-overlay-root"
-        @update:formatted-value="defaultValue"
-      />
+      >
+        <NTimePicker
+          :formatted-value="node.defaultValue ?? null"
+          value-format="HH:mm:ss"
+          clearable
+          :placeholder="t('formBuilder.defaultValue')"
+          to="#pavp-overlay-root"
+          @update:formatted-value="defaultValue"
+        />
+      </div>
       <NSelect
         v-else-if="isChoice(node)"
         :value="node.defaultValue ?? null"
         :multiple="node.kind === 'multi-select' || node.kind === 'checkbox-group'"
         :options="defaultChoices"
         clearable
-        :aria-label="t('formBuilder.defaultValue')"
+        filterable
+        :input-props="{ 'aria-label': t('formBuilder.defaultValue') }"
         to="#pavp-overlay-root"
         @update:value="defaultValue"
       />
@@ -406,7 +419,8 @@ function removeDefault(): void {
         <NSelect
           :value="typeof option.value"
           :options="valueTypes"
-          :aria-label="`${t('formBuilder.valueType')} ${String(index + 1)}`"
+          filterable
+          :input-props="{ 'aria-label': `${t('formBuilder.valueType')} ${String(index + 1)}` }"
           to="#pavp-overlay-root"
           @update:value="optionType(index, $event)"
         />
@@ -427,7 +441,11 @@ function removeDefault(): void {
         <div class="flex flex-wrap items-center justify-between gap-component-unit">
           <NSwitch
             :value="option.disabled ?? false"
-            :aria-label="`${t('formBuilder.disabled')} ${option.label}`"
+            v-bind="
+              {
+                'aria-label': `${t('formBuilder.disabled')} ${option.label}`,
+              } satisfies HTMLAttributes
+            "
             @update:value="changeOption(index, 'disabled', $event)"
           >
             <template #checked>
@@ -704,7 +722,7 @@ function removeDefault(): void {
       >
         <span v-text="t('formBuilder.email')" /><NSwitch
           :value="emailRuleEnabled"
-          :aria-label="t('formBuilder.email')"
+          v-bind="{ 'aria-label': t('formBuilder.email') } satisfies HTMLAttributes"
           @update:value="rule('format', $event ? 'email' : undefined)"
         />
       </div>

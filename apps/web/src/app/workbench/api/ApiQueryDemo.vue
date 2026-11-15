@@ -7,11 +7,13 @@ import {
   onScopeDispose,
   ref,
   shallowRef,
+  useId,
+  type HTMLAttributes,
   watch,
 } from 'vue'
 import { z } from 'zod'
 import { NButton } from 'naive-ui/es/button'
-import { NSelect } from 'naive-ui/es/select'
+import { NRadioGroup } from 'naive-ui/es/radio'
 import { NTag } from 'naive-ui/es/tag'
 import { UiScrollArea, type UiScrollController } from '@platform/ui'
 import { createApiClient, type ApiFetch } from '../../../shared/api'
@@ -40,6 +42,15 @@ onActivated(() => {
 })
 const productId = ref(1)
 const responseMode = ref('success')
+const queryChoiceId = useId()
+function selectProduct(value: string | number | boolean): void {
+  const selected = productOptions.find((option) => option.value === value)
+  if (selected) productId.value = selected.value
+}
+function selectResponse(value: string | number | boolean): void {
+  const selected = modeOptions.value.find((option) => option.value === value)
+  if (selected) responseMode.value = selected.value
+}
 const calls = ref(0)
 const operationCalls = ref(0)
 const pending = ref(false)
@@ -183,20 +194,36 @@ const modeOptions = computed(() => [
     <div class="shrink-0 grid grid-cols-2 min-w-0 gap-component-unit">
       <div class="grid min-w-0 gap-component-unit text-caption text-text-secondary">
         {{ t('apiShowcase.query.parameter') }}
-        <NSelect
-          v-model:value="productId"
+        <NRadioGroup
+          :value="productId"
+          :name="`api-query-productId-${queryChoiceId}`"
           :options="productOptions"
           :disabled="pending"
-          :aria-label="t('apiShowcase.query.parameter')"
+          class="flex flex-wrap min-w-0 gap-content-gap"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('apiShowcase.query.parameter'),
+            } satisfies HTMLAttributes
+          "
+          @update:value="selectProduct"
         />
       </div>
       <div class="grid min-w-0 gap-component-unit text-caption text-text-secondary">
         {{ t('apiShowcase.query.nextResponse') }}
-        <NSelect
-          v-model:value="responseMode"
+        <NRadioGroup
+          :value="responseMode"
+          :name="`api-query-responseMode-${queryChoiceId}`"
           :options="modeOptions"
           :disabled="pending"
-          :aria-label="t('apiShowcase.query.nextResponse')"
+          class="flex flex-wrap min-w-0 gap-content-gap"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('apiShowcase.query.nextResponse'),
+            } satisfies HTMLAttributes
+          "
+          @update:value="selectResponse"
         />
       </div>
     </div>

@@ -5,13 +5,19 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy_to_racknerd:
+        description: Deploy the verified main build to RackNerd
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
   group: static-verification-${{ github.ref }}
-  cancel-in-progress: true
+  # Do not interrupt activation between the HTTPS check and a possible rollback.
+  cancel-in-progress: false
 
 jobs:
   verify:
@@ -43,3 +49,17 @@ jobs:
 
       - name: Confirm generated state is clean
         run: git diff --exit-code
+
+      - name: Publish verified build to RackNerd
+        if: >-
+          github.ref == 'refs/heads/main' &&
+          ((github.event_name == 'push' && vars.PAVP_DEPLOY_ENABLED == 'true') ||
+          (github.event_name == 'workflow_dispatch' && inputs.deploy_to_racknerd))
+        env:
+          DEPLOY_HOST: ${{ vars.PAVP_DEPLOY_HOST }}
+          DEPLOY_ORIGIN: ${{ vars.PAVP_DEPLOY_ORIGIN }}
+          DEPLOY_PORT: ${{ vars.PAVP_DEPLOY_PORT }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.PAVP_DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_PRIVATE_KEY: ${{ secrets.PAVP_DEPLOY_PRIVATE_KEY }}
+        shell: bash
+        run: bash scripts/deploy/publish-racknerd.sh

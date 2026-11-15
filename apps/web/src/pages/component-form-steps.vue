@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
@@ -136,7 +136,12 @@ function reset(): void {
     <template #controls>
       <NRadioGroup
         v-model:value="mode"
-        :aria-label="t('formCapabilities.steps.canvas')"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('formCapabilities.steps.canvas'),
+          } satisfies HTMLAttributes
+        "
       >
         <NRadioButton value="edit">
           {{ t('configuredForm.edit') }}
@@ -181,9 +186,13 @@ function reset(): void {
         v-else-if="mode === 'edit'"
         class="min-h-target-enhanced min-w-target-enhanced"
         attr-type="submit"
-        :form="form.formId"
+        v-bind="
+          {
+            form: form.formId,
+            'aria-busy': form.phase.value === 'validating' || form.phase.value === 'submitting',
+          } satisfies ButtonHTMLAttributes
+        "
         type="primary"
-        :aria-busy="form.phase.value === 'validating' || form.phase.value === 'submitting'"
         :disabled="form.phase.value !== 'idle'"
       >
         {{ form.copy.submit() }}
@@ -194,7 +203,11 @@ function reset(): void {
         secondary
         :bordered="false"
         :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-        :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+        v-bind="
+          {
+            title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+          } satisfies ButtonHTMLAttributes
+        "
         @click="reset"
       >
         {{ t('configuredForm.reset') }}
@@ -205,8 +218,12 @@ function reset(): void {
         secondary
         :bordered="false"
         :disabled="!history.canUndo.value"
-        :title="
-          form.hasPendingInput.value ? t('formLifecycle.pending') : t('formShowcase.undoHint')
+        v-bind="
+          {
+            title: form.hasPendingInput.value
+              ? t('formLifecycle.pending')
+              : t('formShowcase.undoHint'),
+          } satisfies ButtonHTMLAttributes
         "
         @click="history.undo"
       >

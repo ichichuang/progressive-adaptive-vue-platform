@@ -88,7 +88,7 @@ const names = tokenNames.filter(
                   }}</span>
                   <NSwitch
                     :value="enabled"
-                    :aria-label="t('workbench.toggle')"
+                    v-bind="{ 'aria-label': t('workbench.toggle') }"
                     @update:value="enabled = $event"
                   />
                 </div>

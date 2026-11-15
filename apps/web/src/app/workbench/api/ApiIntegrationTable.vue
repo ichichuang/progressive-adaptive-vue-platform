@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue'
+import {
+  computed,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  watch,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NModal } from 'naive-ui/es/modal'
 import { NCard } from 'naive-ui/es/card'
@@ -54,6 +62,11 @@ const form = useUiTableQuery(table, {
   submitSucceeded: () => '',
 })
 const filtersExpanded = ref(true)
+const filterButtonAttributes = computed(() =>
+  filtersExpanded.value
+    ? ({ 'aria-expanded': true } satisfies ButtonHTMLAttributes)
+    : ({ 'aria-expanded': false } satisfies ButtonHTMLAttributes),
+)
 watch(table.loading, (loading, wasLoading) => {
   if (wasLoading && !loading && table.error.value === null) filtersExpanded.value = false
 })
@@ -131,7 +144,7 @@ const details = computed(() =>
             text
             type="primary"
             class="min-h-target-enhanced"
-            :aria-expanded="filtersExpanded"
+            v-bind="filterButtonAttributes"
             @click="filtersExpanded = !filtersExpanded"
           >
             {{
@@ -180,15 +193,19 @@ const details = computed(() =>
     <NModal
       :show="open"
       to="#pavp-overlay-root"
-      :aria-label="t('apiShowcase.integration.detail')"
       @update:show="updateOpen"
     >
       <NCard
         class="wb-provider-modal max-h-dvh"
         content-class="flex flex-1 min-h-0 min-w-0 overflow-hidden"
         :title="t('apiShowcase.integration.detail')"
-        role="dialog"
-        aria-modal="true"
+        v-bind="
+          {
+            role: 'dialog',
+            'aria-modal': true,
+            'aria-label': t('apiShowcase.integration.detail'),
+          } satisfies HTMLAttributes
+        "
         closable
         @close="close"
       >

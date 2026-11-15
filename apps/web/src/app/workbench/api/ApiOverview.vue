@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, type AnchorHTMLAttributes } from 'vue'
 import { NCard } from 'naive-ui/es/card'
 import { NTag } from 'naive-ui/es/tag'
 import { UiCopyAction } from '@platform/ui'
@@ -63,8 +63,12 @@ const copy = computed(() =>
         hoverable
         class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
         content-class="flex flex-col items-start gap-content-gap h-full"
-        :href="navigation.resolveHref(section.destination)"
-        @click="activate($event, section.destination)"
+        v-bind="
+          {
+            href: navigation.resolveHref(section.destination),
+            onClick: (event: MouseEvent) => activate(event, section.destination),
+          } satisfies AnchorHTMLAttributes
+        "
       >
         <div class="flex w-full items-center justify-between gap-content-gap">
           <span

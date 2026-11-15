@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onDeactivated, onScopeDispose, ref } from 'vue'
+import { type HTMLAttributes, computed, onDeactivated, onScopeDispose, ref } from 'vue'
+
 import { NButton } from 'naive-ui/es/button'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
 import ConfigurationJsonEditor from '../../configuration/ConfigurationJsonEditor.vue'
@@ -176,7 +177,7 @@ function exportFile(): void {
       v-model:show="jsonOpen"
       width="100%"
       to="#pavp-overlay-root"
-      :aria-label="t('configurationAssist.edit')"
+      v-bind="{ 'aria-label': t('configurationAssist.edit') } satisfies HTMLAttributes"
     >
       <NDrawerContent
         :title="t('configurationAssist.edit')"

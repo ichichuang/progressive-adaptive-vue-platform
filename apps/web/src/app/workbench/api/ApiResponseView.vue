@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useId, type HTMLAttributes } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { NTag } from 'naive-ui/es/tag'
-import { NSelect } from 'naive-ui/es/select'
 import { useConsoleI18n } from '../../../shared/i18n'
 import { apiErrorLabels } from './api-showcase'
 import type { ApiDemoOutcome } from './api-demo-scenarios'
@@ -13,11 +12,7 @@ const props = defineProps<{
 }>()
 const { t } = useConsoleI18n()
 const view = ref('readable')
-const viewOptions = computed(() => [
-  { value: 'readable', label: t('apiShowcase.readable') },
-  { value: 'json', label: t('apiShowcase.json') },
-  { value: 'details', label: t('apiShowcase.details') },
-])
+const viewChoiceId = useId()
 function displayData(value: unknown): unknown {
   if (value instanceof Blob) return { type: value.type, bytes: value.size }
   if (value instanceof ArrayBuffer)
@@ -72,20 +67,15 @@ const requestDetails = computed(() =>
     data-api-response
     :aria-busy="pending"
   >
-    <div class="min-w-0 hidden layout-narrow:block">
-      <NSelect
-        v-model:value="view"
-        :options="viewOptions"
-        :aria-label="t('apiShowcase.result')"
-        to="#pavp-overlay-root"
-      />
-    </div>
-    <div class="layout-narrow:hidden">
+    <div class="min-w-0">
       <NRadioGroup
         v-model:value="view"
         size="small"
-        :name="'api-response-view'"
-        :aria-label="t('apiShowcase.result')"
+        :name="`api-response-view-${viewChoiceId}`"
+        class="flex flex-wrap min-w-0 gap-component-unit"
+        v-bind="
+          { role: 'radiogroup', 'aria-label': t('apiShowcase.result') } satisfies HTMLAttributes
+        "
       >
         <NRadioButton value="readable">
           {{ t('apiShowcase.readable') }}

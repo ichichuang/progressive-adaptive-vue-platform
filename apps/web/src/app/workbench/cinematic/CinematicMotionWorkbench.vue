@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import {
+  type ButtonHTMLAttributes,
+  type AnchorHTMLAttributes,
   computed,
   inject,
   nextTick,
@@ -241,8 +243,12 @@ onScopeDispose(() => {
               class="wb-cinematic-choice rounded-panel shrink-0"
               :type="selected === preset ? 'primary' : 'default'"
               :secondary="selected !== preset"
-              :aria-pressed="selected === preset"
-              @focus="revealChoice"
+              v-bind="
+                {
+                  'aria-pressed': selected === preset,
+                  onFocus: revealChoice,
+                } satisfies ButtonHTMLAttributes
+              "
               @click="choose(preset)"
             >
               <span class="grid justify-items-start gap-component-unit">
@@ -267,7 +273,7 @@ onScopeDispose(() => {
           :key="preset"
           :type="selected === preset ? 'primary' : 'default'"
           :secondary="selected !== preset"
-          :aria-pressed="selected === preset"
+          v-bind="{ 'aria-pressed': selected === preset } satisfies ButtonHTMLAttributes"
           @click="choose(preset)"
         >
           {{ titleFor(preset) }}
@@ -287,7 +293,7 @@ onScopeDispose(() => {
             v-if="category === 'overview'"
             text
             tag="a"
-            :href="navigation.resolveHref(routeExample)"
+            v-bind="{ href: navigation.resolveHref(routeExample) } satisfies AnchorHTMLAttributes"
             @click="activateLink($event, routeExample)"
           >
             {{ t('cinematic.routeExample') }}

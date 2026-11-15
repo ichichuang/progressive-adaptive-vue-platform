@@ -3,6 +3,10 @@ import { NForm } from 'naive-ui/es/form'
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
 import {
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type FormHTMLAttributes,
+  type HTMLAttributes,
   computed,
   inject,
   nextTick,
@@ -193,17 +197,24 @@ onBeforeUnmount(cancelFeedback)
 
 <template>
   <NForm
-    v-bind="formNativeAttributes(attrs)"
-    :id="form.formId"
+    v-bind="
+      {
+        ...formNativeAttributes(attrs),
+        novalidate: true,
+        id: form.formId,
+        onReset: (event: Event) => {
+          event.preventDefault()
+          if (mode === 'edit') form.reset()
+        },
+      } satisfies FormHTMLAttributes
+    "
     ref="formElement"
     class="pavp-form"
     :data-columns="columns"
-    novalidate
     label-placement="top"
     :show-require-mark="false"
     :theme-overrides="theme"
     @submit.prevent="mode === 'edit' && form.submit()"
-    @reset.prevent="mode === 'edit' && form.reset()"
   >
     <div>
       <slot />
@@ -225,8 +236,18 @@ onBeforeUnmount(cancelFeedback)
           to="#pavp-overlay-root"
           class="pavp-form-feedback-popover"
           scrollable
+          v-bind="
+            {
+              onKeydown: (event: KeyboardEvent) => {
+                if (event.key === 'Escape') {
+                  event.stopPropagation()
+                  event.preventDefault()
+                  closeSummary()
+                }
+              },
+            } satisfies HTMLAttributes
+          "
           @update:show="showSummary"
-          @keydown.esc.stop.prevent="closeSummary"
         >
           <template #trigger>
             <NButton
@@ -235,12 +256,16 @@ onBeforeUnmount(cancelFeedback)
               text
               class="pavp-form__summary leading-body p-0 border-0 bg-transparent flex h-full w-full items-center justify-center gap-component-unit text-caption"
               :class="feedbackLabel ? '' : 'invisible'"
-              :tabindex="feedbackLabel ? 0 : -1"
-              :aria-hidden="!feedbackLabel"
-              :aria-label="feedbackLabel"
-              :aria-expanded="summaryExpanded"
-              :aria-controls="`${form.formId}-summary`"
-              aria-haspopup="dialog"
+              v-bind="
+                {
+                  tabindex: feedbackLabel ? 0 : -1,
+                  'aria-hidden': !feedbackLabel,
+                  'aria-label': feedbackLabel,
+                  'aria-expanded': summaryExpanded === true,
+                  'aria-controls': `${form.formId}-summary`,
+                  'aria-haspopup': 'dialog',
+                } satisfies ButtonHTMLAttributes
+              "
             >
               <span
                 v-if="form.issues.value.length < 100"
@@ -278,7 +303,11 @@ onBeforeUnmount(cancelFeedback)
                   v-if="canNavigateIssue(issue.field)"
                   tag="a"
                   text
-                  :href="`#${presentation.nodeControlId(issue.field)}`"
+                  v-bind="
+                    {
+                      href: `#${presentation.nodeControlId(issue.field)}`,
+                    } satisfies AnchorHTMLAttributes
+                  "
                   class="pavp-form__issue-link text-inherit underline"
                   @click.prevent="focusIssue(issue.field)"
                 >

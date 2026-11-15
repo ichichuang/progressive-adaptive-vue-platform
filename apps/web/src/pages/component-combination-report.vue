@@ -8,6 +8,7 @@ import {
   onScopeDispose,
   ref,
   watch,
+  type HTMLAttributes,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
@@ -268,7 +269,9 @@ onScopeDispose(() => {
       >
         <NRadioGroup
           v-model:value="scope"
-          :aria-label="t('reportExample.scope')"
+          v-bind="
+            { role: 'radiogroup', 'aria-label': t('reportExample.scope') } satisfies HTMLAttributes
+          "
           :disabled="busy"
         >
           <NRadioButton value="page">

@@ -25,14 +25,15 @@ import {
   type FunctionalComponent,
   type Slot,
   type HTMLAttributes,
+  type ButtonHTMLAttributes,
   type VNodeChild,
 } from 'vue'
 
 import ThemePickerSurface from '../adapters/motion/ThemePickerSurface.vue'
 import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'
-import { NButton } from 'naive-ui/es/button'
+import { NButton as NaiveButton } from 'naive-ui/es/button'
 import { NCollapse, NCollapseItem } from 'naive-ui/es/collapse'
-import { NIcon } from 'naive-ui/es/icon'
+import { NIcon as NaiveIcon } from 'naive-ui/es/icon'
 import { NImage } from 'naive-ui/es/image'
 import { NLayout, NLayoutSider } from 'naive-ui/es/layout'
 import type { GlobalThemeOverrides } from 'naive-ui'
@@ -58,6 +59,26 @@ import type {
   UiAdminShellCopy,
   UiShellComposition,
 } from './contracts'
+
+// Naive forwards these attributes/events to its native button/icon roots, but omits them
+// from public props. Keep the vendor contract and add only the attributes consumed here.
+const NButton = NaiveButton as typeof NaiveButton &
+  (new () => {
+    $props: Pick<
+      ButtonHTMLAttributes,
+      | 'aria-label'
+      | 'aria-pressed'
+      | 'aria-expanded'
+      | 'aria-controls'
+      | 'aria-haspopup'
+      | 'aria-current'
+      | 'onDblclick'
+      | 'onKeydown'
+      | 'onPointerdown'
+    > & { 'aria-description'?: string | undefined }
+  })
+const NIcon = NaiveIcon as typeof NaiveIcon &
+  (new () => { $props: Pick<HTMLAttributes, 'aria-hidden'> })
 
 defineOptions({ name: 'UiAdminShell' })
 

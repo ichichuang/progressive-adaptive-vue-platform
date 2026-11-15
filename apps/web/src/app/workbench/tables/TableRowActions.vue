@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, onDeactivated, ref, watch } from 'vue'
+import { type ButtonHTMLAttributes, computed, nextTick, onDeactivated, ref, watch } from 'vue'
+
 import { NButton } from 'naive-ui/es/button'
 import { NDropdown } from 'naive-ui/es/dropdown'
 import { NPopconfirm } from 'naive-ui/es/popconfirm'
@@ -58,8 +59,12 @@ onDeactivated(dismiss)
           type="primary"
           class="min-h-target-enhanced min-w-target-enhanced"
           :disabled="disabled"
-          :aria-expanded="menuOpen"
-          aria-haspopup="menu"
+          v-bind="
+            {
+              'aria-expanded': menuOpen === true,
+              'aria-haspopup': 'menu',
+            } satisfies ButtonHTMLAttributes
+          "
         >
           {{ t('tableShowcase.actions') }}
         </NButton>

@@ -1,5 +1,10 @@
 <script setup lang="ts" generic="I">
-import { computed, onBeforeUnmount, type ComponentPublicInstance } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  onBeforeUnmount,
+  type ComponentPublicInstance,
+} from 'vue'
 import { formPresentation } from '../composables/form-presentation'
 import { NButton } from 'naive-ui/es/button'
 import UiFormField from './UiFormField.vue'
@@ -190,7 +195,11 @@ const nodes = computed(() =>
                   class="min-h-target-enhanced min-w-target-enhanced"
                   size="small"
                   quaternary
-                  :aria-label="`${form.copy.insertItem()} ${form.text(node.config.label)} ${index + 1}`"
+                  v-bind="
+                    {
+                      'aria-label': `${form.copy.insertItem()} ${form.text(node.config.label)} ${index + 1}`,
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="node.state.disabled || node.atMaximum"
                   @click="form.insertItem(node.path, index)"
                 >
@@ -200,7 +209,11 @@ const nodes = computed(() =>
                   class="min-h-target-enhanced min-w-target-enhanced"
                   size="small"
                   quaternary
-                  :aria-label="`${form.copy.duplicateItem()} ${form.text(node.config.label)} ${index + 1}`"
+                  v-bind="
+                    {
+                      'aria-label': `${form.copy.duplicateItem()} ${form.text(node.config.label)} ${index + 1}`,
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="node.state.disabled || node.atMaximum || rowPending(node.path, index)"
                   @click="form.duplicateItem(node.path, index)"
                 >
@@ -210,7 +223,11 @@ const nodes = computed(() =>
                   class="min-h-target-enhanced min-w-target-enhanced"
                   size="small"
                   quaternary
-                  :aria-label="`${form.copy.moveUp()} ${form.text(node.config.label)} ${index + 1}`"
+                  v-bind="
+                    {
+                      'aria-label': `${form.copy.moveUp()} ${form.text(node.config.label)} ${index + 1}`,
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="node.state.disabled || index === 0"
                   @click="form.moveItem(node.path, index, index - 1)"
                 >
@@ -220,7 +237,11 @@ const nodes = computed(() =>
                   class="min-h-target-enhanced min-w-target-enhanced"
                   size="small"
                   quaternary
-                  :aria-label="`${form.copy.moveDown()} ${form.text(node.config.label)} ${index + 1}`"
+                  v-bind="
+                    {
+                      'aria-label': `${form.copy.moveDown()} ${form.text(node.config.label)} ${index + 1}`,
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="node.state.disabled || index === form.rowKeys(node.path).length - 1"
                   @click="form.moveItem(node.path, index, index + 1)"
                 >
@@ -231,8 +252,12 @@ const nodes = computed(() =>
                   size="small"
                   quaternary
                   :disabled="node.state.disabled || node.atMinimum || rowPending(node.path, index)"
-                  :title="rowPending(node.path, index) ? form.copy.inputIncomplete() : undefined"
-                  :aria-label="`${form.copy.removeItem()} ${form.text(node.config.label)} ${index + 1}`"
+                  v-bind="
+                    {
+                      title: rowPending(node.path, index) ? form.copy.inputIncomplete() : undefined,
+                      'aria-label': `${form.copy.removeItem()} ${form.text(node.config.label)} ${index + 1}`,
+                    } satisfies ButtonHTMLAttributes
+                  "
                   @click="removeRow(node.path, index)"
                 >
                   {{ form.copy.removeItem() }}

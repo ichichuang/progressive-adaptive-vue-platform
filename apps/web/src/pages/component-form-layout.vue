@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { type ButtonHTMLAttributes, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -84,7 +84,7 @@ const history = useFormExampleUndo(() => form)
         secondary
         :bordered="false"
         :type="columns === count ? 'primary' : 'default'"
-        :aria-pressed="columns === count"
+        v-bind="{ 'aria-pressed': columns === count } satisfies ButtonHTMLAttributes"
         @click="columns = count"
       >
         {{

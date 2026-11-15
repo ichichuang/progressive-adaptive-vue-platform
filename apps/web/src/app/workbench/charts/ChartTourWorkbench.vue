@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import {
   UiCopyAction,
@@ -167,7 +175,7 @@ onScopeDispose(() => unregister?.())
             :key="mode"
             :type="kind === mode ? 'primary' : 'default'"
             secondary
-            :aria-pressed="kind === mode"
+            v-bind="{ 'aria-pressed': kind === mode } satisfies ButtonHTMLAttributes"
             @click="kind = mode"
           >
             {{ t(modeKeys[mode]) }}

@@ -4,6 +4,7 @@ import {
 } from './configuration-inspection'
 import { cloneDraft, freezeDraftValue } from '../composables/form-draft-values'
 import { parseUiFormSchema } from './form-schema'
+import { parseInlineFormScope } from './table-inline-form'
 import { parseTableRequest, tablePathParts } from './table-request'
 import { parseTableColumnGroups } from './table-column-groups'
 import { parseTableSummary } from './table-summary'
@@ -451,6 +452,7 @@ function parseConfiguration(
       const fields = inline['fields']
       if (!Array.isArray(fields) || fields.length === 0 || new Set(fields).size !== fields.length)
         throw error('Inline editing requires unique configured fields.')
+      const names: string[] = []
       for (const name of fields) {
         const field = form.fields.find((candidate) => candidate.name === name)
         if (
@@ -461,8 +463,14 @@ function parseConfiguration(
           field.kind === 'repeat'
         )
           throw error('Inline fields must identify scalar top-level form fields and table columns.')
+        names.push(name)
       }
       if (editor['update'] === undefined) throw error('Inline editing requires an update request.')
+      if (inline['mode'] === 'cell') {
+        for (const name of names) parseInlineFormScope(form, [name])
+      } else {
+        parseInlineFormScope(form, names)
+      }
     }
     if (editor['presentation'] !== undefined)
       choice(editor, 'presentation', ['modal', 'drawer', 'page'])

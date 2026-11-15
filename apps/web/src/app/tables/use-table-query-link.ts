@@ -28,23 +28,27 @@ export function useTableQueryLink(options: {
     if (writing) return
     writing = true
     try {
-      while (queued && active && !disposed) {
+      while (queued && live()) {
         const next = queued
         queued = undefined
         const ticket = revision
         inFlight = signature(next.query)
-        const success = await options.navigate(next.query, next.replace)
-        inFlight = undefined
-        if (ticket !== revision) break
-        error.value = !success
-        if (!success) {
-          queued = undefined
+        try {
+          const success = await options.navigate(next.query, next.replace)
+          if (ticket !== revision || !live()) break
+          error.value = !success
+          if (!success) {
+            queued = undefined
+            break
+          }
+        } catch {
+          if (ticket === revision && live()) {
+            error.value = true
+            queued = undefined
+          }
           break
         }
       }
-    } catch {
-      error.value = true
-      queued = undefined
     } finally {
       writing = false
       inFlight = undefined
@@ -53,33 +57,42 @@ export function useTableQueryLink(options: {
   }
   async function restore(initial = false): Promise<void> {
     if (!active || disposed) return
-    const incoming = options.codec.decode(options.routeQuery())
-    const key = signature(options.codec.encode(incoming))
-    if (!initial && key === inFlight) return // Only our exact navigation echo is ignored.
-    queued = undefined
-    const ticket = ++revision
-    if (!initial && key === signature(current())) {
-      restoring = undefined
-      return
-    }
-    restoring = incoming
-    applying = true
-    let completion: Promise<void>
+    let ticket = revision
     try {
-      completion = options.table.applyQuery({
-        ...incoming,
-        filters: { ...options.table.query.value.filters, ...incoming.filters },
-      })
-    } finally {
-      applying = false
+      const incoming = options.codec.decode(options.routeQuery(), options.table.query.value.filters)
+      const key = signature(options.codec.encode(incoming))
+      if (!initial && key === inFlight) return // Only our exact navigation echo is ignored.
+      queued = undefined
+      ticket = ++revision
+      if (!initial && key === signature(current())) {
+        restoring = undefined
+        error.value = false
+        return
+      }
+      restoring = incoming
+      applying = true
+      let completion: Promise<void>
+      try {
+        completion = options.table.applyQuery(incoming)
+      } finally {
+        applying = false
+      }
+      await completion
+      if (ticket !== revision || !live() || restoring !== incoming) return
+      restoring = undefined
+      // A valid but out-of-range page is normalized without truncating Forward history.
+      const normalized = current()
+      error.value = false
+      if (signature(normalized) !== signature(route())) void write(normalized, true)
+    } catch {
+      if (ticket !== revision || !live()) return
+      ++revision
+      restoring = undefined
+      queued = undefined
+      error.value = true
     }
-    await completion
-    if (ticket !== revision || !live() || restoring !== incoming) return
-    restoring = undefined
-    // A valid but out-of-range page is normalized without truncating Forward history.
-    const normalized = current()
-    if (signature(normalized) !== signature(route())) void write(normalized, true)
   }
+
   watch(
     options.routeQuery,
     () => {
@@ -93,7 +106,9 @@ export function useTableQueryLink(options: {
       if (!active || disposed || applying) return
       try {
         const next = current()
-        if (signature(next) === signature(route())) return
+        // A pending navigation can still move away from this URL. Queue the latest
+        // intent even when a reset currently matches the route.
+        if (!writing && signature(next) === signature(route())) return
         const correction = options.table.queryChangeReason.value === 'page-correction'
         if (correction && restoring !== undefined) return
         restoring = undefined

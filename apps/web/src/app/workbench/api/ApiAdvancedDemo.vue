@@ -7,11 +7,12 @@ import {
   onScopeDispose,
   ref,
   shallowRef,
+  useId,
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
-import { NSelect } from 'naive-ui/es/select'
+import { NRadioGroup } from 'naive-ui/es/radio'
 import { NTag } from 'naive-ui/es/tag'
 import { UiScrollArea, type UiScrollController } from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
@@ -31,6 +32,7 @@ import type { ApiResult } from '../../../shared/api'
 
 const capability = ref<'hooks' | 'batch' | 'stream' | 'upload'>('hooks')
 const { t } = useConsoleI18n()
+const choiceId = useId()
 const active = ref(true)
 const pending = ref(false)
 const sampleTitle = ref('  PAVP sample  ')
@@ -46,26 +48,42 @@ const progress = shallowRef<AdvancedBatchProgress>({ calls: 0, finished: 0, inFl
 const rows = shallowRef<readonly AdvancedStreamRow[]>([])
 const interrupted = ref(false)
 const unexpected = ref(false)
-const conversionOptions = computed(() => [
-  { value: 'normalize', label: t('apiShowcase.advanced.normalize') },
-  { value: 'raw', label: t('apiShowcase.advanced.raw') },
-])
+const conversionOptions = computed(
+  () =>
+    [
+      { value: 'normalize', label: t('apiShowcase.advanced.normalize') },
+      { value: 'raw', label: t('apiShowcase.advanced.raw') },
+    ] satisfies { value: typeof conversion.value; label: string }[],
+)
 const streamOptions = [
   { value: 'sse', label: 'SSE' },
   { value: 'ndjson', label: 'NDJSON' },
-]
-const scenarioOptions = computed(() => [
-  { value: 'valid', label: t('apiShowcase.advanced.validStream') },
-  { value: 'malformed', label: t('apiShowcase.advanced.malformedStream') },
-  { value: 'schema', label: t('apiShowcase.advanced.schemaStream') },
-])
-const capabilityOptions = computed(() => [
-  { value: 'hooks', label: t('apiShowcase.advanced.hooks') },
-  { value: 'batch', label: t('apiShowcase.advanced.batch') },
-  { value: 'stream', label: t('apiShowcase.advanced.stream') },
-  { value: 'upload', label: t('apiShowcase.upload.title') },
-])
+] satisfies { value: AdvancedStreamMode; label: string }[]
+const scenarioOptions = computed(
+  () =>
+    [
+      { value: 'valid', label: t('apiShowcase.advanced.validStream') },
+      { value: 'malformed', label: t('apiShowcase.advanced.malformedStream') },
+      { value: 'schema', label: t('apiShowcase.advanced.schemaStream') },
+    ] satisfies { value: typeof streamScenario.value; label: string }[],
+)
+const capabilityOptions = computed(
+  () =>
+    [
+      { value: 'hooks', label: t('apiShowcase.advanced.hooks') },
+      { value: 'batch', label: t('apiShowcase.advanced.batch') },
+      { value: 'stream', label: t('apiShowcase.advanced.stream') },
+      { value: 'upload', label: t('apiShowcase.upload.title') },
+    ] satisfies { value: typeof capability.value; label: string }[],
+)
 const concurrencyOptions = [1, 2, 4].map((value) => ({ value, label: String(value) }))
+function choose<T extends string | number>(
+  options: readonly { readonly value: T }[],
+  value: string | number | boolean,
+  current: T,
+): T {
+  return options.find((option) => option.value === value)?.value ?? current
+}
 const hint = computed(() =>
   capability.value === 'hooks'
     ? t('apiShowcase.advanced.hooksHint')
@@ -193,11 +211,13 @@ onScopeDispose(() => {
     :data-api-advanced-demo="capability"
   >
     <div class="shrink-0 min-w-0">
-      <NSelect
-        v-model:value="capability"
+      <NRadioGroup
+        v-bind="{ role: 'radiogroup', 'aria-label': t('apiShowcase.advanced.mode') }"
+        :name="`capability-${choiceId}`"
+        :value="capability"
         :options="capabilityOptions"
-        :aria-label="t('apiShowcase.advanced.mode')"
-        to="#pavp-overlay-root"
+        class="flex flex-wrap min-w-0 gap-content-gap"
+        @update:value="capability = choose(capabilityOptions, $event, capability)"
       />
     </div>
     <ApiUploadDemo
@@ -232,7 +252,7 @@ onScopeDispose(() => {
                 v-model:value="sampleTitle"
                 :disabled="pending"
                 :maxlength="64"
-                :aria-label="t('apiShowcase.advanced.sampleTitle')"
+                :input-props="{ 'aria-label': t('apiShowcase.advanced.sampleTitle') }"
               />
             </div>
             <div class="grid min-w-0 gap-component-unit text-caption text-text-secondary">
@@ -241,17 +261,22 @@ onScopeDispose(() => {
                 v-model:value="sampleHeader"
                 :disabled="pending"
                 :maxlength="64"
-                :aria-label="t('apiShowcase.advanced.safeHeader')"
+                :input-props="{ 'aria-label': t('apiShowcase.advanced.safeHeader') }"
               />
             </div>
             <div class="grid min-w-0 gap-component-unit text-caption text-text-secondary">
               {{ t('apiShowcase.advanced.responseConversion') }}
-              <NSelect
-                v-model:value="conversion"
+              <NRadioGroup
+                v-bind="{
+                  role: 'radiogroup',
+                  'aria-label': t('apiShowcase.advanced.responseConversion'),
+                }"
+                :name="`conversion-${choiceId}`"
+                :value="conversion"
                 :options="conversionOptions"
+                class="flex flex-wrap min-w-0 gap-content-gap"
                 :disabled="pending"
-                :aria-label="t('apiShowcase.advanced.responseConversion')"
-                to="#pavp-overlay-root"
+                @update:value="conversion = choose(conversionOptions, $event, conversion)"
               />
             </div>
           </div>
@@ -260,12 +285,14 @@ onScopeDispose(() => {
             class="grid gap-component-unit text-caption text-text-secondary"
           >
             {{ t('apiShowcase.advanced.concurrency') }}
-            <NSelect
-              v-model:value="concurrency"
+            <NRadioGroup
+              v-bind="{ role: 'radiogroup', 'aria-label': t('apiShowcase.advanced.concurrency') }"
+              :name="`concurrency-${choiceId}`"
+              :value="concurrency"
               :options="concurrencyOptions"
+              class="flex flex-wrap min-w-0 gap-content-gap"
               :disabled="pending"
-              :aria-label="t('apiShowcase.advanced.concurrency')"
-              to="#pavp-overlay-root"
+              @update:value="concurrency = choose(concurrencyOptions, $event, concurrency)"
             />
           </div>
           <div
@@ -274,22 +301,26 @@ onScopeDispose(() => {
           >
             <div class="grid min-w-0 gap-component-unit text-caption text-text-secondary">
               {{ t('apiShowcase.advanced.protocol') }}
-              <NSelect
-                v-model:value="streamMode"
+              <NRadioGroup
+                v-bind="{ role: 'radiogroup', 'aria-label': t('apiShowcase.advanced.protocol') }"
+                :name="`protocol-${choiceId}`"
+                :value="streamMode"
                 :options="streamOptions"
+                class="flex flex-wrap min-w-0 gap-content-gap"
                 :disabled="pending"
-                :aria-label="t('apiShowcase.advanced.protocol')"
-                to="#pavp-overlay-root"
+                @update:value="streamMode = choose(streamOptions, $event, streamMode)"
               />
             </div>
             <div class="grid min-w-0 gap-component-unit text-caption text-text-secondary">
               {{ t('apiShowcase.advanced.scenario') }}
-              <NSelect
-                v-model:value="streamScenario"
+              <NRadioGroup
+                v-bind="{ role: 'radiogroup', 'aria-label': t('apiShowcase.advanced.scenario') }"
+                :name="`scenario-${choiceId}`"
+                :value="streamScenario"
                 :options="scenarioOptions"
+                class="flex flex-wrap min-w-0 gap-content-gap"
                 :disabled="pending"
-                :aria-label="t('apiShowcase.advanced.scenario')"
-                to="#pavp-overlay-root"
+                @update:value="streamScenario = choose(scenarioOptions, $event, streamScenario)"
               />
             </div>
           </div>

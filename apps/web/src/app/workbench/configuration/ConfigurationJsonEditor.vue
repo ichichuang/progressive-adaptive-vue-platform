@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type HTMLAttributes, computed, ref } from 'vue'
 import { NInput } from 'naive-ui/es/input'
 import { NSelect } from 'naive-ui/es/select'
 import { NButton } from 'naive-ui/es/button'
@@ -117,7 +117,7 @@ function update(choice?: string): void {
             :options="paths"
             filterable
             :placeholder="t('configurationAssist.path')"
-            :aria-label="t('configurationAssist.path')"
+            :input-props="{ 'aria-label': t('configurationAssist.path') }"
             @update:value="selectPath"
           />
           <template v-if="hint?.properties">
@@ -126,7 +126,7 @@ function update(choice?: string): void {
               :options="properties"
               filterable
               :placeholder="t('configurationAssist.property')"
-              :aria-label="t('configurationAssist.property')"
+              :input-props="{ 'aria-label': t('configurationAssist.property') }"
             />
             <NButton
               :disabled="!property"
@@ -139,7 +139,7 @@ function update(choice?: string): void {
             v-if="hint?.choices"
             :value="currentChoice"
             :options="choices"
-            :aria-label="t('configurationAssist.value')"
+            v-bind="{ 'aria-label': t('configurationAssist.value') } satisfies HTMLAttributes"
             @update:value="update"
           />
         </div>

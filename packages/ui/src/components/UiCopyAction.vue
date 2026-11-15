@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  watch,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
@@ -96,7 +106,7 @@ async function copy(): Promise<void> {
     content-class="flex min-w-0"
     :data-copy-state="state"
     :data-copy-motion="appearance.motion"
-    @click="copy"
+    v-bind="{ onClick: copy } satisfies HTMLAttributes"
   >
     <NButton
       attr-type="button"
@@ -104,8 +114,12 @@ async function copy(): Promise<void> {
       class="pavp-copy-card-button font-inherit p-0 text-start border-0 bg-inherit flex-1 min-w-0 text-text-primary"
       :class="{ 'cursor-pointer': !disabled }"
       :disabled="disabled"
-      :aria-label="`${copyLabel} · ${label}`"
-      :aria-busy="state === 'pending'"
+      v-bind="
+        {
+          'aria-label': `${copyLabel} · ${label}`,
+          'aria-busy': state === 'pending',
+        } satisfies ButtonHTMLAttributes
+      "
       @click.stop="copy"
     >
       <span class="pavp-copy-card-content grid min-w-0 gap-content-gap">
@@ -161,8 +175,12 @@ async function copy(): Promise<void> {
     :disabled="disabled"
     :data-copy-state="state"
     :data-copy-motion="appearance.motion"
-    :aria-label="`${copyLabel} · ${label}`"
-    :aria-busy="state === 'pending'"
+    v-bind="
+      {
+        'aria-label': `${copyLabel} · ${label}`,
+        'aria-busy': state === 'pending',
+      } satisfies ButtonHTMLAttributes
+    "
     @click="copy"
   >
     <span class="inline-flex min-w-0 items-center gap-content-gap">

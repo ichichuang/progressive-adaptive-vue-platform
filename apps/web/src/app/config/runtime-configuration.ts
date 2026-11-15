@@ -47,6 +47,8 @@ export interface RuntimeConfigurationLoadHandle {
   dispose(): void
 }
 
+const runtimeConfigurationLoadTimeoutMs = 10_000
+
 const runtimeConfigurationPath = '/runtime-configuration.json'
 const criticalThemePath = '/generated/critical-theme.css'
 const appearanceInitializerPath = '/generated/appearance-init.js'
@@ -355,7 +357,33 @@ export function loadRuntimeConfiguration(
       return false
     }
   }
-  const result = executeRuntimeConfigurationLoad(input, loadAbortController.signal).finally(() => {
+  // Bound the whole attempt, including a stalled response body. Abort alone is not
+  // sufficient: a fetch implementation may ignore it or complete after disposal.
+  let timeout: ReturnType<typeof globalThis.setTimeout> | undefined
+  let cancelPendingLoad: (() => void) | undefined
+  const interruption = new Promise<RuntimeConfigurationLoadResult>((resolve) => {
+    cancelPendingLoad = () => {
+      resolve(cancelled())
+    }
+    if (loadAbortController.signal.aborted) {
+      cancelPendingLoad()
+      return
+    }
+    loadAbortController.signal.addEventListener('abort', cancelPendingLoad, { once: true })
+    timeout = globalThis.setTimeout(() => {
+      // Settle failure before aborting transport, otherwise abort would win as cancellation.
+      resolve(applyCancellationPrecedence(input.signal, failure('configuration-network-failure')))
+      abortLoad()
+    }, runtimeConfigurationLoadTimeoutMs)
+  })
+  const result = Promise.race([
+    interruption,
+    executeRuntimeConfigurationLoad(input, loadAbortController.signal),
+  ]).finally(() => {
+    globalThis.clearTimeout(timeout)
+    if (cancelPendingLoad !== undefined) {
+      loadAbortController.signal.removeEventListener('abort', cancelPendingLoad)
+    }
     removeOwnerAbortListener()
   })
 

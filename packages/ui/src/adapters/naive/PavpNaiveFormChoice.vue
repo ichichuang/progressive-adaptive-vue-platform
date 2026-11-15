@@ -1,7 +1,17 @@
 <script setup lang="ts" generic="I">
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
-import { computed, nextTick, onMounted, onScopeDispose, ref, useTemplateRef, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  computed,
+  nextTick,
+  onMounted,
+  onScopeDispose,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
 
 defineOptions({ name: 'PavpNaiveFormChoice' })
@@ -262,8 +272,18 @@ function retry(): void {
       to="#pavp-overlay-root"
       class="pavp-form-feedback-popover"
       scrollable
+      v-bind="
+        {
+          onKeydown: (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+              event.stopPropagation()
+              event.preventDefault()
+              closeDetails()
+            }
+          },
+        } satisfies HTMLAttributes
+      "
       @clickoutside="expanded = false"
-      @keydown.esc.stop.prevent="closeDetails"
     >
       <template #trigger>
         <NButton
@@ -274,12 +294,16 @@ function retry(): void {
             failed ? 'text-text-primary bg-surface-panel' : 'text-text-secondary bg-transparent'
           "
           :data-failed="failed"
-          :aria-label="`${label}: ${description}${directRetry ? ` · ${form.copy.retryOptions()}` : ''}`"
-          :title="`${label}: ${description}`"
-          :aria-expanded="expanded"
-          :aria-controls="`${binding.controlId}-option-details`"
-          :aria-haspopup="directRetry ? undefined : 'dialog'"
-          :aria-disabled="directRetry && retryDisabled"
+          v-bind="
+            {
+              'aria-label': `${label}: ${description}${directRetry ? ` · ${form.copy.retryOptions()}` : ''}`,
+              title: `${label}: ${description}`,
+              'aria-expanded': expanded === true,
+              'aria-controls': `${binding.controlId}-option-details`,
+              'aria-haspopup': directRetry ? undefined : 'dialog',
+              'aria-disabled': directRetry === true && retryDisabled === true,
+            } satisfies ButtonHTMLAttributes
+          "
           @click="directRetry ? retry() : showDetails(!expanded)"
         >
           <span
@@ -338,9 +362,13 @@ function retry(): void {
         <NButton
           v-if="canRemoveUnknown"
           class="min-h-target-enhanced min-w-target-enhanced"
-          :aria-label="`${label}: ${form.copy.removeItem()} · ${unknownValues.join(', ')}`"
+          v-bind="
+            {
+              'aria-label': `${label}: ${form.copy.removeItem()} · ${unknownValues.join(', ')}`,
+              title: blockedRemovalTitle,
+            } satisfies ButtonHTMLAttributes
+          "
           :disabled="removalBlocked"
-          :title="blockedRemovalTitle"
           @click="removeUnknown"
         >
           {{ form.copy.removeItem() }}

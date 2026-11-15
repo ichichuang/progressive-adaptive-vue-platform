@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, ref, useId } from 'vue'
+import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref, useId } from 'vue'
 import { UiCopyAction } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NCollapse, NCollapseItem } from 'naive-ui/es/collapse'
@@ -141,8 +141,12 @@ onDeactivated(() => {
               text
               type="primary"
               class="min-h-target-enhanced"
-              :aria-expanded="!collapsed"
-              :aria-controls="modesId"
+              v-bind="
+                {
+                  'aria-expanded': !collapsed,
+                  'aria-controls': modesId,
+                } satisfies ButtonHTMLAttributes
+              "
             >
               {{ t('showcase.stylesAndCopy') }}
             </NButton>

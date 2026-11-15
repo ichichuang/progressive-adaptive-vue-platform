@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { computed, nextTick, onDeactivated, onMounted, onScopeDispose, ref, watch } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  nextTick,
+  onDeactivated,
+  onMounted,
+  onScopeDispose,
+  ref,
+  watch,
+} from 'vue'
 import { NPopover } from 'naive-ui/es/popover'
 import { NButton } from 'naive-ui/es/button'
-import { UiCopyAction, useUiMotion, type UiMotionHandle } from '@platform/ui'
+import { useUiMotion, type UiMotionHandle } from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
 import { useDashboardActionTheme } from './use-dashboard-action-theme'
 const props = defineProps<{
@@ -14,7 +23,6 @@ const props = defineProps<{
   readonly disabled: boolean
   readonly caller: HTMLElement | null
   readonly pointer: boolean
-  readonly copyValue: string
 }>()
 const emit = defineEmits<{
   close: []
@@ -184,7 +192,11 @@ onScopeDispose(() => {
     :y="y"
     :animated="false"
     :show-arrow="false"
-    @contextmenu.capture.prevent
+    v-bind="
+      { onContextmenuCapture: (event: MouseEvent) => event.preventDefault() } satisfies {
+        onContextmenuCapture: (event: MouseEvent) => void
+      }
+    "
   >
     <div
       ref="menu"
@@ -210,8 +222,7 @@ onScopeDispose(() => {
         quaternary
         :theme-overrides="action.id === 'remove' ? menuIconTheme : menuActionTheme"
         size="small"
-        role="menuitem"
-        tabindex="-1"
+        v-bind="{ role: 'menuitem', tabindex: -1 } satisfies ButtonHTMLAttributes"
         :disabled="action.disabled"
         :data-dashboard-danger="action.id === 'remove' ? 'true' : undefined"
         @click="select(action.id)"
@@ -235,24 +246,6 @@ onScopeDispose(() => {
           v-text="t(action.label)"
         />
       </NButton>
-      <UiCopyAction
-        v-if="cardLabel === undefined"
-        class="wb-dashboard-context-action"
-        type="primary"
-        quaternary
-        :theme-overrides="actionTheme"
-        size="small"
-        role="menuitem"
-        tabindex="-1"
-        :value="copyValue"
-        :label="t('dashboardBoard.copy')"
-        :copy-label="t('formShowcase.copyAI')"
-        :success-label="t('workbench.copied')"
-        :failure-label="t('workbench.copyFailed')"
-        :disabled="disabled"
-        variant="tertiary"
-        :tertiary="false"
-      />
     </div>
   </NPopover>
 </template>

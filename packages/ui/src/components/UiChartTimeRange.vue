@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref, useId } from 'vue'
 import {
+  chartTimeRangeExtent,
   normalizeUiChartTimeRange,
   panUiChartTimeRange,
   zoomUiChartTimeRange,
@@ -47,12 +48,12 @@ const position = (value: number): number =>
 const startX = computed(() => position(range.value[0]))
 const endX = computed(() => position(range.value[1]))
 const trend = computed(() => {
-  const values = props.overview.map((value) => (Number.isFinite(value) ? value : 0))
+  const values = props.overview
   if (values.length === 0) return ''
-  const minimum = Math.min(0, ...values)
-  const maximum = Math.max(1, ...values)
+  const [minimum, maximum] = chartTimeRangeExtent(values)
   return values
-    .map((value, index) => {
+    .map((sample, index) => {
+      const value = Number.isFinite(sample) ? sample : 0
       const x = inset.value + (index / Math.max(1, values.length - 1)) * trackWidth.value
       const y = bottom.value - ((value - minimum) / (maximum - minimum)) * trackHeight.value * 0.8
       return `${index === 0 ? 'M' : 'L'}${String(x)},${String(y)}`

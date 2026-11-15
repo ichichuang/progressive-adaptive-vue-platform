@@ -185,7 +185,7 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </NEllipsis>
             <NHighlight
               :text="t('showcase.highlightText')"
-              :pattern="t('showcase.highlightMatch')"
+              :patterns="[t('showcase.highlightMatch')]"
             />
           </ComponentSpecimen>
           <ComponentSpecimen name="NThing">

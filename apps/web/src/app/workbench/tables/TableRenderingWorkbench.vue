@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { type HTMLAttributes, ref } from 'vue'
+
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import TableDataCapabilities from './TableDataCapabilities.vue'
 import TableInlineEditingExample from './TableInlineEditingExample.vue'
@@ -25,7 +26,7 @@ function updateEditing(value: boolean): void {
       <NRadioGroup
         v-model:value="mode"
         :disabled="editing"
-        :aria-label="t('tableInline.example')"
+        v-bind="{ 'aria-label': t('tableInline.example') } satisfies HTMLAttributes"
       >
         <NRadioButton value="display">
           {{ t('tableInline.display') }}

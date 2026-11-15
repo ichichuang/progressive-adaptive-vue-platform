@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref } from 'vue'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -143,7 +143,7 @@ function choose(value: (typeof scenarios)[number]): void {
         secondary
         :bordered="false"
         :type="scenario === option ? 'primary' : 'default'"
-        :aria-pressed="scenario === option"
+        v-bind="{ 'aria-pressed': scenario === option } satisfies ButtonHTMLAttributes"
         :disabled="form.phase.value !== 'idle'"
         @click="choose(option)"
       >

@@ -3,7 +3,6 @@ import { inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
 import { UiScrollArea, type UiScrollController } from '@platform/ui'
 import { routerScrollControllerKey } from '../app/router/router-scroll-controller'
 import WelcomeExperience from '../app/workbench/WelcomeExperience.vue'
-import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
 defineOptions({ name: 'WorkbenchWelcomePage' })
 defineProps<{ readonly title: string; readonly breadcrumb?: string; readonly message: string }>()
 const active = ref(true)
@@ -27,20 +26,20 @@ onScopeDispose(() => {
 })
 </script>
 <template>
-  <WorkbenchPage
-    :title="title"
-    hide-heading
+  <UiScrollArea
+    class="wb-home-viewport flex-1 min-h-0 min-w-0"
+    owner-id="architecture-console-content"
+    :enabled="active"
     contained
+    @controller="connect"
   >
-    <div class="wb-home-viewport flex-1 min-h-0 min-w-0">
-      <UiScrollArea
-        owner-id="architecture-console-content"
-        :enabled="active"
-        contained
-        @controller="connect"
-      >
-        <WelcomeExperience />
-      </UiScrollArea>
-    </div>
-  </WorkbenchPage>
+    <h1
+      class="sr-only"
+      data-route-focus="architecture-console-page-heading"
+      tabindex="-1"
+    >
+      {{ title }}
+    </h1>
+    <WelcomeExperience />
+  </UiScrollArea>
 </template>

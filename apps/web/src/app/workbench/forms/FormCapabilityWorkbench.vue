@@ -120,7 +120,7 @@ const headings = {
     </template>
     <div
       class="wb-form-stage flex-1 grid min-h-0 min-w-0 gap-content-gap layout-narrow:grid-rows-4"
-      :data-capability="capability"
+      v-bind="{ 'data-capability': capability }"
     >
       <section
         class="wb-form-canvas rounded-panel flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:row-span-3"

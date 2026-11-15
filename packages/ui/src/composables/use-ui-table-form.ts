@@ -2,6 +2,7 @@ import { computed, getCurrentScope, onScopeDispose, shallowRef, watch } from 'vu
 import type {
   UiFormController,
   UiFormCopy,
+  UiFormInput,
   UiFormNode,
   UiFormOptionSource,
   UiFormSchema,
@@ -16,6 +17,7 @@ import type {
 } from '../components/table-contracts'
 import { useUiForm } from './use-ui-form'
 import { resolveUiTableRequest } from '../components/table-request'
+import { parseInlineFormScope } from '../components/table-inline-form'
 import { cloneDraft, freezeDraftValue, getFormValue } from './form-draft-values'
 
 export interface UiTableFormInput {
@@ -23,6 +25,8 @@ export interface UiTableFormInput {
   readonly transport: UiTableTransport
   readonly copy: UiFormCopy
   readonly sources?: Readonly<Record<string, UiFormOptionSource<UiTableRecord>>>
+  /** Trusted attachment services named by the editor form schema, never part of the JSON. */
+  readonly attachments?: NonNullable<UiFormInput<UiTableRecord>['attachments']>
   readonly context?: UiTableReadonlyRecord
 }
 export interface UiTableFormScope {
@@ -112,6 +116,9 @@ export function useUiTableForm(input: UiTableFormInput) {
     try {
       if (scope !== undefined && nextMode !== 'edit')
         throw new TypeError('Scoped table forms only support editing existing rows.')
+      const fields = scope === undefined ? undefined : [...scope.fields]
+      const schema = fields === undefined ? editor.form : parseInlineFormScope(editor.form, fields)
+      const names = fields === undefined ? undefined : new Set(fields)
       let record = selected
       if (nextMode !== 'create' && editor.detail) {
         if (!input.transport.detail) throw new TypeError('Detail transport is required.')
@@ -126,19 +133,6 @@ export function useUiTableForm(input: UiTableFormInput) {
         )
       }
       if (!current(ticket, signal)) return false
-      const names = scope === undefined ? null : new Set(scope.fields)
-      if (
-        names &&
-        (names.size === 0 ||
-          names.size !== scope?.fields.length ||
-          [...names].some((name) => !editor.form.fields.some((field) => field.name === name)))
-      )
-        throw new TypeError('Inline fields must be unique existing top-level form fields.')
-      const { steps, ...scopedForm } = editor.form
-      void steps
-      const schema = names
-        ? { ...scopedForm, fields: editor.form.fields.filter((field) => names.has(field.name)) }
-        : editor.form
       const baseline = fieldsOnly(
         editor.form.fields.filter((field) => !names?.has(field.name)),
         record,
@@ -153,6 +147,7 @@ export function useUiTableForm(input: UiTableFormInput) {
         },
         copy: input.copy,
         ...(input.sources === undefined ? {} : { sources: input.sources }),
+        ...(input.attachments === undefined ? {} : { attachments: input.attachments }),
         translate: (value) => input.table.text(value),
         onSubmit: async (values, work) => {
           if (saved || !current(ticket, work.signal) || !open.value)
@@ -182,6 +177,7 @@ export function useUiTableForm(input: UiTableFormInput) {
         },
       })
       form.value = session
+      if (fields !== undefined) inlineFields.value = fields
       stopSubmission = watch(
         session.submitting,
         (submitting) => {
@@ -191,8 +187,14 @@ export function useUiTableForm(input: UiTableFormInput) {
       )
       return true
     } catch (cause) {
-      if (current(ticket, signal))
+      if (current(ticket, signal)) {
         error.value = cause instanceof Error ? cause : new Error('Table detail request failed.')
+        if (scope !== undefined) {
+          close(true)
+          release()
+          row.value = null
+        }
+      }
       return false
     } finally {
       if (ticket === sequence) loading.value = false
@@ -205,9 +207,7 @@ export function useUiTableForm(input: UiTableFormInput) {
     const fields = field === undefined ? inline.fields : [field]
     if (fields.some((name) => !inline.fields.includes(name)))
       throw new TypeError('The field is not configured for inline editing.')
-    const opened = await show('edit', record, { fields })
-    if (opened) inlineFields.value = fields
-    return opened
+    return show('edit', record, { fields })
   }
   function isInlineEditing(record: UiTableReadonlyRecord, field: string): boolean {
     return (

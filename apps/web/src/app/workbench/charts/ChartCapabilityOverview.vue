@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
+import {
+  type AnchorHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+} from 'vue'
 import { NCard } from 'naive-ui/es/card'
 import {
   UiCopyAction,
@@ -154,8 +162,12 @@ onScopeDispose(() => {
           hoverable
           class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
           content-class="grid min-w-0 gap-content-gap"
-          :href="navigation.resolveHref(section.destination)"
-          @click="activate($event, section.destination)"
+          v-bind="
+            {
+              href: navigation.resolveHref(section.destination),
+              onClick: (event: MouseEvent) => activate(event, section.destination),
+            } satisfies AnchorHTMLAttributes
+          "
         >
           <div class="flex min-w-0 items-start justify-between gap-content-gap">
             <div class="grid min-w-0 gap-component-unit">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { inject, onDeactivated, ref } from 'vue'
+import { type HTMLAttributes, type ButtonHTMLAttributes, inject, onDeactivated, ref } from 'vue'
+
 import { NModal } from 'naive-ui/es/modal'
 import { NCard } from 'naive-ui/es/card'
 import { NButton } from 'naive-ui/es/button'
@@ -31,17 +32,16 @@ onDeactivated(close)
   >
     <NCard
       class="pavp-table-maximize-surface"
-      :title="label"
       role="dialog"
-      aria-modal="true"
-      :aria-label="label"
       content-class="flex flex-1 min-h-0 min-w-0 flex-col"
+      v-bind="{ title: label, 'aria-modal': 'true', 'aria-label': label } satisfies HTMLAttributes"
     >
       <template #header-extra>
         <NButton
           quaternary
-          :aria-label="restoreLabel"
-          :title="restoreLabel"
+          v-bind="
+            { 'aria-label': restoreLabel, title: restoreLabel } satisfies ButtonHTMLAttributes
+          "
           @click="close"
         >
           <span

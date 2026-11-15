@@ -4,7 +4,7 @@ import UiFormFields from './UiFormFields.vue'
 import { NButton } from 'naive-ui/es/button'
 import { NStep, NSteps } from 'naive-ui/es/steps'
 import type { UiFormProps, UiFormSlots } from './form-contracts'
-import { computed, inject, provide } from 'vue'
+import { type ButtonHTMLAttributes, type HTMLAttributes, computed, inject, provide } from 'vue'
 import { uiDateTimeContext } from '../date-time/date-time-context'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 
@@ -96,13 +96,21 @@ function goNext(): void {
               :description="step.description"
               :status="step.status"
               class="min-w-0 cursor-pointer"
-              role="button"
-              :tabindex="form.submitting.value || form.phase.value === 'disposed' ? -1 : 0"
-              :aria-current="index === activeStepIndex ? 'step' : undefined"
-              :aria-disabled="form.submitting.value || form.phase.value === 'disposed'"
-              @click="selectStep(index)"
-              @keydown.enter.prevent="selectStep(index)"
-              @keydown.space.prevent="selectStep(index)"
+              v-bind="
+                {
+                  role: 'button',
+                  tabindex: form.submitting.value || form.phase.value === 'disposed' ? -1 : 0,
+                  'aria-current': index === activeStepIndex ? 'step' : undefined,
+                  'aria-disabled': form.submitting.value || form.phase.value === 'disposed',
+                  onClick: () => selectStep(index),
+                  onKeydown: (event: KeyboardEvent) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      selectStep(index)
+                    }
+                  },
+                } satisfies HTMLAttributes
+              "
             />
           </NSteps>
         </div>
@@ -165,7 +173,7 @@ function goNext(): void {
             v-else-if="mode === 'edit'"
             class="min-h-target-enhanced min-w-target-enhanced"
             attr-type="submit"
-            :aria-busy="form.submitting.value"
+            v-bind="{ 'aria-busy': form.submitting.value } satisfies ButtonHTMLAttributes"
             type="primary"
             :disabled="form.submitting.value || form.phase.value === 'disposed'"
           >
@@ -186,7 +194,7 @@ function goNext(): void {
           <NButton
             class="min-h-target-enhanced min-w-target-enhanced"
             attr-type="submit"
-            :aria-busy="form.submitting.value"
+            v-bind="{ 'aria-busy': form.submitting.value } satisfies ButtonHTMLAttributes"
             type="primary"
             :disabled="form.submitting.value || form.phase.value === 'disposed'"
           >

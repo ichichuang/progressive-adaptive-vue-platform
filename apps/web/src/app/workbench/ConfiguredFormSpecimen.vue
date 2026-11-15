@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref } from 'vue'
 import {
   UiCopyAction,
   UiForm,
@@ -224,9 +224,13 @@ const history = useFormExampleUndo(() => form)
                         secondary
                         :bordered="false"
                         :type="source === 'code' ? 'primary' : 'default'"
-                        :aria-pressed="source === 'code'"
+                        v-bind="
+                          {
+                            'aria-pressed': source === 'code',
+                            title: draft.statusText.value,
+                          } satisfies ButtonHTMLAttributes
+                        "
                         :disabled="draft.hasUnsavedChanges()"
-                        :title="draft.statusText.value"
                         @click="emit('source', 'code')"
                       >
                         {{ t('configuredForm.sourceCode') }}
@@ -235,9 +239,13 @@ const history = useFormExampleUndo(() => form)
                         secondary
                         :bordered="false"
                         :type="source === 'json' ? 'primary' : 'default'"
-                        :aria-pressed="source === 'json'"
+                        v-bind="
+                          {
+                            'aria-pressed': source === 'json',
+                            title: draft.statusText.value,
+                          } satisfies ButtonHTMLAttributes
+                        "
                         :disabled="draft.hasUnsavedChanges()"
-                        :title="draft.statusText.value"
                         @click="emit('source', 'json')"
                       >
                         {{ t('configuredForm.sourceJson') }}
@@ -246,7 +254,7 @@ const history = useFormExampleUndo(() => form)
                         secondary
                         :bordered="false"
                         :type="mode === 'edit' ? 'primary' : 'default'"
-                        :aria-pressed="mode === 'edit'"
+                        v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
                         @click="mode = 'edit'"
                       >
                         {{ t('configuredForm.edit') }}
@@ -255,7 +263,9 @@ const history = useFormExampleUndo(() => form)
                         secondary
                         :bordered="false"
                         :type="mode === 'detail' ? 'primary' : 'default'"
-                        :aria-pressed="mode === 'detail'"
+                        v-bind="
+                          { 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes
+                        "
                         :disabled="form.hasPendingInput.value"
                         @click="mode = 'detail'"
                       >
@@ -304,7 +314,11 @@ const history = useFormExampleUndo(() => form)
                     class="min-h-target-enhanced min-w-target-enhanced"
                     quaternary
                     :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-                    :title="form.hasPendingInput.value ? t('formLifecycle.pending') : undefined"
+                    v-bind="
+                      {
+                        title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+                      } satisfies ButtonHTMLAttributes
+                    "
                     @click="fill"
                   >
                     {{ t('configuredForm.fill') }}

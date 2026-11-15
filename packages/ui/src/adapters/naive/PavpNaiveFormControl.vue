@@ -13,6 +13,8 @@ import { NDatePicker } from 'naive-ui/es/date-picker'
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
 import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
   defineAsyncComponent,
   type Component,
   computed,
@@ -311,23 +313,29 @@ function chooseDate(value: string | null): void {
       :max="config.max"
       :step="config.step ?? 1"
       :disabled="binding.disabled"
+      v-bind="{ onFocusout: () => binding.blur() } satisfies HTMLAttributes"
       @update:value="update"
-      @focusout="binding.blur()"
     />
     <NRate
       v-else-if="config.kind === 'rating'"
-      role="slider"
-      :tabindex="binding.disabled ? -1 : 0"
-      :aria-valuemin="0"
-      :aria-valuemax="config.count ?? 5"
-      :aria-valuenow="numberValue ?? 0"
+      v-bind="
+        {
+          role: 'slider',
+          'aria-disabled': binding.disabled,
+          'aria-readonly': binding.readonly,
+          tabindex: binding.disabled ? -1 : 0,
+          'aria-valuemin': 0,
+          'aria-valuemax': config.count ?? 5,
+          'aria-valuenow': numberValue ?? 0,
+          onKeydown: updateRatingKey,
+          onFocusout: () => binding.blur(),
+        } satisfies HTMLAttributes
+      "
       :value="numberValue ?? 0"
       :count="config.count ?? 5"
       :allow-half="config.allowHalf ?? false"
-      :disabled="binding.disabled"
-      @keydown="updateRatingKey"
+      :readonly="binding.disabled || binding.readonly"
       @update:value="update"
-      @focusout="binding.blur()"
     />
     <PavpNaiveFormAttachment
       v-else-if="config.kind === 'attachment'"
@@ -400,8 +408,12 @@ function chooseDate(value: string | null): void {
                 <NButton
                   circle
                   class="shrink-0 min-h-target-enhanced min-w-target-enhanced"
-                  :aria-label="pagingCopy.previousOptionsPage()"
-                  :title="pagingCopy.previousOptionsPage()"
+                  v-bind="
+                    {
+                      'aria-label': pagingCopy.previousOptionsPage(),
+                      title: pagingCopy.previousOptionsPage(),
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="pagingDisabled || binding.optionQuery.page <= 1"
                   @click="changeOptionsPage(binding.optionQuery.page - 1)"
                 >
@@ -415,8 +427,12 @@ function chooseDate(value: string | null): void {
                 <NButton
                   circle
                   class="shrink-0 min-h-target-enhanced min-w-target-enhanced"
-                  :aria-label="pagingCopy.nextOptionsPage()"
-                  :title="pagingCopy.nextOptionsPage()"
+                  v-bind="
+                    {
+                      'aria-label': pagingCopy.nextOptionsPage(),
+                      title: pagingCopy.nextOptionsPage(),
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="pagingDisabled || !binding.optionQuery.hasNext"
                   @click="changeOptionsPage(binding.optionQuery.page + 1)"
                 >
@@ -431,8 +447,12 @@ function chooseDate(value: string | null): void {
                   v-if="binding.optionsState === 'failed'"
                   circle
                   class="shrink-0 min-h-target-enhanced min-w-target-enhanced"
-                  :aria-label="form.copy.retryOptions()"
-                  :title="form.copy.retryOptions()"
+                  v-bind="
+                    {
+                      'aria-label': form.copy.retryOptions(),
+                      title: form.copy.retryOptions(),
+                    } satisfies ButtonHTMLAttributes
+                  "
                   :disabled="optionActionsDisabled"
                   @click="retryQueryOptions"
                 >
@@ -469,8 +489,8 @@ function chooseDate(value: string | null): void {
             :value="scalarChoice"
             :name="binding.controlId"
             :disabled="selectDisabled"
+            v-bind="{ onFocusout: () => binding.blur() } satisfies HTMLAttributes"
             @update:value="update"
-            @focusout="binding.blur()"
           >
             <div class="flex flex-wrap gap-content-gap">
               <NRadio
@@ -487,8 +507,8 @@ function chooseDate(value: string | null): void {
             v-else
             :value="multipleChoices"
             :disabled="selectDisabled"
+            v-bind="{ onFocusout: () => binding.blur() } satisfies HTMLAttributes"
             @update:value="update"
-            @focusout="binding.blur()"
           >
             <div class="flex flex-wrap gap-content-gap">
               <NCheckbox
@@ -569,8 +589,8 @@ function chooseDate(value: string | null): void {
       :value="binding.value === true"
       :disabled="binding.disabled"
       :theme-overrides="theme.Switch"
+      v-bind="{ onBlur: () => binding.blur() } satisfies HTMLAttributes"
       @update:value="update"
-      @blur="binding.blur()"
     />
     <div
       v-else-if="config.kind === 'date'"
@@ -598,7 +618,7 @@ function chooseDate(value: string | null): void {
           <NButton
             secondary
             :disabled="binding.disabled"
-            :aria-label="form.text(config.label)"
+            v-bind="{ 'aria-label': form.text(config.label) } satisfies ButtonHTMLAttributes"
           >
             <template #icon>
               <span

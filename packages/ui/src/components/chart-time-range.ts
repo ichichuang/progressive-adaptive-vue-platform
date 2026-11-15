@@ -1,6 +1,18 @@
 /** Integer sample windows shared by the plot and its overview navigator. */
 export type UiChartTimeRangeValue = readonly [number, number]
 
+/** Private overview geometry: preserve the zero baseline without variadic argument limits. */
+export function chartTimeRangeExtent(values: readonly number[]): readonly [number, number] {
+  let minimum = 0
+  let maximum = 1
+  for (const value of values) {
+    if (!Number.isFinite(value)) continue
+    if (value < minimum) minimum = value
+    if (value > maximum) maximum = value
+  }
+  return [minimum, maximum]
+}
+
 export function normalizeUiChartTimeRange(
   range: UiChartTimeRangeValue,
   min: number,

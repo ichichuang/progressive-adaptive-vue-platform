@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="I">
 import { NUpload, type UploadFileInfo } from 'naive-ui/es/upload'
 import { NButton } from 'naive-ui/es/button'
-import { computed, onDeactivated, onScopeDispose, ref, watch } from 'vue'
+import { type ButtonHTMLAttributes, computed, onDeactivated, onScopeDispose, ref, watch } from 'vue'
 import PavpImageProcessor from '../media/PavpImageProcessor.vue'
 import PavpAttachmentPreview from '../media/PavpAttachmentPreview.vue'
 import { sameDraftValue } from '../../composables/form-draft-values'
@@ -158,7 +158,7 @@ function remove({ file }: { readonly file: UploadFileInfo }): boolean {
       v-if="!readonly && picker"
       secondary
       :disabled="cannotChoose || busy"
-      :aria-label="picker.label()"
+      v-bind="{ 'aria-label': picker.label() } satisfies ButtonHTMLAttributes"
       @click="pickFile"
     >
       {{ picker.label() }}

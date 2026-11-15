@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AnchorHTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { useConsoleI18n } from '../../shared/i18n'
 import {
@@ -48,7 +49,7 @@ const destination = registeredRouteDestination({ name: 'workbench-welcome' })
           tag="a"
           type="primary"
           class="min-h-target-enhanced"
-          :href="navigation.resolveHref(destination)"
+          v-bind="{ href: navigation.resolveHref(destination) } satisfies AnchorHTMLAttributes"
           @click="activate($event, destination)"
         >
           <template #icon>

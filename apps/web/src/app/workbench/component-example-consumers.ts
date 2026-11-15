@@ -170,7 +170,6 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
     ]),
     UiCopyAction: Object.freeze([
       ...cinematicRoutes,
-      'workbench-dashboard',
       ...apiShowcaseRoutes,
       'workbench-colors',
       'workbench-sizes',

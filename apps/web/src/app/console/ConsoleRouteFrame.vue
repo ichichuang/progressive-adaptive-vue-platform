@@ -19,6 +19,7 @@ import { NButton } from 'naive-ui/es/button'
 import { NIcon } from 'naive-ui/es/icon'
 import { NTooltip } from 'naive-ui/es/tooltip'
 import {
+  type ButtonHTMLAttributes,
   computed,
   inject,
   onScopeDispose,
@@ -644,7 +645,7 @@ async function navigate(routeName: string): Promise<void> {
     :content-layout="
       !containedContent
         ? 'scroll'
-        : activeRouteName === 'workbench-dashboard'
+        : activeRouteName === 'workbench-dashboard' || activeRouteName === 'workbench-welcome'
           ? 'contained-flush'
           : 'contained'
     "
@@ -697,8 +698,12 @@ async function navigate(routeName: string): Promise<void> {
         >
           <template #trigger>
             <NButton
-              :aria-current="activeRouteName === 'control-center' ? 'page' : undefined"
-              :aria-label="t('shell.systemSettings')"
+              v-bind="
+                {
+                  'aria-current': activeRouteName === 'control-center' ? 'page' : undefined,
+                  'aria-label': t('shell.systemSettings'),
+                } satisfies ButtonHTMLAttributes
+              "
               block
               class="wb-settings-dock min-h-target-enhanced min-w-target-enhanced"
               :data-collapsed="collapsed"

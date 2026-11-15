@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref } from 'vue'
 import { UiScrollArea } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import {
@@ -127,7 +127,7 @@ function selectColor(option: (typeof colorOptions.value)[number]): void {
         type="primary"
         quaternary
         size="small"
-        :aria-pressed="section === tab"
+        v-bind="{ 'aria-pressed': section === tab } satisfies ButtonHTMLAttributes"
         @click="section = tab"
       >
         {{
@@ -167,7 +167,7 @@ function selectColor(option: (typeof colorOptions.value)[number]): void {
             type="primary"
             quaternary
             class="wb-dashboard-choice shrink-0"
-            :aria-pressed="toneInherited === true"
+            v-bind="{ 'aria-pressed': toneInherited === true } satisfies ButtonHTMLAttributes"
             @click="emit('reset:tone')"
           >
             {{ t('dashboardBoard.boardDefault') }}
@@ -178,7 +178,7 @@ function selectColor(option: (typeof colorOptions.value)[number]): void {
             class="wb-dashboard-choice shrink-0"
             type="primary"
             quaternary
-            :aria-pressed="option.selected"
+            v-bind="{ 'aria-pressed': option.selected } satisfies ButtonHTMLAttributes"
             @click="selectColor(option)"
           >
             <span class="flex items-center gap-component-unit">
@@ -237,7 +237,7 @@ function selectColor(option: (typeof colorOptions.value)[number]): void {
             type="primary"
             quaternary
             class="wb-dashboard-choice shrink-0"
-            :aria-pressed="entranceInherited === true"
+            v-bind="{ 'aria-pressed': entranceInherited === true } satisfies ButtonHTMLAttributes"
             @click="emit('reset:entrance')"
           >
             {{ t('dashboardBoard.boardDefault') }}
@@ -248,7 +248,11 @@ function selectColor(option: (typeof colorOptions.value)[number]): void {
             type="primary"
             quaternary
             class="wb-dashboard-choice shrink-0"
-            :aria-pressed="!entranceInherited && entrance === option.value"
+            v-bind="
+              {
+                'aria-pressed': !entranceInherited && entrance === option.value,
+              } satisfies ButtonHTMLAttributes
+            "
             @click="emit('update:entrance', option.value)"
           >
             <template #icon>

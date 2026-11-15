@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref } from 'vue'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -154,8 +154,12 @@ async function load(fail = false, switchRecord = false): Promise<void> {
         secondary
         :bordered="false"
         :disabled="busy || form.hasUnsavedChanges.value"
-        :title="
-          form.hasUnsavedChanges.value ? t('formCapabilities.loading.switchBlocked') : undefined
+        v-bind="
+          {
+            title: form.hasUnsavedChanges.value
+              ? t('formCapabilities.loading.switchBlocked')
+              : undefined,
+          } satisfies ButtonHTMLAttributes
         "
         @click="load(false, true)"
       >

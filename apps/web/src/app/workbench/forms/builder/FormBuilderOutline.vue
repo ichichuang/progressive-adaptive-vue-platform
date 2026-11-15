@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
 import { UiScrollArea, type UiFormNode, type UiFormSchema } from '@platform/ui'
@@ -92,12 +92,26 @@ function position(path: readonly string[]): { index: number; count: number } {
           quaternary
           :type="!selected.length ? 'primary' : 'default'"
           :disabled="pending"
-          :aria-label="t('formBuilder.selectRoot')"
-          :title="t('formBuilder.root')"
+          v-bind="
+            {
+              onDragenter: (event: DragEvent) => {
+                event.preventDefault()
+                acceptDrop(event)
+              },
+              onDragover: (event: DragEvent) => {
+                event.preventDefault()
+                acceptDrop(event)
+              },
+              onDrop: (event: DragEvent) => {
+                event.stopPropagation()
+                event.preventDefault()
+                drop([])
+              },
+              'aria-label': t('formBuilder.selectRoot'),
+              title: t('formBuilder.root'),
+            } satisfies ButtonHTMLAttributes
+          "
           @click="emit('select', [])"
-          @dragenter.prevent="acceptDrop"
-          @dragover.prevent="acceptDrop"
-          @drop.stop.prevent="drop([])"
         >
           <template #icon>
             <span
@@ -143,11 +157,19 @@ function position(path: readonly string[]): { index: number; count: number } {
                 size="small"
                 tertiary
                 :disabled="pending"
-                :draggable="!pending"
-                :aria-label="`${t('formBuilder.add')} ${t(builderKinds[kind])}`"
+                v-bind="
+                  {
+                    onDragstart: (event: DragEvent) => {
+                      start(event, { kind })
+                    },
+                    onDragend: (event: DragEvent) => {
+                      endDrag()
+                    },
+                    draggable: !pending,
+                    'aria-label': `${t('formBuilder.add')} ${t(builderKinds[kind])}`,
+                  } satisfies ButtonHTMLAttributes
+                "
                 @click="add(kind)"
-                @dragstart="start($event, { kind })"
-                @dragend="endDrag"
               >
                 {{ t(builderKinds[kind]) }}
               </NButton>
@@ -177,20 +199,38 @@ function position(path: readonly string[]): { index: number; count: number } {
         >
           <NButton
             class="max-w-full min-w-0 justify-self-start"
-            :title="entry.path.join(' / ')"
+            v-bind="
+              {
+                onDragenter: (event: DragEvent) => {
+                  event.preventDefault()
+                  acceptDrop(event)
+                },
+                onDragover: (event: DragEvent) => {
+                  event.preventDefault()
+                  acceptDrop(event)
+                },
+                onDrop: (event: DragEvent) => {
+                  event.stopPropagation()
+                  event.preventDefault()
+                  drop(entry.path, entry.node)
+                },
+                onDragstart: (event: DragEvent) => {
+                  start(event, { path: entry.path })
+                },
+                onDragend: (_event: DragEvent) => {
+                  drag = null
+                },
+                draggable: !pending,
+                title: entry.path.join(' / '),
+                'aria-pressed': selected.join('.') === entry.path.join('.'),
+                'aria-label': `${t('formBuilder.edit')} ${entry.node.label} ${entry.path.join('.')}`,
+              } satisfies ButtonHTMLAttributes
+            "
             size="small"
             quaternary
             :type="selected.join('.') === entry.path.join('.') ? 'primary' : 'default'"
-            :aria-pressed="selected.join('.') === entry.path.join('.')"
-            :aria-label="`${t('formBuilder.edit')} ${entry.node.label} ${entry.path.join('.')}`"
             :disabled="pending"
-            :draggable="!pending"
             @click="emit('select', entry.path)"
-            @dragenter.prevent="acceptDrop"
-            @dragover.prevent="acceptDrop"
-            @drop.stop.prevent="drop(entry.path, entry.node)"
-            @dragstart="start($event, { path: entry.path })"
-            @dragend="drag = null"
           >
             <template #icon>
               <span
@@ -219,7 +259,11 @@ function position(path: readonly string[]): { index: number; count: number } {
               size="tiny"
               quaternary
               :disabled="pending || position(entry.path).index === 0"
-              :aria-label="`${t('configuredForm.moveUp')} ${entry.node.label}`"
+              v-bind="
+                {
+                  'aria-label': `${t('configuredForm.moveUp')} ${entry.node.label}`,
+                } satisfies ButtonHTMLAttributes
+              "
               @click="emit('move', entry.path, -1)"
             >
               <template #icon>
@@ -233,7 +277,11 @@ function position(path: readonly string[]): { index: number; count: number } {
               size="tiny"
               quaternary
               :disabled="pending || position(entry.path).index === position(entry.path).count - 1"
-              :aria-label="`${t('configuredForm.moveDown')} ${entry.node.label}`"
+              v-bind="
+                {
+                  'aria-label': `${t('configuredForm.moveDown')} ${entry.node.label}`,
+                } satisfies ButtonHTMLAttributes
+              "
               @click="emit('move', entry.path, 1)"
             >
               <template #icon>

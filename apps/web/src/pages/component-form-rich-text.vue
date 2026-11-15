@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, type HTMLAttributes } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -39,7 +39,12 @@ const draft = useFormExampleDraft(form, ['title', 'body', 'note'])
       <NRadioGroup
         v-model:value="mode"
         :disabled="form.hasPendingInput.value"
-        :aria-label="t('formCapabilities.richText.controls')"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('formCapabilities.richText.controls'),
+          } satisfies HTMLAttributes
+        "
       >
         <NRadioButton value="edit">
           {{ t('configuredForm.edit') }}

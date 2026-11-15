@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { type ButtonHTMLAttributes, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { NProgress } from 'naive-ui/es/progress'
@@ -99,7 +99,7 @@ function reset(): void {
               block
               size="large"
               :type="held ? 'primary' : 'default'"
-              :aria-pressed="held"
+              v-bind="{ 'aria-pressed': held === true } satisfies ButtonHTMLAttributes"
               @click="
                 (event: MouseEvent) => {
                   if (event.detail === 0) held = !held

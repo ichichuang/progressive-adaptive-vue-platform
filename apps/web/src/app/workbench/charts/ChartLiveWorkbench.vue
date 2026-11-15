@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  type ButtonHTMLAttributes,
   computed,
   inject,
   onActivated,
@@ -7,10 +8,11 @@ import {
   onMounted,
   onScopeDispose,
   ref,
+  useId,
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
-import { NSelect } from 'naive-ui/es/select'
+import { NRadioGroup } from 'naive-ui/es/radio'
 import { UiCopyAction, UiG2Chart, UiScrollArea, type UiScrollController } from '@platform/ui'
 import WorkbenchPage from '../WorkbenchPage.vue'
 import ChartMetricValue from './ChartMetricValue.vue'
@@ -24,6 +26,7 @@ const props = defineProps<{
   readonly kind: LiveChartKind
 }>()
 const { t, locale } = useConsoleI18n()
+const speedGroupName = useId()
 const tick = ref(0)
 const running = ref(true)
 const active = ref(false)
@@ -196,23 +199,26 @@ onScopeDispose(() => {
             class="text-caption text-text-secondary"
             v-text="t('chartLive.frequency')"
           />
-          <NSelect
-            v-model:value="interval"
+          <NRadioGroup
+            v-bind="{ role: 'radiogroup', 'aria-label': t('chartLive.frequency') }"
+            :name="speedGroupName"
+            :value="interval"
             :options="speedOptions"
-            :aria-label="t('chartLive.frequency')"
+            class="flex flex-wrap gap-component-unit"
+            @update:value="typeof $event === 'number' && (interval = $event)"
           />
         </div>
         <div class="flex flex-wrap gap-component-unit">
           <NButton
             secondary
-            :aria-pressed="narrow"
+            v-bind="{ 'aria-pressed': narrow } satisfies ButtonHTMLAttributes"
             @click="narrow = !narrow"
           >
             {{ t('chartExamples.narrow') }}
           </NButton>
           <NButton
             secondary
-            :aria-pressed="showData"
+            v-bind="{ 'aria-pressed': showData === true } satisfies ButtonHTMLAttributes"
             @click="toggleData"
           >
             {{ showData ? t('chartExamples.showChart') : t('chartExamples.showData') }}

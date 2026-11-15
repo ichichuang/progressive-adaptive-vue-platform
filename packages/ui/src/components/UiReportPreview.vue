@@ -72,8 +72,7 @@ onScopeDispose(clear)
       :title="snapshot?.title ?? ''"
       content-class="min-h-0 flex-1 overflow-hidden"
       role="dialog"
-      aria-modal="true"
-      :aria-label="snapshot?.title ?? ''"
+      v-bind="{ 'aria-modal': true, 'aria-label': snapshot?.title ?? '' }"
     >
       <UiScrollArea
         owner-id="report-preview"

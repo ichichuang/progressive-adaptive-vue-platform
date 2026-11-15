@@ -1,5 +1,16 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref, shallowRef } from 'vue'
+import {
+  type HTMLAttributes,
+  type ButtonHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  shallowRef,
+} from 'vue'
+
 import {
   UiCopyAction,
   UiScrollArea,
@@ -179,8 +190,8 @@ function discard(): void {
     </template>
     <section
       class="wb-table-stage rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-      :data-table-example="example"
       :aria-label="t('tableExamples.preview')"
+      v-bind="{ 'data-table-example': example }"
     >
       <div
         v-if="$slots['controls']"
@@ -199,8 +210,8 @@ function discard(): void {
             }}</span>
             <NRadioGroup
               v-model:value="heightMode"
-              :aria-label="t('tableExamples.height.label')"
               name="table-height"
+              v-bind="{ 'aria-label': t('tableExamples.height.label') } satisfies HTMLAttributes"
             >
               <NRadioButton value="auto">
                 {{ t('tableExamples.height.auto') }}
@@ -243,7 +254,7 @@ function discard(): void {
         <NButton
           secondary
           :type="configurationEditing ? 'primary' : 'default'"
-          :aria-pressed="configurationEditing"
+          v-bind="{ 'aria-pressed': configurationEditing === true } satisfies ButtonHTMLAttributes"
           @click="configurationEditing = true"
         >
           {{ t('tableExamples.editConfiguration') }}
@@ -251,7 +262,7 @@ function discard(): void {
         <NButton
           secondary
           :type="configurationEditing ? 'default' : 'primary'"
-          :aria-pressed="!configurationEditing"
+          v-bind="{ 'aria-pressed': !configurationEditing } satisfies ButtonHTMLAttributes"
           @click="configurationEditing = false"
         >
           {{ t('tableExamples.previewTable') }}

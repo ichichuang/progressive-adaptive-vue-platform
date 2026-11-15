@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, type HTMLAttributes } from 'vue'
 import type { UiTableAppearance } from '@platform/ui'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import TableDataExample from '../app/workbench/tables/TableDataExample.vue'
@@ -25,7 +25,12 @@ const appearance = computed<UiTableAppearance>(() => ({ headerTone: headerTone.v
         <NRadioGroup
           v-model:value="headerTone"
           name="table-header-tone"
-          :aria-label="t('tableExamples.theme.header')"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('tableExamples.theme.header'),
+            } satisfies HTMLAttributes
+          "
         >
           <NRadioButton value="neutral">
             {{ t('tableExamples.theme.neutral') }}

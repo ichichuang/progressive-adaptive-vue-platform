@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { type HTMLAttributes, computed, ref, watch } from 'vue'
+
 import { NInput, NInputGroup } from 'naive-ui/es/input'
 import { NButton } from 'naive-ui/es/button'
 import type { UiTableController, UiTableCopy } from './table-contracts'
@@ -38,8 +39,17 @@ function clear(): void {
       :placeholder="
         configuration.placeholder ? table.text(configuration.placeholder) : (copy.search?.() ?? '')
       "
-      :aria-label="copy.search?.() ?? table.text(configuration.placeholder ?? parameter)"
-      @keydown.enter="search"
+      :input-props="{
+        'aria-label': copy.search?.() ?? table.text(configuration.placeholder ?? parameter),
+      }"
+      v-bind="
+        {
+          onKeydown: (event: KeyboardEvent) => {
+            if (event.key !== 'Enter') return
+            search(event)
+          },
+        } satisfies HTMLAttributes
+      "
       @clear="clear"
     />
     <NButton

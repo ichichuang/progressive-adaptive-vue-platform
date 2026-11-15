@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { UiScrollArea, type UiScrollController } from '@platform/ui'
 import {
+  type ButtonHTMLAttributes,
   computed,
   inject,
   onActivated,
@@ -9,6 +10,7 @@ import {
   ref,
   useId,
   watch,
+  type HTMLAttributes,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
@@ -298,13 +300,17 @@ onScopeDispose(() => {
         >
           <NButton
             v-for="(category, id) in groups"
-            :id="`${pageId}-category-${id}`"
+            v-bind="
+              {
+                'aria-selected': id === group,
+                role: 'tab',
+                id: `${pageId}-category-${id}`,
+                'aria-controls': `${pageId}-effects`,
+              } satisfies ButtonHTMLAttributes
+            "
             :key="id"
-            role="tab"
             quaternary
             :type="id === group ? 'primary' : 'default'"
-            :aria-selected="id === group"
-            :aria-controls="`${pageId}-effects`"
             @click="selectGroup(id)"
           >
             <span class="relative">
@@ -322,11 +328,11 @@ onScopeDispose(() => {
             :value="group"
             :options="categoryOptions"
             :show="active && categoryMenuOpen"
-            :aria-label="t('motionGallery.categories')"
+            v-bind="{ 'aria-label': t('motionGallery.categories') } satisfies HTMLAttributes"
             to="#pavp-overlay-root"
             @update:value="selectGroup"
             @update:show="categoryMenuOpen = $event"
-            @pointerdown.capture="stopPlayback"
+            v-on="{ pointerdownCapture: stopPlayback }"
           />
         </div>
       </div>
@@ -351,13 +357,17 @@ onScopeDispose(() => {
             >
               <NButton
                 v-for="id in groups[group].effects"
-                :id="`${pageId}-effect-${id}`"
+                v-bind="
+                  {
+                    'aria-selected': id === effect,
+                    role: 'tab',
+                    id: `${pageId}-effect-${id}`,
+                    'aria-controls': `${pageId}-preview`,
+                  } satisfies ButtonHTMLAttributes
+                "
                 :key="id"
-                role="tab"
                 quaternary
                 :type="id === effect ? 'primary' : 'default'"
-                :aria-selected="id === effect"
-                :aria-controls="`${pageId}-preview`"
                 @click="selectEffect(id)"
               >
                 <span class="relative">
@@ -391,7 +401,7 @@ onScopeDispose(() => {
                 :description="t(copy[effect].description)"
                 :request="request"
                 class="col-start-1 row-start-1 min-w-0"
-                @pointerdown.capture="stopPlayback"
+                v-on="{ pointerdownCapture: stopPlayback }"
                 @click.capture="stopPlayback"
               >
                 <MotionRoutePreview

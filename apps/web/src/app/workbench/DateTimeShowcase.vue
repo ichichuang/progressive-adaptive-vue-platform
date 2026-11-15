@@ -167,14 +167,17 @@ const examples = computed(() => [
                 v-model:value="timeZone"
                 v-model:show="zoneMenuOpen"
                 :options="zones"
-                :aria-label="t('dateShowcase.zone')"
+                filterable
+                :input-props="{ 'aria-label': t('dateShowcase.zone') }"
               />
             </div>
             <NSwitch
               :value="context.hourCycle === 'h12'"
               :disabled="timeZone === 'global'"
-              :aria-disabled="timeZone === 'global'"
-              :aria-label="t('dateShowcase.hours')"
+              v-bind="{
+                'aria-disabled': timeZone === 'global',
+                'aria-label': t('dateShowcase.hours'),
+              }"
               @update:value="twelveHour = $event"
             >
               <template #checked>

@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import {
   UiChartTimeRange,
@@ -182,12 +190,24 @@ onScopeDispose(() => {
                 :key="channel"
                 :type="selected === channel ? 'primary' : 'default'"
                 secondary
-                :aria-pressed="selected === channel"
+                v-bind="
+                  {
+                    'aria-pressed': selected === channel,
+                    onMouseenter: () => {
+                      hovered = channel
+                    },
+                    onPointerleave: () => {
+                      hovered = null
+                    },
+                    onFocus: () => {
+                      hovered = channel
+                    },
+                    onBlur: () => {
+                      hovered = null
+                    },
+                  } satisfies ButtonHTMLAttributes
+                "
                 @click="select(channel)"
-                @mouseenter="hovered = channel"
-                @pointerleave="hovered = null"
-                @focus="hovered = channel"
-                @blur="hovered = null"
               >
                 <span class="inline-flex items-center gap-component-unit">
                   <span
@@ -263,7 +283,11 @@ onScopeDispose(() => {
                   <NButton
                     size="small"
                     :secondary="range[0] === 48"
-                    :aria-pressed="range[0] === 48 && range[1] === 71"
+                    v-bind="
+                      {
+                        'aria-pressed': range[0] === 48 && range[1] === 71,
+                      } satisfies ButtonHTMLAttributes
+                    "
                     @click="updateRange([48, 71])"
                   >
                     {{ t('chartExamples.lastDay') }}
@@ -271,7 +295,11 @@ onScopeDispose(() => {
                   <NButton
                     size="small"
                     :secondary="range[0] === 0"
-                    :aria-pressed="range[0] === 0 && range[1] === 71"
+                    v-bind="
+                      {
+                        'aria-pressed': range[0] === 0 && range[1] === 71,
+                      } satisfies ButtonHTMLAttributes
+                    "
                     @click="updateRange([0, 71])"
                   >
                     {{ t('chartLinked.fullRange') }}

@@ -1,7 +1,19 @@
 <script setup lang="ts">
 import type { EffectiveAppearanceState } from '@platform/design-system'
-import { AnimatePresence, M, m } from 'motion-v'
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { AnimatePresence as MotionAnimatePresence, M, m } from 'motion-v'
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type TransitionProps,
+  computed,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  useId,
+  watch,
+} from 'vue'
 import {
   createMotionFeatureRuntime,
   createMotionInterruptionOwner,
@@ -14,10 +26,35 @@ import { projectMotionPolicy } from './motion-policy'
 
 import { pavpOverlayTargetKey } from '../naive/pavp-naive-runtime-context'
 import type { UiWorkspaceTab } from '../../components/contracts'
-import { NDropdown, type DropdownOption } from 'naive-ui/es/dropdown'
-import { NButton } from 'naive-ui/es/button'
+import { NDropdown as NaiveDropdown, type DropdownOption } from 'naive-ui/es/dropdown'
+import { NButton as NaiveButton } from 'naive-ui/es/button'
 import UiScrollArea from '../../components/UiScrollArea.vue'
 import type { UiScrollController } from '../../components/scroll-contracts'
+
+// Narrow native-root contracts: vendor props remain intact; no arbitrary attributes admitted.
+const NButton = NaiveButton as typeof NaiveButton &
+  (new () => {
+    $props: Pick<
+      ButtonHTMLAttributes,
+      | 'aria-label'
+      | 'aria-selected'
+      | 'aria-controls'
+      | 'aria-haspopup'
+      | 'aria-expanded'
+      | 'id'
+      | 'role'
+      | 'tabindex'
+      | 'onFocus'
+      | 'onKeydown'
+    >
+  })
+const NDropdown = NaiveDropdown as typeof NaiveDropdown &
+  (new () => {
+    $props: Pick<HTMLAttributes, 'id' | 'role' | 'tabindex' | 'aria-labelledby' | 'onKeydown'>
+  })
+// AnimatePresence inherits these hooks onto Vue Transition/TransitionGroup.
+const AnimatePresence = MotionAnimatePresence as typeof MotionAnimatePresence &
+  (new () => { $props: Pick<TransitionProps, 'onBeforeEnter' | 'onBeforeLeave'> })
 
 defineOptions({ name: 'WorkspaceTabsSurface' })
 const overlayTarget = inject(pavpOverlayTargetKey, '#pavp-overlay-root')

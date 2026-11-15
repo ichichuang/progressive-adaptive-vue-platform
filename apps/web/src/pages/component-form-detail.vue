@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFormExampleUndo } from '../app/workbench/forms/use-form-example-undo'
-import { ref } from 'vue'
+import { type ButtonHTMLAttributes, ref } from 'vue'
 import {
   UiForm,
   useUiForm,
@@ -119,7 +119,7 @@ const history = useFormExampleUndo(() => form)
         secondary
         :bordered="false"
         :type="mode === 'detail' ? 'primary' : 'default'"
-        :aria-pressed="mode === 'detail'"
+        v-bind="{ 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes"
         :disabled="form.hasPendingInput.value"
         @click="mode = 'detail'"
       >
@@ -130,7 +130,7 @@ const history = useFormExampleUndo(() => form)
         secondary
         :bordered="false"
         :type="mode === 'edit' ? 'primary' : 'default'"
-        :aria-pressed="mode === 'edit'"
+        v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
         @click="mode = 'edit'"
       >
         {{ t('configuredForm.edit') }}

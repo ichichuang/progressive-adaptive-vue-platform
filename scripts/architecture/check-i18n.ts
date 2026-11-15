@@ -948,12 +948,43 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       return bindings !== undefined && ts.isNamedImports(bindings) ? [...bindings.elements] : []
     })
     .find((node) => (node.propertyName?.text ?? node.name.text) === 'UiRadioCardGroup')?.name.text
+  // Read literal native-attribute bags as well as named bindings. Do not infer
+  // bindings from identifiers, spreads, casts, or unrelated expressions.
+  function controlBindings(node: TemplateNode | undefined): Map<string, string> {
+    const bindings = new Map<string, string>()
+    for (const prop of node?.props ?? []) {
+      if (prop.name !== 'bind' || prop.exp?.content === undefined) continue
+      if (prop.arg?.content !== undefined) {
+        bindings.set(prop.arg.content, prop.exp.content)
+        continue
+      }
+      const parsed = parseSource('control-bindings.ts', `const attrs = ${prop.exp.content}`)
+      const statement = parsed.statements[0]
+      if (statement === undefined || !ts.isVariableStatement(statement)) continue
+      const value = statement.declarationList.declarations[0]?.initializer
+      if (
+        value === undefined ||
+        !ts.isSatisfiesExpression(value) ||
+        value.type.getText(parsed) !== 'HTMLAttributes' ||
+        !ts.isObjectLiteralExpression(value.expression)
+      )
+        continue
+      for (const entry of value.expression.properties) {
+        if (
+          ts.isPropertyAssignment(entry) &&
+          (ts.isStringLiteral(entry.name) || ts.isIdentifier(entry.name))
+        )
+          bindings.set(entry.name.text, entry.initializer.getText(parsed))
+      }
+    }
+    return bindings
+  }
   const languageControls: TemplateNode[] = []
   function collectLanguageControls(node: TemplateNode): void {
     if (
       radioOwnerImport !== undefined &&
       node.tag === radioOwnerImport &&
-      node.props?.some((prop) => prop.name === 'bind' && prop.arg?.content === 'aria-busy')
+      controlBindings(node).has('aria-busy')
     )
       languageControls.push(node)
     for (const child of node.children ?? []) collectLanguageControls(child)
@@ -961,11 +992,7 @@ export async function validateI18nArchitecture(): Promise<string[]> {
   if (settings.descriptor.template?.ast !== undefined)
     collectLanguageControls(settings.descriptor.template.ast)
   const languageControl = languageControls[0]
-  const languageBindings = new Map(
-    (languageControl?.props ?? [])
-      .filter((prop) => prop.name === 'bind')
-      .map((prop) => [prop.arg?.content, prop.exp?.content]),
-  )
+  const languageBindings = controlBindings(languageControl)
   report(
     settings.errors.length === 0 &&
       languageControls.length === 1 &&

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import type { UiDateTimeContext } from '../date-time/date-time'
 import {
+  type HTMLAttributes,
+  type ButtonHTMLAttributes,
   computed,
   inject,
   nextTick,
@@ -12,6 +13,9 @@ import {
   useId,
   watch,
 } from 'vue'
+
+import type { UiDateTimeContext } from '../date-time/date-time'
+
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
@@ -158,9 +162,9 @@ function updateShow(show: boolean): void {
   <NDrawer
     v-if="session.presentation === 'drawer'"
     :show="active && session.open.value"
-    :aria-label="title"
     width="min(100vw, calc(2 * var(--ui-layout-admin-drawer-maximum-inline-size)))"
     to="#pavp-overlay-root"
+    v-bind="{ 'aria-label': title } satisfies HTMLAttributes"
     @update:show="updateShow"
     @after-leave="session.release"
   >
@@ -174,9 +178,8 @@ function updateShow(show: boolean): void {
         contained
       >
         <UiTableEditorBody
-          :inert="!session.open.value"
           :session="session"
-          v-bind="dateTime === undefined ? {} : { dateTime }"
+          v-bind="{ ...(dateTime === undefined ? {} : { dateTime }), inert: !session.open.value }"
           :status="status"
         >
           <template
@@ -213,7 +216,7 @@ function updateShow(show: boolean): void {
             class="min-h-target-enhanced min-w-target-enhanced"
             type="primary"
             attr-type="submit"
-            :form="session.form.value?.formId"
+            v-bind="{ form: session.form.value?.formId } satisfies ButtonHTMLAttributes"
             :loading="session.form.value?.submitting.value === true"
             :disabled="
               !session.open.value || !session.form.value || session.form.value.submitting.value
@@ -240,8 +243,7 @@ function updateShow(show: boolean): void {
         class="pavp-table-modal__card min-h-0 min-w-0"
         content-class="grid min-h-0 min-w-0 grid-rows-1"
         role="dialog"
-        aria-modal="true"
-        :aria-label="title"
+        v-bind="{ 'aria-modal': 'true', 'aria-label': title } satisfies HTMLAttributes"
       >
         <template #header>
           <span
@@ -260,8 +262,12 @@ function updateShow(show: boolean): void {
         >
           <NButton
             quaternary
-            :aria-label="maximized ? copy.restore?.() : copy.maximize?.()"
-            :title="maximized ? copy.restore?.() : copy.maximize?.()"
+            v-bind="
+              {
+                'aria-label': maximized ? copy.restore?.() : copy.maximize?.(),
+                title: maximized ? copy.restore?.() : copy.maximize?.(),
+              } satisfies ButtonHTMLAttributes
+            "
             @click="toggleMaximize"
           >
             <span
@@ -276,9 +282,8 @@ function updateShow(show: boolean): void {
           contained
         >
           <UiTableEditorBody
-            :inert="!session.open.value"
             :session="session"
-            v-bind="dateTime === undefined ? {} : { dateTime }"
+            v-bind="{ ...(dateTime === undefined ? {} : { dateTime }), inert: !session.open.value }"
             :status="status"
           >
             <template
@@ -315,7 +320,7 @@ function updateShow(show: boolean): void {
               class="min-h-target-enhanced min-w-target-enhanced"
               type="primary"
               attr-type="submit"
-              :form="session.form.value?.formId"
+              v-bind="{ form: session.form.value?.formId } satisfies ButtonHTMLAttributes"
               :loading="session.form.value?.submitting.value === true"
               :disabled="
                 !session.open.value || !session.form.value || session.form.value.submitting.value
@@ -348,7 +353,7 @@ function updateShow(show: boolean): void {
     >
       <UiTableEditorBody
         :session="session"
-        v-bind="dateTime === undefined ? {} : { dateTime }"
+        v-bind="{ ...(dateTime === undefined ? {} : { dateTime }), inert: !session.open.value }"
         :status="status"
       >
         <template
@@ -384,7 +389,7 @@ function updateShow(show: boolean): void {
         class="min-h-target-enhanced min-w-target-enhanced"
         type="primary"
         attr-type="submit"
-        :form="session.form.value?.formId"
+        v-bind="{ form: session.form.value?.formId } satisfies ButtonHTMLAttributes"
         :loading="session.form.value?.submitting.value === true"
         :disabled="
           !session.open.value || !session.form.value || session.form.value.submitting.value

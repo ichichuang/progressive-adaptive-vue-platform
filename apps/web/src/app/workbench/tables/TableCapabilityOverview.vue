@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
+import {
+  type AnchorHTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+} from 'vue'
+
 import { NCard } from 'naive-ui/es/card'
 import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
 import WorkbenchPage from '../WorkbenchPage.vue'
@@ -132,7 +141,7 @@ onScopeDispose(() => {
     >
       <div
         class="grid min-w-0 gap-content-gap"
-        data-table-capabilities="overview"
+        v-bind="{ 'data-table-capabilities': 'overview' }"
       >
         <section
           v-for="section in sections"
@@ -154,8 +163,14 @@ onScopeDispose(() => {
               hoverable
               class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
               content-class="wb-capability-content grid min-w-0 items-center"
-              :href="navigation.resolveHref(item.destination)"
-              @click="activate($event, item.destination)"
+              v-bind="
+                {
+                  onClick: (event: MouseEvent) => {
+                    activate(event, item.destination)
+                  },
+                  href: navigation.resolveHref(item.destination),
+                } satisfies AnchorHTMLAttributes
+              "
             >
               <span
                 class="wb-capability-mark rounded-control grid row-span-2 place-items-center bg-surface-page text-control-primary text-title"

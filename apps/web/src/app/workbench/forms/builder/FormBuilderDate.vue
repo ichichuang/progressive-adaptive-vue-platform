@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref } from 'vue'
 import type { BuilderInputState } from './use-form-builder'
 import { NInput } from 'naive-ui/es/input'
 import { NButton } from 'naive-ui/es/button'
@@ -51,7 +51,7 @@ function choose(value: string | null): void {
       <template #trigger>
         <NButton
           secondary
-          :aria-label="label"
+          v-bind="{ 'aria-label': label } satisfies ButtonHTMLAttributes"
         >
           <template #icon>
             <span

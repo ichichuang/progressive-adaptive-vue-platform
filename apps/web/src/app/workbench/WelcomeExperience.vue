@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import { useUiMotion, type UiMotionHandle, type UiMotionPreset } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
-import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref, watch } from 'vue'
+import {
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  computed,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onScopeDispose,
+  ref,
+  watch,
+} from 'vue'
 import { LazyMotion, MotionConfig, domMax, m } from 'motion-v'
 import { useConsoleI18n } from '../../shared/i18n'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
@@ -35,7 +45,6 @@ const entrances = [
   ['.wb-home-description', 'curtain', 850],
   ['.wb-home-signature', 'curtain', 750],
   ['.wb-home-preview', 'card-expand', 1100],
-  ['.wb-home-palette-card', 'iris', 1000],
   ['.wb-home-feature:nth-child(1)', 'curtain', 850],
   ['.wb-home-feature:nth-child(2)', 'card-expand', 950],
   ['.wb-home-feature:nth-child(3)', 'iris', 1050],
@@ -58,18 +67,25 @@ function releaseHeld(): void {
   for (const target of held) target.classList.remove('opacity-0')
   held.clear()
 }
-function stopEntrances(): void {
+function suspendEntrances(): void {
   arrival += 1
   ready = false
   waveVisible.value = false
-  waveGroup = null
   entranceObserver?.disconnect()
   entranceObserver = undefined
   clearScheduledEntrances()
   for (const handle of running.values()) handle.cancel()
   running.clear()
-  viewport = null
+  // Visible or already playing groups must never be hidden or replayed on resume.
+  for (const target of pendingEntrances.keys()) {
+    if (isVisible(target)) pendingEntrances.delete(target)
+  }
   releaseHeld()
+}
+function stopEntrances(): void {
+  suspendEntrances()
+  waveGroup = null
+  viewport = null
   pendingEntrances.clear()
 }
 function hold(target: HTMLElement): void {
@@ -108,7 +124,7 @@ function revealFocusedGroup(event: FocusEvent): void {
     running.get(target)?.cancel()
     running.delete(target)
     pendingEntrances.delete(target)
-    entranceObserver?.unobserve(target)
+    if (target !== waveGroup) entranceObserver?.unobserve(target)
     showGroup(target)
   }
 }
@@ -142,13 +158,7 @@ function playInitialEntrances(owner: number): void {
 }
 async function beginArrival(): Promise<void> {
   stopEntrances()
-  if (
-    !active.value ||
-    appearance.snapshot.value.motion !== 'full' ||
-    typeof IntersectionObserver === 'undefined' ||
-    document.hidden
-  )
-    return
+  if (!active.value || typeof IntersectionObserver === 'undefined') return
   viewport = page.value?.closest<HTMLElement>('.wb-home-viewport') ?? null
   if (!viewport) return
   waveGroup = page.value?.querySelector<HTMLElement>('.wb-home-feature:nth-child(3)') ?? null
@@ -160,9 +170,22 @@ async function beginArrival(): Promise<void> {
     // Hold decorative content before the incoming route is revealed, without changing layout.
     hold(target)
   }
+  if (document.hidden || appearance.snapshot.value.motion !== 'full') {
+    suspendEntrances()
+    void resumeEntrances()
+    return
+  }
+  observeEntrances(owner)
+  await reveal.whenRevealed()
+  if (owner !== arrival) return
+  ready = true
+  playInitialEntrances(owner)
+}
+function observeEntrances(owner: number): void {
+  entranceObserver?.disconnect()
   entranceObserver = new IntersectionObserver(
     (entries) => {
-      if (owner !== arrival || !active.value) return
+      if (owner !== arrival || !active.value || document.hidden) return
       for (const entry of entries) {
         if (!(entry.target instanceof HTMLElement)) continue
         if (!ready) continue
@@ -174,18 +197,40 @@ async function beginArrival(): Promise<void> {
           if (target === waveGroup) waveVisible.value = false
           continue
         }
-        if (!timers.has(target)) playEntrance(target, owner)
+        if (!timers.has(target)) {
+          if (appearance.snapshot.value.motion === 'full') playEntrance(target, owner)
+          else {
+            pendingEntrances.delete(target)
+            showGroup(target)
+          }
+        }
         if (target === waveGroup && !pendingEntrances.has(target)) waveVisible.value = true
       }
     },
     { root: viewport, threshold: 0 },
   )
   for (const target of pendingEntrances.keys()) entranceObserver.observe(target)
-  await reveal.whenRevealed()
-  if (owner !== arrival) return
-  ready = true
-  playInitialEntrances(owner)
+  if (waveGroup) entranceObserver.observe(waveGroup)
 }
+function canResumeEntrances(): boolean {
+  return active.value && !document.hidden && viewport !== null
+}
+async function resumeEntrances(): Promise<void> {
+  if (!canResumeEntrances()) return
+  for (const target of pendingEntrances.keys()) {
+    if (isVisible(target) || target.contains(document.activeElement)) {
+      pendingEntrances.delete(target)
+      showGroup(target)
+    } else if (appearance.snapshot.value.motion === 'full') hold(target)
+  }
+  const owner = arrival
+  await reveal.whenRevealed()
+  if (owner !== arrival || !canResumeEntrances()) return
+  ready = true
+  waveVisible.value = waveGroup !== null && isVisible(waveGroup)
+  observeEntrances(owner)
+}
+
 onMounted(() => {
   void beginArrival()
 })
@@ -201,12 +246,14 @@ onDeactivated(() => {
 watch(
   () => appearance.snapshot.value.motion,
   () => {
-    stopEntrances()
+    suspendEntrances()
+    void resumeEntrances()
   },
   { flush: 'sync' },
 )
 function onVisibility(): void {
-  if (document.hidden) stopEntrances()
+  if (document.hidden) suspendEntrances()
+  else void resumeEntrances()
 }
 onMounted(() => {
   document.addEventListener('visibilitychange', onVisibility)
@@ -225,7 +272,7 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
 <template>
   <div
     ref="page"
-    class="wb-page wb-home grid min-w-0"
+    class="wb-home grid min-w-0"
     @focusin="revealFocusedGroup"
   >
     <LazyMotion :features="domMax">
@@ -235,164 +282,162 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
       >
         <div class="wb-home-first-screen grid min-w-0">
           <section
-            class="wb-home-hero rounded-panel relative isolate"
+            class="wb-home-hero grid min-w-0 items-center relative isolate"
             :aria-label="t('welcomeArt.intro')"
           >
-            <div class="wb-home-hero-grid grid items-center relative gap-content-gap">
-              <div class="wb-home-editorial grid content-center">
-                <p class="wb-home-eyebrow m-0 text-caption text-expression-accent-a-foreground">
-                  Progressive Adaptive Vue Platform
-                </p>
-                <h2 class="wb-home-headline font-title-weight m-0">
-                  <span
-                    class="wb-home-wordmark block"
-                    v-text="'PAVP'"
-                  />
-                  <span
-                    class="wb-home-subtitle"
-                    v-text="t('welcomeArt.titleTwo')"
-                  />
-                </h2>
-                <p class="wb-home-description m-0 text-body text-text-secondary">
-                  {{ t('welcomeArt.description') }}
-                </p>
-                <div class="flex flex-wrap items-center gap-content-gap">
-                  <NButton
-                    type="primary"
-                    size="large"
-                    tag="a"
-                    :href="navigation.resolveHref(dashboard)"
-                    @click="enterWorkbench($event, dashboard)"
-                  >
-                    {{ t('welcomeArt.enter') }}
-                    <template #icon>
-                      <span
-                        class="i-lucide-arrow-right"
-                        aria-hidden="true"
-                      />
-                    </template>
-                  </NButton>
-                  <NButton
-                    quaternary
-                    size="large"
-                    tag="a"
-                    :href="navigation.resolveHref(showcase)"
-                    @click="activate($event, showcase)"
-                  >
-                    {{ t('welcomeArt.explore') }}
-                  </NButton>
-                </div>
-                <div
-                  class="wb-home-signature flex-wrap items-center gap-content-gap text-caption text-text-secondary"
+            <div class="wb-home-editorial grid content-center">
+              <p class="wb-home-eyebrow m-0 text-caption text-expression-accent-a-foreground">
+                Progressive Adaptive Vue Platform
+              </p>
+              <h2 class="wb-home-headline font-title-weight m-0">
+                <span
+                  class="wb-home-wordmark block"
+                  v-text="'PAVP'"
+                />
+                <span
+                  class="wb-home-subtitle"
+                  v-text="t('welcomeArt.titleTwo')"
+                />
+              </h2>
+              <p class="wb-home-description m-0 text-body text-text-secondary">
+                {{ t('welcomeArt.description') }}
+              </p>
+              <div class="flex flex-wrap items-center gap-content-gap">
+                <NButton
+                  type="primary"
+                  size="large"
+                  tag="a"
+                  v-bind="
+                    { href: navigation.resolveHref(dashboard) } satisfies AnchorHTMLAttributes
+                  "
+                  @click="enterWorkbench($event, dashboard)"
                 >
-                  <span>Vue 3</span>
-                  <span>TypeScript</span>
-                  <span>Naive UI</span>
-                  <span>Motion</span>
-                  <span>AntV G2</span>
-                </div>
+                  {{ t('welcomeArt.enter') }}
+                  <template #icon>
+                    <span
+                      class="i-lucide-arrow-right"
+                      aria-hidden="true"
+                    />
+                  </template>
+                </NButton>
+                <NButton
+                  quaternary
+                  size="large"
+                  tag="a"
+                  v-bind="{ href: navigation.resolveHref(showcase) } satisfies AnchorHTMLAttributes"
+                  @click="activate($event, showcase)"
+                >
+                  {{ t('welcomeArt.explore') }}
+                </NButton>
               </div>
-              <WelcomeCapabilityStage />
+              <div
+                class="wb-home-signature flex-wrap items-center gap-content-gap text-caption text-text-secondary"
+              >
+                <span>Vue 3</span>
+                <span>TypeScript</span>
+                <span>Naive UI</span>
+                <span>Motion</span>
+                <span>AntV G2</span>
+              </div>
             </div>
+            <WelcomeCapabilityStage />
           </section>
           <section
-            class="wb-home-manifesto grid gap-content-gap"
+            class="wb-home-feature-grid grid min-w-0"
             :aria-label="t('welcomeArt.philosophy')"
           >
-            <div class="wb-home-feature-grid grid gap-content-gap">
-              <m.article
-                class="wb-home-feature grid text-expression-accent-a-soft-foreground"
-                :while-hover="full ? { y: -6 } : {}"
-                :transition="transition"
+            <m.article
+              class="wb-home-feature rounded-panel grid min-w-0 bg-expression-accent-a-soft-background text-expression-accent-a-soft-foreground"
+              :while-hover="full ? { y: -6 } : {}"
+              :transition="transition"
+            >
+              <h3 class="font-title-weight m-0 text-subheading">
+                {{ t('welcomeArt.systemTitle') }}
+              </h3>
+              <p class="m-0 text-body">
+                {{ t('welcomeArt.systemBody') }}
+              </p>
+              <div
+                class="wb-home-swatch-ribbon flex"
+                aria-hidden="true"
               >
-                <h3 class="font-title-weight m-0 text-subheading">
-                  {{ t('welcomeArt.systemTitle') }}
-                </h3>
-                <p class="m-0 text-body">
-                  {{ t('welcomeArt.systemBody') }}
-                </p>
-                <div
-                  class="wb-home-swatch-ribbon flex"
+                <span class="bg-data-viz-categorical-series-1" />
+                <span class="bg-data-viz-categorical-series-2" />
+                <span class="bg-data-viz-categorical-series-3" />
+                <span class="bg-data-viz-categorical-series-4" />
+                <span class="bg-data-viz-categorical-series-5" />
+                <span class="bg-data-viz-categorical-series-6" />
+                <span class="bg-data-viz-categorical-series-7" />
+                <span class="bg-data-viz-categorical-series-8" />
+              </div>
+            </m.article>
+            <m.article
+              class="wb-home-feature rounded-panel grid min-w-0 bg-surface-panel"
+              :while-hover="full ? { y: -6 } : {}"
+              :transition="transition"
+            >
+              <h3 class="font-title-weight m-0 text-subheading">
+                {{ t('welcomeArt.composeTitle') }}
+              </h3>
+              <p class="m-0 text-body text-text-secondary">
+                {{ t('welcomeArt.composeBody') }}
+              </p>
+              <div class="wb-home-flow flex items-center gap-component-unit text-caption">
+                <span
+                  class="rounded-control bg-expression-accent-a-soft-background text-expression-accent-a-soft-foreground"
+                  v-text="t('welcomeArt.configure')"
+                />
+                <span
+                  class="i-lucide-arrow-right"
                   aria-hidden="true"
-                >
-                  <span class="bg-data-viz-categorical-series-1" />
-                  <span class="bg-data-viz-categorical-series-2" />
-                  <span class="bg-data-viz-categorical-series-3" />
-                  <span class="bg-data-viz-categorical-series-4" />
-                  <span class="bg-data-viz-categorical-series-5" />
-                  <span class="bg-data-viz-categorical-series-6" />
-                  <span class="bg-data-viz-categorical-series-7" />
-                  <span class="bg-data-viz-categorical-series-8" />
-                </div>
-              </m.article>
-              <m.article
-                class="wb-home-feature grid"
-                :while-hover="full ? { y: -6 } : {}"
-                :transition="transition"
-              >
-                <h3 class="font-title-weight m-0 text-subheading">
-                  {{ t('welcomeArt.composeTitle') }}
-                </h3>
-                <p class="m-0 text-body text-text-secondary">
-                  {{ t('welcomeArt.composeBody') }}
-                </p>
-                <div class="wb-home-flow flex items-center gap-component-unit text-caption">
-                  <span
-                    class="rounded-control bg-expression-accent-a-soft-background text-expression-accent-a-soft-foreground"
-                    v-text="t('welcomeArt.configure')"
-                  />
-                  <span
-                    class="i-lucide-arrow-right"
-                    aria-hidden="true"
-                  />
-                  <span
-                    class="rounded-control bg-expression-accent-b-soft-background text-expression-accent-b-soft-foreground"
-                    v-text="t('welcomeArt.compose')"
-                  />
-                  <span
-                    class="i-lucide-arrow-right"
-                    aria-hidden="true"
-                  />
-                  <span
-                    class="rounded-control bg-expression-accent-a-solid-background text-expression-accent-a-solid-foreground"
-                    v-text="t('welcomeArt.create')"
-                  />
-                </div>
-              </m.article>
-              <m.article
-                class="wb-home-feature grid text-expression-accent-b-soft-foreground"
-                :while-hover="full ? { y: -6 } : {}"
-                :transition="transition"
-              >
-                <h3 class="font-title-weight m-0 text-subheading">
-                  {{ t('welcomeArt.motionTitle') }}
-                </h3>
-                <p class="m-0 text-body">
-                  {{ t('welcomeArt.motionBody') }}
-                </p>
-                <div
-                  class="wb-home-motion-wave flex items-end gap-component-unit"
+                />
+                <span
+                  class="rounded-control bg-expression-accent-b-soft-background text-expression-accent-b-soft-foreground"
+                  v-text="t('welcomeArt.compose')"
+                />
+                <span
+                  class="i-lucide-arrow-right"
                   aria-hidden="true"
-                >
-                  <m.span
-                    v-for="n in 12"
-                    :key="n"
-                    class="rounded-control bg-expression-accent-b-solid-background"
-                    :animate="
-                      full && waveVisible
-                        ? { scaleY: [0.3 + (n % 3) * 0.2, 1, 0.3 + (n % 3) * 0.2] }
-                        : { scaleY: 0.3 + (n % 4) * 0.2 }
-                    "
-                    :transition="{
-                      duration: 3,
-                      repeat: full && waveVisible ? Infinity : 0,
-                      delay: n * 0.12,
-                      ease: 'easeInOut',
-                    }"
-                  />
-                </div>
-              </m.article>
-            </div>
+                />
+                <span
+                  class="rounded-control bg-expression-accent-a-solid-background text-expression-accent-a-solid-foreground"
+                  v-text="t('welcomeArt.create')"
+                />
+              </div>
+            </m.article>
+            <m.article
+              class="wb-home-feature rounded-panel grid min-w-0 bg-expression-accent-b-soft-background text-expression-accent-b-soft-foreground"
+              :while-hover="full ? { y: -6 } : {}"
+              :transition="transition"
+            >
+              <h3 class="font-title-weight m-0 text-subheading">
+                {{ t('welcomeArt.motionTitle') }}
+              </h3>
+              <p class="m-0 text-body">
+                {{ t('welcomeArt.motionBody') }}
+              </p>
+              <div
+                class="wb-home-motion-wave flex items-end gap-component-unit"
+                aria-hidden="true"
+              >
+                <m.span
+                  v-for="n in 12"
+                  :key="n"
+                  class="rounded-control bg-expression-accent-b-solid-background"
+                  :animate="
+                    full && waveVisible
+                      ? { scaleY: [0.3 + (n % 3) * 0.2, 1, 0.3 + (n % 3) * 0.2] }
+                      : { scaleY: 0.3 + (n % 4) * 0.2 }
+                  "
+                  :transition="{
+                    duration: 3,
+                    repeat: full && waveVisible ? Infinity : 0,
+                    delay: n * 0.12,
+                    ease: 'easeInOut',
+                  }"
+                />
+              </div>
+            </m.article>
           </section>
         </div>
         <section
@@ -413,14 +458,18 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
             <div class="flex flex-wrap gap-component-unit">
               <NButton
                 :type="selectedExpression === 'a' ? 'primary' : 'default'"
-                :aria-pressed="selectedExpression === 'a'"
+                v-bind="
+                  { 'aria-pressed': selectedExpression === 'a' } satisfies ButtonHTMLAttributes
+                "
                 @click="selectedExpression = 'a'"
               >
                 {{ t('welcomeArt.expressionA') }}
               </NButton>
               <NButton
                 :type="selectedExpression === 'b' ? 'primary' : 'default'"
-                :aria-pressed="selectedExpression === 'b'"
+                v-bind="
+                  { 'aria-pressed': selectedExpression === 'b' } satisfies ButtonHTMLAttributes
+                "
                 @click="selectedExpression = 'b'"
               >
                 {{ t('welcomeArt.expressionB') }}
