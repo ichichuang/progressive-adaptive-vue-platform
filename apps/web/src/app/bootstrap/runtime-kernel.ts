@@ -14,6 +14,7 @@ import { formDraftStorageKey } from '../forms/form-draft-contract'
 import { createConsoleI18n, type ConsoleI18nHandle } from '../../shared/i18n'
 import { initializeNavigationPreference } from '../navigation/navigation-preference.store'
 import { initializeWorkspaceSession } from '../workspace/workspace-session'
+import type { AccessHost } from '../access/access-contract'
 import { consoleNavigationGroups, getRouteMessageScope } from '../router/route-registry'
 import type { Component } from 'vue'
 
@@ -304,6 +305,7 @@ function createAttemptDisposer(input: {
 }
 
 async function startAttempt(input: {
+  readonly accessHost: AccessHost | undefined
   readonly captureLedger: CoreErrorLedger
   readonly registerDisposer: (
     dispose: (reason: AttemptDisposalReason) => Promise<DisposalResult>,
@@ -485,6 +487,7 @@ async function startAttempt(input: {
       pinia: resources.pinia.pinia,
       handoff: resources.appearanceHandoff,
       api: resources.configuration.api,
+      ...(input.accessHost === undefined ? {} : { accessHost: input.accessHost }),
       appearanceDefault: { schemaVersion: 4, appearance: presentation.appearance },
     })
     throwClaimedStartupFailure()
@@ -647,6 +650,7 @@ export function startRuntimeKernel(
   scrollDocumentLifecycle: ScrollDocumentLifecycle,
   retainedConfigurationRetriesUsed = 0,
   retainedAppearanceSafetyRestorationAuthority?: AppearanceSafetyRestorationAuthority,
+  accessHost?: AccessHost,
 ): RunningApplicationHandle {
   const maximumRetriesPerDocument = startupConfigurationRecoveryPolicy.maximumRetriesPerDocument
 
@@ -676,6 +680,7 @@ export function startRuntimeKernel(
     fatalBoundary?.dispose()
     fatalBoundary = undefined
     const outcome = await startAttempt({
+      accessHost,
       captureLedger: ledger,
       registerDisposer(dispose) {
         currentAttemptDisposer = dispose

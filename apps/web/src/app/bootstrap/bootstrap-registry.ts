@@ -108,8 +108,9 @@ export const bootstrapStepRegistry = [
       'create-vue-application',
       'create-pinia',
     ],
-    createInput: 'Vue application, Pinia, validated handoff, Appearance adapters, media snapshot',
-    createOutput: 'exact Pinia and Appearance provider handles',
+    createInput:
+      'Vue application, Pinia, validated handoff, Appearance adapters, optional access host',
+    createOutput: 'Pinia and Appearance provider handles and the application access boundary',
     readyCondition: 'Pinia installed and one transactional Appearance restoration committed',
     disposeResponsibility: 'release provider handles and compensate failed-startup Appearance',
     domMountOwner: false,
