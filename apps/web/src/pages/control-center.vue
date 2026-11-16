@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import {
   builtInAppearanceThemePreviews,
-  colorModePreferenceSchema,
   explicitThemePreferenceSchema,
   fontScaleValues,
   projectAccessibleCustomAppearanceThemePreviews,
   type AppearanceThemePreviewProjection,
+  type ColorStyle,
   type ExplicitThemePreference,
   type ThemeReference,
 } from '@platform/design-system'
@@ -13,6 +13,8 @@ import {
   type ButtonHTMLAttributes,
   computed,
   inject,
+  nextTick,
+  onMounted,
   onScopeDispose,
   ref,
   shallowRef,
@@ -20,19 +22,28 @@ import {
   type HTMLAttributes,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
-import { UiRadioCardGroup, UiScrollArea, type UiScrollController } from '@platform/ui'
 import { NCard } from 'naive-ui/es/card'
+import {
+  formatUiDateTime,
+  UiRadioCardGroup,
+  UiScrollArea,
+  useUiClock,
+  useUiDateTime,
+  type UiScrollController,
+} from '@platform/ui'
 import {
   NMessageProvider,
   type MessageProviderInst,
   type MessageReactive,
 } from 'naive-ui/es/message'
-import { NScrollbar } from 'naive-ui/es/scrollbar'
+import { NPopover } from 'naive-ui/es/popover'
+import { NModal } from 'naive-ui/es/modal'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
+import { NSelect } from 'naive-ui/es/select'
 import { NSwitch } from 'naive-ui/es/switch'
 import RuntimeVersionSettings from '../app/workbench/RuntimeVersionSettings.vue'
 import ThemeStyleSettings from '../app/workbench/ThemeStyleSettings.vue'
 import SettingsField from '../app/workbench/SettingsField.vue'
-import ColorModePreview from '../app/workbench/ColorModePreview.vue'
 
 import { useAppearanceMutationBoundary } from '../app/appearance/appearance-mutation-boundary'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
@@ -46,6 +57,7 @@ import { consoleNavigationRegistry } from '../app/router/route-registry'
 import { useSettingsReturn } from '../app/router/settings-return'
 import { routerScrollControllerKey } from '../app/router/router-scroll-controller'
 import { useScrollPreferenceStore } from '../app/scroll/scroll-preference.store'
+import { useDateTimeStore } from '../app/date-time/date-time.store'
 import { consoleLocaleRegistry, useConsoleI18n, type ConsoleMessageKey } from '../shared/i18n'
 
 defineOptions({ name: 'ControlCenterPage' })
@@ -57,8 +69,17 @@ const mutation = useAppearanceMutationBoundary()
 const effective = useAppearanceReadBoundary()
 const navigation = useNavigationPreferenceStore()
 const scroll = useScrollPreferenceStore()
-import { useDateTimeStore } from '../app/date-time/date-time.store'
 const dateTimeStore = useDateTimeStore()
+const dateTimeContext = useUiDateTime()
+const now = useUiClock({ interval: 60000 })
+const liveDateTime = computed(() =>
+  dateTimeContext.value === undefined
+    ? '—'
+    : (formatUiDateTime(
+        { kind: 'timestamp', value: now.value, unit: 'milliseconds' },
+        dateTimeContext.value,
+      ) ?? '—'),
+)
 const dateZones = computed(() => [
   { value: 'system', label: t('dateShowcase.system') },
   ...[
@@ -81,6 +102,24 @@ const settingsReturn = useSettingsReturn()
 const { t } = language
 const preference = mutation.preference
 const page = ref<HTMLElement | null>(null)
+const sectionNavigation = ref<HTMLElement | null>(null)
+const narrowLayout = ref(false)
+let layoutObserver: MutationObserver | undefined
+onMounted(() => {
+  const shell = page.value?.closest<HTMLElement>('.pavp-admin-shell')
+  if (!shell) return
+  const synchronizeLayout = (): void => {
+    const narrow = shell.dataset['layoutProfile'] === 'narrow'
+    if (narrowLayout.value !== narrow && styleChooserOpen.value) {
+      styleChooserOpen.value = false
+      void nextTick(restoreStyleChooserFocus)
+    }
+    narrowLayout.value = narrow
+  }
+  synchronizeLayout()
+  layoutObserver = new MutationObserver(synchronizeLayout)
+  layoutObserver.observe(shell, { attributes: true, attributeFilter: ['data-layout-profile'] })
+})
 const contentScroll = shallowRef<UiScrollController | null>(null)
 const registerScrollController = inject(routerScrollControllerKey)
 if (registerScrollController === undefined)
@@ -108,10 +147,8 @@ const localeNoticeKeys = {
 } as const
 const sections = [
   { id: 'settings-theme', label: 'settings.section.theme' },
-  { id: 'settings-style', label: 'settings.styles.title' },
-  { id: 'settings-reading', label: 'settings.section.reading' },
-  { id: 'settings-layout', label: 'settings.section.layout' },
   { id: 'settings-comfort', label: 'settings.section.comfort' },
+  { id: 'settings-reading', label: 'settings.section.reading' },
   {
     id: 'settings-workspace',
     label: 'settings.section.workspace',
@@ -122,17 +159,22 @@ const sections = [
 }[]
 type SectionId = (typeof sections)[number]['id']
 const activeSection = ref<SectionId>('settings-theme')
+watch(activeSection, async () => {
+  await nextTick()
+  const navigationElement = sectionNavigation.value
+  const current = navigationElement?.querySelector<HTMLElement>('[aria-current="location"]')
+  if (!navigationElement || !current) return
+  const bounds = navigationElement.getBoundingClientRect()
+  const item = current.getBoundingClientRect()
+  if (item.left < bounds.left) navigationElement.scrollLeft -= bounds.left - item.left
+  else if (item.right > bounds.right) navigationElement.scrollLeft += item.right - bounds.right
+})
 const themePreviews = computed(() => [
   ...builtInAppearanceThemePreviews,
   ...projectAccessibleCustomAppearanceThemePreviews(mutation.customThemeRegistry.value ?? []),
 ])
-const activePreview = computed(() =>
-  themePreviews.value.find(
-    (theme) =>
-      theme.reference.registryKind === effective.snapshot.value.theme.registryKind &&
-      theme.themeId === effective.snapshot.value.theme.themeId,
-  ),
-)
+const styleChooserOpen = ref(false)
+const styleChooserTrigger = ref<HTMLElement | null>(null)
 const showSaveError = computed(() => feedback.value !== null)
 const feedbackMessage = computed(() => {
   const current = feedback.value
@@ -174,9 +216,9 @@ watch(
   { immediate: true, flush: 'post' },
 )
 const colorModes = [
+  { value: 'system', label: 'settings.system' },
   { value: 'light', label: 'settings.light' },
   { value: 'dark', label: 'settings.dark' },
-  { value: 'system', label: 'settings.system' },
 ] as const
 const themeChoiceLayout = {
   heightMedium: 'auto',
@@ -277,7 +319,11 @@ let modeActivation:
 function captureModeOrigin(event: MouseEvent | KeyboardEvent): void {
   if (!(event.target instanceof Element) || !event.target.closest('.wb-mode-options')) return
   if (event instanceof MouseEvent && event.button !== 0) return
-  const origin = readAppearanceTransitionOrigin(event)
+  let origin = readAppearanceTransitionOrigin(event)
+  if (origin === undefined && event instanceof KeyboardEvent) {
+    const bounds = event.target.closest('label')?.getBoundingClientRect()
+    if (bounds) origin = { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 }
+  }
   modeActivation = origin === undefined ? undefined : { origin, time: performance.now() }
 }
 
@@ -319,6 +365,37 @@ function themeStyle(theme: AppearanceThemePreviewProjection): Readonly<Record<st
 function resetAppearance(): void {
   const result = mutation.resetPreference()
   announce(result.status === 'committed' ? null : 'settings.feedback.rejected')
+}
+
+function chooseStyle(style: ColorStyle): void {
+  if (style !== preference.value?.appearance.colorStyle) commitAppearance({ colorStyle: style })
+}
+
+function closeStyleChooser(): void {
+  styleChooserOpen.value = false
+  if (!narrowLayout.value) restoreStyleChooserFocus()
+}
+
+function restoreStyleChooserFocus(): void {
+  styleChooserTrigger.value?.querySelector<HTMLButtonElement>('button')?.focus({
+    preventScroll: true,
+  })
+}
+
+function handleStyleChooserKeydown(event: KeyboardEvent): void {
+  if (event.key !== 'Escape') return
+  event.preventDefault()
+  event.stopPropagation()
+  closeStyleChooser()
+}
+
+async function updateStyleChooser(open: boolean): Promise<void> {
+  styleChooserOpen.value = open
+  if (!open) return
+  await nextTick()
+  document
+    .querySelector<HTMLButtonElement>('#settings-style-gallery [data-style-choice][tabindex="0"]')
+    ?.focus()
 }
 
 function announcePersistence(result: {
@@ -365,13 +442,23 @@ function jumpTo(id: SectionId): void {
   const section = page.value?.querySelector<HTMLElement>(`#${id}`)
   if (section === undefined || section === null) return
   pendingSection = id
-  const result = contentScroll.value?.scrollToAnchor(id, { behavior: 'smooth' })
+  const result = contentScroll.value?.scrollToAnchor(id, {
+    behavior: effective.snapshot.value.motion === 'full' ? 'smooth' : 'instant',
+  })
   if (result?.kind !== 'scrolled') {
     pendingSection = undefined
     announce('settings.feedback.unavailable')
     return
   }
   activeSection.value = id
+  const state = contentScroll.value?.readState()
+  const offset = contentScroll.value?.readOffset()
+  if (
+    state !== undefined &&
+    offset !== undefined &&
+    (state.contentHeight <= state.height || offset.top >= state.contentHeight - state.height - 1)
+  )
+    pendingSection = undefined
 }
 
 async function finish(): Promise<void> {
@@ -394,15 +481,24 @@ async function finish(): Promise<void> {
 
 function synchronizeViewport(viewport: HTMLElement): void {
   const top = viewport.getBoundingClientRect().top
+  const maximum = Math.max(0, viewport.scrollHeight - viewport.clientHeight)
+  const atBottom = maximum > 1 && viewport.scrollTop >= maximum - 1
   if (pendingSection !== undefined) {
     const target = page.value?.querySelector<HTMLElement>(`#${pendingSection}`)
     if (
       target !== undefined &&
       target !== null &&
-      Math.abs(target.getBoundingClientRect().top - top) > 1
+      Math.abs(target.getBoundingClientRect().top - top) > 1 &&
+      !atBottom
     )
       return
+    activeSection.value = pendingSection
     pendingSection = undefined
+    return
+  }
+  if (atBottom) {
+    activeSection.value = 'settings-workspace'
+    return
   }
   const section = [...sections].reverse().find((candidate) => {
     const element = page.value?.querySelector<HTMLElement>(`#${candidate.id}`)
@@ -437,6 +533,7 @@ function interruptSectionScroll(event: Event): void {
 
 onScopeDispose(() => {
   disposed = true
+  layoutObserver?.disconnect()
   feedbackNotice?.destroy()
   unregisterScrollController?.()
 })
@@ -444,50 +541,119 @@ onScopeDispose(() => {
 <template>
   <div
     ref="page"
-    class="wb-page wb-settings flex-1 grid h-full min-h-0 min-w-0 gap-content-gap"
+    class="wb-page flex flex-1 flex-col gap-0 h-full min-h-0 min-w-0 bg-surface-page"
     @scroll.capture="synchronizeSection"
     @wheel.capture="interruptSectionScroll"
     @pointerdown.capture="interruptSectionScroll"
   >
-    <UiScrollArea
-      class="wb-settings-scroll min-h-0 min-w-0"
-      owner-id="architecture-console-content"
-      @controller="connectContentScroll"
+    <header
+      class="flex shrink-0 flex-wrap min-w-0 items-center justify-between gap-content-gap p-panel-narrow"
     >
-      <div class="wb-settings-content grid min-w-0 gap-field-gap">
-        <header
-          class="wb-settings-heading flex flex-wrap items-center justify-between gap-content-gap"
-        >
-          <h1
-            id="control-center-heading"
-            class="sr-only"
-            data-route-focus="architecture-console-page-heading"
-            tabindex="-1"
-          >
-            {{ t('settings.title') }}
-          </h1>
-          <p
-            class="leading-title font-title-weight m-0 text-title"
-            aria-hidden="true"
-          >
-            {{ t('settings.title') }}
-          </p>
-        </header>
-
-        <NCard
-          tag="section"
-          :bordered="false"
-          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
-          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
+      <h1
+        id="control-center-heading"
+        class="sr-only"
+        data-route-focus="architecture-console-page-heading"
+        tabindex="-1"
+      >
+        {{ t('settings.title') }}
+      </h1>
+      <span
+        class="leading-title font-title-weight text-heading"
+        aria-hidden="true"
+      >
+        {{ t('settings.title') }}
+      </span>
+      <div class="flex flex-wrap max-w-full min-w-0 items-center justify-end gap-component-unit">
+        <span
+          id="settings-reset-note"
+          class="sr-only"
+          v-text="t('settings.reset-note')"
+        />
+        <NButton
+          quaternary
+          class="min-h-target-enhanced"
+          :disabled="preference === null || returning"
           v-bind="
             {
-              id: 'settings-theme',
-              'aria-labelledby': 'settings-theme-title',
-            } satisfies HTMLAttributes
+              'aria-label': t(
+                narrowLayout
+                  ? 'settings.reset-appearance-compact-aria'
+                  : 'settings.reset-appearance',
+              ),
+              'aria-describedby': 'settings-reset-note',
+              title: t('settings.reset-appearance'),
+            } satisfies ButtonHTMLAttributes
           "
+          @click="resetAppearance"
         >
-          <div
-            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          {{ t(narrowLayout ? 'settings.reset-appearance-compact' : 'settings.reset-appearance') }}
+        </NButton>
+        <NButton
+          class="min-h-target-enhanced"
+          type="primary"
+          :loading="returning && effective.snapshot.value.motion === 'full'"
+          :disabled="returning"
+          v-bind="
+            (returning
+              ? { 'aria-busy': true, 'aria-label': t('settings.returning') }
+              : { 'aria-busy': false, 'aria-label': t('settings.done') }) satisfies HTMLAttributes
+          "
+          @click="finish"
+        >
+          {{ returning ? t('settings.returning') : t('settings.done') }}
+        </NButton>
+      </div>
+    </header>
+
+    <div class="flex flex-1 flex-col min-h-0 min-w-0 layout-regular:flex-row layout-wide:flex-row">
+      <aside
+        class="wb-settings-navigation shrink-0 min-h-0 min-w-0 layout-regular:p-panel-narrow layout-wide:p-panel-narrow"
+      >
+        <nav
+          ref="sectionNavigation"
+          class="wb-section-nav flex min-h-0 min-w-0 overflow-x-auto gap-component-unit layout-regular:flex-col layout-wide:flex-col layout-regular:overflow-x-hidden layout-regular:overflow-y-auto layout-wide:overflow-x-hidden layout-wide:overflow-y-auto"
+          :aria-label="t('settings.section-navigation')"
+        >
+          <NButton
+            v-for="section in sections"
+            :key="section.id"
+            :quaternary="activeSection !== section.id"
+            :tertiary="activeSection === section.id"
+            :type="activeSection === section.id ? 'primary' : 'default'"
+            :bordered="false"
+            v-bind="
+              {
+                'aria-current': activeSection === section.id ? 'location' : undefined,
+                'aria-controls': section.id,
+              } satisfies ButtonHTMLAttributes
+            "
+            class="wb-section-link"
+            @click="jumpTo(section.id)"
+          >
+            <span class="flex items-center gap-component-unit">
+              <span
+                v-if="activeSection === section.id"
+                class="i-lucide-check shrink-0"
+                aria-hidden="true"
+              />
+              {{ t(section.label) }}
+            </span>
+          </NButton>
+        </nav>
+      </aside>
+
+      <UiScrollArea
+        class="flex-1 min-h-0 min-w-0"
+        owner-id="architecture-console-content"
+        @controller="connectContentScroll"
+      >
+        <div
+          class="settings-content grid min-w-0 w-full gap-field-gap p-panel layout-narrow:p-panel-narrow"
+        >
+          <section
+            id="settings-theme"
+            class="grid min-w-0 gap-content-gap"
+            aria-labelledby="settings-theme-title"
           >
             <h2
               id="settings-theme-title"
@@ -496,343 +662,233 @@ onScopeDispose(() => {
             >
               {{ t('settings.section.theme') }}
             </h2>
-            <p class="m-0 text-pretty text-caption text-text-secondary">
-              {{ t('settings.color-mode-note') }}
-            </p>
-          </div>
-          <div
-            class="wb-settings-controls grid min-w-0 gap-field-gap"
-            v-bind="{
-              onPointerdownCapture: captureModeOrigin,
-              onKeydownCapture: captureModeOrigin,
-            }"
-          >
-            <UiRadioCardGroup
-              v-if="activePreview && preference !== null"
-              class="wb-mode-options wb-mode-options-compact layout-regular:grid-cols-3 layout-wide:grid-cols-3"
-              :accessible-label="t('settings.color-mode')"
-              :model-value="preference.appearance.colorMode"
-              :options="colorModeOptions"
-              :disabled="returning"
-              @update:model-value="chooseMode"
+
+            <SettingsField
+              id="settings-color-mode"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('settings.color-mode')"
             >
-              <template #option="{ option, selected }">
-                <ColorModePreview
-                  class="layout-narrow:hidden"
-                  :theme="activePreview"
-                  :mode="colorModePreferenceSchema.parse(option.value)"
-                  :contrast="effective.snapshot.value.contrast"
-                />
-                <span
-                  class="wb-mode-caption leading-body flex items-center justify-center gap-component-unit text-body"
-                >
-                  <span
-                    v-if="selected"
-                    class="i-lucide-circle-check shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span
-                    v-else
-                    class="i-lucide-circle shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span class="whitespace-nowrap">{{ option.label }}</span>
-                </span>
-              </template>
-            </UiRadioCardGroup>
-            <div class="grid min-w-0 gap-content-gap">
-              <span class="font-title-weight text-caption text-text-secondary">{{
-                t('settings.choose-theme')
-              }}</span>
-              <div
-                class="wb-theme-options flex flex-wrap min-w-0 gap-content-gap"
-                role="group"
-                :aria-label="t('settings.choose-theme')"
-              >
-                <NButton
-                  v-for="theme in themePreviews"
-                  :key="`${theme.registryKind}:${theme.themeId}`"
-                  :quaternary="!selectedTheme(theme.reference)"
-                  :tertiary="selectedTheme(theme.reference)"
-                  :type="selectedTheme(theme.reference) ? 'primary' : 'default'"
-                  :bordered="false"
-                  :theme-overrides="themeChoiceLayout"
-                  class="wb-theme-option"
-                  :style="themeStyle(theme)"
+              <template #default="field">
+                <NRadioGroup
+                  class="wb-mode-options flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                  name="settings-color-mode"
+                  :value="preference?.appearance.colorMode ?? null"
+                  :disabled="preference === null || returning"
                   v-bind="
                     {
-                      'aria-pressed': selectedTheme(theme.reference),
-                      'aria-label': theme.label,
-                    } satisfies ButtonHTMLAttributes
+                      'aria-labelledby': field.labelledBy,
+                      onPointerdownCapture: captureModeOrigin,
+                      onKeydownCapture: captureModeOrigin,
+                    } as HTMLAttributes
                   "
-                  :disabled="preference === null || returning"
-                  @click="chooseTheme(theme.reference, $event)"
+                  @update:value="chooseMode(String($event))"
                 >
-                  <span
-                    class="wb-theme-swatch grid place-items-center min-h-target-enhanced min-w-target-enhanced"
-                    aria-hidden="true"
+                  <NRadioButton
+                    v-for="option in colorModeOptions"
+                    :key="option.value"
+                    :value="option.value"
                   >
                     <span
-                      v-if="selectedTheme(theme.reference)"
-                      class="i-lucide-check text-title"
+                      v-if="preference?.appearance.colorMode === option.value"
+                      class="i-lucide-check inline-block"
+                      aria-hidden="true"
                     />
-                  </span>
-                  <span class="sr-only">{{ theme.label }}</span>
-                </NButton>
+                    {{ option.label }}
+                  </NRadioButton>
+                </NRadioGroup>
+                <p
+                  v-if="preference?.appearance.colorMode === 'system'"
+                  class="m-0 text-caption text-text-secondary"
+                >
+                  {{
+                    t(
+                      effective.snapshot.value.colorMode === 'dark'
+                        ? 'settings.current-dark'
+                        : 'settings.current-light',
+                    )
+                  }}
+                </p>
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
+            <SettingsField
+              id="settings-theme-color"
+              :label="t('settings.choose-theme')"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+            >
+              <template #default="field">
+                <div
+                  class="wb-theme-options flex flex-wrap min-w-0 gap-component-unit"
+                  role="group"
+                  :aria-labelledby="field.labelledBy"
+                >
+                  <NButton
+                    v-for="theme in themePreviews"
+                    :key="`${theme.registryKind}:${theme.themeId}`"
+                    :quaternary="!selectedTheme(theme.reference)"
+                    :tertiary="selectedTheme(theme.reference)"
+                    :type="selectedTheme(theme.reference) ? 'primary' : 'default'"
+                    :bordered="false"
+                    :theme-overrides="themeChoiceLayout"
+                    class="wb-theme-option min-h-target-enhanced"
+                    :style="themeStyle(theme)"
+                    v-bind="
+                      {
+                        'aria-pressed': selectedTheme(theme.reference),
+                        'aria-label': theme.label,
+                      } satisfies ButtonHTMLAttributes
+                    "
+                    :disabled="preference === null || returning"
+                    @click="chooseTheme(theme.reference, $event)"
+                  >
+                    <span
+                      class="wb-theme-swatch grid place-items-center size-icon-medium"
+                      aria-hidden="true"
+                    >
+                      <span
+                        v-if="selectedTheme(theme.reference)"
+                        class="i-lucide-check inline-block"
+                      />
+                    </span>
+                    <span>{{ theme.label }}</span>
+                  </NButton>
+                </div>
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
+            <SettingsField
+              id="settings-style"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('settings.styles.title')"
+            >
+              <div class="flex flex-wrap min-w-0 items-center gap-content-gap">
+                <ThemeStyleSettings
+                  v-if="preference !== null"
+                  :model-value="preference.appearance.colorStyle"
+                  :appearance="effective.snapshot.value"
+                  preview-only
+                >
+                  <template #preview-label="{ label }">
+                    <span>{{ label }}</span>
+                  </template>
+                </ThemeStyleSettings>
+                <NPopover
+                  trigger="click"
+                  placement="bottom-end"
+                  :show="styleChooserOpen && !narrowLayout"
+                  :disabled="narrowLayout"
+                  :show-arrow="false"
+                  :animated="effective.snapshot.value.motion === 'full'"
+                  scrollable
+                  class="wb-form-draft-popover"
+                  to="#pavp-overlay-root"
+                  @update:show="updateStyleChooser"
+                >
+                  <template #trigger>
+                    <span ref="styleChooserTrigger">
+                      <NButton
+                        secondary
+                        class="min-h-target-enhanced"
+                        :disabled="preference === null || returning"
+                        v-bind="
+                          {
+                            'aria-haspopup': 'dialog',
+                            'aria-expanded': styleChooserOpen ? 'true' : 'false',
+                            'aria-controls': 'settings-style-gallery',
+                            onKeydown: handleStyleChooserKeydown,
+                          } satisfies ButtonHTMLAttributes
+                        "
+                        @click="narrowLayout && updateStyleChooser(true)"
+                      >
+                        {{ t('settings.styles.change') }}
+                      </NButton>
+                    </span>
+                  </template>
+                  <div
+                    v-if="!narrowLayout"
+                    id="settings-style-gallery"
+                    class="grid min-w-0 gap-content-gap max-w-admin-drawer"
+                    role="dialog"
+                    :aria-label="t('settings.styles.title')"
+                  >
+                    <div class="flex min-w-0 items-center justify-between gap-content-gap">
+                      <strong>{{ t('settings.styles.title') }}</strong>
+                      <NButton
+                        quaternary
+                        v-bind="
+                          {
+                            'aria-label': t('settings.styles.close'),
+                            onKeydown: handleStyleChooserKeydown,
+                          } satisfies ButtonHTMLAttributes
+                        "
+                        @click="closeStyleChooser"
+                      >
+                        <span
+                          class="i-lucide-x"
+                          aria-hidden="true"
+                        />
+                      </NButton>
+                    </div>
+                    <ThemeStyleSettings
+                      v-if="preference !== null"
+                      :model-value="preference.appearance.colorStyle"
+                      :appearance="effective.snapshot.value"
+                      :disabled="returning"
+                      @update:model-value="chooseStyle"
+                      @keydown.esc.stop.prevent="closeStyleChooser"
+                    />
+                  </div>
+                </NPopover>
               </div>
-            </div>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
             <SettingsField
               id="settings-contrast"
-              class="wb-settings-choice-field"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
               :label="t('settings.contrast')"
             >
               <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.contrast')"
-                  :model-value="String(appearanceValue('contrast') ?? '')"
-                  :options="choices.contrast"
+                <NRadioGroup
+                  class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                  name="settings-contrast"
+                  :value="appearanceValue('contrast')"
                   :disabled="preference === null || returning"
-                  @update:model-value="updateAppearance('contrast', $event)"
-                />
-              </template>
-            </SettingsField>
-          </div>
-        </NCard>
-        <NCard
-          tag="section"
-          :bordered="false"
-          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
-          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          v-bind="
-            {
-              id: 'settings-style',
-              'aria-labelledby': 'settings-style-title',
-            } satisfies HTMLAttributes
-          "
-        >
-          <h2
-            id="settings-style-title"
-            class="font-title-weight m-0 text-subheading"
-            tabindex="-1"
-          >
-            {{ t('settings.styles.title') }}
-          </h2>
-          <ThemeStyleSettings
-            v-if="preference !== null"
-            :model-value="preference.appearance.colorStyle"
-            :appearance="effective.snapshot.value"
-            :disabled="returning"
-            @update:model-value="commitAppearance({ colorStyle: $event })"
-          />
-        </NCard>
-        <NCard
-          tag="section"
-          :bordered="false"
-          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
-          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          v-bind="
-            {
-              id: 'settings-reading',
-              'aria-labelledby': 'settings-reading-title',
-            } satisfies HTMLAttributes
-          "
-        >
-          <div
-            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
-          >
-            <h2
-              id="settings-reading-title"
-              class="font-title-weight m-0 text-subheading"
-              tabindex="-1"
-            >
-              {{ t('settings.section.reading') }}
-            </h2>
-          </div>
-          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
-            <SettingsField
-              id="settings-language"
-              class="wb-settings-choice-field"
-              :label="t('settings.language')"
-            >
-              <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="
-                    {
-                      id: field.inputProps.id,
-                      'aria-labelledby': field.labelledBy,
-                      'aria-busy': language.pendingLocale.value !== null,
-                    } satisfies HTMLAttributes
-                  "
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.language')"
-                  :model-value="language.pendingLocale.value ?? language.locale.value"
-                  :options="choices.language"
-                  :disabled="returning || language.pendingLocale.value !== null"
-                  @update:model-value="updateLanguage"
-                />
-              </template>
-            </SettingsField>
-            <SettingsField
-              id="settings-time-zone"
-              class="wb-settings-choice-field"
-              :label="t('dateShowcase.zone')"
-            >
-              <UiRadioCardGroup
-                class="wb-setting-choice"
-                :accessible-label="t('dateShowcase.zone')"
-                :model-value="dateTimeStore.preference.timeZone"
-                :options="dateZones"
-                @update:model-value="
-                  dateTimeStore.update({ ...dateTimeStore.preference, timeZone: $event })
-                "
-              />
-            </SettingsField>
-            <SettingsField
-              id="settings-date-format"
-              class="wb-settings-choice-field"
-              :label="t('dateShowcase.dateFormat')"
-            >
-              <UiRadioCardGroup
-                class="wb-setting-choice"
-                :accessible-label="t('dateShowcase.dateFormat')"
-                :model-value="dateTimeStore.preference.dateFormat"
-                :options="[
-                  { value: 'locale', label: t('dateShowcase.localeFormat') },
-                  { value: 'ymd', label: t('dateShowcase.ymd') },
-                  { value: 'dmy', label: t('dateShowcase.dmy') },
-                  { value: 'mdy', label: t('dateShowcase.mdy') },
-                ]"
-                @update:model-value="
-                  dateTimeStore.update({ ...dateTimeStore.preference, dateFormat: $event })
-                "
-              />
-            </SettingsField>
-            <SettingsField
-              id="settings-hour-cycle"
-              class="wb-settings-choice-field"
-              :label="t('dateShowcase.hours')"
-            >
-              <UiRadioCardGroup
-                class="wb-setting-choice"
-                :accessible-label="t('dateShowcase.hours')"
-                :model-value="dateTimeStore.preference.hourCycle"
-                :options="[
-                  { value: 'h12', label: '12h' },
-                  { value: 'h23', label: '24h' },
-                ]"
-                @update:model-value="
-                  dateTimeStore.update({ ...dateTimeStore.preference, hourCycle: $event })
-                "
-              />
-              <span
-                class="text-caption"
-                :class="{ invisible: !dateTimeStore.persistenceFailed }"
-                role="status"
-                v-text="t('dateShowcase.notSaved')"
-              />
-            </SettingsField>
-            <SettingsField
-              id="settings-font-scale"
-              class="wb-settings-choice-field"
-              :label="t('settings.font-scale')"
-            >
-              <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.font-scale')"
-                  :model-value="String(appearanceValue('fontScale') ?? '')"
-                  :options="choices.fontScale"
-                  :disabled="preference === null || returning"
-                  @update:model-value="updateAppearance('fontScale', Number($event))"
-                />
-              </template>
-            </SettingsField>
-          </div>
-        </NCard>
-        <NCard
-          tag="section"
-          :bordered="false"
-          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
-          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          v-bind="
-            {
-              id: 'settings-layout',
-              'aria-labelledby': 'settings-layout-title',
-            } satisfies HTMLAttributes
-          "
-        >
-          <div
-            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
-          >
-            <h2
-              id="settings-layout-title"
-              class="font-title-weight m-0 text-subheading"
-              tabindex="-1"
-            >
-              {{ t('settings.section.layout') }}
-            </h2>
-          </div>
-          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
-            <SettingsField
-              id="settings-density"
-              class="wb-settings-choice-field"
-              :label="t('settings.density')"
-            >
-              <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.density')"
-                  :model-value="String(appearanceValue('density') ?? '')"
-                  :options="choices.density"
-                  :disabled="preference === null || returning"
-                  @update:model-value="updateAppearance('density', $event)"
-                />
-              </template>
-            </SettingsField>
-            <SettingsField
-              id="settings-navigation-collapsed"
-              :label="t('settings.navigation-collapsed')"
-            >
-              <template #default="field">
-                <NSwitch
-                  :value="navigation.wideNavigationCollapsed"
                   v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
-                  @update:value="updateNavigation('collapsed', $event)"
-                />
+                  @update:value="updateAppearance('contrast', $event)"
+                >
+                  <NRadioButton
+                    v-for="option in choices.contrast"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    <span
+                      v-if="appearanceValue('contrast') === option.value"
+                      class="i-lucide-check inline-block"
+                      aria-hidden="true"
+                    />
+                    {{ option.label }}
+                  </NRadioButton>
+                </NRadioGroup>
               </template>
             </SettingsField>
-            <SettingsField
-              id="settings-navigation-accordion"
-              :label="t('settings.navigation-accordion')"
-            >
-              <template #default="field">
-                <NSwitch
-                  :value="navigation.accordion"
-                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
-                  @update:value="updateNavigation('accordion', $event)"
-                />
-              </template>
-            </SettingsField>
-          </div>
-        </NCard>
-        <NCard
-          tag="section"
-          :bordered="false"
-          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
-          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          v-bind="
-            {
-              id: 'settings-comfort',
-              'aria-labelledby': 'settings-comfort-title',
-            } satisfies HTMLAttributes
-          "
-        >
-          <div
-            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          </section>
+
+          <section
+            id="settings-comfort"
+            class="grid min-w-0 gap-content-gap"
+            aria-labelledby="settings-comfort-title"
           >
             <h2
               id="settings-comfort-title"
@@ -841,87 +897,348 @@ onScopeDispose(() => {
             >
               {{ t('settings.section.comfort') }}
             </h2>
-          </div>
-          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
+            <SettingsField
+              id="settings-font-scale"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('settings.font-scale')"
+            >
+              <template #default="field">
+                <NRadioGroup
+                  class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                  name="settings-font-scale"
+                  :value="String(appearanceValue('fontScale') ?? '')"
+                  :disabled="preference === null || returning"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                  @update:value="updateAppearance('fontScale', Number($event))"
+                >
+                  <NRadioButton
+                    v-for="option in choices.fontScale"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    <span
+                      v-if="String(appearanceValue('fontScale') ?? '') === option.value"
+                      class="i-lucide-check inline-block"
+                      aria-hidden="true"
+                    />
+                    {{ option.label }}
+                  </NRadioButton>
+                </NRadioGroup>
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
+            <SettingsField
+              id="settings-density"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('settings.density')"
+            >
+              <template #default="field">
+                <NRadioGroup
+                  class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                  name="settings-density"
+                  :value="String(appearanceValue('density') ?? '')"
+                  :disabled="preference === null || returning"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                  @update:value="updateAppearance('density', $event)"
+                >
+                  <NRadioButton
+                    v-for="option in choices.density"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    <span
+                      v-if="appearanceValue('density') === option.value"
+                      class="i-lucide-check inline-block"
+                      aria-hidden="true"
+                    />
+                    {{ option.label }}
+                  </NRadioButton>
+                </NRadioGroup>
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
             <SettingsField
               id="settings-material"
-              class="wb-settings-choice-field"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
               :label="t('settings.material')"
             >
               <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.material')"
-                  :model-value="String(appearanceValue('material') ?? '')"
-                  :options="choices.material"
+                <NRadioGroup
+                  class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                  name="settings-material"
+                  :value="String(appearanceValue('material') ?? '')"
                   :disabled="preference === null || returning"
-                  @update:model-value="updateAppearance('material', $event)"
-                />
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                  @update:value="updateAppearance('material', $event)"
+                >
+                  <NRadioButton
+                    v-for="option in choices.material"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    <span
+                      v-if="appearanceValue('material') === option.value"
+                      class="i-lucide-check inline-block"
+                      aria-hidden="true"
+                    />
+                    {{ option.label }}
+                  </NRadioButton>
+                </NRadioGroup>
               </template>
             </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
             <SettingsField
               id="settings-radius"
-              class="wb-settings-choice-field"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
               :label="t('settings.radius')"
             >
               <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="
-                    {
-                      id: field.inputProps.id,
-                      'aria-describedby': hasCustomRadius ? 'settings-radius-custom' : undefined,
-                    } satisfies HTMLAttributes
-                  "
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.radius')"
-                  :model-value="String(appearanceValue('radius') ?? '')"
-                  :options="choices.radius"
-                  :disabled="preference === null || returning"
-                  @update:model-value="updateAppearance('radius', Number($event))"
-                />
-                <p
-                  v-if="hasCustomRadius"
-                  id="settings-radius-custom"
-                  class="mb-0 text-text-secondary"
-                >
-                  {{ t('settings.radius-custom') }}
-                </p>
+                <div class="grid min-w-0 gap-component-unit">
+                  <NRadioGroup
+                    class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                    name="settings-radius"
+                    :value="String(appearanceValue('radius') ?? '')"
+                    :disabled="preference === null || returning"
+                    v-bind="
+                      {
+                        'aria-labelledby': field.labelledBy,
+                        'aria-describedby': hasCustomRadius ? 'settings-radius-custom' : undefined,
+                      } satisfies HTMLAttributes
+                    "
+                    @update:value="updateAppearance('radius', Number($event))"
+                  >
+                    <NRadioButton
+                      v-for="option in choices.radius"
+                      :key="option.value"
+                      :value="option.value"
+                    >
+                      <span
+                        v-if="String(appearanceValue('radius') ?? '') === option.value"
+                        class="i-lucide-check inline-block"
+                        aria-hidden="true"
+                      />
+                      {{ option.label }}
+                    </NRadioButton>
+                  </NRadioGroup>
+                  <p
+                    v-if="hasCustomRadius"
+                    id="settings-radius-custom"
+                    class="m-0 text-caption text-text-secondary"
+                  >
+                    {{ t('settings.radius-custom') }}
+                  </p>
+                </div>
               </template>
             </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
             <SettingsField
               id="settings-motion"
-              class="wb-settings-choice-field"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
               :label="t('settings.motion')"
             >
               <template #default="field">
-                <UiRadioCardGroup
-                  v-bind="{ id: field.inputProps.id } satisfies HTMLAttributes"
-                  class="wb-setting-choice"
-                  :accessible-label="t('settings.motion')"
-                  :model-value="String(appearanceValue('motion') ?? '')"
-                  :options="choices.motion"
+                <NRadioGroup
+                  class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                  name="settings-motion"
+                  :value="String(appearanceValue('motion') ?? '')"
                   :disabled="preference === null || returning"
-                  @update:model-value="updateAppearance('motion', $event)"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                  @update:value="updateAppearance('motion', $event)"
+                >
+                  <NRadioButton
+                    v-for="option in choices.motion"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    <span
+                      v-if="appearanceValue('motion') === option.value"
+                      class="i-lucide-check inline-block"
+                      aria-hidden="true"
+                    />
+                    {{ option.label }}
+                  </NRadioButton>
+                </NRadioGroup>
+              </template>
+            </SettingsField>
+          </section>
+
+          <section
+            id="settings-reading"
+            class="grid min-w-0 gap-content-gap"
+            aria-labelledby="settings-reading-title"
+          >
+            <div class="flex flex-wrap min-w-0 items-baseline justify-between gap-content-gap">
+              <h2
+                id="settings-reading-title"
+                class="font-title-weight m-0 text-subheading"
+                tabindex="-1"
+              >
+                {{ t('settings.section.reading') }}
+              </h2>
+              <time
+                class="text-caption text-text-secondary"
+                :datetime="new Date(now).toISOString()"
+              >
+                {{ liveDateTime }}
+              </time>
+            </div>
+            <SettingsField
+              id="settings-language"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('settings.language')"
+            >
+              <template #default="field">
+                <div class="max-w-full w-admin-sidebar-expanded">
+                  <UiRadioCardGroup
+                    v-bind="
+                      {
+                        id: field.inputProps.id,
+                        'aria-labelledby': field.labelledBy,
+                        'aria-busy': language.pendingLocale.value !== null,
+                      } satisfies HTMLAttributes
+                    "
+                    class="wb-setting-choice wb-mode-options-compact"
+                    :accessible-label="t('settings.language')"
+                    :model-value="language.pendingLocale.value ?? language.locale.value"
+                    :options="choices.language"
+                    :disabled="returning || language.pendingLocale.value !== null"
+                    @update:model-value="updateLanguage"
+                  >
+                    <template #option="{ option, selected }">
+                      <span
+                        class="i-lucide-check shrink-0"
+                        :class="{ invisible: !selected }"
+                        aria-hidden="true"
+                      />
+                      <span>{{ option.label }}</span>
+                    </template>
+                  </UiRadioCardGroup>
+                </div>
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
+            <SettingsField
+              id="settings-time-zone"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('dateShowcase.zone')"
+            >
+              <template #default="field">
+                <NSelect
+                  class="w-full max-w-admin-drawer"
+                  :value="dateTimeStore.preference.timeZone"
+                  :options="dateZones"
+                  :bordered="false"
+                  :disabled="returning"
+                  :input-props="{ 'aria-labelledby': field.labelledBy }"
+                  @update:value="
+                    dateTimeStore.update({ ...dateTimeStore.preference, timeZone: $event })
+                  "
                 />
               </template>
             </SettingsField>
-          </div>
-        </NCard>
-        <NCard
-          tag="section"
-          :bordered="false"
-          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
-          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
-          v-bind="
-            {
-              id: 'settings-workspace',
-              'aria-labelledby': 'settings-workspace-title',
-            } satisfies HTMLAttributes
-          "
-        >
-          <div
-            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
+            <SettingsField
+              id="settings-date-format"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('dateShowcase.dateFormat')"
+            >
+              <template #default="field">
+                <NSelect
+                  class="w-full max-w-admin-drawer"
+                  :value="dateTimeStore.preference.dateFormat"
+                  :options="[
+                    { value: 'locale', label: t('dateShowcase.localeFormat') },
+                    { value: 'ymd', label: t('dateShowcase.ymd') },
+                    { value: 'dmy', label: t('dateShowcase.dmy') },
+                    { value: 'mdy', label: t('dateShowcase.mdy') },
+                  ]"
+                  :bordered="false"
+                  :disabled="returning"
+                  :input-props="{ 'aria-labelledby': field.labelledBy }"
+                  @update:value="
+                    dateTimeStore.update({ ...dateTimeStore.preference, dateFormat: $event })
+                  "
+                />
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+
+            <SettingsField
+              id="settings-hour-cycle"
+              class="wb-settings-choice-field layout-regular:grid-cols-2"
+              :label="t('dateShowcase.hours')"
+            >
+              <template #default="field">
+                <div class="grid min-w-0 gap-component-unit">
+                  <NRadioGroup
+                    class="flex flex-wrap h-auto max-w-full min-w-0 items-center"
+                    name="settings-hour-cycle"
+                    :value="dateTimeStore.preference.hourCycle"
+                    :disabled="returning"
+                    v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                    @update:value="
+                      dateTimeStore.update({ ...dateTimeStore.preference, hourCycle: $event })
+                    "
+                  >
+                    <NRadioButton value="h12">
+                      <span
+                        v-if="dateTimeStore.preference.hourCycle === 'h12'"
+                        class="i-lucide-check inline-block"
+                        aria-hidden="true"
+                      />
+                      <span v-text="'12h'" />
+                    </NRadioButton>
+                    <NRadioButton value="h23">
+                      <span
+                        v-if="dateTimeStore.preference.hourCycle === 'h23'"
+                        class="i-lucide-check inline-block"
+                        aria-hidden="true"
+                      />
+                      <span v-text="'24h'" />
+                    </NRadioButton>
+                  </NRadioGroup>
+                  <span
+                    class="text-caption"
+                    :class="{ invisible: !dateTimeStore.persistenceFailed }"
+                    role="status"
+                    v-text="t('dateShowcase.notSaved')"
+                  />
+                </div>
+              </template>
+            </SettingsField>
+          </section>
+
+          <section
+            id="settings-workspace"
+            class="grid min-w-0 gap-content-gap"
+            aria-labelledby="settings-workspace-title"
           >
             <h2
               id="settings-workspace-title"
@@ -930,8 +1247,40 @@ onScopeDispose(() => {
             >
               {{ t('settings.section.workspace') }}
             </h2>
-          </div>
-          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
+            <SettingsField
+              id="settings-navigation-collapsed"
+              :label="t('settings.navigation-collapsed')"
+            >
+              <template #default="field">
+                <NSwitch
+                  :value="navigation.wideNavigationCollapsed"
+                  :disabled="returning"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                  @update:value="updateNavigation('collapsed', $event)"
+                />
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
+            <SettingsField
+              id="settings-navigation-accordion"
+              :label="t('settings.navigation-accordion')"
+            >
+              <template #default="field">
+                <NSwitch
+                  :value="navigation.accordion"
+                  :disabled="returning"
+                  v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
+                  @update:value="updateNavigation('accordion', $event)"
+                />
+              </template>
+            </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
             <SettingsField
               id="settings-scroll-restoration"
               :label="t('settings.scroll-restoration')"
@@ -939,118 +1288,66 @@ onScopeDispose(() => {
               <template #default="field">
                 <NSwitch
                   :value="scroll.restoreOnRefresh"
+                  :disabled="returning"
                   v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
                   @update:value="updateScroll"
                 />
               </template>
             </SettingsField>
+            <div
+              class="border-solid h-0 border-border-default border-width-default"
+              role="separator"
+            />
             <RuntimeVersionSettings />
-            <div class="wb-settings-actions grid gap-content-gap">
-              <NButton
-                quaternary
-                class="min-h-target-enhanced"
-                @click="resetAppearance"
-              >
-                {{ t('settings.reset-appearance') }}
-              </NButton>
-              <span class="text-text-secondary">
-                {{ t('settings.reset-note') }}
-              </span>
-            </div>
-          </div>
-        </NCard>
-        <div
-          class="wb-settings-tail"
-          aria-hidden="true"
-        />
-      </div>
-    </UiScrollArea>
-    <aside
-      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 items-center order-first bg-surface-panel gap-content-gap layout-regular:order-last layout-wide:order-last layout-regular:p-panel-narrow layout-wide:p-panel-narrow"
+          </section>
+        </div>
+      </UiScrollArea>
+    </div>
+
+    <NModal
+      v-if="narrowLayout"
+      :show="styleChooserOpen"
+      to="#pavp-overlay-root"
+      @update:show="updateStyleChooser"
+      @after-leave="restoreStyleChooserFocus"
     >
-      <NScrollbar
-        class="min-h-0 min-w-0"
-        content-class="h-full"
-      >
-        <nav
-          class="wb-section-nav flex min-h-0 min-w-0 justify-center gap-content-gap layout-regular:flex-col layout-wide:flex-col layout-regular:min-h-full layout-wide:min-h-full layout-narrow:gap-component-unit"
-          :aria-label="t('settings.section-navigation')"
-        >
-          <NButton
-            v-for="section in sections"
-            :key="section.id"
-            :quaternary="activeSection !== section.id"
-            :type="activeSection === section.id ? 'primary' : 'default'"
-            :bordered="false"
-            v-bind="
-              {
-                'aria-label': t(section.label),
-                'aria-current': activeSection === section.id ? 'location' : undefined,
-                'aria-controls': section.id,
-              } satisfies ButtonHTMLAttributes
-            "
-            class="wb-section-link"
-            @click="jumpTo(section.id)"
-          >
-            <span class="flex items-center gap-content-gap">
-              <span
-                v-if="section.id === 'settings-theme'"
-                class="i-lucide-palette"
-                aria-hidden="true"
-              />
-              <span
-                v-else-if="section.id === 'settings-style'"
-                class="i-lucide-panels-top-left"
-                aria-hidden="true"
-              />
-              <span
-                v-else-if="section.id === 'settings-reading'"
-                class="i-lucide-type"
-                aria-hidden="true"
-              />
-              <span
-                v-else-if="section.id === 'settings-layout'"
-                class="i-lucide-panels-top-left"
-                aria-hidden="true"
-              />
-              <span
-                v-else-if="section.id === 'settings-comfort'"
-                class="i-lucide-sparkles"
-                aria-hidden="true"
-              />
-              <span
-                v-else
-                class="i-lucide-layout-dashboard"
-                aria-hidden="true"
-              />
-              <span class="layout-narrow:sr-only">{{ t(section.label) }}</span>
-            </span>
-          </NButton>
-        </nav>
-      </NScrollbar>
-      <NButton
-        class="wb-done min-h-target-enhanced"
-        type="primary"
-        :loading="returning && effective.snapshot.value.motion === 'full'"
+      <NCard
+        class="wb-provider-modal flex flex-col max-h-dvh"
+        content-class="min-h-0 overflow-auto"
+        :title="t('settings.styles.title')"
         v-bind="
-          (returning
-            ? { 'aria-busy': true, 'aria-label': t('settings.returning') }
-            : { 'aria-busy': false, 'aria-label': t('settings.done') }) satisfies HTMLAttributes
+          {
+            role: 'dialog',
+            'aria-modal': true,
+            'aria-label': t('settings.styles.title'),
+          } satisfies HTMLAttributes
         "
-        :disabled="returning"
-        @click="finish"
       >
-        <span class="flex items-center gap-content-gap">
-          <span
-            class="i-lucide-check"
-            aria-hidden="true"
+        <template #header-extra>
+          <NButton
+            quaternary
+            v-bind="{ 'aria-label': t('settings.styles.close') } satisfies ButtonHTMLAttributes"
+            @click="closeStyleChooser"
+          >
+            <span
+              class="i-lucide-x"
+              aria-hidden="true"
+            />
+          </NButton>
+        </template>
+        <div id="settings-style-gallery">
+          <ThemeStyleSettings
+            v-if="preference !== null"
+            :model-value="preference.appearance.colorStyle"
+            :appearance="effective.snapshot.value"
+            :disabled="returning"
+            @update:model-value="chooseStyle"
+            @keydown.esc.stop.prevent="closeStyleChooser"
           />
-          <span class="layout-narrow:sr-only">{{
-            returning ? t('settings.returning') : t('settings.done')
-          }}</span>
-        </span>
-      </NButton>
-    </aside>
+        </div>
+      </NCard>
+    </NModal>
+
     <NMessageProvider
       ref="messageProvider"
       to="#pavp-overlay-root"
@@ -1069,28 +1366,9 @@ onScopeDispose(() => {
   padding-inline: var(--ui-space-component-unit);
   white-space: nowrap;
 }
-.wb-mode-options-compact {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
 .wb-mode-options-compact :deep(.pavp-radio-card-group__content) {
   padding: var(--ui-space-content-gap);
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-}
-
-.wb-mode-options-compact :deep(.wb-mode-preview) {
-  inline-size: calc(var(--ui-control-height) * 2);
-  block-size: calc(var(--ui-control-height) * 1.25);
-}
-.wb-mode-options-compact :deep(.wb-mode-caption) {
-  font-size: var(--ui-font-size-body);
-}
-:global([data-layout-profile='narrow'] .wb-mode-options-compact .pavp-radio-card-group__content) {
-  grid-template-columns: minmax(0, 1fr);
-  padding: var(--ui-space-component-unit);
-}
-:global([data-layout-profile='narrow'] .wb-mode-options-compact .wb-mode-caption) {
-  font-size: var(--ui-font-size-caption);
 }
 </style>

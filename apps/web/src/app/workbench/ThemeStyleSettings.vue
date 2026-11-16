@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { UiRadioCardGroup } from '@platform/ui'
+import { computed, ref } from 'vue'
 import {
   colorStyleIds,
   colorStyleSchema,
@@ -13,9 +12,11 @@ const props = defineProps<{
   readonly modelValue: ColorStyle
   readonly appearance: Readonly<UiAppearanceSnapshot>
   readonly disabled?: boolean
+  readonly previewOnly?: boolean
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: ColorStyle] }>()
 const { t } = useConsoleI18n()
+const focusedStyle = ref<ColorStyle>(props.modelValue)
 const labels = {
   unified: 'settings.styles.unified',
   'dark-navigation': 'settings.styles.dark-navigation',
@@ -25,7 +26,11 @@ const labels = {
   'brand-frame': 'settings.styles.brand-frame',
   'soft-frame': 'settings.styles.soft-frame',
 } as const
-const options = computed(() => colorStyleIds.map((value) => ({ value, label: t(labels[value]) })))
+const options = computed(() =>
+  colorStyleIds
+    .filter((value) => !props.previewOnly || value === props.modelValue)
+    .map((value) => ({ value, label: t(labels[value]) })),
+)
 function previewStyle(style: ColorStyle): Record<string, string> {
   const snapshot = { ...props.appearance, colorStyle: style }
   const sidebar = projectRegionAppearance(snapshot, 'sidebar')
@@ -50,74 +55,116 @@ function previewStyle(style: ColorStyle): Record<string, string> {
     '--preview-on-accent': content.appearance.colorPalette.roles.primary.solid.foreground,
   }
 }
+
+function moveFocus(event: KeyboardEvent): void {
+  const direction =
+    event.key === 'ArrowRight' || event.key === 'ArrowDown'
+      ? 1
+      : event.key === 'ArrowLeft' || event.key === 'ArrowUp'
+        ? -1
+        : 0
+  if (direction === 0 || !(event.currentTarget instanceof HTMLElement)) return
+  const gallery = event.currentTarget.closest('[data-style-gallery]')
+  if (!gallery) return
+  const options = [...gallery.querySelectorAll<HTMLButtonElement>('[data-style-choice]')]
+  const current = options.findIndex((option) => option === document.activeElement)
+  if (current < 0 || options.length === 0) return
+  event.preventDefault()
+  options[(current + direction + options.length) % options.length]?.focus()
+}
+
+function choose(style: ColorStyle): void {
+  if (!props.previewOnly) emit('update:modelValue', colorStyleSchema.parse(style))
+}
 </script>
 <template>
-  <UiRadioCardGroup
-    class="theme-style-grid"
-    :accessible-label="t('settings.styles.title')"
-    :model-value="modelValue"
-    :options="options"
-    :disabled="disabled"
-    @update:model-value="emit('update:modelValue', colorStyleSchema.parse($event))"
+  <div
+    :class="
+      previewOnly ? 'flex min-w-0 items-center gap-content-gap' : 'grid grid-cols-2 gap-content-gap'
+    "
+    :role="previewOnly ? undefined : 'group'"
+    :aria-label="previewOnly ? undefined : t('settings.styles.title')"
+    :data-style-gallery="previewOnly ? undefined : ''"
   >
-    <template #option="{ option, selected }">
-      <span class="theme-style-card grid gap-content-gap">
+    <template
+      v-for="option in options"
+      :key="option.value"
+    >
+      <component
+        :is="previewOnly ? 'span' : 'button'"
+        :class="{
+          'w-admin-sidebar-rail shrink-0': previewOnly,
+          'rounded-control border-solid min-w-0 cursor-pointer bg-surface-panel border-border-default border-width-default p-panel-narrow px-button-inline':
+            !previewOnly,
+          'text-control-primary': !previewOnly && option.value === modelValue,
+          'text-text-primary': !previewOnly && option.value !== modelValue,
+        }"
+        :type="previewOnly ? undefined : 'button'"
+        :disabled="previewOnly ? undefined : disabled"
+        :aria-pressed="previewOnly ? undefined : option.value === modelValue"
+        :aria-hidden="previewOnly ? 'true' : undefined"
+        :tabindex="previewOnly ? undefined : option.value === focusedStyle ? 0 : -1"
+        :data-style-choice="previewOnly ? undefined : ''"
+        @focus="focusedStyle = option.value"
+        @keydown="moveFocus"
+        @click="choose(option.value)"
+      >
         <span
-          class="theme-style-scene rounded-control"
-          :style="previewStyle(colorStyleSchema.parse(option.value))"
-          aria-hidden="true"
+          class="theme-style-card grid min-w-0 whitespace-normal break-words gap-component-unit"
         >
-          <span class="theme-style-header"><i /><i /><i /></span>
-          <span class="theme-style-sidebar">
-            <b><em /></b>
-            <i />
-            <i />
-            <i />
+          <span
+            v-if="!previewOnly"
+            class="flex justify-end"
+          >
+            <span
+              class="i-lucide-circle-check"
+              :class="{ invisible: option.value !== modelValue }"
+              aria-hidden="true"
+            />
           </span>
-          <span class="theme-style-tabs">
-            <b><em /></b>
-            <i />
-          </span>
-          <span class="theme-style-content">
-            <span class="theme-style-metric" />
-            <span class="theme-style-metric" />
-            <span class="theme-style-panel">
-              <i />
-              <i />
+          <span
+            class="theme-style-scene rounded-control"
+            :style="previewStyle(colorStyleSchema.parse(option.value))"
+            aria-hidden="true"
+          >
+            <span class="theme-style-header"><i /><i /><i /></span>
+            <span class="theme-style-sidebar">
               <b><em /></b>
+              <i />
+              <i />
+              <i />
+            </span>
+            <span class="theme-style-tabs">
+              <b><em /></b>
+              <i />
+            </span>
+            <span class="theme-style-content">
+              <span class="theme-style-metric" />
+              <span class="theme-style-metric" />
+              <span class="theme-style-panel">
+                <i />
+                <i />
+                <b><em /></b>
+              </span>
             </span>
           </span>
-        </span>
-        <span class="flex items-center justify-center gap-content-gap">
           <span
-            v-if="selected"
-            class="i-lucide-circle-check"
-            aria-hidden="true"
-          />
-          {{ option.label }}
+            v-if="!previewOnly"
+            class="text-center"
+          >
+            {{ option.label }}
+          </span>
         </span>
-      </span>
+      </component>
+      <slot
+        v-if="previewOnly"
+        name="preview-label"
+        :label="option.label"
+      />
     </template>
-  </UiRadioCardGroup>
+  </div>
 </template>
 <style scoped>
-.theme-style-grid {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(
-      min(
-        100%,
-        max(calc(var(--ui-control-height) * 4), calc((100% - var(--ui-space-content-gap) * 3) / 4))
-      ),
-      1fr
-    )
-  );
-  gap: var(--ui-space-content-gap);
-}
-:global([data-layout-profile='narrow'] .theme-style-grid) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
 .theme-style-card {
   width: 100%;
 }
