@@ -10,6 +10,7 @@ import type {
 import type { AppearanceReadBoundary } from '../../appearance/appearance-read-boundary'
 import { settleAppearanceTransition } from '../../appearance/appearance-transition'
 import { getRouteRecord } from '../route-registry'
+import { isPublicRoute } from '../route-access'
 import {
   acceptRouterNavigation,
   cancelledRouterNavigationResult,
@@ -368,6 +369,8 @@ export function createRouteTransitionCoordinator(input: {
     }
     const resolvedTarget = request.resolvedTarget
     if (resolvedTarget === undefined) return navigateDirectly(request)
+    if (!isPublicRoute(input.router.currentRoute.value) || !isPublicRoute(resolvedTarget))
+      return navigateDirectly(request)
     const fromRoute = getRouteRecord(input.router.currentRoute.value.name)
     const toRoute = getRouteRecord(resolvedTarget.name)
     if (fromRoute.meta.layoutCapabilityId !== toRoute.meta.layoutCapabilityId) {

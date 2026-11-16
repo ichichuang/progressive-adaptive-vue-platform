@@ -14,6 +14,7 @@ import {
   type RegisteredRouteDestination,
   type TypedNavigationResult,
 } from './route-input'
+import { isPublicRoute, useRouteNavigationVisibility } from './route-access'
 import { getRouteRecord } from './route-registry'
 import {
   browserPageBindingSchema,
@@ -149,6 +150,7 @@ export interface ApplicationNavigation {
     options: ApplicationNavigationOptions | NewBrowserPageOptions | TrackedNewBrowserPageOptions,
   ): Promise<TypedNavigationResult | BrowserPageOpenResult | TrackedBrowserPageResult>
   resolveHref(destination: RegisteredRouteDestination): string | undefined
+  readonly canShow: (destination: RegisteredRouteDestination) => boolean
 }
 
 const applicationNavigationKey: InjectionKey<ApplicationNavigation> =
@@ -367,11 +369,21 @@ export function provideApplicationNavigation(
     for (const binding of stored.snapshot.associations) {
       const destination = resolveBinding(binding)
       if (destination === undefined) return
+      if (!isPublicRoute(destination)) continue
       restored.push({ destination, binding, requestId: undefined, state: { kind: 'restoring' } })
     }
-    if (stored.snapshot.target !== null && resolveBinding(stored.snapshot.target) === undefined)
-      return
-    session = stored.snapshot
+    let target = stored.snapshot.target
+    if (target !== null) {
+      const destination = resolveBinding(target)
+      if (destination === undefined) return
+      if (!isPublicRoute(destination)) target = null
+    }
+    session = { ...stored.snapshot, associations: restored.map(({ binding }) => binding), target }
+    if (
+      restored.length !== stored.snapshot.associations.length ||
+      target !== stored.snapshot.target
+    )
+      sessionPort.write(session)
     associations.push(...restored)
   }
 
@@ -404,6 +416,7 @@ export function provideApplicationNavigation(
     const destination = resolveBinding(binding)
     if (
       destination === undefined ||
+      !isPublicRoute(destination) ||
       eligibility(destination.fullPath, binding.deploymentBase) !== 'eligible'
     )
       return
@@ -508,7 +521,7 @@ export function provideApplicationNavigation(
     const url = resolved === undefined ? undefined : applicationUrl(resolved.href)
     if (resolved === undefined || url === undefined)
       return { kind: 'invalid-input', reason: 'destination' }
-    if (routeHasPageInput(getRouteRecord(resolved.name)))
+    if (routeHasPageInput(getRouteRecord(resolved.name)) || !isPublicRoute(resolved))
       return { kind: 'invalid-input', reason: 'destination' }
     let association = associations.find((entry) => sameRouteAddress(entry.destination, resolved))
     if (association !== undefined) {
@@ -626,6 +639,7 @@ export function provideApplicationNavigation(
 
   const navigation: ApplicationNavigation = Object.freeze({
     navigate,
+    canShow: useRouteNavigationVisibility(),
     resolveHref(destination: RegisteredRouteDestination) {
       return resolveRegisteredDestination(router, destination)?.href
     },

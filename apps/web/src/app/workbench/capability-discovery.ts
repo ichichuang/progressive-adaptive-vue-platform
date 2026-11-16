@@ -41,9 +41,15 @@ const discoveryExamples = [
   },
 ] as const
 
-export function discoverCapabilities(query: string, t: ConsoleTranslate) {
+export function discoverCapabilities(
+  query: string,
+  t: ConsoleTranslate,
+  canShow: (destination: ReturnType<typeof registeredRouteDestination>) => boolean,
+) {
   const term = query.trim().toLocaleLowerCase()
   return discoveryExamples.flatMap(({ example, name, aliases, descriptionKey }) => {
+    const destination = registeredRouteDestination({ name })
+    if (!canShow(destination)) return []
     const route = getRouteRecord(name)
     const guide = tableExampleGuideKeys[example]
     const title = t(route.meta.titleKey)
@@ -58,7 +64,7 @@ export function discoverCapabilities(query: string, t: ConsoleTranslate) {
         title,
         description: t(descriptionKey),
         note: t(example === 'remote' ? 'showcase.intent.remoteNote' : 'showcase.intent.localNote'),
-        destination: registeredRouteDestination({ name }),
+        destination,
         copyValue: [
           t('showcase.intent.aiRequest'),
           title,

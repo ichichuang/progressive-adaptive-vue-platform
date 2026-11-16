@@ -25,7 +25,7 @@ const { t } = useConsoleI18n()
 const navigation = useApplicationNavigation()
 const activate = useApplicationLinkActivation()
 const search = ref('')
-const capabilities = computed(() => discoverCapabilities(search.value, t))
+const capabilities = computed(() => discoverCapabilities(search.value, t, navigation.canShow))
 const searchTerm = computed(() => search.value.trim().toLocaleLowerCase())
 const livePavpNames = 'UiProvider · UiAdminShell · UiWorkspaceTabs'
 const liveNaiveNames = 'NConfigProvider · NLayoutSider'
@@ -86,7 +86,9 @@ const categories = computed(() =>
       destination: RegisteredRouteDestination
     }>((item) => {
       if ('items' in item) {
-        const first = item.items[0]
+        const first = item.items.find((child) =>
+          navigation.canShow(registeredRouteDestination(child.destination)),
+        )
         if (first === undefined) return []
         return [
           {
@@ -117,7 +119,11 @@ const categories = computed(() =>
         ]
       }
       const name = item.destination.name
-      if (name === 'component-showcase') return []
+      if (
+        name === 'component-showcase' ||
+        !navigation.canShow(registeredRouteDestination(item.destination))
+      )
+        return []
       return [
         {
           ...item,

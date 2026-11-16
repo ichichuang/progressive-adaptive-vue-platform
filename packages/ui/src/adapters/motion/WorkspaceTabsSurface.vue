@@ -546,10 +546,20 @@ function setStrip(value: unknown): void {
   })
 }
 function retireTab(element: Element): void {
-  if (element instanceof HTMLElement) element.inert = true
+  if (!(element instanceof HTMLElement)) return
+  element.inert = true
+  if (element.dataset['hideOnExit'] === 'true') {
+    element.classList.add('invisible')
+    element.setAttribute('aria-hidden', 'true')
+  }
 }
 function revealEnteringTab(element: Element): void {
-  if (element instanceof HTMLElement) element.inert = false
+  if (!(element instanceof HTMLElement)) return
+  element.inert = false
+  if (element.dataset['hideOnExit'] === 'true') {
+    element.classList.remove('invisible')
+    element.removeAttribute('aria-hidden')
+  }
 }
 onMounted(() => {
   void startAfterStableMount()
@@ -741,6 +751,7 @@ watch(
                       role="presentation"
                       :data-active="item.id === activeId"
                       :data-closable="item.closable"
+                      :data-hide-on-exit="item.hideOnExit"
                       :initial="featureReady && motion !== 'none' ? entering : false"
                       :variants="{ rest: { ...resting, y: 0 } }"
                       animate="rest"

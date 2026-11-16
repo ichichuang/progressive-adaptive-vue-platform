@@ -59,6 +59,14 @@ import {
   type RouteRegistryRecord,
 } from './route-registry'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
+import { useAccessBoundary } from '../access/access-boundary'
+import {
+  isPublicRoute,
+  observeRouteAccess,
+  routeNavigationVisibilityKey,
+  waitForRouteAccess,
+  type RouteAccessCheck,
+} from './route-access'
 import {
   prepareGeneratedRoute,
   resolveRegisteredDestination,
@@ -84,6 +92,7 @@ interface NavigationAttemptState {
   componentResolutionReached: boolean
   readonly input: ValidatedRouteInput
   readonly operation: NavigationOperation
+  readonly access?: RouteAccessCheck
 }
 
 type RouterPresentationCommitOutcome = 'committed' | 'cancelled'
@@ -288,6 +297,7 @@ export interface RouterLifecycleHandle {
   connectLocalization(boundary: ConsoleI18nBoundary): () => void
   connectRefreshScroll(binding: RefreshScrollBinding): { discardPending(): void; dispose(): void }
   refreshCurrentRouteTitle(translate: ConsoleTranslate): void
+  isPublicRouteName(name: string): boolean
   markApplicationMounted(): void
   getLatestNavigationResult(): TypedNavigationResult | undefined
   dispose(): void
@@ -385,6 +395,8 @@ interface NavigationOperation {
   readonly presentationAbort: AbortController
   workspaceActivation?: RouterNavigationOptions['workspaceActivation']
   workspaceOrigin?: LiveWorkspaceEntry
+  access?: RouteAccessCheck | undefined
+  accessFallback?: true
   readonly navigationId: string
   kind: 'initial' | 'push' | 'replace' | 'pop'
   expectedFullPath: string
@@ -602,6 +614,7 @@ export async function createAndReadyRouter(input: {
   let retentionBinding: WorkspaceRetentionBinding | undefined
   let renderSnapshot: WorkspaceRenderSnapshot | undefined
   let refreshLease: AbortController | undefined
+  let releaseOrdinaryAccess: (() => void) | undefined
   const scopeId = crypto.randomUUID()
   const regionRecords = new Map<string, RegionRecord>()
   const scrollControllers = createRouterScrollControllers()
@@ -613,6 +626,24 @@ export async function createAndReadyRouter(input: {
       }
     | undefined
   const workspace = input.application.runWithContext(useWorkspaceStore)
+  const access = input.application.runWithContext(useAccessBoundary)
+  const workspaceAccess = new Map<
+    WorkspaceIdentity,
+    {
+      readonly destination: RegisteredRouteDestination
+      readonly check: RouteAccessCheck
+      release(): void
+    }
+  >()
+  const navigationVisibility = new Map<
+    string,
+    {
+      readonly location: RouteLocationResolved
+      readonly check: RouteAccessCheck
+    }
+  >()
+  const workspaceVisits = new Map<WorkspaceIdentity, number>()
+  let workspaceVisit = 0
   const workspaceRecords = new Map<WorkspaceIdentity, WorkspaceRegionRecord>()
   const workspaceContents = shallowReactive(
     new Map<WorkspaceInstanceIdentity, () => WorkspaceContentState>(),
@@ -624,6 +655,7 @@ export async function createAndReadyRouter(input: {
       routeName: entry.navigation.routeName,
       inputProps: Object.freeze(committedRouteInputProps(router)),
       workspace: entry.workspace,
+      ...(entry.navigation.access === undefined ? {} : { controlled: true as const }),
     })
     retentionBinding?.acceptCommitted(renderSnapshot)
   }
@@ -679,6 +711,7 @@ export async function createAndReadyRouter(input: {
     read() {
       return !disposed &&
         committedEntry?.to === router.currentRoute.value &&
+        (committedEntry.navigation.access?.read() ?? 'allow') === 'allow' &&
         renderSnapshot?.commit === committedEntry
         ? renderSnapshot
         : undefined
@@ -711,6 +744,20 @@ export async function createAndReadyRouter(input: {
           )
         )
           workspaceRecords.delete(identity)
+      for (const identity of workspaceVisits.keys()) {
+        if (!workspace.entries.some((entry) => entry.identity === identity))
+          workspaceVisits.delete(identity)
+      }
+      for (const [identity, retained] of workspaceAccess) {
+        if (
+          workspace.entries.some(
+            (entry) => entry.identity === identity && entry.destination === retained.destination,
+          )
+        )
+          continue
+        workspaceAccess.delete(identity)
+        retained.release()
+      }
     },
     { flush: 'sync' },
   )
@@ -743,6 +790,7 @@ export async function createAndReadyRouter(input: {
   ): NavigationOperation {
     if (kind !== 'initial') pendingRefresh = undefined
     operation?.presentationAbort.abort()
+    operation?.access?.dispose()
     refreshLease?.abort()
     // The presented source owns any inertia before route-transition presentation begins.
     if (
@@ -810,6 +858,7 @@ export async function createAndReadyRouter(input: {
   function entryIsCurrent(entry: CommittedEntry): boolean {
     return (
       committedEntry === entry &&
+      (entry.navigation.access?.read() ?? 'allow') === 'allow' &&
       !entry.navigation.operation.presentationAbort.signal.aborted &&
       ownsNavigation(entry.to, entry.navigation) &&
       currentLocationMatches(entry.to) &&
@@ -1284,6 +1333,7 @@ export async function createAndReadyRouter(input: {
       binding?.readEnabled() !== true ||
       !binding.readReloadEligible() ||
       entry?.presented === undefined ||
+      entry.navigation.access !== undefined ||
       hasComponentFailure(entry) ||
       entry.presented.kind !== 'page' ||
       entry.presented.workspace !== entry.workspace ||
@@ -1352,6 +1402,7 @@ export async function createAndReadyRouter(input: {
     const source = committedEntry
     if (
       source?.to !== from ||
+      source.navigation.access !== undefined ||
       router.currentRoute.value !== from ||
       source.presented === undefined ||
       hasComponentFailure(source) ||
@@ -1658,6 +1709,40 @@ export async function createAndReadyRouter(input: {
     },
   })
   routerPresentationCommitBrokers.set(router, presentationCommitBroker)
+  input.application.provide(routeNavigationVisibilityKey, (destination) => {
+    if (disposed) return false
+    const location = resolveRegisteredDestination(router, destination)
+    if (location === undefined) return false
+    if (isPublicRoute(location)) return true
+    const presented = committedEntry
+    if (
+      presented !== undefined &&
+      sameRouteAddress(presented.to, location) &&
+      presented.navigation.access?.read() === 'allow'
+    )
+      return true
+    for (const retained of workspaceAccess.values()) {
+      const address = resolveRegisteredDestination(router, retained.destination)
+      if (
+        address !== undefined &&
+        sameRouteAddress(address, location) &&
+        retained.check.read() === 'allow'
+      )
+        return true
+    }
+    const retained = navigationVisibility.get(location.fullPath)
+    if (
+      location.matched.length === retained?.location.matched.length &&
+      location.matched.every((record, index) => record === retained.location.matched[index])
+    )
+      return retained.check.read() === 'allow'
+    retained?.check.dispose()
+    const validated = validateRouteInput(location)
+    if (validated.kind !== 'valid') return false
+    const check = observeRouteAccess(access, location, validated.input)
+    navigationVisibility.set(location.fullPath, { location, check })
+    return check.read() === 'allow'
+  })
   presentationCommitBroker.currentOperation = () => operation
   nativeOperation = beginOperation('initial', router.resolve(history.location).fullPath)
   const historyListenerRemover = history.listen((to) => {
@@ -1679,6 +1764,8 @@ export async function createAndReadyRouter(input: {
     target: RouteLocationNormalized,
   ): void {
     if (disposed || operation !== request) return
+    request.access?.dispose()
+    request.access = undefined
     if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
       request.finish(
         request.result ?? { kind: 'duplicated', destination: routeDestination(target) },
@@ -1729,6 +1816,103 @@ export async function createAndReadyRouter(input: {
         )
       },
     )
+  }
+
+  function showSafeTitle(translate = localization?.t): void {
+    document.title = [
+      getRoutePresentation('workbench-welcome', translate).title,
+      input.configuration.presentation?.name,
+    ]
+      .filter(Boolean)
+      .join(' · ')
+  }
+
+  function recoverAccessLoss(from: RouteLocationNormalized): void {
+    operation?.presentationAbort.abort()
+    if (operation !== undefined)
+      operation.finish({
+        kind: 'cancel',
+        navigationId: operation.navigationId,
+        reason: 'access-invalidated',
+      })
+    showSafeTitle()
+    // The retained owner unmounts the page and its Teleports, including its leave guard.
+    void nextTick(() => {
+      if (disposed || router.currentRoute.value !== from) return
+      const previous = Array.from(workspace.entries)
+        .filter((entry) => workspaceVisits.has(entry.identity))
+        .sort(
+          (left, right) =>
+            (workspaceVisits.get(right.identity) ?? 0) - (workspaceVisits.get(left.identity) ?? 0),
+        )
+        .find(
+          (candidate) =>
+            workspaceAccess.get(candidate.identity)?.check.read() === 'allow' ||
+            (workspaceAccess.get(candidate.identity) === undefined &&
+              isPublicRouteName(candidate.destination.name)),
+        )
+      const target =
+        (previous === undefined
+          ? undefined
+          : resolveRegisteredDestination(router, previous.destination)) ??
+        router.resolve({ name: 'workbench-welcome' })
+      const request = beginOperation('replace', target.fullPath)
+      request.accessFallback = true
+      if (
+        previous !== undefined &&
+        isLiveWorkspace(previous) &&
+        target.name === previous.destination.name
+      )
+        request.workspaceActivation = previous
+      issueNavigation(request, target)
+    })
+  }
+
+  function retainRouteAccess(entry: CommittedEntry): void {
+    const check = entry.navigation.access
+    if (check === undefined) return
+    const tab = entry.workspace
+    const release = (): void => {
+      stop()
+      check.dispose()
+    }
+    const stop = watch(
+      check.read,
+      (status) => {
+        if (status === 'allow' || disposed) return
+        const active = committedEntry === entry
+        const tabs = workspace.entries
+        const current = tabs.find(
+          (candidate) =>
+            candidate.identity === tab?.identity && candidate.destination === tab.destination,
+        )
+        if (active) {
+          const snapshot = renderSnapshot
+          renderSnapshot = undefined
+          if (snapshot !== undefined) retentionBinding?.withdraw(snapshot)
+        }
+        if (current !== undefined && isLiveWorkspace(current)) workspace.withdraw(current)
+        else release()
+        if (active) recoverAccessLoss(entry.to)
+      },
+      { flush: 'sync' },
+    )
+    if (tab === undefined) releaseOrdinaryAccess = release
+    else {
+      workspaceAccess.get(tab.identity)?.release()
+      workspaceAccess.set(tab.identity, { destination: tab.destination, check, release })
+    }
+  }
+
+  function isPublicRouteName(name: string): boolean {
+    const record = routeRegistry.find((route) => route.name === name)
+    if (record === undefined || !router.hasRoute(record.name)) return false
+    try {
+      const location = router.resolve({ name: record.name })
+      return validateRouteInput(location).kind === 'valid' && isPublicRoute(location)
+    } catch {
+      return false
+    }
   }
 
   presentationCommitBroker.accept = (destination, options) => {
@@ -1793,7 +1977,7 @@ export async function createAndReadyRouter(input: {
     })
   }
 
-  const beforeEachRemover = router.beforeEach((to) => {
+  const beforeEachRemover = router.beforeEach(async (to) => {
     const request = nativeOperation
     if (
       disposed ||
@@ -1838,6 +2022,36 @@ export async function createAndReadyRouter(input: {
       return { name: failure.destination.name, replace: true }
     }
     const routeName = validated.input.name
+    let check: RouteAccessCheck | undefined
+    if (!isPublicRoute(to)) {
+      check = observeRouteAccess(access, to, validated.input)
+      request.access?.dispose()
+      request.access = check
+      const outcome = await waitForRouteAccess(check, request.presentationAbort.signal)
+      if (operation !== request || request.navigation !== to || outcome === 'cancelled') {
+        check.dispose()
+        return false
+      }
+      if (outcome !== 'allow' || check.read() !== 'allow') {
+        check.dispose()
+        request.access = undefined
+        const safe =
+          request.accessFallback === true
+            ? 'workbench-welcome'
+            : getErrorRouteName(
+                outcome === 'identity-required'
+                  ? '401'
+                  : outcome === 'deny'
+                    ? '403'
+                    : outcome === 'indeterminate'
+                      ? 'maintenance'
+                      : '500',
+              )
+        if (!isPublicRouteName(safe)) return false
+        request.kind = 'replace'
+        return { name: safe, replace: true }
+      }
+    }
     navigationAttempts.set(to, {
       navigationId,
       routeName,
@@ -1845,6 +2059,7 @@ export async function createAndReadyRouter(input: {
       operation: request,
       guardStageProgress,
       componentResolutionReached: false,
+      ...(check === undefined ? {} : { access: check }),
     })
     bindRouterPresentationCommit(presentationCommitBroker, to, routeName, navigationId)
     if (routeName === getErrorRouteName('404'))
@@ -1890,6 +2105,7 @@ export async function createAndReadyRouter(input: {
         return { name: failure.destination.name, replace: true }
       }
     }
+    if ((navigation.access?.read() ?? 'allow') !== 'allow') return false
     if (!ownsNavigation(to, navigation)) return false
     captureSource(from)
     return true
@@ -1899,14 +2115,25 @@ export async function createAndReadyRouter(input: {
     const navigation = navigationAttempts.get(to)
     if (failure === undefined) {
       if (!ownsNavigation(to, navigation) || !currentLocationMatches(to)) return
-      const marker = stampEntry(to, navigation)
+      navigation.operation.access = undefined
+      if ((navigation.access?.read() ?? 'allow') !== 'allow') {
+        navigation.access?.dispose()
+        recoverAccessLoss(to)
+        return
+      }
+      releaseOrdinaryAccess?.()
+      releaseOrdinaryAccess = undefined
+      const marker = navigation.access === undefined ? stampEntry(to, navigation) : undefined
       const entry = workspace.commit(
         routeDestination(to),
         navigation.input,
         to.matched.at(-1)?.components?.['default'],
         navigation.operation.workspaceOrigin,
+        navigation.access !== undefined,
       )
+      if (entry !== undefined) workspaceVisits.set(entry.identity, ++workspaceVisit)
       committedEntry = { to, navigation, marker, workspace: entry, presented: undefined }
+      retainRouteAccess(committedEntry)
       publishWorkspaceSnapshot(committedEntry)
       if (navigation.operation.result === undefined && to.redirectedFrom !== undefined)
         navigation.operation.result = {
@@ -1932,6 +2159,8 @@ export async function createAndReadyRouter(input: {
     const navigation = navigationAttempts.get(to)
     if (!routerReady || !ownsNavigation(to, navigation)) return
     const request = navigation.operation
+    request.access?.dispose()
+    request.access = undefined
     const recovering = request.result?.kind === 'failure'
     const chunkLoadFailure = !navigation.componentResolutionReached
     const failure = createFailureResult({
@@ -1966,6 +2195,12 @@ export async function createAndReadyRouter(input: {
     if (disposed) return
     disposed = true
     operation?.presentationAbort.abort()
+    operation?.access?.dispose()
+    releaseOrdinaryAccess?.()
+    for (const retained of workspaceAccess.values()) retained.release()
+    workspaceAccess.clear()
+    for (const { check } of navigationVisibility.values()) check.dispose()
+    navigationVisibility.clear()
     refreshLease?.abort()
     refreshLease = undefined
     const retained = retentionBinding
@@ -2088,6 +2323,14 @@ export async function createAndReadyRouter(input: {
     },
     refreshCurrentRouteTitle(translate) {
       if (disposed) return
+      const current = router.currentRoute.value
+      if (
+        !isPublicRoute(current) &&
+        (committedEntry?.to !== current || committedEntry.navigation.access?.read() !== 'allow')
+      ) {
+        showSafeTitle(translate)
+        return
+      }
       const record = getRouteRecord(router.currentRoute.value.name)
       document.title = [
         getRoutePresentation(record.name, translate).title,
@@ -2102,6 +2345,7 @@ export async function createAndReadyRouter(input: {
       resolveApplicationMounted?.()
       resolveApplicationMounted = undefined
     },
+    isPublicRouteName,
     getLatestNavigationResult() {
       return latestNavigationResult
     },

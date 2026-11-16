@@ -198,6 +198,14 @@ export function createWorkspaceRetention(
     advance()
   }
 
+  function withdraw(snapshot: WorkspaceRenderSnapshot): void {
+    if (!sameDelivery(requested.value, snapshot)) return
+    requested.value = undefined
+    acknowledged.value = undefined
+    if (matched?.snapshot === snapshot) matched = undefined
+    advance()
+  }
+
   // All waits stop on settlement, including synchronous settlement and an already-aborted signal.
   function waitFor(
     read: () => boolean | undefined,
@@ -370,6 +378,7 @@ export function createWorkspaceRetention(
     active,
     commands,
     acceptCommitted,
+    withdraw,
     whenRendered,
     readFailure,
     ownsLifetime(lifetime: PageLifetime) {
@@ -576,26 +585,32 @@ const InstanceBoundary = defineComponent({
         )
       }
       pageAttached = true
-      return h(KeepAlive, null, {
-        default: () => {
-          if (!props.active || page.definition === undefined) return null
-          const snapshot = props.snapshot
-          delivered = snapshot
-          props.controller.entered(snapshot, 'page')
-          return h(page.definition, {
-            ...snapshot.inputProps,
-            ...props.controller.presentation(snapshot),
-            onVnodeMounted: () => {
-              if (delivered === snapshot && page.failure === undefined) mounted = 'page'
-              props.controller.rendered(snapshot, 'page')
-            },
-            onVnodeUnmounted: () => {
-              if (delivered === snapshot && mounted === 'page') mounted = undefined
-              props.controller.exit(snapshot, 'page')
-            },
-          })
-        },
-      })
+      const content = () => {
+        if (!props.active || page.definition === undefined) return null
+        const snapshot = props.snapshot
+        delivered = snapshot
+        props.controller.entered(snapshot, 'page')
+        const lifecycle = {
+          onVnodeMounted: () => {
+            if (delivered === snapshot && page.failure === undefined) mounted = 'page'
+            props.controller.rendered(snapshot, 'page')
+          },
+          onVnodeUnmounted: () => {
+            if (delivered === snapshot && mounted === 'page') mounted = undefined
+            props.controller.exit(snapshot, 'page')
+          },
+        }
+        if (snapshot.controlled === true)
+          return cloneVNode(props.controller.ordinaryVNode(snapshot), lifecycle)
+        return h(page.definition, {
+          ...snapshot.inputProps,
+          ...props.controller.presentation(snapshot),
+          ...lifecycle,
+        })
+      }
+      return props.snapshot.controlled === true
+        ? content()
+        : h(KeepAlive, null, { default: content })
     }
   },
 })

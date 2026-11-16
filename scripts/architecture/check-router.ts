@@ -2723,7 +2723,7 @@ function applicationNavigationContractViolations(source: string): string[] {
   if (
     !exactSet(
       [...new Set(contract?.members.map((member) => member.name?.getText() ?? '') ?? [])],
-      ['navigate', 'resolveHref'],
+      ['navigate', 'canShow', 'resolveHref'],
     ) ||
     options === undefined ||
     !ts.isIntersectionTypeNode(options.type) ||
@@ -6469,7 +6469,7 @@ function routeTransitionSourceProofResults(
       id: 'ROUTE_TRANSITION_SOURCE_01_ROUTE_META_16',
       passed:
         count(snapshot.registrySource, /readonly routeTransitionFamilyId:/gu) === 1 &&
-        snapshot.routeInputSource.includes('!routeMetaMatches(location.meta, record.meta)') &&
+        snapshot.routeInputSource.includes('!routeMetaMatches(location.meta, matchedMeta)') &&
         snapshot.routeInputSource.includes(
           'Object.keys(actual).length === Object.keys(expected).length',
         ) &&

@@ -145,10 +145,14 @@ export function validateRouteInput(location: RouteLocationNormalized): RouteInpu
     return { kind: 'invalid' }
   }
   const search = location.fullPath.indexOf('?')
+  const matchedMeta = location.matched.reduce<Readonly<Record<PropertyKey, unknown>>>(
+    (merged, { meta }) => ({ ...merged, ...meta }),
+    {},
+  )
   if (
     !params.success ||
     !query.success ||
-    !routeMetaMatches(location.meta, record.meta) ||
+    !routeMetaMatches(location.meta, matchedMeta) ||
     (Object.keys(querySchema.shape).length === 0 &&
       search !== -1 &&
       (fragment === -1 || search < fragment)) ||

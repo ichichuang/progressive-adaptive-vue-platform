@@ -25,10 +25,12 @@ export interface WorkspaceRenderSnapshot {
   readonly routeName: RouteName
   readonly inputProps: Readonly<{ routeInput?: ValidatedRouteInput }>
   readonly workspace: LiveWorkspaceEntry | undefined
+  readonly controlled?: true
 }
 
 export interface WorkspaceRetentionBinding {
   acceptCommitted(snapshot: WorkspaceRenderSnapshot): void
+  withdraw(snapshot: WorkspaceRenderSnapshot): void
   whenRendered(
     snapshot: WorkspaceRenderSnapshot,
     signal: AbortSignal,

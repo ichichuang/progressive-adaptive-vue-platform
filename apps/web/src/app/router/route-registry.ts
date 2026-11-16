@@ -7,14 +7,22 @@ import type {
 import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
 import type { RouteParamsSchemaId, RouteQuerySchemaId } from './route-schemas'
 import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
+import type { AccessRequest } from '../access/access-contract'
 
-type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required'
+type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required' | 'policy'
 
 type RouteKeepAlivePolicy = 'never' | 'route-instance'
 
 type RouteDataPrefetchPolicy = 'none' | 'blocking-required' | 'non-blocking'
 
 type RouteErrorPolicy = 'route-boundary' | 'application-boundary' | 'fatal-startup-boundary'
+
+interface RouteAccessDestination {
+  readonly name: string
+  readonly params: Readonly<Record<string, unknown>>
+  readonly query: Readonly<Record<string, unknown>>
+  readonly hash: string
+}
 
 export interface ValidatedRouteMeta {
   readonly titleKey: string
@@ -23,6 +31,9 @@ export interface ValidatedRouteMeta {
   readonly layoutCapabilityId: string
   readonly auth: RouteAuthPolicy
   readonly requiredPermissionIds: readonly string[]
+  readonly permissionRequests?: Readonly<
+    Record<string, AccessRequest | ((destination: RouteAccessDestination) => AccessRequest)>
+  >
   readonly blockScrollOwnerId: string
   readonly inlineScrollOwnerId: string
   readonly keepAlive: RouteKeepAlivePolicy

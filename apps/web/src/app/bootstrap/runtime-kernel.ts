@@ -562,6 +562,7 @@ async function startAttempt(input: {
     resources.workspaceSession = initializeWorkspaceSession(
       resources.pinia.pinia,
       resources.storage.owner.workspaceSession,
+      (name) => resources.router?.isPublicRouteName(name) === true,
     )
     throwClaimedStartupFailure()
 

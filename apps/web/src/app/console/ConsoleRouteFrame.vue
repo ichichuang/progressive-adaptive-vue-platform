@@ -145,24 +145,30 @@ function projectNavigation(group: ConsoleNavigationGroup): UiAdminNavigationGrou
   return {
     id: group.id,
     label: t(group.labelKey),
-    items: group.items.map((item) => {
-      if ('items' in item) return projectNavigation(item)
-      const destination = registeredRouteDestination(item.destination)
-      const resolved = resolveRegisteredDestination(router, destination)
-      return {
-        iconClass: item.iconClass,
-        routeName: item.destination.name,
-        label: t(item.labelKey ?? getRouteRecord(item.destination.name).meta.titleKey),
-        isCurrentDestination:
-          item.openIn !== 'new-page' &&
-          resolved !== undefined &&
-          sameRouteAddress(router.currentRoute.value, resolved),
+    items: group.items.flatMap<UiAdminNavigationGroup['items'][number]>((item) => {
+      if ('items' in item) {
+        const child = projectNavigation(item)
+        return child.items.length === 0 ? [] : [child]
       }
+      const destination = registeredRouteDestination(item.destination)
+      if (!applicationNavigation.canShow(destination)) return []
+      const resolved = resolveRegisteredDestination(router, destination)
+      return [
+        {
+          iconClass: item.iconClass,
+          routeName: item.destination.name,
+          label: t(item.labelKey ?? getRouteRecord(item.destination.name).meta.titleKey),
+          isCurrentDestination:
+            item.openIn !== 'new-page' &&
+            resolved !== undefined &&
+            sameRouteAddress(router.currentRoute.value, resolved),
+        },
+      ]
     }),
   }
 }
 const navigation = computed((): readonly UiAdminNavigationGroup[] =>
-  consoleNavigationRegistry.map(projectNavigation),
+  consoleNavigationRegistry.map(projectNavigation).filter((group) => group.items.length > 0),
 )
 
 function activeNavigationPath(groups: readonly UiAdminNavigationGroup[]): readonly string[] {
@@ -202,6 +208,7 @@ const copy = computed(() => ({
 }))
 const router = useRouter()
 const applicationNavigation = useApplicationNavigation()
+const settingsDestination = registeredRouteDestination({ name: 'control-center' })
 const workspaceNavigation = useWorkspaceNavigation()
 const settingsReturn = provideSettingsReturn()
 const registerScrollController = inject(routerScrollControllerKey)
@@ -317,6 +324,7 @@ const workspaceTabs = computed(() =>
       closeLabel: `${t('shell.closeActionLabel')} ${label}`,
       closable: !(workspace.entries.length === 1 && entry.destination.name === 'workbench-welcome'),
       refreshable: workspace.canDiscard(entry),
+      hideOnExit: isLiveWorkspace(entry) && entry.controlled === true,
     }
   }),
 )
@@ -421,7 +429,9 @@ async function closeWorkspace(id: string): Promise<void> {
       return
     }
     if (!isLiveWorkspace(entry)) return
-    const fallback = entries[index + 1] ?? entries[index - 1]
+    const fallback = [...entries.slice(index + 1), ...entries.slice(0, index).reverse()].find(
+      (candidate) => applicationNavigation.canShow(candidate.destination),
+    )
     const destination =
       fallback?.destination ?? registeredRouteDestination({ name: 'workbench-welcome' })
     const closingActivation =
@@ -604,7 +614,7 @@ async function prepareNavigationFocus(): Promise<boolean> {
 async function navigate(routeName: string): Promise<void> {
   if (routeName === 'control-center') {
     if (props.activeRouteName !== 'control-center')
-      await applicationNavigation.navigate(registeredRouteDestination({ name: 'control-center' }))
+      await applicationNavigation.navigate(settingsDestination)
     return
   }
   const item = consoleNavigationItems.find((candidate) => candidate.destination.name === routeName)
@@ -721,7 +731,10 @@ async function navigate(routeName: string): Promise<void> {
       />
     </template>
     <template #navigation-bottom="{ collapsed, navigate: navigateFromDock }">
-      <div class="flex w-full justify-center">
+      <div
+        v-if="applicationNavigation.canShow(settingsDestination)"
+        class="flex w-full justify-center"
+      >
         <NTooltip
           :disabled="!collapsed"
           placement="right"

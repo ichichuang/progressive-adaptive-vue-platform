@@ -304,6 +304,7 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
               </p>
               <div class="flex flex-wrap items-center gap-content-gap">
                 <NButton
+                  v-if="navigation.canShow(dashboard)"
                   type="primary"
                   size="large"
                   tag="a"
@@ -321,6 +322,7 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
                   </template>
                 </NButton>
                 <NButton
+                  v-if="navigation.canShow(showcase)"
                   quaternary
                   size="large"
                   tag="a"

@@ -66,4 +66,5 @@ export interface UiWorkspaceTab {
   readonly closeLabel: string
   readonly closable: boolean
   readonly refreshable: boolean
+  readonly hideOnExit?: boolean
 }

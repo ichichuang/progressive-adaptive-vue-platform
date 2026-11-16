@@ -22,6 +22,7 @@ interface WorkspaceStructure {
 
 export interface LiveWorkspaceEntry extends WorkspaceStructure {
   readonly state: 'live'
+  readonly controlled?: true
   readonly instance: WorkspaceInstanceIdentity
   readonly componentName: string
 }
@@ -88,6 +89,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     input: ValidatedRouteInput,
     component: unknown,
     origin?: LiveWorkspaceEntry,
+    controlled = false,
   ): LiveWorkspaceEntry | undefined {
     const route = getRouteRecord(input.name)
     let identity: WorkspaceIdentity
@@ -110,9 +112,12 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     const previous = entries.value.find((entry) => entry.identity === identity)
     const entry: LiveWorkspaceEntry = Object.freeze({
       state: 'live',
+      ...(controlled ? { controlled: true as const } : {}),
       identity,
       instance:
-        previous !== undefined && isLiveWorkspace(previous)
+        previous !== undefined &&
+        isLiveWorkspace(previous) &&
+        (!controlled || JSON.stringify(previous.destination) === JSON.stringify(destination))
           ? previous.instance
           : (Symbol(identity) as WorkspaceInstanceIdentity),
       ...(previous?.origin !== undefined
@@ -159,6 +164,20 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     )
   }
 
+  /** Access invalidation owns removal even when ordinary discard needs confirmation. */
+  function withdraw(entry: LiveWorkspaceEntry): void {
+    if (
+      !entries.value.some(
+        (candidate) => isLiveWorkspace(candidate) && candidate.instance === entry.instance,
+      )
+    )
+      return
+    if (active.value?.instance === entry.instance) activeIdentity.value = null
+    entries.value = entries.value.filter(
+      (candidate) => !isLiveWorkspace(candidate) || candidate.instance !== entry.instance,
+    )
+  }
+
   function dispose(): void {
     activeIdentity.value = null
     entries.value = []
@@ -182,6 +201,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     commit,
     canDiscard,
     discard,
+    withdraw,
     replaceInstance,
     dispose,
   }

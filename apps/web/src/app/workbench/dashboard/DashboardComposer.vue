@@ -55,8 +55,11 @@ import {
 } from '../../dashboard/dashboard-catalog'
 import { catalogCardTitle, dashboardCardTitle } from './dashboard-card-presentation'
 import { routerScrollControllerKey } from '../../router/router-scroll-controller'
+import { useApplicationNavigation } from '../../router/application-navigation'
+import { registeredRouteDestination } from '../../router/route-input'
 defineProps<{ readonly title: string }>()
 const { t } = useConsoleI18n()
+const navigation = useApplicationNavigation()
 const actionTheme = useDashboardActionTheme()
 const motion = useUiMotion()
 const reveal = useRouteRevealBoundary()
@@ -509,16 +512,19 @@ function destinations(id: string): readonly DashboardDestination[] {
     : []
 }
 function destinationChoices(id: string) {
-  const selected = destinations(id)
-  return [...selected, ...dashboardDestinations.filter((route) => !selected.includes(route))].map(
-    (value, index) => ({
-      value,
-      label: t(dashboardDestinationLabels[value]),
-      index,
-      selected: index < selected.length,
-      isLast: index === selected.length - 1,
-    }),
-  )
+  const visible = (name: DashboardDestination) =>
+    navigation.canShow(registeredRouteDestination({ name }))
+  const selected = destinations(id).filter(visible)
+  return [
+    ...selected,
+    ...dashboardDestinations.filter((route) => !selected.includes(route) && visible(route)),
+  ].map((value, index) => ({
+    value,
+    label: t(dashboardDestinationLabels[value]),
+    index,
+    selected: index < selected.length,
+    isLast: index === selected.length - 1,
+  }))
 }
 function setDestinations(id: string, values: string[]): void {
   const panel = panels.value.get(id)
@@ -565,19 +571,23 @@ const panels = computed(
   () => new Map(board.document.value.panels.map((panel) => [panel.id, panel])),
 )
 const libraryEntries = computed<readonly DashboardLibraryEntry[]>(() =>
-  dashboardCatalog.map((entry: DashboardCatalogEntry) => ({
-    id: entry.id,
-    title: catalogCardTitle(entry, t),
-    category: entry.category,
-    preview:
-      entry.kind !== 'builtin'
-        ? entry.kind
-        : entry.panel.type === 'chart' && entry.panel.config.series === 'delivery'
-          ? 'comparison'
-          : entry.panel.type,
-    ...(entry.descriptionKey !== undefined ? { description: t(entry.descriptionKey) } : {}),
-    added: board.document.value.panels.some((panel) => matchesDashboardCatalogEntry(entry, panel)),
-  })),
+  dashboardCatalog
+    .filter((entry) => entry.kind !== 'route' || navigation.canShow(entry.destination))
+    .map((entry: DashboardCatalogEntry) => ({
+      id: entry.id,
+      title: catalogCardTitle(entry, t),
+      category: entry.category,
+      preview:
+        entry.kind !== 'builtin'
+          ? entry.kind
+          : entry.panel.type === 'chart' && entry.panel.config.series === 'delivery'
+            ? 'comparison'
+            : entry.panel.type,
+      ...(entry.descriptionKey !== undefined ? { description: t(entry.descriptionKey) } : {}),
+      added: board.document.value.panels.some((panel) =>
+        matchesDashboardCatalogEntry(entry, panel),
+      ),
+    })),
 )
 function keydown(event: KeyboardEvent, id: string): void {
   const directions: Readonly<Record<string, readonly [number, number]>> = {
@@ -620,6 +630,11 @@ function finishLibrary(): void {
 }
 function cardTitle(id: string): string {
   const panel = panels.value.get(id)
+  if (panel?.type === 'route') {
+    const entry = dashboardCatalog.find(({ id }) => id === panel.config.entryId)
+    if (entry?.kind === 'route' && !navigation.canShow(entry.destination))
+      return t('dashboardBoard.libraryRoutes')
+  }
   return panel ? dashboardCardTitle(panel, t) : ''
 }
 const announcement = computed(() => {

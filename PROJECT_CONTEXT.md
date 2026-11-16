@@ -58,7 +58,7 @@ PC/iPad/平板/移动 H5 响应式体验，以及可强制执行静态验证的 
 
 ## 身份与访问能力开发计划
 
-WP-01 已完成源码盘点。WP-02 和 WP-03 已实现并纳入架构门禁的隔离运行验证，生产应用入口沿用公开模式。
+WP-01 已完成源码盘点。WP-02 至 WP-04 已实现，生产应用入口和现有产品路由沿用公开模式。
 以下工作包记录完整交付目标与依赖，实施按工作包授权。
 
 ### 交付目标
@@ -73,12 +73,12 @@ WP-01 已完成源码盘点。WP-02 和 WP-03 已实现并纳入架构门禁的�
 
 ### 已核对的接入点
 
-| 职责             | 当前实现及接入边界                                                                                                                                                                                                                                                                     |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 应用装配与导航   | [启动流程](./apps/web/src/app/bootstrap/runtime-kernel.ts)统一装配应用服务；[路由注册表](./apps/web/src/app/router/route-registry.ts)当前使用公开路由和空权限清单。后续把访问要求接入[现有守卫](./apps/web/src/app/router/router-lifecycle.ts)，保留父级限制、输入校验和导航生命周期。 |
-| 请求与数据       | [请求层](./apps/web/src/shared/api/client.ts)支持注入请求凭据；[查询层](./apps/web/src/shared/query/query-runtime.ts)仅缓存匿名 GET/JSON 读取。接入受控数据时需要为受影响的上下文绑定请求和结果，拒收迟到的旧结果。                                                                    |
-| 工作区与存储     | [标签页会话](./apps/web/src/app/workspace/workspace-session.ts)按路由名恢复，[标签页与表单草稿](./apps/web/src/app/storage/storage-registry.ts)当前均未按身份分区。受控内容的恢复和撤销接入现有工作区、缓存实例和草稿负责人。                                                          |
-| 表单、表格和图表 | [表单](./packages/ui/src/composables/use-ui-form.ts)目前将整份快照交给提交回调；受控提交需要按授权生成变更。复用[表格](./packages/ui/src/composables/use-ui-table.ts)和 [G2 图表](./packages/ui/src/components/UiG2Chart.vue)的数据入口，使记录、汇总、提示和导出遵守同一数据范围。    |
+| 职责             | 当前实现及接入边界                                                                                                                                                                                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 应用装配与导航   | [启动流程](./apps/web/src/app/bootstrap/runtime-kernel.ts)统一装配应用服务；[路由注册表](./apps/web/src/app/router/route-registry.ts)当前使用公开路由和空权限清单。[现有守卫](./apps/web/src/app/router/router-lifecycle.ts)根据候选地址及匹配到的各级路由检查访问要求。            |
+| 请求与数据       | [请求层](./apps/web/src/shared/api/client.ts)支持注入请求凭据；[查询层](./apps/web/src/shared/query/query-runtime.ts)仅缓存匿名 GET/JSON 读取。接入受控数据时需要为受影响的上下文绑定请求和结果，拒收迟到的旧结果。                                                                 |
+| 工作区与存储     | [标签页会话](./apps/web/src/app/workspace/workspace-session.ts)按当前完整路由分类过滤读写并恢复公开标签。受控实例及浮层随工作区生命周期撤回，受保护的表单草稿留待 WP-06。                                                                                                           |
+| 表单、表格和图表 | [表单](./packages/ui/src/composables/use-ui-form.ts)目前将整份快照交给提交回调；受控提交需要按授权生成变更。复用[表格](./packages/ui/src/composables/use-ui-table.ts)和 [G2 图表](./packages/ui/src/components/UiG2Chart.vue)的数据入口，使记录、汇总、提示和导出遵守同一数据范围。 |
 
 ### 工作包
 
@@ -107,7 +107,7 @@ WP-01 已完成源码盘点。WP-02 和 WP-03 已实现并纳入架构门禁的�
 - [访问边界](./apps/web/src/app/access/access-boundary.ts)提供 `useAccessBoundary()`、`readContext()` 和 `observe(request, onInvalidated)`。消费者用 `evaluate()` 发起检查，用 `read()` 读取当前状态，需要执行或应用异步结果时取得 `permit()` 并调用 `isCurrent()`，随所属状态释放 `dispose()`。同步结果与异步结果经过同一校验，绑定不可变快照、请求标识和本地代次。迟到的结果由代次校验丢弃。
 - 身份、范围、资源域、记录和字段失效分别匹配。局部失效可指定动作，先统一停止匹配许可，再同步调用各状态所有者的 `onInvalidated`。撤销写入时停止编辑和提交，仍可读取的内容使用已确认的数据，未保存的草稿不作为已保存结果展示。受保护状态只在内存中管理，匿名查询缓存与现有公共存储、恢复流程维持原契约。
 
-隔离[运行验证](./scripts/architecture/check-access-boundary.ts)随 `pnpm check:arch` 执行，覆盖公开模式、初始化、决定结果、范围确认与竞态、局部失效、写入撤销及迟到结果。产品路由、菜单、Tabs、KeepAlive、表单、表格、导出、图表、管理界面和受控查询接入留在对应后续工作包，届时单独验证实际消费者与宿主服务。
+隔离[运行验证](./scripts/architecture/check-access-boundary.ts)随 `pnpm check:arch` 执行，覆盖公开模式、初始化、决定结果、范围确认与竞态、局部失效、写入撤销及迟到结果。WP-04 接入路由、外壳与工作区。表单、表格、导出、图表、管理界面和受控查询由对应工作包单独接入并验证。
 
 ### WP-03 实现与验证
 
@@ -118,6 +118,15 @@ WP-01 已完成源码盘点。WP-02 和 WP-03 已实现并纳入架构门禁的�
 - [本地宿主](./apps/web/src/app/access/local-access-host.ts)的 `createLocalAccessHost` 返回可选装配的 `host` 和 `selectContext`、`selectScope`、`replacePolicy`、`reset`。每个实例拥有独立的内存快照。范围只能由当前模拟身份的预设确认，替换策略通过 WP-02 通知使该域旧许可失效，重置走同一身份失效流程。具体人物、能力和规则仅在验证场景中定义。正常应用入口、匿名查询与持久化维持原契约。
 
 [WP-03 验证](./scripts/architecture/check-native-access.ts)随 `pnpm check:arch` 执行。适配器探针验证权限合并、例外、范围、粒度和坏配置。隔离消费者探针验证组合、范围确认、策略更换、迟到结果、重置与实例隔离。真实宿主服务、产品授权接入和展示页分别由后续工作包验证，高级条件及关系适配留在 WP-09。
+
+### WP-04 实现与验证
+
+- [路由注册](./apps/web/src/app/router/route-registry.ts)沿用 `auth` 和 `requiredPermissionIds`。`public` 加空列表允许公开导航。`required` 要求宿主确认身份，`anonymous-only` 要求宿主确认匿名。`policy` 要求有效的非空清单，是否接受匿名由所选提供方决定。任何非空清单均按全项满足（`all`）处理。每个权限 ID 要在当前记录的 `permissionRequests` 显式绑定 `AccessRequest`，也可从已校验的地址参数构造请求。每条请求在自己的资源域判定，所有匹配父级和子级记录的强制要求均须满足。
+- [路由生命周期](./apps/web/src/app/router/router-lifecycle.ts)在现有动态路由装配后，根据已校验的路径、参数、查询及当前尝试发起判定。确认导航前再次检查当前许可。普通等待期间继续呈现仍获授权的当前页。身份要求、明确拒绝、事实不足、配置错误和运行失败分别交给现有 401、403、维护页和错误页；配置错误与运行失败共用错误页。相同规则覆盖链接、直达、刷新、参数变化和浏览器历史。
+- [应用导航](./apps/web/src/app/router/application-navigation.ts)向菜单、设置入口、欢迎页入口、组件导航和搜索、仪表盘卡片库及快捷链接提供 `canShow(destination)`。面包屑、标题及 Tabs 跟随当前已授权工作区，菜单注册仍决定入口是否存在。当前没有全局最近项目或命令面板。
+- 受控标签在会话内保留重新导航所需的地址，离开时通过 [工作区保留边界](./apps/web/src/app/workspace/workspace-retention.ts)卸载页面和 Vue 所属浮层，保留公开页的 KeepAlive。地址变化使用新受控实例。活动页和未激活的受控标签继续订阅本身的访问要求。失效时先撤回呈现和交互，再由工作区移除标签，等待旧实例卸载后回到最近访问且仍获授权的标签或公开欢迎页。普通导航和关闭仍按原流程确认未保存更改。受控来源和目的地不进入页面转场快照，退场的受控标签立即隐藏。
+- 标签会话与多浏览器页面关联只恢复或保存当前分类为公开的条目。受控页面的刷新和历史回退重新授权，工作区保持受控持久化关闭。
+- [隔离架构探针](./scripts/architecture/check-route-access.ts)验证匹配记录、按域决定、等待与取消、局部失效及标签快照。使用 `pnpm exec tsx scripts/architecture/check-route-access.ts --browser` 可在环回地址启动真实外壳的隔离测试，测试提供方和路由只在该命令加载。WP-04 的覆盖范围是导航、呈现和工作区生命周期。业务数据、实际宿主认证与服务端授权，以及表单、表格、图表和查询集成仍由相应工作包验证。
 
 登录模板和展示页依照 [AGENTS.md](./AGENTS.md) 的核心验收和页面授权边界排期。
 

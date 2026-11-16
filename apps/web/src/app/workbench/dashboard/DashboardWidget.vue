@@ -126,13 +126,15 @@ const chart = computed<UiG2ChartOptions>(() => {
 })
 const destinations = computed<readonly DashboardDestination[]>(() =>
   props.panel.type === 'capabilities'
-    ? (props.panel.config.destinations ?? defaultDashboardDestinations)
+    ? (props.panel.config.destinations ?? defaultDashboardDestinations).filter((name) =>
+        navigation.canShow(registeredRouteDestination({ name })),
+      )
     : [],
 )
 const routeCard = computed(() => {
   if (props.panel.type !== 'route') return undefined
   const entry = getDashboardCatalogEntry(props.panel.config.entryId)
-  if (entry?.kind !== 'route') return undefined
+  if (entry?.kind !== 'route' || !navigation.canShow(entry.destination)) return undefined
   return {
     destination: entry.destination,
     title: catalogCardTitle(entry, t),
