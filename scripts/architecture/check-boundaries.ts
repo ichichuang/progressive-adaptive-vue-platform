@@ -26,6 +26,7 @@ import {
 import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/runtime-configuration-contract'
 import { readUapiWorldTime } from '../../apps/web/src/shared/services/uapi-world-time'
 import { verifyAccessBoundary } from './check-access-boundary'
+import { verifyNativeAccess } from './check-native-access'
 import { validateArchitectureAdminConsole } from './check-architecture-admin-console'
 import { validateAppearanceCutover } from './check-appearance-cutover'
 import { validateI18nArchitecture } from './check-i18n'
@@ -2624,6 +2625,7 @@ async function validateReadQueries(): Promise<readonly string[]> {
 
 if (process.argv[1]?.endsWith('check-boundaries.ts')) {
   await verifyAccessBoundary()
+  await verifyNativeAccess()
   const violations = [
     ...(await validateManifestDependencies()),
     ...(await validateRootConfigurationDependencies()),

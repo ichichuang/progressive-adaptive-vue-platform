@@ -50,7 +50,12 @@ export const accessInvalidationSchema = z
 
 export const accessDecisionSchema = z
   .strictObject({
-    status: z.enum(['allow', 'deny', 'indeterminate']),
+    status: z.enum(['allow', 'deny', 'indeterminate', 'configuration-error']),
+    reasonCode: z
+      .string()
+      .max(80)
+      .regex(/^[a-z][a-z0-9.-]*$/u)
+      .optional(),
     revision: identifier.optional(),
     expiresAt: expiresAt.optional(),
   })
@@ -110,7 +115,6 @@ export type AccessState =
         | 'stale'
         | 'expired'
         | 'disposed'
-        | 'configuration-error'
         | 'evaluation-failed'
     }
 
