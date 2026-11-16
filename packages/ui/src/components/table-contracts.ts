@@ -389,7 +389,9 @@ export interface UiTableCopy {
   readonly refresh: () => string
   readonly loading: () => string
   readonly empty: () => string
+  readonly noData?: () => string
   readonly error: () => string
+  readonly staleResult: () => string
   readonly retry: () => string
   readonly boolean: (value: boolean) => string
 }

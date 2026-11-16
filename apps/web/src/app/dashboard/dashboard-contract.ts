@@ -173,8 +173,8 @@ export const dashboardPresetTones: Readonly<
   Record<DashboardStyle, Readonly<Record<DashboardPanel['type'], DashboardTone>>>
 > = {
   theme: {
-    capabilities: 'accent-b',
-    clock: 'accent-a',
+    capabilities: 'theme',
+    clock: 'theme',
     notes: 'theme',
     chart: 'theme',
     route: 'accent-b',
@@ -212,17 +212,20 @@ export function createDefaultDashboard(): DashboardDocument {
       { id: 'capabilities', type: 'capabilities', config: {} },
       { id: 'notes', type: 'notes', config: { text: '' } },
       { id: 'clock', type: 'clock', config: {} },
+      { id: 'chart', type: 'chart', config: { series: 'traffic' } },
     ],
     layouts: {
       wide: [
-        { id: 'capabilities', x: 0, y: 0, w: 7, h: 3 },
-        { id: 'notes', x: 7, y: 0, w: 5, h: 5 },
-        { id: 'clock', x: 0, y: 3, w: 4, h: 2 },
+        { id: 'chart', x: 0, y: 0, w: 8, h: 5 },
+        { id: 'clock', x: 8, y: 0, w: 4, h: 2 },
+        { id: 'notes', x: 8, y: 2, w: 4, h: 3 },
+        { id: 'capabilities', x: 0, y: 5, w: 12, h: 2 },
       ],
       narrow: [
-        { id: 'capabilities', x: 0, y: 0, w: 1, h: 3 },
-        { id: 'notes', x: 0, y: 3, w: 1, h: 3 },
+        { id: 'chart', x: 0, y: 0, w: 1, h: 4 },
+        { id: 'capabilities', x: 0, y: 4, w: 1, h: 2 },
         { id: 'clock', x: 0, y: 6, w: 1, h: 2 },
+        { id: 'notes', x: 0, y: 8, w: 1, h: 3 },
       ],
     },
   }

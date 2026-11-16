@@ -159,7 +159,9 @@ export function useTableShowcase() {
     refresh: () => t('tableShowcase.refresh'),
     loading: () => t('tableShowcase.loading'),
     empty: () => t('tableShowcase.empty'),
+    noData: () => t('tableShowcase.noData'),
     error: () => t('tableShowcase.error'),
+    staleResult: () => t('tableShowcase.staleResult'),
     retry: () => t('configuredForm.retryOptions'),
     boolean: (value) => t(value ? 'configuredForm.yes' : 'configuredForm.no'),
   }

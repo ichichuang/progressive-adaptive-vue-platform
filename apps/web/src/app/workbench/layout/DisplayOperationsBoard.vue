@@ -13,7 +13,6 @@ import { NCard } from 'naive-ui/es/card'
 import { NFlex } from 'naive-ui/es/flex'
 import { NImage } from 'naive-ui/es/image'
 import { NProgress } from 'naive-ui/es/progress'
-import { NScrollbar } from 'naive-ui/es/scrollbar'
 import { NText } from 'naive-ui/es/typography'
 import { UiG2Chart, type UiChartTourState, type UiDisplayStageSize } from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
@@ -23,8 +22,14 @@ import ChartMetricValue from '../charts/ChartMetricValue.vue'
 import { useLiveChartClock } from '../charts/use-live-chart-clock'
 import productionCampus from './production-campus.png'
 
-const props = defineProps<{ readonly stageSize?: UiDisplayStageSize }>()
+const props = defineProps<{
+  readonly stageSize?: UiDisplayStageSize
+}>()
 const { t, locale } = useConsoleI18n()
+const host = ref<InstanceType<typeof NFlex>>()
+const measuredSize = ref<UiDisplayStageSize>({ width: 0, height: 0 })
+const availableSize = computed(() => props.stageSize ?? measuredSize.value)
+let resizeObserver: ResizeObserver | undefined
 const active = ref(false)
 const visible = ref(true)
 const interval = ref(2000)
@@ -33,8 +38,7 @@ const tick = useLiveChartClock(playing, interval)
 const stream = computed(() => liveChartExample('stream', tick.value, t))
 const ranking = computed(() => liveChartExample('ranking', tick.value, t))
 const compactStage = computed(
-  () =>
-    props.stageSize !== undefined && (props.stageSize.width < 720 || props.stageSize.height < 320),
+  () => availableSize.value.width < 720 || availableSize.value.height < 320,
 )
 const streamOptions = computed(() =>
   compactStage.value
@@ -43,7 +47,11 @@ const streamOptions = computed(() =>
 )
 const rankingOptions = computed(() =>
   compactStage.value
-    ? { ...ranking.value.options, axis: false as const, labels: [] }
+    ? {
+        ...ranking.value.options,
+        axis: { x: { title: false, tick: false, line: false, labelAutoHide: false }, y: false },
+        labels: [],
+      }
     : ranking.value.options,
 )
 const tourOptions = computed(() => {
@@ -74,6 +82,15 @@ function activate(): void {
   active.value = true
 }
 onMounted(() => {
+  const element: unknown = host.value?.$el
+  if (element instanceof HTMLElement) {
+    const measure = (): void => {
+      measuredSize.value = { width: element.clientWidth, height: element.clientHeight }
+    }
+    resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(element)
+    measure()
+  }
   document.addEventListener('visibilitychange', visibilityChanged)
   activate()
 })
@@ -82,6 +99,7 @@ onDeactivated(() => {
   active.value = false
 })
 onScopeDispose(() => {
+  resizeObserver?.disconnect()
   active.value = false
   document.removeEventListener('visibilitychange', visibilityChanged)
 })
@@ -89,384 +107,380 @@ onScopeDispose(() => {
 
 <template>
   <NFlex
+    ref="host"
     :size="0"
     class="operations-host h-full min-h-0 min-w-0 w-full"
   >
-    <NScrollbar
-      class="h-full min-h-0 min-w-0 w-full"
-      content-class="h-full min-h-full"
+    <NFlex
+      :size="0"
+      class="operations-board h-full min-h-0 min-w-0 w-full"
+      :class="{ 'operations-board-fixed': stageSize !== undefined }"
+      v-bind="
+        { role: 'region', 'aria-label': t('displayPreview.overview') } satisfies HTMLAttributes
+      "
     >
-      <NFlex
-        :size="0"
-        class="operations-board h-full min-h-0 min-w-0 w-full"
-        :class="{ 'operations-board-fixed': stageSize !== undefined }"
-        v-bind="
-          { role: 'region', 'aria-label': t('displayPreview.overview') } satisfies HTMLAttributes
-        "
+      <NCard
+        class="operations-panel operations-ranking rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
       >
-        <NCard
-          class="operations-panel operations-ranking rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
         >
-          <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.ranking') }}
-            </NText>
-            <NText depth="3">
-              {{ t('chartLive.rateUnit') }}
-            </NText>
-          </NFlex>
-          <NText
-            v-if="errors.ranking"
-            depth="3"
-            v-bind="{ role: 'alert' } satisfies HTMLAttributes"
-          >
-            {{ t('displayPreview.chartError') }}
+          <NText strong>
+            {{ t('displayPreview.ranking') }}
           </NText>
-          <UiG2Chart
-            v-else
-            class="flex-1 min-h-0 min-w-0"
-            :options="rankingOptions"
-            :label="t('displayPreview.ranking')"
-            @error="errors.ranking = true"
-          />
-          <NButton
-            v-if="errors.ranking"
-            size="small"
-            @click="errors.ranking = false"
-          >
-            {{ t('chartExamples.retry') }}
-          </NButton>
-        </NCard>
-
-        <NCard
-          class="operations-panel operations-channels rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
-        >
-          <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.channels') }}
-            </NText>
-            <NText depth="3">
-              {{ t('chartLive.rateUnit') }}
-            </NText>
-          </NFlex>
-          <NFlex
-            v-for="channel in channels"
-            :key="channel.label"
-            vertical
-            :size="0"
-            class="operations-meter flex-1 min-h-0 justify-center"
-          >
-            <NFlex
-              justify="space-between"
-              :size="0"
-              :wrap="false"
-            >
-              <NText
-                class="min-w-0 truncate"
-                depth="3"
-              >
-                {{ channel.label }}
-              </NText>
-              <NText
-                class="tabular-nums"
-                strong
-              >
-                <ChartMetricValue
-                  :value="String(channel.value)"
-                  :locale="locale"
-                  :active="playing"
-                />
-              </NText>
-            </NFlex>
-            <NProgress
-              type="line"
-              :height="stroke"
-              :percentage="Math.round((channel.value / 160) * 100)"
-              :show-indicator="false"
-              v-bind="{ 'aria-label': channel.label } satisfies HTMLAttributes"
-            />
-          </NFlex>
-        </NCard>
-
-        <NCard
-          class="operations-panel operations-summary rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
-        >
-          <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.overview') }}
-            </NText>
-            <NText depth="3">
-              {{ t('displayPreview.now') }}
-            </NText>
-          </NFlex>
-          <NFlex
-            :size="0"
-            class="operations-metrics flex-1 min-h-0"
-          >
-            <NFlex
-              vertical
-              :size="0"
-              class="operations-metric min-w-0 justify-center"
-            >
-              <NText depth="3">
-                {{ t('chartLive.currentTotal') }}
-              </NText>
-              <NText
-                strong
-                class="operations-value text-control-primary"
-              >
-                <ChartMetricValue
-                  :value="stream.metrics[0]?.value ?? '0'"
-                  :locale="locale"
-                  :active="playing"
-                />
-              </NText>
-              <NText depth="3">
-                {{ t('chartLive.rateUnit') }}
-              </NText>
-            </NFlex>
-            <NFlex
-              vertical
-              :size="0"
-              class="operations-metric min-w-0 justify-center"
-            >
-              <NText depth="3">
-                {{ t('chartLive.series') }}
-              </NText>
-              <NText
-                strong
-                class="operations-value text-control-primary"
-              >
-                {{ stream.metrics[2]?.value }}
-              </NText>
-              <NText depth="3">
-                {{ t('chartLive.channels') }}
-              </NText>
-            </NFlex>
-            <NFlex
-              vertical
-              :size="0"
-              class="operations-metric min-w-0 justify-center"
-            >
-              <NText depth="3">
-                {{ t('chartLive.leader') }}
-              </NText>
-              <NText
-                strong
-                class="operations-value text-control-primary"
-              >
-                {{ ranking.metrics[0]?.value }}
-              </NText>
-              <NText depth="3">
-                {{ t('chartLive.regions') }}
-              </NText>
-            </NFlex>
-            <NFlex
-              vertical
-              :size="0"
-              class="operations-metric min-w-0 justify-center"
-            >
-              <NText depth="3">
-                {{ t('chartLive.leadingRate') }}
-              </NText>
-              <NText
-                strong
-                class="operations-value text-control-primary"
-              >
-                <ChartMetricValue
-                  :value="ranking.metrics[1]?.value ?? '0'"
-                  :locale="locale"
-                  :active="playing"
-                />
-              </NText>
-              <NText depth="3">
-                {{ t('chartLive.rateUnit') }}
-              </NText>
-            </NFlex>
-          </NFlex>
-        </NCard>
-
-        <NCard
-          class="operations-panel operations-visual rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
-        >
-          <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.productionScene') }}
-            </NText>
-            <NText depth="3">
-              {{ t('displayPreview.sceneIllustration') }}
-            </NText>
-          </NFlex>
-          <NImage
-            class="rounded-control flex-1 min-h-0 min-w-0 overflow-hidden"
-            :img-props="{ class: 'h-full w-full object-cover' }"
-            :src="productionCampus"
-            :alt="t('displayPreview.sceneIllustration')"
-            preview-disabled
-          />
-        </NCard>
-
-        <NCard
-          class="operations-panel operations-stream rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
-        >
-          <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.stream') }}
-            </NText>
-            <NText depth="3">
-              {{ t('chartLive.window') }} · {{ stream.metrics[1]?.value }}
-              {{ t('chartLive.seconds') }}
-            </NText>
-          </NFlex>
-          <NText
-            v-if="errors.stream"
-            depth="3"
-            v-bind="{ role: 'alert' } satisfies HTMLAttributes"
-          >
-            {{ t('displayPreview.chartError') }}
+          <NText depth="3">
+            {{ t('chartLive.rateUnit') }}
           </NText>
-          <UiG2Chart
-            v-else
-            class="flex-1 min-h-0 min-w-0"
-            :options="streamOptions"
-            :label="t('displayPreview.stream')"
-            @error="errors.stream = true"
-          />
-          <NButton
-            v-if="errors.stream"
-            size="small"
-            @click="errors.stream = false"
-          >
-            {{ t('chartExamples.retry') }}
-          </NButton>
-        </NCard>
-
-        <NCard
-          class="operations-panel operations-tour rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
+        </NFlex>
+        <NText
+          v-if="errors.ranking"
+          depth="3"
+          v-bind="{ role: 'alert' } satisfies HTMLAttributes"
         >
-          <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.tour') }}
-            </NText>
-            <NText depth="3">
-              {{ tourState.targetId ?? t('chartTour.donut') }}
-            </NText>
-          </NFlex>
-          <NText
-            v-if="errors.tour"
-            depth="3"
-            v-bind="{ role: 'alert' } satisfies HTMLAttributes"
-          >
-            {{ t('displayPreview.chartError') }}
+          {{ t('displayPreview.chartError') }}
+        </NText>
+        <UiG2Chart
+          v-else
+          class="flex-1 min-h-0 min-w-0"
+          :options="rankingOptions"
+          :label="t('displayPreview.ranking')"
+          @error="errors.ranking = true"
+        />
+        <NButton
+          v-if="errors.ranking"
+          size="small"
+          @click="errors.ranking = false"
+        >
+          {{ t('chartExamples.retry') }}
+        </NButton>
+      </NCard>
+
+      <NCard
+        class="operations-panel operations-channels rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
+      >
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
+        >
+          <NText strong>
+            {{ t('displayPreview.channels') }}
           </NText>
-          <UiG2Chart
-            v-else
-            class="flex-1 min-h-0 min-w-0"
-            :options="tourOptions"
-            :tour="chartTourConfiguration"
-            :label="t('displayPreview.tour')"
-            @error="errors.tour = true"
-            @tour-change="tourState = $event"
-          />
-          <NButton
-            v-if="errors.tour"
-            size="small"
-            @click="errors.tour = false"
-          >
-            {{ t('chartExamples.retry') }}
-          </NButton>
-        </NCard>
-
-        <NCard
-          class="operations-panel operations-status rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
-          content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
-          :bordered="false"
+          <NText depth="3">
+            {{ t('chartLive.rateUnit') }}
+          </NText>
+        </NFlex>
+        <NFlex
+          v-for="channel in channels"
+          :key="channel.label"
+          vertical
+          :size="0"
+          class="operations-meter flex-1 min-h-0 justify-center"
         >
           <NFlex
-            align="baseline"
-            justify="space-between"
-            :size="0"
-            class="operations-heading"
-          >
-            <NText strong>
-              {{ t('displayPreview.status') }}
-            </NText>
-            <NText depth="3">
-              {{ t('displayPreview.now') }}
-            </NText>
-          </NFlex>
-          <NFlex
-            v-for="(metric, index) in [
-              ranking.metrics[0],
-              ranking.metrics[1],
-              stream.metrics[1],
-              ranking.metrics[2],
-            ]"
-            :key="index"
-            align="center"
             justify="space-between"
             :size="0"
             :wrap="false"
-            class="operations-status-row flex-1 min-h-0"
           >
             <NText
               class="min-w-0 truncate"
               depth="3"
             >
-              {{ metric?.label }}
+              {{ channel.label }}
             </NText>
             <NText
-              class="min-w-0 truncate tabular-nums"
+              class="tabular-nums"
               strong
             >
-              {{ metric?.value }} {{ metric?.unit }}
+              <ChartMetricValue
+                :value="String(channel.value)"
+                :locale="locale"
+                :active="playing"
+              />
             </NText>
           </NFlex>
-        </NCard>
-      </NFlex>
-    </NScrollbar>
+          <NProgress
+            type="line"
+            :height="stroke"
+            :percentage="Math.round((channel.value / 160) * 100)"
+            :show-indicator="false"
+            v-bind="{ 'aria-label': channel.label } satisfies HTMLAttributes"
+          />
+        </NFlex>
+      </NCard>
+
+      <NCard
+        class="operations-panel operations-summary rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
+      >
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
+        >
+          <NText strong>
+            {{ t('displayPreview.overview') }}
+          </NText>
+          <NText depth="3">
+            {{ t('displayPreview.now') }}
+          </NText>
+        </NFlex>
+        <NFlex
+          :size="0"
+          class="operations-metrics flex-1 min-h-0"
+        >
+          <NFlex
+            vertical
+            :size="0"
+            class="operations-metric min-w-0 justify-center"
+          >
+            <NText depth="3">
+              {{ t('chartLive.currentTotal') }}
+            </NText>
+            <NText
+              strong
+              class="operations-value text-control-primary"
+            >
+              <ChartMetricValue
+                :value="stream.metrics[0]?.value ?? '0'"
+                :locale="locale"
+                :active="playing"
+              />
+            </NText>
+            <NText depth="3">
+              {{ t('chartLive.rateUnit') }}
+            </NText>
+          </NFlex>
+          <NFlex
+            vertical
+            :size="0"
+            class="operations-metric min-w-0 justify-center"
+          >
+            <NText depth="3">
+              {{ t('chartLive.series') }}
+            </NText>
+            <NText
+              strong
+              class="operations-value text-control-primary"
+            >
+              {{ stream.metrics[2]?.value }}
+            </NText>
+            <NText depth="3">
+              {{ t('chartLive.channels') }}
+            </NText>
+          </NFlex>
+          <NFlex
+            vertical
+            :size="0"
+            class="operations-metric min-w-0 justify-center"
+          >
+            <NText depth="3">
+              {{ t('chartLive.leader') }}
+            </NText>
+            <NText
+              strong
+              class="operations-value text-control-primary"
+            >
+              {{ ranking.metrics[0]?.value }}
+            </NText>
+            <NText depth="3">
+              {{ t('chartLive.regions') }}
+            </NText>
+          </NFlex>
+          <NFlex
+            vertical
+            :size="0"
+            class="operations-metric min-w-0 justify-center"
+          >
+            <NText depth="3">
+              {{ t('chartLive.leadingRate') }}
+            </NText>
+            <NText
+              strong
+              class="operations-value text-control-primary"
+            >
+              <ChartMetricValue
+                :value="ranking.metrics[1]?.value ?? '0'"
+                :locale="locale"
+                :active="playing"
+              />
+            </NText>
+            <NText depth="3">
+              {{ t('chartLive.rateUnit') }}
+            </NText>
+          </NFlex>
+        </NFlex>
+      </NCard>
+
+      <NCard
+        class="operations-panel operations-visual rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
+      >
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
+        >
+          <NText strong>
+            {{ t('displayPreview.productionScene') }}
+          </NText>
+          <NText depth="3">
+            {{ t('displayPreview.sceneIllustration') }}
+          </NText>
+        </NFlex>
+        <NImage
+          class="rounded-control flex-1 min-h-0 min-w-0 overflow-hidden"
+          :img-props="{ class: 'h-full w-full object-cover' }"
+          :src="productionCampus"
+          :alt="t('displayPreview.sceneIllustration')"
+          preview-disabled
+        />
+      </NCard>
+
+      <NCard
+        class="operations-panel operations-stream rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
+      >
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
+        >
+          <NText strong>
+            {{ t('displayPreview.stream') }}
+          </NText>
+          <NText depth="3">
+            {{ t('chartLive.window') }} · {{ stream.metrics[1]?.value }}
+            {{ t('chartLive.seconds') }}
+          </NText>
+        </NFlex>
+        <NText
+          v-if="errors.stream"
+          depth="3"
+          v-bind="{ role: 'alert' } satisfies HTMLAttributes"
+        >
+          {{ t('displayPreview.chartError') }}
+        </NText>
+        <UiG2Chart
+          v-else
+          class="flex-1 min-h-0 min-w-0"
+          :options="streamOptions"
+          :label="t('displayPreview.stream')"
+          @error="errors.stream = true"
+        />
+        <NButton
+          v-if="errors.stream"
+          size="small"
+          @click="errors.stream = false"
+        >
+          {{ t('chartExamples.retry') }}
+        </NButton>
+      </NCard>
+
+      <NCard
+        class="operations-panel operations-tour rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
+      >
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
+        >
+          <NText strong>
+            {{ t('displayPreview.tour') }}
+          </NText>
+          <NText depth="3">
+            {{ tourState.targetId ?? t('chartTour.donut') }}
+          </NText>
+        </NFlex>
+        <NText
+          v-if="errors.tour"
+          depth="3"
+          v-bind="{ role: 'alert' } satisfies HTMLAttributes"
+        >
+          {{ t('displayPreview.chartError') }}
+        </NText>
+        <UiG2Chart
+          v-else
+          class="flex-1 min-h-0 min-w-0"
+          :options="tourOptions"
+          :tour="chartTourConfiguration"
+          :label="t('displayPreview.tour')"
+          @error="errors.tour = true"
+          @tour-change="tourState = $event"
+        />
+        <NButton
+          v-if="errors.tour"
+          size="small"
+          @click="errors.tour = false"
+        >
+          {{ t('chartExamples.retry') }}
+        </NButton>
+      </NCard>
+
+      <NCard
+        class="operations-panel operations-status rounded-panel min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        content-class="operations-panel-body flex flex-col h-full min-h-0 min-w-0"
+        :bordered="false"
+      >
+        <NFlex
+          align="baseline"
+          justify="space-between"
+          :size="0"
+          class="operations-heading"
+        >
+          <NText strong>
+            {{ t('displayPreview.status') }}
+          </NText>
+          <NText depth="3">
+            {{ t('displayPreview.now') }}
+          </NText>
+        </NFlex>
+        <NFlex
+          v-for="(metric, index) in [
+            ranking.metrics[0],
+            ranking.metrics[1],
+            stream.metrics[1],
+            ranking.metrics[2],
+          ]"
+          :key="index"
+          align="center"
+          justify="space-between"
+          :size="0"
+          :wrap="false"
+          class="operations-status-row flex-1 min-h-0"
+        >
+          <NText
+            class="min-w-0 truncate"
+            depth="3"
+          >
+            {{ metric?.label }}
+          </NText>
+          <NText
+            class="min-w-0 truncate tabular-nums"
+            strong
+          >
+            {{ metric?.value }} {{ metric?.unit }}
+          </NText>
+        </NFlex>
+      </NCard>
+    </NFlex>
   </NFlex>
 </template>
 
@@ -491,7 +505,7 @@ onScopeDispose(() => {
   line-height: var(--ui-font-line-height-compact);
 }
 .operations-board-fixed {
-  font-size: clamp(0.2rem, min(1.1cqi, 2.1cqb), var(--ui-font-size-body));
+  font-size: clamp(0.4rem, min(1.8cqi, 3.5cqb), var(--ui-font-size-body));
 }
 .operations-ranking {
   grid-area: ranking;
@@ -540,6 +554,11 @@ onScopeDispose(() => {
   font-size: 1.75em;
   line-height: var(--ui-font-line-height-compact);
 }
+.operations-metric > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .operations-meter {
   gap: 0.4em !important;
 }
@@ -548,11 +567,40 @@ onScopeDispose(() => {
 }
 @container (width < 48rem) {
   .operations-board:not(.operations-board-fixed) {
-    grid-template-areas: 'summary' 'visual' 'stream' 'ranking' 'tour' 'channels' 'status';
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 10rem 15rem 18rem 18rem 18rem 14rem 14rem;
-    height: auto;
+    grid-template-areas: 'summary summary' 'stream stream' 'ranking tour' 'channels status' 'visual visual';
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(
+        0,
+        0.7fr
+      );
     font-size: var(--ui-font-size-caption);
+  }
+}
+@container (height < 36rem) {
+  .operations-board {
+    gap: 0.4em !important;
+    padding: 0.4em;
+  }
+  .operations-panel :deep(.operations-panel-body) {
+    gap: 0.3em;
+    padding: 0.4em 0.5em;
+  }
+  .operations-heading {
+    flex-wrap: nowrap !important;
+  }
+  .operations-heading > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .operations-board:not(.operations-board-fixed) .operations-value {
+    font-size: 1.4em;
+  }
+}
+@container (width >= 48rem) and (height < 24rem) {
+  .operations-board:not(.operations-board-fixed) {
+    grid-template-areas: 'summary summary summary' 'ranking stream tour' 'channels visual status';
+    grid-template-rows: minmax(0, 1.2fr) minmax(0, 1.5fr) minmax(0, 1.3fr);
   }
 }
 </style>

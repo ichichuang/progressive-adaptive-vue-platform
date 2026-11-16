@@ -6,9 +6,10 @@ import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundar
 const props = withDefaults(
   defineProps<{
     readonly code: '400' | '401' | '403' | '404' | '500' | 'OFFLINE' | 'SERVICE' | 'ERROR'
+    readonly displayCode?: string
     readonly standalone?: boolean
   }>(),
-  { standalone: false },
+  { standalone: false, displayCode: '' },
 )
 
 const illustration = ref<HTMLElement | null>(null)
@@ -113,11 +114,11 @@ onMounted(() => {
           cx="250"
           cy="181"
           r="43"
-          fill="var(--ui-color-action-primary)"
+          fill="var(--ui-color-expression-accent-a-soft-background)"
         />
         <g
           transform="translate(230 161)"
-          stroke="var(--ui-color-text-on-action)"
+          stroke="var(--ui-color-expression-accent-a-soft-foreground)"
           stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"
@@ -179,7 +180,7 @@ onMounted(() => {
           class="font-title-weight text-title"
           fill="var(--ui-color-text-primary)"
         >
-          {{ code }}
+          {{ displayCode || code }}
         </text>
       </g>
     </svg>

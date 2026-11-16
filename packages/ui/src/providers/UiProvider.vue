@@ -354,6 +354,26 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
+/* Opt-in for calendar surfaces whose seven columns must fit a narrow panel. */
+[data-pavp-compact-calendar].n-calendar {
+  height: auto;
+}
+[data-pavp-compact-calendar].n-calendar .n-calendar-dates .n-calendar-cell {
+  min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+  padding: var(--ui-space-component-unit);
+}
+[data-pavp-compact-calendar].n-calendar .n-calendar-dates .n-calendar-date {
+  display: grid;
+  justify-content: center;
+  justify-items: center;
+  height: auto;
+  padding-bottom: 0;
+  white-space: nowrap;
+}
+[data-pavp-compact-calendar].n-calendar .n-calendar-dates .n-calendar-date__date {
+  margin-left: 0;
+}
+
 @layer vendor-overrides {
   .n-cascader-menu {
     max-width: calc(100vw - 2 * var(--ui-space-page-inline));

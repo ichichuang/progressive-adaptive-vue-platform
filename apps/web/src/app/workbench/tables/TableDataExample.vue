@@ -110,6 +110,7 @@ async function removeSelected(id: string): Promise<void> {
       </template>
       <template #actions>
         <span
+          :class="{ invisible: table.loading.value || table.error.value }"
           class="text-body text-text-primary"
           role="status"
           aria-live="polite"

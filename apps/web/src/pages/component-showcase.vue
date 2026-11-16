@@ -98,7 +98,9 @@ const categories = computed(() =>
                   ? 'tableExamples.tablesHint'
                   : item.id === 'combinations'
                     ? 'tableExamples.combinationsHint'
-                    : 'formShowcase.capabilitiesHint',
+                    : item.id === 'cinematic-motion'
+                      ? 'route-message.component-motion-summary'
+                      : 'formShowcase.capabilitiesHint',
             ),
             componentNames:
               item.id === 'charts'
@@ -107,7 +109,9 @@ const categories = computed(() =>
                   ? 'UiTable useUiTable useUiTableActions'
                   : item.id === 'combinations'
                     ? 'UiForm UiTable UiTableEditor useUiTableQuery useUiTableForm'
-                    : 'UiForm UiFormField useUiForm',
+                    : item.id === 'cinematic-motion'
+                      ? 'useUiMotion'
+                      : 'UiForm UiFormField useUiForm',
             destination: registeredRouteDestination(first.destination),
           },
         ]

@@ -8,7 +8,7 @@ import type { ValidatedRouteInput } from '../../router/route-input'
 import { useApplicationNavigation } from '../../router/application-navigation'
 import { useTableQueryLink } from '../../tables/use-table-query-link'
 import { tableQuerySharingCodec } from '../../tables/table-query-sharing-example'
-import { tableCapabilityRows, tableDataCapabilitySchema } from './table-data-capabilities'
+import { tableDataCapabilitySchema, tableFilterSampleRows } from './table-data-capabilities'
 import { useTableShowcase } from './table-showcase'
 import TableCapabilityWorkbench from './TableCapabilityWorkbench.vue'
 const props = defineProps<{
@@ -25,7 +25,7 @@ const schema = {
 }
 const table = useUiTable({
   schema,
-  rows: tableCapabilityRows(60),
+  rows: tableFilterSampleRows(60, t('tableCapabilities.data.noteSample')),
   translate: (value) =>
     value.startsWith('tableCapabilities.data.')
       ? t(value as ConsoleMessageKey)
@@ -72,7 +72,7 @@ const copyValue = computed(() =>
     <template #controls>
       <UiForm
         :form="query"
-        class="flex flex-wrap items-end gap-content-gap layout-narrow:flex-col layout-narrow:items-stretch"
+        class="min-w-0"
       >
         <template #actions>
           <span />

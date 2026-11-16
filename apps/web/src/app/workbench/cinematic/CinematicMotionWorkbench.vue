@@ -54,6 +54,7 @@ const selected = ref<UiMotionPreset>('theme-rift')
 const target = ref<HTMLElement>()
 const textTarget = ref<HTMLElement>()
 const imageTarget = ref<HTMLImageElement>()
+const imageReadiness = ref<'loading' | 'ready' | 'failed'>('loading')
 const active = ref(true)
 const busy = ref(false)
 const phase = ref<'enter' | 'exit'>('enter')
@@ -97,6 +98,16 @@ function connect(next: UiScrollController | null): void {
 const titleFor = (preset: UiMotionPreset) => t(cinematicCopy[preset].title)
 const description = computed(() => t(cinematicCopy[selected.value].description))
 const imageMode = computed(() => selected.value === 'liquid-refraction')
+const imagePending = computed(() => imageMode.value && imageReadiness.value === 'loading')
+const imageUnavailable = computed(() => imageMode.value && imageReadiness.value !== 'ready')
+watch(
+  imageMode,
+  () => {
+    imageTarget.value = undefined
+    imageReadiness.value = 'loading'
+  },
+  { flush: 'sync' },
+)
 const textMode = computed(() => uiMotionPresets[selected.value].category === 'text')
 const copyValue = computed(() =>
   [
@@ -118,10 +129,23 @@ function choose(preset: UiMotionPreset): void {
   restore()
   selected.value = preset
 }
-function loaded(event: Event): void {
-  if (event.target instanceof HTMLImageElement) imageTarget.value = event.target
+async function loaded(event: Event): Promise<void> {
+  const image = event.target
+  if (!imageMode.value || !(image instanceof HTMLImageElement)) return
+  imageTarget.value = image
+  try {
+    await image.decode()
+  } catch {
+    if (imageTarget.value === image) imageReadiness.value = 'failed'
+    return
+  }
+  if (imageTarget.value === image) imageReadiness.value = 'ready'
+}
+function imageFailed(): void {
+  if (imageMode.value) imageReadiness.value = 'failed'
 }
 async function play(nextPhase: 'enter' | 'exit', event: MouseEvent): Promise<void> {
+  if (imageUnavailable.value) return
   restore()
   const generation = sequence
   phase.value = nextPhase
@@ -310,6 +334,7 @@ onScopeDispose(() => {
               :alt="t('cinematic.imageAlt')"
               preview-disabled
               @load="loaded"
+              @error="imageFailed"
             />
             <div
               v-else
@@ -352,7 +377,13 @@ onScopeDispose(() => {
           class="min-h-control flex items-center text-caption text-text-secondary"
           role="status"
           aria-live="polite"
-          v-text="t(cinematicStatusCopy[status])"
+          v-text="
+            imagePending
+              ? t('cinematic.imageLoading')
+              : imageUnavailable
+                ? t('cinematic.imageFailed')
+                : t(cinematicStatusCopy[status])
+          "
         />
         <div class="flex flex-wrap justify-end gap-component-unit">
           <NButton @click="restore">
@@ -360,12 +391,14 @@ onScopeDispose(() => {
           </NButton>
           <NButton
             secondary
+            :disabled="imageUnavailable"
             @click="play('exit', $event)"
           >
             {{ t('cinematic.exit') }}
           </NButton>
           <NButton
             type="primary"
+            :disabled="imageUnavailable"
             @click="play('enter', $event)"
           >
             {{ t('cinematic.enter') }}

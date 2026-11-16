@@ -401,10 +401,21 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
           <ComponentSpecimen
             name="NCalendar"
             span="full"
-            tall
-            reserved
+            compact-inset
+            top-aligned
           >
-            <NCalendar />
+            <NCalendar
+              class="w-full"
+              data-pavp-compact-calendar
+              :theme-overrides="{
+                titleFontSize: 'var(--ui-font-size-subheading)',
+                fontSize: 'var(--ui-font-size-caption)',
+              }"
+            >
+              <template #header="{ year, month }">
+                <span v-text="[year, month].join(' / ')" />
+              </template>
+            </NCalendar>
           </ComponentSpecimen>
         </div>
       </section>

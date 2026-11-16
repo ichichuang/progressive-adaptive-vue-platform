@@ -10,15 +10,15 @@ export function useFormFieldPresentation<I>(
   // incidental read out of dependency tracking: moved rows retain their binding
   // until Vue updates the component's concrete path.
   const binding = shallowRef(props.form.field(props.name))
+  // A keyed row can still be mounted during the tick in which its path vanishes.
+  // Keep initial lookup strict, but do not render a previously mounted retired field.
+  const controlScopeKey = computed(() =>
+    props.form.fields.some((field) => field.name === props.name)
+      ? formPresentation(props.form).fieldIdentity(props.name)
+      : undefined,
+  )
   watch(
-    [
-      () => props.form,
-      () => props.name,
-      () =>
-        props.form.fields.some((field) => field.name === props.name)
-          ? formPresentation(props.form).fieldIdentity(props.name)
-          : undefined,
-    ],
+    [() => props.form, () => props.name, controlScopeKey],
     ([form, name, identity]) => {
       // A repeat shrink can invalidate the old path before Vue unmounts its row.
       if (identity === undefined) return
@@ -42,6 +42,5 @@ export function useFormFieldPresentation<I>(
   })
   // Logical row identity survives reordering; accepted snapshots and a different
   // field/controller still remount transient buffers and custom slot children.
-  const controlScopeKey = computed(() => formPresentation(props.form).fieldIdentity(props.name))
   return { binding, config, controlScopeKey }
 }

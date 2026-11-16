@@ -35,6 +35,14 @@ export function tableCapabilityRows(count: number): UiTableRecord[] {
   }))
 }
 
+export function tableFilterSampleRows(count: number, note: string): UiTableRecord[] {
+  return tableCapabilityRows(count).map((row, index) => ({
+    ...row,
+    date: `2026-11-${String((index % 28) + 1).padStart(2, '0')}`,
+    note: index % 3 === 0 ? null : index % 3 === 1 ? '' : note,
+  }))
+}
+
 export function tableDataCapabilitySchema(
   example: TableDataCapability,
   mode: 'submit' | 'change' = 'submit',

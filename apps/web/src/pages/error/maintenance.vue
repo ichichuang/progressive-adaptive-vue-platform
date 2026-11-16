@@ -19,7 +19,10 @@ const { t } = useConsoleI18n()
     <section
       class="mx-auto flex flex-col h-full min-h-0 min-w-0 w-full items-center justify-center gap-content-gap max-w-content"
     >
-      <ErrorIllustration code="SERVICE" />
+      <ErrorIllustration
+        code="SERVICE"
+        display-code="503"
+      />
       <div class="text-center shrink-0 grid min-w-0 w-full justify-items-center gap-content-gap">
         <span
           class="font-title-weight inline-flex items-center gap-control-segment-gap text-control-primary"
@@ -43,7 +46,7 @@ const { t } = useConsoleI18n()
         <p class="m-0 text-pretty text-text-secondary">
           {{ t('error.adviceService') }}
         </p>
-        <ErrorActions code="SERVICE" />
+        <ErrorActions code="503" />
       </div>
       <div
         class="flex-1 min-h-0"

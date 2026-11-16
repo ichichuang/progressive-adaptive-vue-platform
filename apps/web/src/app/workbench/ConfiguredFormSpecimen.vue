@@ -175,6 +175,7 @@ const history = useFormExampleUndo(() => form)
     name="UiForm"
     pavp
     span="full"
+    compact-inset
     top-aligned
   >
     <div class="grid min-w-0 w-full gap-content-gap">
@@ -209,70 +210,60 @@ const history = useFormExampleUndo(() => form)
               :enabled="active"
             >
               <header
-                class="wb-form-panel-header shrink-0 grid grid-cols-2 min-h-0 min-w-0 items-center gap-component-unit"
+                class="wb-form-panel-header shrink-0 grid min-h-0 min-w-0 items-center gap-component-unit"
               >
-                <div class="wb-form-controls min-w-0">
-                  <UiScrollArea
-                    owner-id="configured-form-specimen-controls"
-                    :enabled="active"
-                    x-scrollable
-                  >
-                    <div
-                      class="flex min-w-full w-max whitespace-nowrap items-center gap-component-unit"
+                <div class="min-w-0">
+                  <div class="flex flex-wrap min-w-0 items-center gap-component-unit">
+                    <NButton
+                      secondary
+                      :bordered="false"
+                      :type="source === 'code' ? 'primary' : 'default'"
+                      v-bind="
+                        {
+                          'aria-pressed': source === 'code',
+                          title: draft.statusText.value,
+                        } satisfies ButtonHTMLAttributes
+                      "
+                      :disabled="draft.hasUnsavedChanges()"
+                      @click="emit('source', 'code')"
                     >
-                      <NButton
-                        secondary
-                        :bordered="false"
-                        :type="source === 'code' ? 'primary' : 'default'"
-                        v-bind="
-                          {
-                            'aria-pressed': source === 'code',
-                            title: draft.statusText.value,
-                          } satisfies ButtonHTMLAttributes
-                        "
-                        :disabled="draft.hasUnsavedChanges()"
-                        @click="emit('source', 'code')"
-                      >
-                        {{ t('configuredForm.sourceCode') }}
-                      </NButton>
-                      <NButton
-                        secondary
-                        :bordered="false"
-                        :type="source === 'json' ? 'primary' : 'default'"
-                        v-bind="
-                          {
-                            'aria-pressed': source === 'json',
-                            title: draft.statusText.value,
-                          } satisfies ButtonHTMLAttributes
-                        "
-                        :disabled="draft.hasUnsavedChanges()"
-                        @click="emit('source', 'json')"
-                      >
-                        {{ t('configuredForm.sourceJson') }}
-                      </NButton>
-                      <NButton
-                        secondary
-                        :bordered="false"
-                        :type="mode === 'edit' ? 'primary' : 'default'"
-                        v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
-                        @click="mode = 'edit'"
-                      >
-                        {{ t('configuredForm.edit') }}
-                      </NButton>
-                      <NButton
-                        secondary
-                        :bordered="false"
-                        :type="mode === 'detail' ? 'primary' : 'default'"
-                        v-bind="
-                          { 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes
-                        "
-                        :disabled="form.hasPendingInput.value"
-                        @click="mode = 'detail'"
-                      >
-                        {{ t('configuredForm.detail') }}
-                      </NButton>
-                    </div>
-                  </UiScrollArea>
+                      {{ t('configuredForm.sourceCode') }}
+                    </NButton>
+                    <NButton
+                      secondary
+                      :bordered="false"
+                      :type="source === 'json' ? 'primary' : 'default'"
+                      v-bind="
+                        {
+                          'aria-pressed': source === 'json',
+                          title: draft.statusText.value,
+                        } satisfies ButtonHTMLAttributes
+                      "
+                      :disabled="draft.hasUnsavedChanges()"
+                      @click="emit('source', 'json')"
+                    >
+                      {{ t('configuredForm.sourceJson') }}
+                    </NButton>
+                    <NButton
+                      secondary
+                      :bordered="false"
+                      :type="mode === 'edit' ? 'primary' : 'default'"
+                      v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
+                      @click="mode = 'edit'"
+                    >
+                      {{ t('configuredForm.edit') }}
+                    </NButton>
+                    <NButton
+                      secondary
+                      :bordered="false"
+                      :type="mode === 'detail' ? 'primary' : 'default'"
+                      v-bind="{ 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes"
+                      :disabled="form.hasPendingInput.value"
+                      @click="mode = 'detail'"
+                    >
+                      {{ t('configuredForm.detail') }}
+                    </NButton>
+                  </div>
                 </div>
                 <span
                   class="min-w-0 truncate text-caption text-text-secondary"
@@ -299,32 +290,26 @@ const history = useFormExampleUndo(() => form)
             v-if="mode === 'edit'"
             class="wb-form-panel-header shrink-0 min-w-0 bg-surface-panel"
           >
-            <div class="wb-form-controls min-w-0">
-              <UiScrollArea
-                :owner-id="`${form.formId}-actions`"
-                :enabled="active"
-                x-scrollable
-              >
-                <div class="flex min-w-full w-max whitespace-nowrap items-center gap-content-gap">
-                  <FormExampleActions
-                    :form="form"
-                    :history="history"
-                  />
-                  <NButton
-                    class="min-h-target-enhanced min-w-target-enhanced"
-                    quaternary
-                    :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
-                    v-bind="
-                      {
-                        title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
-                      } satisfies ButtonHTMLAttributes
-                    "
-                    @click="fill"
-                  >
-                    {{ t('configuredForm.fill') }}
-                  </NButton>
-                </div>
-              </UiScrollArea>
+            <div class="min-w-0">
+              <div class="flex flex-wrap min-w-0 items-center gap-component-unit">
+                <FormExampleActions
+                  :form="form"
+                  :history="history"
+                />
+                <NButton
+                  class="min-h-target-enhanced min-w-target-enhanced"
+                  quaternary
+                  :disabled="form.hasPendingInput.value || form.phase.value !== 'idle'"
+                  v-bind="
+                    {
+                      title: form.hasPendingInput.value ? t('formLifecycle.pending') : undefined,
+                    } satisfies ButtonHTMLAttributes
+                  "
+                  @click="fill"
+                >
+                  {{ t('configuredForm.fill') }}
+                </NButton>
+              </div>
             </div>
           </footer>
         </section>

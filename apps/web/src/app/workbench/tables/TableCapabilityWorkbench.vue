@@ -52,7 +52,7 @@ onScopeDispose(() => {
       />
     </template>
     <section
-      :class="scrollControls ? 'layout-narrow:grid layout-regular:flex layout-wide:flex' : 'flex'"
+      :class="scrollControls ? 'grid' : 'flex'"
       class="wb-table-stage rounded-panel flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
       v-bind="{ 'data-scroll-controls': scrollControls || undefined }"
     >
@@ -60,7 +60,7 @@ onScopeDispose(() => {
         v-if="$slots['controls'] && scrollControls"
         owner-id="table-showcase-controls"
         :enabled="active"
-        class="h-auto layout-narrow:h-full"
+        class="min-h-0 min-w-0"
       >
         <div class="wb-form-panel-header min-w-0">
           <slot name="controls" />

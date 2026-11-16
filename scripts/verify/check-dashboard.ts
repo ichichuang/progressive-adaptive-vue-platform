@@ -70,9 +70,14 @@ export function verifyDashboard(): void {
     2,
     'New narrow clocks should use compact geometry.',
   )
+  assert.ok(original.panels.some((panel) => panel.type === 'chart'))
   const customDocument = structuredClone(original)
-  customDocument.panels.push({ id: 'chart', type: 'chart', config: { series: 'traffic' } })
-  customDocument.layouts.wide.push({ id: 'chart', x: 0, y: 5, w: 8, h: 5 })
+  customDocument.layouts.wide = [
+    { id: 'capabilities', x: 0, y: 0, w: 7, h: 3 },
+    { id: 'notes', x: 7, y: 0, w: 5, h: 5 },
+    { id: 'clock', x: 0, y: 3, w: 4, h: 2 },
+    { id: 'chart', x: 0, y: 5, w: 8, h: 5 },
+  ]
   customDocument.layouts.narrow = [
     { id: 'clock', x: 0, y: 0, w: 1, h: 4 },
     { id: 'capabilities', x: 0, y: 4, w: 1, h: 4 },
@@ -234,7 +239,7 @@ export function verifyDashboard(): void {
   assert.equal(writes, afterNoteWrites)
   controller.undo()
   assert.equal(controller.add('notes'), true)
-  assert.equal(controller.document.value.panels.length, 4)
+  assert.equal(controller.document.value.panels.length, original.panels.length + 1)
   assert.deepEqual(saved, controller.document.value)
   controller.undo()
   assert.deepEqual(controller.document.value, original)
@@ -285,7 +290,7 @@ export function verifyDashboard(): void {
     false,
   )
   controller.undo()
-  assert.equal(controller.document.value.panels.length, 3)
+  assert.equal(controller.document.value.panels.length, original.panels.length)
   writable = false
   controller.reset()
   assert.equal(controller.failure.value, true)
@@ -302,19 +307,19 @@ export function verifyDashboard(): void {
   assert.deepEqual(placement.document.value.layouts.wide.at(-1), {
     id: 'panel-1',
     x: 0,
-    y: 0,
+    y: 5,
     w: 4,
     h: 2,
   })
   assert.deepEqual(placement.document.value.layouts.narrow.at(-1), {
     id: 'panel-1',
     x: 0,
-    y: 0,
+    y: 4,
     w: 1,
     h: 2,
   })
   placement.undo()
-  assert.equal(placement.document.value.panels.length, 2)
+  assert.equal(placement.document.value.panels.length, original.panels.length - 1)
   assert.equal(placement.add('chart'), true)
   assert.equal(dashboardSchema.safeParse(placement.document.value).success, true)
 

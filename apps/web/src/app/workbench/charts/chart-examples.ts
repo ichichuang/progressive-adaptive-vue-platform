@@ -337,7 +337,7 @@ export function chartExample(kind: ChartKind, revision: number, t: ConsoleTransl
           y: { title: t('chartExamples.return') },
         },
         legend: { ...common.legend, size: false },
-        style: { fillOpacity: 0.65 },
+        style: { fillOpacity: 0.88 },
         interaction: { elementHighlight: true },
       }
       break

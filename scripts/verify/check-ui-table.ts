@@ -181,6 +181,17 @@ async function verifyFormBindingLifecycle(): Promise<void> {
   await nextTick()
   assert.equal(presentation.binding.value.setValue('Current reset row'), 'applied')
   assert.equal(form.getValue('rows.0.name'), 'Current reset row')
+
+  assert.notEqual(presentation.controlScopeKey.value, undefined)
+  assert.equal(form.setValue('rows', []), 'applied')
+  assert.equal(presentation.controlScopeKey.value, undefined)
+  assert.throws(() => form.field('rows.0.name'), /Unknown form path/)
+  await nextTick()
+  assert.equal(presentation.controlScopeKey.value, undefined)
+  assert.equal(form.setValue('rows', [{ name: 'Restored row' }]), 'applied')
+  await nextTick()
+  assert.notEqual(presentation.controlScopeKey.value, undefined)
+  assert.equal(presentation.binding.value.value, 'Restored row')
   scope.stop()
   form.dispose()
   assert.equal(live.setValue('After dispose'), 'disposed')
@@ -3149,33 +3160,85 @@ async function verifyContinuousLoading(): Promise<void> {
   await table.search({ id: 5 })
   assert.equal(table.rows.value.length, 1)
   table.dispose()
-  let fail = true
+  let failFirst = true
+  let failNext = true
+  const requests: [string, number][] = []
   const remote = useUiTable({
     schema: {
       ...schema,
       source: {
         kind: 'remote',
-        request: { api: '/records', method: 'GET', params: { page: { from: 'page' } } },
+        request: {
+          api: '/records',
+          method: 'GET',
+          params: { page: { from: 'page' }, search: { from: 'filters.search' } },
+        },
       },
     },
     immediate: false,
+    filters: { search: 'a' },
     transport: {
       async list(request) {
         await Promise.resolve()
         const page = request.params['page']
-        if (page === 2 && fail) throw new Error('retryable')
-        return { rows: page === 1 ? [{ id: 1 }, { id: 2 }] : [{ id: 3 }], total: 3 }
+        const search = request.params['search']
+        assert.ok(typeof search === 'string' && typeof page === 'number')
+        requests.push([search, page])
+        if (page === 1 && failFirst) throw new Error('first page failed')
+        if (page === 2 && failNext) throw new Error('next page failed')
+        if (search === 'a') return { rows: [{ id: 1 }, { id: 2 }], total: 2 }
+        return { rows: page === 1 ? [{ id: 10 }, { id: 11 }] : [{ id: 12 }], total: 3 }
       },
     },
   })
+  const remoteError = () => remote.error.value?.message
   await remote.refresh()
+  assert.equal(remoteError(), 'first page failed')
+  assert.equal(remote.rows.value.length, 0)
+  failFirst = false
   await remote.loadMore()
-  assert.equal(remote.error.value?.message, 'retryable')
+  assert.equal(remoteError(), undefined)
+  assert.deepEqual(requests, [
+    ['a', 1],
+    ['a', 1],
+  ])
+  assert.equal(remote.hasMore.value, false)
+
+  failFirst = true
+  await remote.search({ search: 'b' })
+  assert.equal(remoteError(), 'first page failed')
+  assert.deepEqual(
+    remote.rows.value.map((row) => row['id']),
+    [1, 2],
+  )
+  failFirst = false
+  await remote.loadMore()
+  assert.deepEqual(requests.slice(-2), [
+    ['b', 1],
+    ['b', 1],
+  ])
+  assert.deepEqual(
+    remote.rows.value.map((row) => row['id']),
+    [10, 11],
+  )
+
+  await remote.loadMore()
+  assert.equal(remoteError(), 'next page failed')
   assert.equal(remote.query.value.page, 1)
-  assert.equal(remote.rows.value.length, 2)
-  fail = false
+  assert.deepEqual(
+    remote.rows.value.map((row) => row['id']),
+    [10, 11],
+  )
+  failNext = false
   await remote.loadMore()
-  assert.equal(remote.rows.value.length, 3)
+  assert.deepEqual(requests.slice(-2), [
+    ['b', 2],
+    ['b', 2],
+  ])
+  assert.deepEqual(
+    remote.rows.value.map((row) => row['id']),
+    [10, 11, 12],
+  )
   assert.equal(remote.query.value.page, 2)
   remote.dispose()
 }

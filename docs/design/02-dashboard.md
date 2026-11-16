@@ -15,11 +15,11 @@
 
 ## 2. 栅格与断点
 
-| 档位 | 条件（内容区宽） | 列数 | 列间距(gutter) | 行单元 | 画布内边距 |
-|---|---|---|---|---|---|
-| desktop | ≥ 80rem（`--ui-layout-profile-wide-minimum-inline-size`） | 12 | 12px `--ui-space-content-gap` | `calc(var(--ui-control-height) * 2)` | 24px `--ui-space-page-inline` |
-| laptop / tablet | 48–80rem | 12（列宽变窄，配合第 3 节档位投影） | 12px | 同上 | 24px |
-| mobile / narrow | < 48rem | 1（既有 narrow 布局） | 12px | 同上 | 16px `--ui-space-panel-padding` |
+| 档位            | 条件（内容区宽）                                          | 列数                                | 列间距(gutter)                | 行单元                               | 画布内边距                      |
+| --------------- | --------------------------------------------------------- | ----------------------------------- | ----------------------------- | ------------------------------------ | ------------------------------- |
+| desktop         | ≥ 80rem（`--ui-layout-profile-wide-minimum-inline-size`） | 12                                  | 12px `--ui-space-content-gap` | `calc(var(--ui-control-height) * 2)` | 24px `--ui-space-page-inline`   |
+| laptop / tablet | 48–80rem                                                  | 12（列宽变窄，配合第 3 节档位投影） | 12px                          | 同上                                 | 24px                            |
+| mobile / narrow | < 48rem                                                   | 1（既有 narrow 布局）               | 12px                          | 同上                                 | 16px `--ui-space-panel-padding` |
 
 - 画布底色固定 `--ui-color-surface-page`（下凹），卡片 `--ui-color-surface-panel`（浮起）+ 1px `--ui-color-border-subtle` + `--ui-shadow-card`（见 03 号文档）。废止 theme/brand 风格下"画布=面板色"的写法；soft / contrast 两种彩色画布保留为"看板风格"可选项（`--ui-color-expression-accent-{a,b}-soft-background`）。
 - 12 列网格本身已有（`grid-template-columns` 由 GridStack 管），不需要改 schema：`dashboardSchema` 仍限定 wide ≤12 列 / narrow 1 列。tablet 档用第 3 节"档位投影"实现，不改 `columns: 1 | 12` 契约。
@@ -28,12 +28,12 @@
 
 ## 3. 卡片尺寸档位（tier）
 
-| 档位 | desktop 列宽 | tablet 投影（48–80rem） | 行高（默认） | 最小行高 | 适用 |
-|---|---|---|---|---|---|
-| S | 3 列 | 6 列 | h=2（188px） | 2 | KPI 单值卡、快捷入口 route 卡 |
-| M | 4 列 | 6 列 | h=3（284px） | 2 | 小列表、环形构成图、色板读出 |
-| L | 6 列 | 12 列 | h=5（488px） | 3 | 趋势图 / 对比柱状图、便签 |
-| XL | 8 列 | 12 列 | h=4（388px） | 3 | 我的入口（多链接宫格）、最近活动 |
+| 档位 | desktop 列宽 | tablet 投影（48–80rem） | 行高（默认） | 最小行高 | 适用                             |
+| ---- | ------------ | ----------------------- | ------------ | -------- | -------------------------------- |
+| S    | 3 列         | 6 列                    | h=2（188px） | 2        | KPI 单值卡、快捷入口 route 卡    |
+| M    | 4 列         | 6 列                    | h=3（284px） | 2        | 小列表、环形构成图、色板读出     |
+| L    | 6 列         | 12 列                   | h=5（488px） | 3        | 趋势图 / 对比柱状图、便签        |
+| XL   | 8 列         | 12 列                   | h=4（388px） | 3        | 我的入口（多链接宫格）、最近活动 |
 
 - 档位写入 `dashboard-catalog.ts` 每个条目的 `size.wide`（现有字段，无 schema 变更）；tablet 投影在 `DashboardComposer` 渲染前做纯函数映射（`projectTierForTablet(layout)`），拖拽编排仍按 12 列存储。
 - GridStack 已有 `minW:1, minH:2, maxW:12`；目录侧再按档位收紧 `minW`（S→3、M→4、L→6、XL→8），通过 `makeWidget` 选项传入。
@@ -53,17 +53,17 @@ y11 └────────────────────────�
 narrow（1 列）顺序：kpi-total, kpi-mean, kpi-peak, kpi-latest, chart-traffic, notes, capabilities, clock, activity
 ```
 
-| 卡片 | id / type | 档位 | 数据来源（仓库已有） | 状态 |
-|---|---|---|---|---|
-| 请求总量 | `kpi-total` **新增** builtin `kpi` | S h2 | `chart(traffic)` 同一 7 日样本求和；`UiG2Chart` 不需要，纯 stat tile | 既有样本，标注"演示数据" |
-| 日均请求 | `kpi-mean` **新增** | S h2 | 同上求均值 | |
-| 单日峰值 | `kpi-peak` **新增** | S h2 | 同上取 max | |
-| 最新一日 | `kpi-latest` **新增** | S h2 | 末日值 + 与均值差值（delta 用 `--ui-color-control-success / -error` 着色） | |
-| 趋势图 | `chart` series=traffic（既有） | L h5 | 7 日 area+line（`DashboardWidget` 现有 G2 配置） | 既有 |
-| 随手记 | `notes`（既有） | L h5 | 本地存储 | 既有 |
-| 我的入口 | `capabilities`（既有） | XL h4 | `defaultDashboardDestinations`（3 项）+ 可配置至 8 | 既有 |
-| 此刻 | `clock`（既有） | S h2 | 本地时间 | 既有 |
-| 最近活动 | `activity` **新增** builtin | S h2 | 读取页面会话历史（`apps/web/src/app/router/browser-page-session-contract.ts`），无记录时显示安装后首次访问时间等静态项 | 新增 |
+| 卡片     | id / type                          | 档位  | 数据来源（仓库已有）                                                                                                   | 状态                     |
+| -------- | ---------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| 请求总量 | `kpi-total` **新增** builtin `kpi` | S h2  | `chart(traffic)` 同一 7 日样本求和；`UiG2Chart` 不需要，纯 stat tile                                                   | 既有样本，标注"演示数据" |
+| 日均请求 | `kpi-mean` **新增**                | S h2  | 同上求均值                                                                                                             |                          |
+| 单日峰值 | `kpi-peak` **新增**                | S h2  | 同上取 max                                                                                                             |                          |
+| 最新一日 | `kpi-latest` **新增**              | S h2  | 末日值 + 与均值差值（delta 用 `--ui-color-control-success / -error` 着色）                                             |                          |
+| 趋势图   | `chart` series=traffic（既有）     | L h5  | 7 日 area+line（`DashboardWidget` 现有 G2 配置）                                                                       | 既有                     |
+| 随手记   | `notes`（既有）                    | L h5  | 本地存储                                                                                                               | 既有                     |
+| 我的入口 | `capabilities`（既有）             | XL h4 | `defaultDashboardDestinations`（3 项）+ 可配置至 8                                                                     | 既有                     |
+| 此刻     | `clock`（既有）                    | S h2  | 本地时间                                                                                                               | 既有                     |
+| 最近活动 | `activity` **新增** builtin        | S h2  | 读取页面会话历史（`apps/web/src/app/router/browser-page-session-contract.ts`），无记录时显示安装后首次访问时间等静态项 | 新增                     |
 
 目录中其余卡片（默认不上板，"添加卡片"抽屉可选）：`chart(delivery)` L h5、`theme-palette` M h4（尺寸由 5×4 收紧为 4×4）、`route` ×6 → S h3。
 
@@ -122,10 +122,10 @@ KPI stat tile 内部规格：标签 `--ui-font-size-caption`（12px）`--ui-colo
 
 ## 10. 新增令牌清单
 
-| 令牌 | 值 | 文件 |
-|---|---|---|
-| `--ui-layout-board-drawer-inline` | 25rem | `primitive/dimension.tokens.json` → `dimension.layout.board-drawer-inline`，semantic `layout.board.drawer-inline-size` |
-| `--ui-font-weight-semibold` | 600 | 01 号文档第 8 节（共用） |
-| `--ui-shadow-card`、`--ui-color-border-subtle`、`--ui-color-text-tertiary`、`--ui-color-status-*-soft-*` | 见 01 号第 8 节 | 03 号文档第 5 节汇总 |
+| 令牌                                                                                                     | 值              | 文件                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `--ui-layout-board-drawer-inline`                                                                        | 25rem           | `primitive/dimension.tokens.json` → `dimension.layout.board-drawer-inline`，semantic `layout.board.drawer-inline-size` |
+| `--ui-font-weight-semibold`                                                                              | 600             | 01 号文档第 8 节（共用）                                                                                               |
+| `--ui-shadow-card`、`--ui-color-border-subtle`、`--ui-color-text-tertiary`、`--ui-color-status-*-soft-*` | 见 01 号第 8 节 | 03 号文档第 5 节汇总                                                                                                   |
 
 其余所有数值（12px gutter、88px 行单元、24px 页边距、44px 工具栏、400px 抽屉投影）全部来自既有令牌或上表新增项，组件内不得再出现字面量。

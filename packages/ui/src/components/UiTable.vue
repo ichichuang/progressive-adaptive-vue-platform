@@ -22,6 +22,7 @@ import {
   type DataTableRowData,
   type DataTableSortState,
 } from 'naive-ui/es/data-table'
+import { NEmpty } from 'naive-ui/es/empty'
 import { NPagination, type PaginationProps } from 'naive-ui/es/pagination'
 import { useUiDateTime } from '../date-time/date-time-context'
 import { resolveTableColumnDisplay } from './table-column-display'
@@ -196,16 +197,36 @@ const pagination = computed<PaginationProps>(() => {
     ...(sizes === undefined ? {} : { pageSizes: [...sizes] }),
   }
 })
-const status = computed(() =>
-  props.table.loading.value
-    ? props.copy.loading()
-    : props.table.error.value || props.table.treeLoadErrors.value.length > 0
-      ? props.copy.error()
-      : '',
+const status = computed(() => (props.table.loading.value ? props.copy.loading() : ''))
+const continuous = computed(() => props.table.schema.pagination?.mode === 'load-more')
+const continuationDisabled = computed(
+  () =>
+    (!props.table.error.value && !props.table.hasMore.value) ||
+    Boolean(props.inlineEditing?.session.open.value),
 )
-const refreshLabel = computed(() =>
-  props.table.error.value ? props.copy.retry() : props.copy.refresh(),
+const continuationLabel = computed(() => {
+  if (props.table.error.value) return props.copy.retry()
+  return props.table.hasMore.value
+    ? (props.copy.loadMore?.() ?? props.copy.refresh())
+    : (props.copy.loadedAll?.() ?? props.copy.empty())
+})
+const emptyLabel = computed(() =>
+  Object.values(props.table.query.value.filters).some(
+    (value) => value !== null && value !== '' && (!Array.isArray(value) || value.length > 0),
+  )
+    ? props.copy.empty()
+    : (props.copy.noData?.() ?? props.copy.empty()),
 )
+
+async function retryRows(event: MouseEvent): Promise<void> {
+  const button = event.currentTarget
+  const restoreFocus = props.table.error.value && button === document.activeElement
+  if (continuous.value) await props.table.loadMore()
+  else await props.table.refresh()
+  await nextTick()
+  if (restoreFocus && document.activeElement === document.body)
+    mainElement.value?.focus({ preventScroll: true })
+}
 
 function text(value: UiFormValue | undefined): string {
   if (value === null || value === undefined || value === '') return props.copy.empty()
@@ -500,7 +521,7 @@ const summaryTable = ref<DataTableInst>()
 const measuredWidths = ref<readonly number[]>([])
 const fixedOffsets = ref<readonly { readonly left: string; readonly right: string }[]>([])
 const summaryWidth = computed(() => measuredWidths.value.reduce((total, width) => total + width, 0))
-const summaryRows = computed(() => [...props.table.summaryRows.value])
+const summaryRows = computed(() => (rows.value.length ? [...props.table.summaryRows.value] : []))
 let disconnectColumns: (() => void) | undefined
 let horizontalPosition = 0
 let bodyScrollTop = 0
@@ -754,7 +775,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
               />
             </div>
             <span
-              v-if="table.error.value || table.treeLoadErrors.value.length"
+              v-if="table.treeLoadErrors.value.length"
               role="alert"
               class="text-caption text-control-error"
             >
@@ -818,9 +839,9 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
               :disabled="table.loading.value"
               v-bind="
                 {
-                  'aria-label': refreshLabel,
+                  'aria-label': copy.refresh(),
                   'aria-busy': table.loading.value,
-                  title: table.error.value ? copy.error() : refreshLabel,
+                  title: copy.refresh(),
                 } satisfies ButtonHTMLAttributes
               "
               @click="table.refresh()"
@@ -830,22 +851,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
                   class="i-lucide-refresh-cw shrink-0"
                   aria-hidden="true"
                 />
-                <span class="grid">
-                  <span
-                    v-for="(label, index) in [copy.refresh(), copy.retry()]"
-                    :key="index"
-                    class="col-start-1 row-start-1 invisible"
-                    aria-hidden="true"
-                  >
-                    {{ label }}
-                  </span>
-                  <span
-                    class="col-start-1 row-start-1"
-                    aria-hidden="true"
-                  >
-                    {{ refreshLabel }}
-                  </span>
-                </span>
+                <span aria-hidden="true">{{ copy.refresh() }}</span>
               </span>
             </NButton>
           </div>
@@ -864,6 +870,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
         >
           <div
             ref="mainElement"
+            tabindex="-1"
             class="pavp-table-data min-w-0"
             :class="height.mode === 'fill' ? 'flex flex-1 flex-col min-h-0' : ''"
           >
@@ -895,11 +902,42 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
               @update:expanded-row-keys="table.setExpandedKeys"
             >
               <template #empty>
-                <span
-                  class="leading-body whitespace-pre-wrap break-words text-body text-text-secondary"
+                <NEmpty
+                  v-if="!table.loading.value"
+                  v-bind="table.error.value ? {} : { description: emptyLabel }"
                 >
-                  {{ table.error.value ? copy.error() : copy.empty() }}
-                </span>
+                  <template
+                    v-if="table.error.value"
+                    #icon
+                  >
+                    <span
+                      class="i-lucide-circle-alert block size-icon-large text-control-error"
+                      aria-hidden="true"
+                    />
+                  </template>
+                  <template
+                    v-if="table.error.value"
+                    #default
+                  >
+                    <span
+                      role="alert"
+                      class="text-body text-text-primary"
+                      v-text="copy.error()"
+                    />
+                  </template>
+                  <template
+                    v-if="table.error.value"
+                    #extra
+                  >
+                    <NButton
+                      secondary
+                      :disabled="Boolean(inlineEditing?.session.open.value)"
+                      @click="retryRows"
+                    >
+                      {{ copy.retry() }}
+                    </NButton>
+                  </template>
+                </NEmpty>
               </template>
             </NDataTable>
           </div>
@@ -928,25 +966,31 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
           :editing="inlineEditing"
           :mode="inlineMode"
         />
-        <div class="flex shrink-0 min-w-0 justify-end">
-          <NButton
-            v-if="table.schema.pagination?.mode === 'load-more'"
-            :loading="table.loading.value"
-            :disabled="!table.hasMore.value || Boolean(inlineEditing?.session.open.value)"
-            @click="table.loadMore()"
+        <div
+          v-if="rows.length"
+          class="flex shrink-0 min-w-0 items-center justify-end gap-content-gap"
+        >
+          <span
+            v-if="table.error.value"
+            role="alert"
+            class="mr-auto text-body text-text-primary"
           >
-            {{
-              table.error.value
-                ? copy.retry()
-                : table.hasMore.value
-                  ? (copy.loadMore?.() ?? copy.refresh())
-                  : (copy.loadedAll?.() ?? copy.empty())
-            }}
+            {{ copy.staleResult() }} · {{ copy.error() }}
+          </span>
+          <NButton
+            v-if="table.error.value || continuous"
+            secondary
+            class="shrink-0"
+            :loading="table.loading.value"
+            :disabled="continuationDisabled"
+            @click="retryRows"
+          >
+            {{ continuationLabel }}
           </NButton>
           <NPagination
             v-else
             v-bind="pagination"
-            :disabled="Boolean(inlineEditing?.session.open.value)"
+            :disabled="table.loading.value || Boolean(inlineEditing?.session.open.value)"
             @update:page="table.setPage"
             @update:page-size="table.setPageSize"
           />

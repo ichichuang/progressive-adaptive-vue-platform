@@ -1,4 +1,4 @@
-import { computed, shallowRef, onScopeDispose, useTemplateRef, watch, watchPostEffect } from 'vue'
+import { computed, shallowRef, useTemplateRef, watch, watchPostEffect } from 'vue'
 import type { SelectProps } from 'naive-ui/es/select'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
 import { acceptsControlValue } from '../../components/form-control-values'
@@ -301,13 +301,17 @@ export function useFormControl<I>(props: {
   }
   watch(
     () => props.binding,
-    (binding, previous) => {
+    (binding, _previous, onCleanup) => {
       if (config.value.kind === 'rich-text') return
-      previous?.setFocusTarget(null)
-      previous?.setCommitTarget(null)
-      previous?.setPendingInput(false)
       binding.setFocusTarget(() => focusElement()?.focus())
       binding.setCommitTarget(commit)
+      // Release the binding that registered these targets. Its field config may
+      // already have disappeared when a keyed row is replaced or unmounted.
+      onCleanup(() => {
+        binding.setFocusTarget(null)
+        binding.setCommitTarget(null)
+        binding.setPendingInput(false)
+      })
       reportPending()
     },
     { immediate: true, flush: 'sync' },
@@ -341,14 +345,6 @@ export function useFormControl<I>(props: {
         ? root.value?.querySelector<HTMLElement>('.n-radio-group, .n-checkbox-group')
         : focusElement()
     for (const [name, value] of Object.entries(attributes)) element?.setAttribute(name, value)
-  })
-  onScopeDispose(() => {
-    if (config.value.kind === 'rich-text') return
-    props.binding.setFocusTarget(null)
-    props.binding.setCommitTarget(null)
-    props.binding.setPendingInput(false)
-    buffer.value = null
-    composing.value = false
   })
 
   return {

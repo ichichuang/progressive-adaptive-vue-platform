@@ -23,7 +23,7 @@ const { binding, config, controlScopeKey } = useFormFieldPresentation(
 )
 const feedbackRevision = computed(() => {
   const target = formPresentation(props.form).feedbackTarget.value
-  return target?.identity === controlScopeKey.value ? target.revision : 0
+  return target !== null && target.identity === controlScopeKey.value ? target.revision : 0
 })
 const detail = computed(() => props.mode === 'detail' || binding.value.readonly)
 const choice = computed(
@@ -47,7 +47,7 @@ const displayValues = computed(() =>
 
 <template>
   <div
-    v-if="!binding.hidden"
+    v-if="controlScopeKey !== undefined && !binding.hidden"
     :data-span="config.span"
     :class="config.span === 2 ? 'col-span-full' : ''"
     class="min-w-0"

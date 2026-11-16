@@ -480,8 +480,12 @@ export function useUiTable(input: UiTableInput): UiTableController {
     refresh,
     hasMore: computed(() => continuous && rows.value.length < total.value),
     loadMore: async () => {
-      if (disposed || !continuous || loading.value || rows.value.length >= total.value) return
-      await fetchPage(true)
+      if (disposed || !continuous || loading.value) return
+      if (error.value && !activeAppend) {
+        await refresh()
+        return
+      }
+      if (rows.value.length < total.value) await fetchPage(true)
     },
     applyQuery: (value) => {
       if (

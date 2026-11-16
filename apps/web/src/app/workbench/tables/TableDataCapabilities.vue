@@ -30,6 +30,7 @@ import {
   type TableSortExample,
   tableCapabilityRows,
   tableDataCapabilitySchema,
+  tableFilterSampleRows,
   type TableDataCapability,
   type TableDemoResponse,
 } from './table-data-capabilities'
@@ -101,20 +102,9 @@ const rows =
           note: t('tableCapabilities.data.nullSample'),
         },
       ]
-    : tableCapabilityRows(props.example === 'virtual' ? 2000 : 36).map((row, index) =>
-        props.example === 'sorting'
-          ? {
-              ...row,
-              date: `2026-11-${String((index % 28) + 1).padStart(2, '0')}`,
-              note:
-                index % 3 === 0
-                  ? null
-                  : index % 3 === 1
-                    ? ''
-                    : t('tableCapabilities.data.noteSample'),
-            }
-          : row,
-      )
+    : props.example === 'sorting'
+      ? tableFilterSampleRows(36, t('tableCapabilities.data.noteSample'))
+      : tableCapabilityRows(props.example === 'virtual' ? 2000 : 36)
 const simulation = createTableDemoTransport(rows, () =>
   t('tableCapabilities.data.simulatedFailure'),
 )
@@ -346,7 +336,10 @@ function openDetail(row: UiTableReadonlyRecord): void {
       :virtual-scroll="example === 'virtual' && virtualScroll"
     >
       <template #actions>
-        <span class="text-caption text-text-secondary">
+        <span
+          :class="{ invisible: table.loading.value || table.error.value }"
+          class="text-caption text-text-secondary"
+        >
           {{ t('tableExamples.results') }} {{ table.total.value }}
           <span
             v-if="example === 'virtual'"

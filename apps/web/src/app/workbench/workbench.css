@@ -123,6 +123,9 @@
   .wb-page.wb-form-page {
     gap: var(--ui-space-content-gap);
   }
+  .wb-table-stage[data-scroll-controls='true'] {
+    grid-template-rows: fit-content(25%) minmax(0, 1fr) auto;
+  }
   [data-layout-profile='narrow'] .wb-table-stage[data-scroll-controls='true'] {
     grid-template-rows: minmax(0, 2fr) minmax(0, 3fr) auto;
   }

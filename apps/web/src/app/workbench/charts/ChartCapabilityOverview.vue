@@ -18,6 +18,7 @@ import {
 } from '@platform/ui'
 import WorkbenchPage from '../WorkbenchPage.vue'
 import { chartExample, chartGroups } from './chart-examples'
+import { chartTourExample } from './chart-tour-example'
 import { liveChartExample, liveChartExamples } from './chart-live-simulation'
 import { useConsoleI18n } from '../../../shared/i18n'
 import { getRouteRecord } from '../../router/route-registry'
@@ -39,7 +40,7 @@ const sections = computed(() => [
     title: t('route-title.component-chart-linked'),
     destination: registeredRouteDestination({ name: 'component-chart-linked' }),
     options: {
-      ...liveChartExample('stream', 0, t).options,
+      ...chartExample('scatter', 0, t).options,
       axis: false,
       legend: false,
       tooltip: false,
@@ -52,7 +53,7 @@ const sections = computed(() => [
     title: t('route-title.component-chart-tour'),
     destination: registeredRouteDestination({ name: 'component-chart-tour' }),
     options: {
-      ...liveChartExample('stream', 0, t).options,
+      ...chartTourExample('donut', 0, t),
       axis: false,
       legend: false,
       tooltip: false,
@@ -65,7 +66,8 @@ const sections = computed(() => [
     title: t('route-title.component-chart-stage'),
     destination: registeredRouteDestination({ name: 'component-chart-stage' }),
     options: {
-      ...liveChartExample('stream', 0, t).options,
+      ...liveChartExample('ranking', 0, t).options,
+      labels: [],
       axis: false,
       legend: false,
       tooltip: false,
