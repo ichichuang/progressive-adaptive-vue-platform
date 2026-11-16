@@ -1,8 +1,7 @@
-import type { InjectionKey, Ref } from 'vue'
+import type { InjectionKey } from 'vue'
 
-export type RuntimeUpdateStatus = 'idle' | 'checking' | 'current' | 'available' | 'unavailable'
+export type RuntimeUpdateOutcome = 'current' | 'available' | 'unavailable'
 export interface RuntimeUpdateContext {
-  readonly status: Readonly<Ref<RuntimeUpdateStatus>>
-  check(): Promise<void>
+  check(): Promise<RuntimeUpdateOutcome | undefined>
 }
 export const runtimeUpdateKey: InjectionKey<RuntimeUpdateContext> = Symbol('runtime-update')

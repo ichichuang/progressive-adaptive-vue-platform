@@ -1,5 +1,7 @@
-import type { UiScrollController } from '@platform/ui'
+import type { UiScrollController, UiScrollOffset } from '@platform/ui'
 import type { InjectionKey } from 'vue'
+import type { SettingsScrollPosition } from '../scroll/settings-scroll-position'
+export type { SettingsSectionId, SettingsScrollPosition } from '../scroll/settings-scroll-position'
 import type { NormalizedCoreError } from '../errors/core-error'
 import type { LiveWorkspaceEntry } from '../workspace/workspace.store'
 import type { ValidatedRouteInput } from './route-input'
@@ -10,6 +12,13 @@ type RegisterScrollController = (controller: UiScrollController) => () => void
 export const routerScrollControllerKey: InjectionKey<RegisterScrollController> = Symbol(
   'PAVP Router Scroll Controller',
 )
+
+/** The route owner supplies initial settings context and retains its scroll records. */
+export const routerSettingsScrollKey: InjectionKey<{
+  initial(): SettingsScrollPosition | undefined
+  register(read: (offset: UiScrollOffset) => SettingsScrollPosition): () => void
+  restore(controller: UiScrollController): SettingsScrollPosition | undefined
+}> = Symbol('PAVP Settings Scroll')
 
 export interface WorkspaceRenderSnapshot {
   readonly commit: object

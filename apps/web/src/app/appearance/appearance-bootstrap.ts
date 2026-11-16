@@ -299,9 +299,9 @@ export function installAppearanceProvider(
   const appearanceMutationBoundary = createAppearanceMutationBoundary({
     readPreference: () => store.preference,
     readCustomThemeRegistry: () => store.customThemeRegistry,
-    commitPreference: (candidate) =>
+    commitPreference: (candidate, options) =>
       commitBoundaryMutation(() =>
-        store.changeAppearancePreference(candidate, currentEnvironment()),
+        store.changeAppearancePreference(candidate, currentEnvironment(), options),
       ),
     resetPreference: () =>
       commitBoundaryMutation(() => store.resetAppearancePreference(currentEnvironment())),

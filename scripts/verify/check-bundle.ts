@@ -122,11 +122,13 @@ const localizationResourceManifestKeys = [
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
 const cinematicGpuManifestKey = '../../packages/ui/src/adapters/motion/cinematic-gpu-stage.ts'
-const expectedDynamicRootCount = 119
+const errorParticlesManifestKey = 'src/app/errors/error-particles.ts'
+const expectedDynamicRootCount = 120
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
   cinematicGpuManifestKey,
+  errorParticlesManifestKey,
   scrollEnhancementManifestKey,
   localizationRuntimeManifestKey,
   workspaceDiscardManifestKey,
@@ -1007,7 +1009,8 @@ if (
   expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
   expectedLazyRouteCount +
     expectedMotionFeatureDynamicRootCount +
-    1 + // Cinematic GPU renderer is demand-loaded, never startup code.
+    1 + // Cinematic GPU renderer
+    1 + // Error artwork renderer
     1 +
     1 +
     1 +
@@ -1020,13 +1023,14 @@ if (
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected ${String(expectedLazyRouteCount)} routes, one motion root, one cinematic GPU root, one scroll enhancement, one shell scroll runtime, one navigation actions root, one workspace discard dialog, one i18n runtime and seven catalog roots.`,
+    `Canonical dynamic root authority drifted: expected ${String(expectedLazyRouteCount)} routes, one motion root, one cinematic GPU root, one error artwork renderer, one scroll enhancement, one shell scroll runtime, one navigation actions root, one workspace discard dialog, one i18n runtime and seven catalog roots.`,
   )
 }
 
 const initialDynamicRootKeys = new Set<string>()
 const dynamicImportOwnerKeys = new Set<string>()
 let cinematicGpuDynamicImportReferences = 0
+let errorParticlesDynamicImportReferences = 0
 let motionFeatureDynamicImportReferences = 0
 let scrollEnhancementDynamicImportReferences = 0
 let workspaceDiscardDynamicImportReferences = 0
@@ -1043,6 +1047,7 @@ for (const ownerKey of initialChunkKeys) {
   for (const dynamicRootKey of dynamicImports) {
     initialDynamicRootKeys.add(dynamicRootKey)
     if (dynamicRootKey === cinematicGpuManifestKey) cinematicGpuDynamicImportReferences += 1
+    if (dynamicRootKey === errorParticlesManifestKey) errorParticlesDynamicImportReferences += 1
 
     if (dynamicRootKey === motionFeatureManifestKey) {
       motionFeatureDynamicImportReferences += 1
@@ -1060,7 +1065,7 @@ if (
   !setsEqual(initialDynamicRootKeys, expectedDynamicRootKeys)
 ) {
   throw new Error(
-    `Initial static closure dynamic-root union drifted: expected ${String(expectedDynamicRootCount)} exact route, motion and localization roots; received ${String(initialDynamicRootKeys.size)} unique roots.`,
+    `Initial static closure dynamic-root union drifted: expected ${String(expectedDynamicRootCount)} exact route and optional capability roots; received ${String(initialDynamicRootKeys.size)} unique roots.`,
   )
 }
 
@@ -1209,6 +1214,29 @@ for (const routeRootKey of expectedLazyRouteKeys) {
 if (lazyRouteFiles.size !== expectedLazyRouteKeys.size) {
   throw new Error('Each exact Router route must retain its own lazy JavaScript chunk.')
 }
+
+const errorParticlesRoot = manifest[errorParticlesManifestKey]
+if (
+  errorParticlesDynamicImportReferences !== 1 ||
+  !errorParticlesRoot?.file.endsWith('.js') ||
+  (errorParticlesRoot.dynamicImports?.length ?? 0) !== 0 ||
+  [...lazyRouteStaticClosures.values()].some((closure) => closure.has(errorParticlesManifestKey))
+) {
+  throw new Error(
+    'Error artwork must have one on-demand renderer outside every static route closure.',
+  )
+}
+const errorParticlesExclusiveClosure = differenceValues(
+  collectStaticChunkClosure(manifest, errorParticlesManifestKey),
+  initialChunkKeys,
+)
+const errorParticlesFiles = emittedJavaScriptFiles(manifest, errorParticlesExclusiveClosure)
+const errorParticlesMeasurements = await Promise.all(
+  [...errorParticlesFiles].map((file) => gzipMeasurement(file)),
+)
+console.log(
+  `Bundle error artwork renderer: ${[...errorParticlesFiles].join(', ')}; ${String(errorParticlesMeasurements.reduce((total, item) => total + item.bytes, 0))} bytes gzip.`,
+)
 
 const motionFeatureRoot = manifest[motionFeatureManifestKey]
 
@@ -1421,7 +1449,7 @@ for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const
 }
 
 console.log(
-  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one cinematic GPU renderer + one Scroll enhancement + one shell scroll runtime + one navigation actions root + one workspace discard dialog + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
+  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one cinematic GPU renderer + one error artwork renderer + one Scroll enhancement + one shell scroll runtime + one navigation actions root + one workspace discard dialog + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
   `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip`,

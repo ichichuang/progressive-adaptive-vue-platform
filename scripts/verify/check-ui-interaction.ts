@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { scrollRefreshSchema } from '../../apps/web/src/app/scroll/scroll-refresh-contract'
 import {
   createInteractionSession,
   type UiInteractionDirection,
@@ -103,3 +104,39 @@ assert.deepEqual(swipes, ['left'])
 assert.throws(() => createInteractionSession({ swipeThreshold: 5 }, () => undefined))
 assert.throws(() => createInteractionSession({ longPressDelay: -1 }, () => undefined))
 console.log('UI interaction session checks passed.')
+
+const legacyScroll = {
+  schemaVersion: 1,
+  routeName: 'control-center',
+  ownerId: 'architecture-console-content',
+  left: 0,
+  top: 120,
+  context: ['build', 390, 500],
+}
+const settings = {
+  section: 'settings-comfort',
+  positions: { 'settings-comfort': { left: 0, top: 120 }, 'settings-theme': { left: 0, top: 20 } },
+}
+assert.equal(scrollRefreshSchema.safeParse(legacyScroll).success, true)
+assert.equal(scrollRefreshSchema.safeParse({ ...legacyScroll, settings }).success, true)
+for (const invalid of [
+  { ...legacyScroll, unexpected: true },
+  { ...legacyScroll, top: -1 },
+  { ...legacyScroll, top: 0, settings },
+  { ...legacyScroll, settings: { ...settings, extra: true } },
+  { ...legacyScroll, settings: { ...settings, section: 'other' } },
+  {
+    ...legacyScroll,
+    settings: { ...settings, positions: { ...settings.positions, other: { left: 0, top: 0 } } },
+  },
+  ...[
+    { left: Infinity, top: 1 },
+    { left: 0, top: -1 },
+    { left: 0, top: 5, extra: true },
+  ].map((offset) => ({
+    ...legacyScroll,
+    settings: { ...settings, positions: { ...settings.positions, 'settings-theme': offset } },
+  })),
+])
+  assert.equal(scrollRefreshSchema.safeParse(invalid).success, false)
+console.log('Settings refresh snapshots preserve strict offsets and legacy records.')

@@ -4,6 +4,8 @@ import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-con
 import { createCinematicController } from '../adapters/motion/cinematic-controller'
 import type { UiMotionController } from '../motion/motion-contracts'
 
+export { useErrorForegroundMotion } from '../adapters/motion/error-foreground'
+
 /** Developer-chosen cinematic recipes, governed by an existing PAVP appearance snapshot. */
 export function useUiMotion(
   explicitAppearance?: Readonly<Ref<Readonly<UiAppearanceSnapshot>>>,

@@ -12,12 +12,19 @@ import {
 export type AppearanceMutationResult =
   { readonly status: 'committed' } | { readonly status: 'rejected' }
 
+interface AppearanceMutationOptions {
+  readonly animateSize?: boolean
+}
+
 export interface AppearanceMutationBoundary {
   readonly preference: Readonly<ComputedRef<DeepReadonly<ExplicitThemePreference> | null>>
   readonly customThemeRegistry: Readonly<
     ComputedRef<readonly DeepReadonly<CustomThemeRegistryEntry>[] | null>
   >
-  readonly commitPreference: (candidate: unknown) => AppearanceMutationResult
+  readonly commitPreference: (
+    candidate: unknown,
+    options?: AppearanceMutationOptions,
+  ) => AppearanceMutationResult
   readonly resetPreference: () => AppearanceMutationResult
 }
 
@@ -38,7 +45,7 @@ const appearanceMutationBoundaryKey: InjectionKey<AppearanceMutationBoundary> = 
 export function createAppearanceMutationBoundary(input: {
   readonly readPreference: () => ExplicitThemePreference | null
   readonly readCustomThemeRegistry: () => readonly CustomThemeRegistryEntry[] | null
-  readonly commitPreference: (candidate: unknown) => AppearanceMutationResult
+  readonly commitPreference: AppearanceMutationBoundary['commitPreference']
   readonly resetPreference: () => AppearanceMutationResult
 }): AppearanceMutationBoundary {
   const preference = computed(() => {

@@ -2349,6 +2349,17 @@ watch(
   z-index: var(--ui-z-overlay);
 }
 
+html[data-pavp-settings-appearance] .pavp-admin-shell__sidebar {
+  transition-property: min-width, max-width, transform;
+  transition-duration: var(--ui-motion-duration);
+  transition-timing-function: var(--ui-motion-easing);
+}
+html[data-pavp-settings-appearance~='canvas'] .pavp-admin-shell,
+html[data-pavp-settings-appearance~='header'] .pavp-admin-shell__header,
+html[data-pavp-settings-appearance~='content'] .pavp-admin-shell__content {
+  transition: background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing);
+}
+
 .pavp-admin-shell__document-layout {
   overflow: visible;
 }
@@ -2914,5 +2925,17 @@ html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
 [data-pavp-admin-navigation-motion-ready='true']
   .pavp-admin-shell__collapsed-trigger[data-active='true']:active::before {
   background: transparent;
+}
+
+html[data-pavp-settings-appearance] .pavp-admin-shell .pavp-admin-shell__collapsed-trigger {
+  transition-property: opacity;
+}
+html[data-pavp-settings-appearance]
+  .pavp-admin-shell
+  :is(.n-menu-item-content, .pavp-admin-shell__collapsed-trigger)::before,
+html[data-motion][data-pavp-settings-appearance]
+  .pavp-admin-shell
+  .pavp-admin-navigation-selection-lens {
+  transition-property: opacity;
 }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, shallowRef, type ButtonHTMLAttributes } from 'vue'
+import { computed, onMounted, ref, shallowRef, type ButtonHTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NTag } from 'naive-ui/es/tag'
 import type { UiG2ChartOptions } from '@platform/ui'
@@ -38,7 +38,6 @@ const dots: Record<Signal, string> = {
 const samples = computed(() =>
   signals.flatMap((signal, series) =>
     Array.from({ length: 48 }, (_, hour) => ({
-      id: `${signal}-${String(hour)}`,
       hour,
       signal,
       name: names.value[signal],
@@ -56,32 +55,7 @@ const visible = computed(() => samples.value.filter((row) => row.hour < hours.va
 const visibleSignals = computed(() =>
   visible.value.filter((row) => selected.value === null || row.signal === selected.value),
 )
-// Logical coordinates only. The chart viewport and colors remain owned by PAVP tokens.
-const preview = { width: 480, height: 240, left: 20, right: 460, top: 16, bottom: 222 }
 const maxSignalValue = 110
-const previewLines = computed(() =>
-  signals.flatMap((signal, index) => {
-    const rows = visibleSignals.value.filter((row) => row.signal === signal)
-    if (rows.length === 0) return []
-    const points = rows.map(({ hour, value }) => {
-      const x = preview.left + (hour / (hours.value - 1)) * (preview.right - preview.left)
-      const y = preview.bottom - (value / maxSignalValue) * (preview.bottom - preview.top)
-      return `${x.toFixed(1)},${y.toFixed(1)}`
-    })
-    return [
-      {
-        signal,
-        color: colors.value[index],
-        line: points.join(' '),
-        area: [
-          [preview.left, preview.bottom].join(','),
-          ...points,
-          [preview.right, preview.bottom].join(','),
-        ].join(' '),
-      },
-    ]
-  }),
-)
 const chart = computed((): UiG2ChartOptions => ({
   type: 'view',
   data: visibleSignals.value,
@@ -103,14 +77,16 @@ const chart = computed((): UiG2ChartOptions => ({
   children: [
     {
       type: 'area',
-      encode: { x: 'hour', y: 'value', color: 'name', key: 'id' },
+      encode: { x: 'hour', y: 'value', color: 'name', key: 'signal' },
       style: { shape: 'smooth', fillOpacity: 0.1 },
+      animate: { enter: { type: 'fadeIn' }, exit: { type: 'fadeOut' } },
       tooltip: false,
     },
     {
       type: 'line',
-      encode: { x: 'hour', y: 'value', color: 'name', key: 'id' },
+      encode: { x: 'hour', y: 'value', color: 'name', key: 'signal' },
       style: { shape: 'smooth', lineWidth: 3 },
+      animate: { enter: { type: 'fadeIn' }, exit: { type: 'fadeOut' } },
       tooltip: { title: 'hour', items: ['value'] },
     },
   ],
@@ -157,6 +133,10 @@ async function loadChart(): Promise<void> {
     loadingChart = false
   }
 }
+// Keep G2 in its deferred chunk, but never require pointer input to initialize the chart.
+onMounted(() => {
+  void loadChart()
+})
 </script>
 
 <template>
@@ -209,7 +189,8 @@ async function loadChart(): Promise<void> {
       <NButton
         v-for="metric in metrics"
         :key="metric.signal"
-        secondary
+        :secondary="selected === null || selected === metric.signal"
+        :quaternary="selected !== null && selected !== metric.signal"
         :type="selected === metric.signal ? 'primary' : 'default'"
         v-bind="{ 'aria-pressed': selected === metric.signal } satisfies ButtonHTMLAttributes"
         @click="select(metric.signal)"
@@ -217,59 +198,28 @@ async function loadChart(): Promise<void> {
         <template #icon>
           <span
             class="rounded-control shrink-0 size-icon-small"
-            :class="dots[metric.signal]"
+            :class="
+              selected !== null && selected !== metric.signal
+                ? 'i-lucide-circle text-text-secondary'
+                : dots[metric.signal]
+            "
             aria-hidden="true"
           />
         </template>
         <span class="inline-flex items-baseline gap-component-unit">
           {{ metric.name }} <strong class="tabular-nums">{{ metric.value }}</strong>
+          <span
+            class="i-lucide-check size-icon-small"
+            :class="{ invisible: selected !== metric.signal }"
+            aria-hidden="true"
+          />
         </span>
       </NButton>
     </div>
     <div
       class="wb-home-preview-chart relative"
-      @pointermove.once="loadChart"
+      :aria-busy="!interactiveReady && !failed"
     >
-      <svg
-        v-if="!interactiveReady"
-        class="h-full w-full block"
-        :viewBox="`0 0 ${preview.width} ${preview.height}`"
-        preserveAspectRatio="none"
-        role="img"
-        :aria-label="t('welcomeArt.signalLabel')"
-      >
-        <line
-          v-for="step in 4"
-          :key="step"
-          :x1="preview.left"
-          :x2="preview.right"
-          :y1="preview.top + ((step - 1) * (preview.bottom - preview.top)) / 3"
-          :y2="preview.top + ((step - 1) * (preview.bottom - preview.top)) / 3"
-          class="text-text-secondary"
-          stroke="currentColor"
-          stroke-opacity="0.16"
-          vector-effect="non-scaling-stroke"
-        />
-        <g
-          v-for="series in previewLines"
-          :key="series.signal"
-        >
-          <polygon
-            :points="series.area"
-            :fill="series.color"
-            fill-opacity="0.1"
-          />
-          <polyline
-            :points="series.line"
-            fill="none"
-            :stroke="series.color"
-            stroke-width="2"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-            vector-effect="non-scaling-stroke"
-          />
-        </g>
-      </svg>
       <component
         :is="interactiveChart"
         v-if="interactiveChart"
@@ -280,13 +230,13 @@ async function loadChart(): Promise<void> {
         @error="chartFailed"
         @rendered="chartRendered"
       />
+      <span
+        v-if="failed"
+        role="status"
+        class="flex items-center inset-0 justify-center absolute text-caption text-text-secondary"
+      >
+        {{ t('welcomeArt.signalError') }}
+      </span>
     </div>
-    <span
-      v-if="failed"
-      role="status"
-      class="text-caption text-text-secondary"
-    >
-      {{ t('welcomeArt.signalError') }}
-    </span>
   </section>
 </template>

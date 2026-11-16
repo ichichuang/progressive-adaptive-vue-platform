@@ -215,6 +215,8 @@ async function validateManifestDependencies(): Promise<string[]> {
     for (const [dependency, owner, section] of [
       ['vue-i18n', '@platform/web', 'dependencies'],
       ['@tanstack/vue-query', '@platform/web', 'dependencies'],
+      ['three', '@platform/web', 'dependencies'],
+      ['@types/three', '@platform/web', 'devDependencies'],
       ['@intlify/message-compiler', 'root package', 'devDependencies'],
     ] as const) {
       const declarations = dependencyEntries(manifest).filter(([name]) => name === dependency)
@@ -542,6 +544,16 @@ function inspectImport(
         `${displayPath}: "motion-v" may only be imported by its private adapter or exact showcase owner.`,
       )
     }
+  }
+
+  if (
+    /^(?:three|@types\/three)(?:\/|$)/u.test(specifier) &&
+    (specifier !== 'three' ||
+      normalizedDisplayPath !== 'apps/web/src/app/errors/error-particles.ts')
+  ) {
+    violations.push(
+      `${displayPath}: Three.js imports belong to the private error artwork renderer.`,
+    )
   }
 
   if (specifier.startsWith('@tiptap/')) {

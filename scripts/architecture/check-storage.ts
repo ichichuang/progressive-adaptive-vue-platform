@@ -1540,7 +1540,7 @@ async function scrollStorageViolations(): Promise<string[]> {
     [
       'scroll-refresh-contract',
       'scrollRefreshSchema',
-      ['schemaVersion', 'routeName', 'ownerId', 'left', 'top', 'context'],
+      ['schemaVersion', 'routeName', 'ownerId', 'left', 'top', 'context', 'settings'],
       'scroll-refresh-storage',
       'sessionStorage',
     ],
@@ -1548,9 +1548,17 @@ async function scrollStorageViolations(): Promise<string[]> {
   for (const [file, schemaName, fields, adapterName, medium] of contracts) {
     const path = `apps/web/src/app/scroll/${file}.ts`
     const contract = scriptSource(path, await readFile(resolve(rootDirectory, path), 'utf8'))
-    const schema = nodesOf(contract, ts.isVariableDeclaration).find(
+    const initializer = nodesOf(contract, ts.isVariableDeclaration).find(
       (node) => node.name.getText(contract) === schemaName,
     )?.initializer
+    const schema =
+      file === 'scroll-refresh-contract' &&
+      initializer !== undefined &&
+      ts.isCallExpression(initializer) &&
+      ts.isPropertyAccessExpression(initializer.expression) &&
+      initializer.expression.name.text === 'refine'
+        ? initializer.expression.expression
+        : initializer
     const argument =
       schema !== undefined && ts.isCallExpression(schema) ? schema.arguments[0] : undefined
     if (

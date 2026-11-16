@@ -25,8 +25,7 @@ import { appErrorBoundaryHooksKey, type NormalizedCoreError } from '../errors/co
 import { getCoreErrorMessage } from '../errors/core-error-messages'
 import { getCoreErrorRecord } from '../errors/core-error-registry'
 import { normalizeVueComponentFailure, resolveVueLifecyclePhase } from '../errors/error-normalizer'
-import ErrorActions from '../errors/ErrorActions.vue'
-import ErrorIllustration from '../errors/ErrorIllustration.vue'
+import ErrorPresentation from '../errors/ErrorPresentation.vue'
 import {
   focusContractRegistry,
   getRouteLayoutCapability,
@@ -66,6 +65,7 @@ type PagePresentation = 'page' | 'component-fallback'
 interface PageLifetime {
   snapshot: WorkspaceRenderSnapshot
   failure: NormalizedCoreError | undefined
+  failurePresented?: true
   disposalFailure: { readonly cause: unknown } | undefined
   disposing: boolean
   released: boolean
@@ -389,7 +389,10 @@ export function createWorkspaceRetention(
       return lifetime
     },
     message(error: NormalizedCoreError) {
-      return getCoreErrorMessage(getCoreErrorRecord(error.id).userMessageKey, translate)
+      return {
+        title: getCoreErrorMessage(getCoreErrorRecord(error.id).userMessageKey, translate).title,
+        description: translate('error.workspaceContentReturnHome'),
+      }
     },
     presentation: (snapshot: WorkspaceRenderSnapshot) =>
       getRoutePresentation(snapshot.routeName, translate),
@@ -507,34 +510,22 @@ function renderPageFailure(
   return h(
     'section',
     {
-      class: shell
-        ? 'leading-body font-body-family flex flex-1 flex-col h-full min-h-0 min-w-0 w-full items-center justify-center overflow-hidden gap-content-gap px-page-inline py-section-block text-body text-text-primary'
-        : 'leading-body font-body-family flex flex-col h-dvh min-h-0 min-w-0 w-full items-center justify-center overflow-hidden bg-surface-page gap-content-gap px-page-inline py-section-block text-body text-text-primary',
+      class: shell ? 'flex flex-1 flex-col h-full min-h-0 min-w-0' : undefined,
       role: 'alert',
       'aria-live': 'assertive',
       onVnodeMounted,
       onVnodeUnmounted,
     },
     [
-      h(ErrorIllustration, { code: 'ERROR' }),
-      h(
-        'div',
-        { class: 'text-center shrink-0 grid min-w-0 w-full justify-items-center gap-content-gap' },
-        [
-          h(
-            'h1',
-            {
-              class: 'leading-title font-title-weight m-0 text-title',
-              'data-route-focus': target,
-              tabindex: focus.targetTabIndex,
-            },
-            message.title,
-          ),
-          h('p', { class: 'm-0 text-pretty text-text-secondary' }, message.description),
-          h(ErrorActions),
-        ],
-      ),
-      h('div', { class: 'flex-1 min-h-0', 'aria-hidden': 'true' }),
+      h(ErrorPresentation, {
+        code: 'ERROR',
+        title: message.title,
+        message: message.description,
+        focusTarget: target,
+        focusTabIndex: focus.targetTabIndex,
+        contained: shell,
+        animateEntrance: lifetime.failurePresented !== true,
+      }),
     ],
   )
 }
@@ -574,6 +565,7 @@ const InstanceBoundary = defineComponent({
           page,
           snapshot,
           () => {
+            page.failurePresented = true
             if (delivered === snapshot) mounted = 'component-fallback'
             props.controller.rendered(snapshot, 'component-fallback')
           },
@@ -639,6 +631,7 @@ const OrdinaryBoundary = defineComponent({
           lifetime,
           snapshot,
           () => {
+            lifetime.failurePresented = true
             if (delivered === snapshot) mounted = 'component-fallback'
             props.controller.rendered(snapshot, 'component-fallback')
           },

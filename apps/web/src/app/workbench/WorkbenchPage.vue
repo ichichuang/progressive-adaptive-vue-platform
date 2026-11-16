@@ -10,7 +10,9 @@ defineSlots<{ default: () => unknown; actions?: () => unknown }>()
 <template>
   <div
     class="wb-page min-w-0"
-    :class="contained ? 'flex flex-1 flex-col min-h-0 w-full gap-content-gap' : 'grid'"
+    :class="
+      contained ? 'wb-page--contained flex flex-1 flex-col min-h-0 w-full gap-content-gap' : 'grid'
+    "
   >
     <header
       :class="hideHeading ? 'sr-only' : 'wb-page-heading shrink-0 grid min-w-0 gap-content-gap'"

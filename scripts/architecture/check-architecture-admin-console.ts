@@ -8287,13 +8287,13 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
   if (
     !isDeepStrictEqual(snapshot.errorTitles, [
-      ['route-title.error-invalid-route-input', '地址无效'],
-      ['route-title.error-authentication-required', '需要身份认证'],
-      ['route-title.error-permission-denied', '访问被拒绝'],
-      ['route-title.error-route-not-found', '未找到页面'],
-      ['route-title.error-application-route-failure', '页面不可用'],
-      ['route-title.error-network-unavailable', '当前离线'],
-      ['route-title.error-service-unavailable', '服务不可用'],
+      ['route-title.error-invalid-route-input', '这个链接打不开'],
+      ['route-title.error-authentication-required', '请登录后查看这个页面'],
+      ['route-title.error-permission-denied', '你没有权限查看这个页面'],
+      ['route-title.error-route-not-found', '找不到这个页面'],
+      ['route-title.error-application-route-failure', '这个页面暂时打不开'],
+      ['route-title.error-network-unavailable', '网络连不上'],
+      ['route-title.error-service-unavailable', '这项服务暂时无法使用'],
     ])
   ) {
     violations.push('ENGLISH_ERROR_TITLE')
@@ -8764,7 +8764,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') &&
         snapshot.routeCount === 105 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
@@ -9407,9 +9407,7 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
     const defaultImport = statement.importClause?.name
     if (
       defaultImport !== undefined &&
-      ['../errors/ErrorActions.vue', '../errors/ErrorIllustration.vue'].includes(
-        statement.moduleSpecifier.text,
-      )
+      statement.moduleSpecifier.text === '../errors/ErrorPresentation.vue'
     )
       fallbackComponentImports.set(defaultImport.text, statement.moduleSpecifier.text)
     const bindings = statement.importClause?.namedBindings
@@ -9480,16 +9478,6 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       return false
     }
     const descendants = nativeRenderCalls.filter(insideRoot)
-    const headings = descendants.filter((call) => isNativeCall(call, 'h1'))
-    const descriptions = descendants.filter((call) => isNativeCall(call, 'p'))
-    const wrappers = descendants.filter((call) => isNativeCall(call, 'div'))
-    const heading = headings[0]
-    const headingProps =
-      heading !== undefined && ts.isCallExpression(heading) ? heading.arguments[1] : undefined
-    const headingTabIndex =
-      headingProps !== undefined && ts.isObjectLiteralExpression(headingProps)
-        ? objectPropertyInitializer(headingProps, 'tabindex')
-        : undefined
     const componentCalls = retentionCalls.filter(
       (call) =>
         insideRoot(call) &&
@@ -9504,55 +9492,45 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
         ? fallbackComponentImports.get(component.text)
         : undefined
     }
-    const actions = componentCalls.filter(
-      (call) => componentSource(call) === '../errors/ErrorActions.vue',
-    )
-    const illustrations = componentCalls.filter(
-      (call) => componentSource(call) === '../errors/ErrorIllustration.vue',
-    )
+    const scene = componentCalls[0]
+    const sceneProps = scene?.arguments[1]
+    const sceneTabIndex =
+      sceneProps !== undefined && ts.isObjectLiteralExpression(sceneProps)
+        ? objectPropertyInitializer(sceneProps, 'focusTabIndex')
+        : undefined
     const structureValid =
       children !== undefined &&
       ts.isArrayLiteralExpression(children) &&
+      children.elements.length === 1 &&
+      children.elements[0] === scene &&
       props !== undefined &&
       ts.isObjectLiteralExpression(props) &&
       objectPropertyInitializer(props, 'role')?.getText() === "'alert'" &&
       objectPropertyInitializer(props, 'aria-live')?.getText() === "'assertive'" &&
-      !props.properties.some((property) =>
-        ['id', 'style', 'data-scroll-owner'].includes(objectPropertyName(property) ?? ''),
+      !props.properties.some(
+        (property) =>
+          ts.isSpreadAssignment(property) ||
+          ['id', 'style', 'data-scroll-owner'].includes(objectPropertyName(property) ?? ''),
       ) &&
-      headings.length === 1 &&
-      descriptions.length === 1 &&
-      descendants.length === headings.length + descriptions.length + wrappers.length &&
-      wrappers.every((wrapper) => {
-        const wrapperProps = wrapper.arguments[1]
-        return (
-          wrapperProps !== undefined &&
-          ts.isObjectLiteralExpression(wrapperProps) &&
-          wrapperProps.properties.every(
-            (property) =>
-              !ts.isSpreadAssignment(property) &&
-              !['id', 'style', 'role', 'data-scroll-owner'].includes(
-                objectPropertyName(property) ?? '',
-              ),
-          )
-        )
-      }) &&
-      componentCalls.length === 2 &&
-      actions.length === 1 &&
-      actions[0]?.arguments.length === 1 &&
-      illustrations.length === 1 &&
-      headingProps !== undefined &&
-      ts.isObjectLiteralExpression(headingProps) &&
-      objectPropertyInitializer(headingProps, 'data-route-focus') !== undefined &&
-      headingTabIndex !== undefined &&
-      ts.isPropertyAccessExpression(headingTabIndex) &&
-      headingTabIndex.name.text === 'targetTabIndex'
+      descendants.length === 0 &&
+      componentCalls.length === 1 &&
+      scene !== undefined &&
+      componentSource(scene) === '../errors/ErrorPresentation.vue' &&
+      scene.arguments.length === 2 &&
+      sceneProps !== undefined &&
+      ts.isObjectLiteralExpression(sceneProps) &&
+      objectPropertyInitializer(sceneProps, 'code')?.getText() === "'ERROR'" &&
+      ['title', 'message', 'focusTarget', 'contained'].every(
+        (name) => objectPropertyInitializer(sceneProps, name) !== undefined,
+      ) &&
+      sceneTabIndex !== undefined &&
+      ts.isPropertyAccessExpression(sceneTabIndex) &&
+      sceneTabIndex.name.text === 'targetTabIndex'
     if (!structureValid) {
       fallbackStructureValid = false
       continue
     }
     allowedFallbackCalls.add(root)
-    for (const call of descendants) allowedFallbackCalls.add(call)
     if (isOwnRenderCall(root)) {
       boundaryRenderCalls.add(root)
       continue
@@ -9953,8 +9931,8 @@ function runRuntime005NegativeProbes(
       'PAGE_COMPONENT_FALLBACK_STRUCTURE',
       {
         workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
-          /h\(\s*'p'/u,
-          "h('button'",
+          /h\(ErrorPresentation/u,
+          "h('button'), h(ErrorPresentation",
         ),
       },
     ],
@@ -9963,7 +9941,7 @@ function runRuntime005NegativeProbes(
       'PAGE_COMPONENT_FALLBACK_STRUCTURE',
       {
         workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
-          /h\(\s*'div',\s*\{/u,
+          /h\(\s*'section',\s*\{/u,
           "$& 'data-scroll-owner': 'unowned',",
         ),
       },
@@ -9973,8 +9951,8 @@ function runRuntime005NegativeProbes(
       'PAGE_COMPONENT_FALLBACK_STRUCTURE',
       {
         workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
-          "'data-route-focus':",
-          "'data-unowned-heading':",
+          'focusTarget:',
+          'unownedHeading:',
         ),
       },
     ],
@@ -12489,7 +12467,7 @@ function adminNavigationNativeSourceInvariantResults(
   const admittedDynamicRoots =
     snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -14970,7 +14948,7 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   const requiredBundleMeasurementMarkers = [
     'const expectedLazyRouteCount = 105',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 119',
+    'const expectedDynamicRootCount = 120',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14995,7 +14973,7 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
     snapshot.routeCount !== 105 ||
     !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -15139,6 +15117,9 @@ async function validateDependencies(): Promise<string[]> {
   const webDependencies = isJsonObject(webManifest['dependencies'])
     ? webManifest['dependencies']
     : {}
+  const webDevDependencies = isJsonObject(webManifest['devDependencies'])
+    ? webManifest['devDependencies']
+    : {}
   const designSystemDependencies = isJsonObject(designSystemManifest['dependencies'])
     ? designSystemManifest['dependencies']
     : {}
@@ -15203,10 +15184,12 @@ async function validateDependencies(): Promise<string[]> {
       '@platform/design-system': 'workspace:*',
       '@platform/ui': 'workspace:*',
       pinia: 'catalog:',
+      three: 'catalog:',
       vue: 'catalog:',
       'vue-router': 'catalog:',
       zod: 'catalog:',
     }) ||
+    !isDeepStrictEqual(webDevDependencies, { '@types/three': 'catalog:' }) ||
     !isDeepStrictEqual(designSystemDependencies, {
       'colorjs.io': 'catalog:',
       zod: 'catalog:',
@@ -15235,6 +15218,7 @@ async function validateDependencies(): Promise<string[]> {
     !exactSet(Object.keys(importers), ['.', 'apps/web', 'packages/design-system', 'packages/ui']) ||
     !isDeepStrictEqual(importerSpecifiers(rootImporter, 'devDependencies'), rootDevDependencies) ||
     !isDeepStrictEqual(importerSpecifiers(webImporter, 'dependencies'), webDependencies) ||
+    !isDeepStrictEqual(importerSpecifiers(webImporter, 'devDependencies'), webDevDependencies) ||
     !isDeepStrictEqual(
       importerSpecifiers(designSystemImporter, 'dependencies'),
       designSystemDependencies,

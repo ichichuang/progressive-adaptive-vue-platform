@@ -140,6 +140,6 @@ export { captureUiFormReport } from './components/report-form'
 export { captureUiTableReport } from './components/report-table'
 export { captureUiChartReport, createUiReportSnapshot } from './components/report-snapshot'
 
-export { useUiMotion } from './composables/use-ui-motion'
+export { useErrorForegroundMotion, useUiMotion } from './composables/use-ui-motion'
 export { uiMotionPresets } from './motion/motion-registry'
 export type * from './motion/motion-contracts'

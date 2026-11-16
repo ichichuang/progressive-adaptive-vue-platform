@@ -49,18 +49,26 @@ function choose(theme: AppearanceThemePreviewProjection, event: MouseEvent): voi
     kind: 'palette',
     motion: effective.snapshot.value.motion,
     origin: readAppearanceTransitionOrigin(event),
+    isCurrent: () => {
+      const themePreference = mutation.preference.value?.appearance.theme
+      return (
+        themePreference?.registryKind === theme.registryKind &&
+        themePreference.themeId === theme.themeId
+      )
+    },
+    readSnapshot: () => effective.snapshot.value,
     commit: () => {
-      if (selected(theme)) return
       const current = explicitThemePreferenceSchema.safeParse(mutation.preference.value)
       if (!current.success) {
         rejected.value = true
-        return
+        return false
       }
       rejected.value =
         mutation.commitPreference({
           ...current.data,
           appearance: { ...current.data.appearance, theme: theme.reference },
         }).status !== 'committed'
+      return !rejected.value
     },
   })
   if (!holdPointer || transition === undefined) return

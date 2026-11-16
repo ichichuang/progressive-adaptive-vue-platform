@@ -1,47 +1,72 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
+import { inject, onScopeDispose, ref, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import type { MessageProviderInst, MessageReactive } from 'naive-ui/es/message'
 import { runtimeUpdateKey } from '../config/runtime-update-context'
 import { useConsoleI18n } from '../../shared/i18n'
 import SettingsField from './SettingsField.vue'
 const { t } = useConsoleI18n()
+const props = defineProps<{ readonly messages: MessageProviderInst | undefined }>()
 const runtimeUpdate = inject(runtimeUpdateKey)
-const updateStatus = computed(() => runtimeUpdate?.status.value ?? 'idle')
-const updateMessage = computed(() => {
-  switch (updateStatus.value) {
-    case 'checking':
-      return t('shell.versionChecking')
-    case 'current':
-      return t('shell.versionCurrent')
-    case 'available':
-      return t('shell.releaseChanged')
-    case 'unavailable':
-      return t('shell.versionUnavailable')
-    default:
-      return t('shell.versionIdle')
-  }
+const checking = ref(false)
+let pendingTimer: ReturnType<typeof setTimeout> | undefined
+let pendingMessage: MessageReactive | undefined
+let disposed = false
+function clearPending(): void {
+  clearTimeout(pendingTimer)
+  pendingMessage?.destroy()
+  pendingMessage = undefined
+}
+onScopeDispose(() => {
+  disposed = true
+  clearPending()
 })
+
+async function checkVersion(): Promise<void> {
+  if (!runtimeUpdate || checking.value) return
+  checking.value = true
+  pendingTimer = setTimeout(() => {
+    pendingMessage = props.messages?.info(t('shell.versionChecking'), { duration: 0 })
+  }, 350)
+  let outcome: Awaited<ReturnType<typeof runtimeUpdate.check>>
+  try {
+    outcome = await runtimeUpdate.check()
+  } finally {
+    clearPending()
+    checking.value = false
+  }
+  if (disposed) return
+  switch (outcome) {
+    case 'current':
+      props.messages?.success(t('shell.versionCurrent'))
+      break
+    case 'available':
+      props.messages?.info(t('shell.releaseChanged'))
+      break
+    case 'unavailable':
+      props.messages?.warning(t('shell.versionUnavailable'))
+      break
+  }
+}
 </script>
 <template>
   <SettingsField
     v-if="runtimeUpdate"
     id="settings-version"
-    class="wb-settings-choice-field layout-regular:grid-cols-2"
+    choice
     :label="t('shell.versionLabel')"
   >
-    <div class="flex flex-wrap items-center gap-content-gap">
-      <NButton
-        :loading="updateStatus === 'checking'"
-        :disabled="updateStatus === 'checking'"
-        @click="runtimeUpdate.check"
-      >
-        {{ t('shell.versionCheck') }}
-      </NButton>
-      <span
-        role="status"
-        class="text-caption text-text-secondary"
-        v-text="updateMessage"
-      />
-    </div>
+    <NButton
+      class="min-h-target-enhanced"
+      data-settings-control
+      v-bind="
+        (checking
+          ? { 'aria-busy': true, 'aria-disabled': true }
+          : { 'aria-busy': false, 'aria-disabled': false }) satisfies HTMLAttributes
+      "
+      @click="checkVersion"
+    >
+      {{ t('shell.versionCheck') }}
+    </NButton>
   </SettingsField>
 </template>

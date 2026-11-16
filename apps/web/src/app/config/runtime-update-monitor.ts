@@ -1,5 +1,6 @@
 import { applicationConfig } from './app.config'
 import { coreRuntimeConfigurationSchema } from './runtime-configuration-contract'
+import type { RuntimeUpdateOutcome } from './runtime-update-context'
 import {
   compiledBuildIdentity,
   readRuntimeConfigurationSource,
@@ -53,26 +54,26 @@ export function createRuntimeUpdateMonitor(input: {
   readonly fetch?: typeof globalThis.fetch
   /** Disable background wakeups for explicitly driven local demonstrations. */
   readonly automatic?: boolean
-  readonly onStatus?: (status: 'checking' | 'current' | 'available' | 'unavailable') => void
+  readonly onStatus?: (status: 'checking' | RuntimeUpdateOutcome) => void
   readonly onCandidate: (identity: CompiledBuildIdentity | null) => void
 }) {
   let disposed = false
   let active: AbortController | undefined
-  let pending: Promise<void> | undefined
+  let pending: Promise<RuntimeUpdateOutcome | undefined> | undefined
   let lastCheck = -Infinity
   let generation = 0
   let dismissed = ''
   let candidate: CompiledBuildIdentity | null = null
   const key = (identity: CompiledBuildIdentity) => `${identity.releaseSha}:${identity.buildVersion}`
-  function check(automatic = false): Promise<void> {
-    if (disposed) return Promise.resolve()
+  function check(automatic = false): Promise<RuntimeUpdateOutcome | undefined> {
+    if (disposed) return Promise.resolve(undefined)
     if (!automatic) dismissed = ''
     if (pending) return pending
     if (
       input.document.visibilityState !== 'visible' ||
       (automatic && Date.now() - lastCheck < applicationConfig.updates.minimumCheckIntervalMs)
     )
-      return Promise.resolve()
+      return Promise.resolve(undefined)
     input.onStatus?.('checking')
     lastCheck = Date.now()
     const revision = ++generation
@@ -81,7 +82,7 @@ export function createRuntimeUpdateMonitor(input: {
     const timeout = input.window.setTimeout(() => {
       controller.abort()
     }, applicationConfig.updates.timeoutMs)
-    pending = (async () => {
+    pending = (async (): Promise<RuntimeUpdateOutcome | undefined> => {
       const next = await probeRuntimeConfigurationUpdate({
         document: input.document,
         location: input.window.location,
@@ -91,11 +92,13 @@ export function createRuntimeUpdateMonitor(input: {
       if (revision !== generation) return
       if (controller.signal.aborted || !next) {
         input.onStatus?.('unavailable')
-        return
+        return 'unavailable'
       }
-      candidate = key(next) !== key(compiledBuildIdentity) && key(next) !== dismissed ? next : null
+      const outcome = key(next) === key(compiledBuildIdentity) ? 'current' : 'available'
+      candidate = outcome === 'available' && key(next) !== dismissed ? next : null
       input.onCandidate(candidate)
-      input.onStatus?.(key(next) === key(compiledBuildIdentity) ? 'current' : 'available')
+      input.onStatus?.(outcome)
+      return outcome
     })().finally(() => {
       input.window.clearTimeout(timeout)
       if (active === controller) active = undefined

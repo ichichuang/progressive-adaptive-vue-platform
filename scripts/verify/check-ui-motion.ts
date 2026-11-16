@@ -343,3 +343,4 @@ assert.equal(releasedAnimations, 20)
 console.log(
   'Ten DOM recipes: finite keyframes, enter/exit reversal and animation lease cleanup passed.',
 )
+await import('./check-appearance-transition')

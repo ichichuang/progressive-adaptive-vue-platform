@@ -170,7 +170,7 @@ async function navigate(event: MouseEvent): Promise<void> {
       :aria-label="title"
     >
       <div
-        class="wb-form-panel-header flex shrink-0 flex-wrap gap-component-unit"
+        class="wb-form-panel-header flex shrink-0 flex-wrap gap-component-unit layout-narrow:flex-1 layout-narrow:min-h-0 layout-narrow:content-start layout-narrow:overflow-auto"
         role="group"
         :aria-label="t('routeMotion.choose')"
       >

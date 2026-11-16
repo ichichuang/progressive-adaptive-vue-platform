@@ -1,11 +1,16 @@
 import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
 import { nextTick, shallowReactive, watch, type App } from 'vue'
-import type { UiScrollController } from '@platform/ui'
+import type { UiScrollController, UiScrollOffset } from '@platform/ui'
 import type { ScrollRefreshSnapshot } from '../scroll/scroll-refresh-contract'
+import {
+  settingsScrollPositionSchema,
+  type SettingsScrollPosition,
+} from '../scroll/settings-scroll-position'
 import type { ScrollDocumentLifecycle } from '../scroll/scroll-system'
 import {
   createRouterScrollControllers,
   routerScrollControllerKey,
+  routerSettingsScrollKey,
   routerWorkspaceRefreshKey,
   routerWorkspaceRetentionKey,
   type WorkspaceRenderSnapshot,
@@ -395,6 +400,7 @@ interface RegionRecord {
   readonly context: readonly (string | number)[]
   readonly left: number
   readonly top: number
+  readonly settings?: SettingsScrollPosition
 }
 
 interface WorkspaceRegionRecord {
@@ -600,6 +606,12 @@ export async function createAndReadyRouter(input: {
   const regionRecords = new Map<string, RegionRecord>()
   const scrollControllers = createRouterScrollControllers()
   input.application.provide(routerScrollControllerKey, scrollControllers.register)
+  let settingsScrollReader:
+    | {
+        readonly routeName: RouteName
+        readonly read: (offset: UiScrollOffset) => SettingsScrollPosition
+      }
+    | undefined
   const workspace = input.application.runWithContext(useWorkspaceStore)
   const workspaceRecords = new Map<WorkspaceIdentity, WorkspaceRegionRecord>()
   const workspaceContents = shallowReactive(
@@ -1175,6 +1187,95 @@ export async function createAndReadyRouter(input: {
         ]
   }
 
+  function settingsCandidate():
+    | {
+        readonly value: SettingsScrollPosition
+        readonly context: readonly (string | number)[]
+        readonly kind: 'history' | 'reload'
+      }
+    | undefined {
+    const entry = committedEntry
+    if (entry === undefined || !entryIsCurrent(entry)) return
+    if (
+      entry.navigation.operation.kind === 'pop' &&
+      input.configuration.environment !== 'development'
+    ) {
+      const record =
+        entry.marker === undefined ? undefined : regionRecords.get(entry.marker.entryId)
+      if (
+        record?.settings !== undefined &&
+        record.marker.scopeId === scopeId &&
+        record.context[0] === scopeId &&
+        record.context[1] === entry.navigation.routeName &&
+        record.context[2] === JSON.stringify([entry.to.params, entry.to.query, entry.to.hash]) &&
+        record.context[3] ===
+          JSON.stringify([entry.navigation.input.params, entry.navigation.input.query])
+      )
+        return { value: record.settings, context: record.context, kind: 'history' }
+    }
+    const refresh = pendingRefresh
+    if (
+      entry.navigation.operation.kind === 'initial' &&
+      refreshScroll?.readEnabled() === true &&
+      refreshScroll.readReloadEligible() &&
+      refresh?.routeName === entry.navigation.routeName &&
+      refresh.ownerId === 'architecture-console-content' &&
+      refresh.settings !== undefined &&
+      refresh.context[0] === input.configuration.releaseSha &&
+      refresh.context[1] === input.configuration.buildVersion
+    )
+      return { value: refresh.settings, context: refresh.context, kind: 'reload' }
+  }
+
+  input.application.provide(routerSettingsScrollKey, {
+    initial: () => settingsCandidate()?.value,
+    register(read) {
+      const routeName = committedEntry?.navigation.routeName
+      if (disposed || settingsScrollReader !== undefined || routeName === undefined)
+        throw new TypeError('The settings scroll owner is unavailable.')
+      const reader = { routeName, read }
+      settingsScrollReader = reader
+      return () => {
+        if (settingsScrollReader === reader) settingsScrollReader = undefined
+      }
+    },
+    restore(controller) {
+      const candidate = settingsCandidate()
+      const entry = committedEntry
+      if (candidate === undefined || entry === undefined) return
+      try {
+        const owner = regionOwner(entry.navigation.routeName)
+        const context =
+          owner === undefined
+            ? undefined
+            : candidate.kind === 'history'
+              ? regionContext(entry.to, entry.navigation, owner)
+              : restorationValidity(entry.navigation, owner, 'reload', entry.workspace)
+        const valid =
+          owner !== undefined &&
+          scrollControllers.read(owner) === controller &&
+          sameContext(candidate.context, context)
+        const positions = valid ? candidate.value.positions : {}
+        controller.scrollTo({
+          ...(positions[candidate.value.section] ?? { left: 0, top: 0 }),
+          behavior: 'instant',
+        })
+        return { section: candidate.value.section, positions }
+      } catch {
+        return { section: candidate.value.section, positions: {} }
+      }
+    },
+  })
+
+  function captureSettingsScroll(
+    routeName: RouteName,
+    offset: UiScrollOffset,
+  ): SettingsScrollPosition | undefined {
+    if (settingsScrollReader?.routeName !== routeName) return
+    const result = settingsScrollPositionSchema.safeParse(settingsScrollReader.read(offset))
+    return result.success ? result.data : undefined
+  }
+
   function readRefreshSnapshot(): ScrollRefreshSnapshot | undefined {
     const binding = refreshScroll
     const entry = committedEntry
@@ -1216,12 +1317,14 @@ export async function createAndReadyRouter(input: {
         )
       )
         return
+      const settings = captureSettingsScroll(entry.navigation.routeName, offset)
       return {
         schemaVersion: 1,
         routeName: entry.navigation.routeName,
         ownerId: controller.ownerId,
         ...offset,
         context,
+        ...(settings === undefined ? {} : { settings }),
       }
     } catch {
       // A withdrawn or nonunique presentation is ineligible; never capture a replacement owner.
@@ -1311,8 +1414,9 @@ export async function createAndReadyRouter(input: {
     }
     if (source.marker === undefined) return
     const context = regionContext(from, source.navigation, owner)
+    const settings = captureSettingsScroll(source.navigation.routeName, offset)
     if (
-      !sameContext(context, source.presented.context) ||
+      (settings === undefined && !sameContext(context, source.presented.context)) ||
       context === undefined ||
       !Number.isFinite(offset.left) ||
       !Number.isFinite(offset.top)
@@ -1320,7 +1424,12 @@ export async function createAndReadyRouter(input: {
       regionRecords.delete(source.marker.entryId)
       return
     }
-    retainRecord({ marker: source.marker, context, ...offset })
+    retainRecord({
+      marker: source.marker,
+      context,
+      ...offset,
+      ...(settings === undefined ? {} : { settings }),
+    })
   }
 
   const router = createRouter({
@@ -1440,6 +1549,8 @@ export async function createAndReadyRouter(input: {
               if (record !== undefined) {
                 if (
                   navigation.operation.kind === 'pop' &&
+                  (record.settings === undefined ||
+                    input.configuration.environment !== 'development') &&
                   record.marker.scopeId === scopeId &&
                   sameContext(record.context, context) &&
                   entryIsCurrent(entry) &&

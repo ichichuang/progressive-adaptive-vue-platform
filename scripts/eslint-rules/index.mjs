@@ -1095,6 +1095,7 @@ const noUnapprovedVisualLiterals = {
     const sinks = createStyleSinkResolver(context)
     const previewProjectionFunctions = new Set()
     const colorStylePreviewFunctions = new Set()
+    const settingsIndicatorWrites = new Map()
     const overflowWrites = []
     const usedStyleSinks = new Set()
 
@@ -1121,6 +1122,225 @@ const noUnapprovedVisualLiterals = {
     function claimStyleSink(key) {
       if (usedStyleSinks.has(key)) return false
       usedStyleSinks.add(key)
+      return true
+    }
+
+    function settingsRevealLayer(element, className) {
+      const creation = resolveLocalExpression(element)
+      if (
+        creation?.type !== 'CallExpression' ||
+        creation.callee.type !== 'MemberExpression' ||
+        !sinks.global(creation.callee.object, 'document') ||
+        sinks.name(creation.callee.property, creation.callee.computed) !== 'createElement' ||
+        staticNodeValue(creation.arguments[0]) !== 'div'
+      )
+        return false
+      return sinks.variable(sinks.bare(element))?.references.some(({ identifier }) => {
+        const list = identifier.parent
+        const member = list?.parent
+        return (
+          list?.type === 'MemberExpression' &&
+          list.object === identifier &&
+          sinks.name(list.property, list.computed) === 'classList' &&
+          member?.type === 'MemberExpression' &&
+          member.object === list &&
+          sinks.name(member.property, member.computed) === 'add' &&
+          member.parent?.type === 'CallExpression' &&
+          staticNodeValue(member.parent.arguments[0]) === className
+        )
+      })
+    }
+
+    function settingsRevealRootPaint(expression) {
+      const read = resolveLocalExpression(expression)
+      if (read?.type !== 'CallExpression' || !sinks.global(read.callee, 'getComputedStyle'))
+        return false
+      const root = read.arguments[0]
+      return (
+        read.arguments.length === 1 &&
+        root?.type === 'MemberExpression' &&
+        sinks.global(root.object, 'document') &&
+        sinks.name(root.property, root.computed) === 'documentElement'
+      )
+    }
+
+    function settingsRevealPaintWrite(sink, style, property, value) {
+      if (
+        style?.type !== 'MemberExpression' ||
+        sinks.name(style.property, style.computed) !== 'style' ||
+        !settingsRevealLayer(style.object, 'pavp-appearance-settings-old')
+      )
+        return false
+      if (staticNodeValue(property) === 'color-scheme')
+        return (
+          value?.type === 'MemberExpression' &&
+          sinks.name(value.property, value.computed) === 'colorScheme' &&
+          settingsRevealRootPaint(value.object) &&
+          claimStyleSink('settings-reveal:color-scheme')
+        )
+
+      const convertsLength =
+        value?.type === 'CallExpression' &&
+        value.callee.type === 'Identifier' &&
+        value.arguments.length === 2 &&
+        sinks.variable(value.callee)?.defs[0]?.node.type === 'FunctionDeclaration'
+      const read = convertsLength ? value.arguments[0] : value
+      if (
+        read?.type !== 'CallExpression' ||
+        read.callee.type !== 'MemberExpression' ||
+        sinks.name(read.callee.property, read.callee.computed) !== 'getPropertyValue' ||
+        !settingsRevealRootPaint(read.callee.object) ||
+        property?.type !== 'Identifier' ||
+        sinks.variable(property) !== sinks.variable(read.arguments[0])
+      )
+        return false
+      if (convertsLength) {
+        const scale = resolveLocalExpression(value.arguments[1])
+        const measure = scale?.type === 'CallExpression' ? scale.arguments[0] : undefined
+        if (
+          scale?.type !== 'CallExpression' ||
+          scale.callee.type !== 'MemberExpression' ||
+          !sinks.global(scale.callee.object, 'Number') ||
+          sinks.name(scale.callee.property, scale.callee.computed) !== 'parseFloat' ||
+          measure?.type !== 'MemberExpression' ||
+          sinks.name(measure.property, measure.computed) !== 'fontSize' ||
+          !settingsRevealRootPaint(measure.object)
+        )
+          return false
+      }
+      const roles = convertsLength
+        ? '^--ui-(?:control-|font-size-|icon-size-|layout-|space-|workbench-specimen-|radius-(?:control|panel|small)$)'
+        : '^--ui-(?:color|admin|material)-'
+      for (let parent = sink.parent; parent; parent = parent.parent) {
+        if (
+          parent.type !== 'IfStatement' ||
+          parent.consequent.range[0] > sink.range[0] ||
+          parent.consequent.range[1] < sink.range[1]
+        )
+          continue
+        const filter = parent.test
+        if (
+          filter.type === 'CallExpression' &&
+          filter.callee.type === 'MemberExpression' &&
+          sinks.name(filter.callee.property, filter.callee.computed) === 'test' &&
+          resolveLocalExpression(filter.callee.object)?.regex?.pattern === roles &&
+          sinks.variable(property) === sinks.variable(filter.arguments[0])
+        )
+          return claimStyleSink(`settings-reveal:${roles}`)
+      }
+      return false
+    }
+
+    function settingsRevealMaterialWrite(style, property, value) {
+      if (
+        !['-webkit-backdrop-filter', 'backdrop-filter', 'box-shadow'].includes(property) ||
+        style?.type !== 'MemberExpression' ||
+        sinks.name(style.property, style.computed) !== 'style' ||
+        value?.type !== 'CallExpression' ||
+        value.callee.type !== 'MemberExpression' ||
+        sinks.name(value.callee.property, value.callee.computed) !== 'getPropertyValue' ||
+        staticNodeValue(value.arguments[0]) !== property
+      )
+        return false
+
+      const paint = resolveLocalExpression(value.callee.object)
+      if (
+        paint?.type !== 'CallExpression' ||
+        !sinks.global(paint.callee, 'getComputedStyle') ||
+        paint.arguments.length !== 1
+      )
+        return false
+      const source = resolveLocalExpression(paint.arguments[0])
+      const replica = resolveLocalExpression(style.object)
+      if (
+        ![source, replica].every(
+          (query) =>
+            query?.type === 'CallExpression' &&
+            query.callee.type === 'MemberExpression' &&
+            sinks.name(query.callee.property, query.callee.computed) === 'querySelector',
+        )
+      )
+        return false
+
+      const selector = sinks.variable(source.arguments[0])
+      const iteration = selector?.defs[0]?.node.parent?.parent
+      if (sinks.variable(replica.arguments[0]) !== selector || iteration?.type !== 'ForOfStatement')
+        return false
+      const regions = resolveLocalExpression(iteration.right)
+      const knownRegions = new Set([
+        '.pavp-admin-shell__header',
+        '.pavp-admin-shell__sidebar',
+        '.pavp-admin-shell__navigation-action[aria-current="page"]',
+      ])
+      if (
+        regions?.type !== 'ArrayExpression' ||
+        regions.elements.length === 0 ||
+        !regions.elements.every((region) => knownRegions.has(staticNodeValue(region)))
+      )
+        return false
+
+      const original = sinks.variable(source.callee.object)
+      const copy = resolveLocalExpression(replica.callee.object)
+      return (
+        original !== undefined &&
+        copy?.type === 'CallExpression' &&
+        copy.callee.type === 'MemberExpression' &&
+        sinks.name(copy.callee.property, copy.callee.computed) === 'cloneNode' &&
+        copy.arguments[0]?.type === 'Literal' &&
+        copy.arguments[0].value === true &&
+        sinks.variable(copy.callee.object) === original &&
+        claimStyleSink(`settings-reveal:material:${property}`)
+      )
+    }
+
+    function measuredSettingsIndicator(expression) {
+      const fields = resolveLocalExpression(expression)
+      if (fields?.type !== 'ObjectExpression' || fields.properties.length !== 2) return false
+      const expected = new Map([
+        ['width', { measurement: 'offsetWidth', prefix: '', suffix: 'px' }],
+        ['transform', { measurement: 'offsetLeft', prefix: 'translateX(', suffix: 'px)' }],
+      ])
+      let measuredTab
+      for (const field of fields.properties) {
+        if (field.type !== 'Property') return false
+        const key = getStaticPropertyName(field.key, field.computed)
+        const contract = expected.get(key)
+        const value = field.value
+        if (
+          contract === undefined ||
+          !expected.delete(key) ||
+          value.type !== 'TemplateLiteral' ||
+          value.expressions.length !== 1 ||
+          value.quasis[0]?.value.cooked !== contract.prefix ||
+          value.quasis[1]?.value.cooked !== contract.suffix
+        )
+          return false
+        const format = value.expressions[0]
+        if (
+          format.type !== 'CallExpression' ||
+          !sinks.global(format.callee, 'String') ||
+          format.arguments.length !== 1
+        )
+          return false
+        const measurement = resolveLocalExpression(format.arguments[0])
+        if (
+          measurement?.type !== 'MemberExpression' ||
+          getStaticPropertyName(measurement.property, measurement.computed) !== contract.measurement
+        )
+          return false
+        const tab = sinks.variable(measurement.object)
+        if (tab === undefined || (measuredTab !== undefined && measuredTab !== tab)) return false
+        measuredTab = tab
+        const selection = resolveLocalExpression(measurement.object)
+        if (
+          selection?.type !== 'CallExpression' ||
+          selection.callee.type !== 'MemberExpression' ||
+          getStaticPropertyName(selection.callee.property, selection.callee.computed) !==
+            'querySelector' ||
+          staticNodeValue(selection.arguments[0]) !== '[aria-selected="true"]'
+        )
+          return false
+      }
       return true
     }
 
@@ -1786,30 +2006,47 @@ const noUnapprovedVisualLiterals = {
           claimStyleSink('token-specimen')
         )
       }
-      if (attribute === 'style' && filename === 'apps/web/src/pages/control-center.vue')
+      if (attribute === 'style' && filename === 'apps/web/src/pages/control-center.vue') {
+        const classes = staticTemplateClass(element)?.split(/\s+/u) ?? []
+        if (element?.rawName === 'span' && classes.includes('wb-settings-tab-indicator')) {
+          const binding = sinks.variable(node.value?.expression)
+          const writes = settingsIndicatorWrites.get(binding) ?? []
+          const declaration = binding?.defs[0]?.node
+          const initializer =
+            declaration?.type === 'VariableDeclarator' ? declaration.init : undefined
+          return (
+            initializer?.type === 'CallExpression' &&
+            sinks.imported(initializer.callee, 'vue', ['ref', 'shallowRef']) &&
+            initializer.arguments.length === 1 &&
+            initializer.arguments[0]?.type === 'ObjectExpression' &&
+            initializer.arguments[0].properties.length === 0 &&
+            writes.length === 1 &&
+            measuredSettingsIndicator(writes[0]) &&
+            claimStyleSink('settings-tab-indicator-geometry')
+          )
+        }
         return (
           element?.rawName === 'NButton' &&
-          staticTemplateClass(element)?.split(/\s+/u).includes('wb-theme-option') &&
+          classes.includes('wb-theme-option') &&
           expression?.type === 'CallExpression' &&
           expression.arguments.length === 1 &&
           expression.callee.type === 'Identifier' &&
           previewProjectionFunctions.has(sinks.variable(expression.callee)) &&
           claimStyleSink('settings-theme-preview')
         )
-      if (attribute === 'style' && filename === 'apps/web/src/app/workbench/ColorModePreview.vue') {
-        const plane =
-          expression?.type === 'CallExpression'
-            ? staticNodeValue(expression.arguments[1])
-            : undefined
+      }
+      if (
+        attribute === 'style' &&
+        filename === 'apps/web/src/app/workbench/SettingsModePreview.vue'
+      ) {
         return (
           element?.rawName === 'span' &&
-          staticTemplateClass(element)?.split(/\s+/u).includes('wb-mode-scene') &&
+          staticTemplateClass(element)?.split(/\s+/u).includes('settings-mode-preview__plane') &&
           expression?.type === 'CallExpression' &&
           expression.arguments.length === 3 &&
-          ['light', 'dark'].includes(plane) &&
           expression.callee.type === 'Identifier' &&
           previewProjectionFunctions.has(sinks.variable(expression.callee)) &&
-          claimStyleSink(`color-mode-${plane}`)
+          claimStyleSink('settings-color-mode-plane')
         )
       }
       const property = singleStyleProperty(node.value?.expression)
@@ -2216,18 +2453,18 @@ const noUnapprovedVisualLiterals = {
           )
             colorStylePreviewFunctions.add(sinks.variable(node.id))
         }
-        const modePreview = filename === 'apps/web/src/app/workbench/ColorModePreview.vue'
+        const modePreview = filename === 'apps/web/src/app/workbench/SettingsModePreview.vue'
         const pairs = modePreview
           ? {
               '--pavp-mode-preview-page': 'surfacePage',
               '--pavp-mode-preview-panel': 'surfacePanel',
               '--pavp-mode-preview-action': 'actionPrimary',
               '--pavp-mode-preview-control': 'controlPrimary',
-              '--pavp-mode-preview-border': 'borderDefault',
             }
           : {
               '--pavp-settings-theme-color': 'actionPrimary',
-              '--pavp-settings-theme-on-color': 'onAction',
+              '--pavp-settings-theme-accent-a': 'accentA',
+              '--pavp-settings-theme-accent-b': 'accentB',
             }
         const fields = returned?.type === 'ObjectExpression' ? returned.properties : []
         if (
@@ -2270,6 +2507,14 @@ const noUnapprovedVisualLiterals = {
           return
         }
         const propertyName = propertyNames?.[0]
+        if (filename === 'apps/web/src/pages/control-center.vue' && propertyName === 'value') {
+          const binding = sinks.variable(node.left.object)
+          if (binding !== undefined)
+            settingsIndicatorWrites.set(binding, [
+              ...(settingsIndicatorWrites.get(binding) ?? []),
+              node.right,
+            ])
+        }
         if (
           propertyNames === undefined &&
           (sinks.dom(node.left.object) ||
@@ -2546,6 +2791,16 @@ const noUnapprovedVisualLiterals = {
               if (
                 frames !== undefined &&
                 getStaticPropertyName(frames.key, frames.computed) === 'clipPath' &&
+                ['pavp-appearance-settings-old', 'pavp-appearance-rift-edge'].some(
+                  (layer) =>
+                    settingsRevealLayer(object, layer) &&
+                    claimStyleSink(`settings-reveal:${layer}`),
+                )
+              )
+                return
+              if (
+                frames !== undefined &&
+                getStaticPropertyName(frames.key, frames.computed) === 'clipPath' &&
                 options?.type === 'ObjectExpression' &&
                 options.properties.some(
                   (property) =>
@@ -2705,6 +2960,15 @@ const noUnapprovedVisualLiterals = {
 
         const [property, value, priority] = arguments_
         const propertyName = staticNodeValue(sinks.unwrap(property))
+
+        if (
+          filename === 'apps/web/src/app/appearance/appearance-transition.ts' &&
+          method === 'setProperty' &&
+          priority === undefined &&
+          (settingsRevealPaintWrite(node, object, property, value) ||
+            settingsRevealMaterialWrite(object, propertyName, value))
+        )
+          return
 
         if (
           filename === 'apps/web/src/app/appearance/appearance.store.ts' &&

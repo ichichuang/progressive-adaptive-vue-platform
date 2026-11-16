@@ -3593,12 +3593,19 @@ expectStructuredEqual(
     '@platform/design-system': 'workspace:*',
     '@platform/ui': 'workspace:*',
     pinia: 'catalog:',
+    three: 'catalog:',
     vue: 'catalog:',
     'vue-i18n': 'catalog:',
     'vue-router': 'catalog:',
     zod: 'catalog:',
   },
   'Router web dependency set',
+)
+
+expectStructuredEqual(
+  webManifest['devDependencies'],
+  { '@types/three': 'catalog:' },
+  'Web error-renderer type dependency set',
 )
 
 expectEqual(designSystemDependencies['zod'], 'catalog:', 'Design-system Zod catalog binding')

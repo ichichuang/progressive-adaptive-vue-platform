@@ -179,9 +179,10 @@ onMounted(() => {
     const changed = density !== previousDensity || fontScale !== previousFontScale
     previousDensity = density
     previousFontScale = fontScale
+    const transition = root.getAttribute('data-ui-size-transition')
     if (
-      root.getAttribute('data-motion') !== 'full' ||
-      !root.hasAttribute('data-ui-size-transition')
+      transition !== 'instant' &&
+      (root.getAttribute('data-motion') !== 'full' || transition === null)
     ) {
       finishSizeTransition()
       updateMetrics()
@@ -195,6 +196,16 @@ onMounted(() => {
     const revision = ++sizeRevision
     clearTimeout(sizeTimer)
     if (sizeFrame !== undefined) cancelAnimationFrame(sizeFrame)
+    if (transition === 'instant') {
+      updateMetrics()
+      // Allow the measured vendor sizes and indicator geometry to render before releasing the hint.
+      sizeFrame = requestAnimationFrame(() => {
+        sizeFrame = requestAnimationFrame(() => {
+          if (revision === sizeRevision) finishSizeTransition()
+        })
+      })
+      return
+    }
     const duration = getComputedStyle(root).getPropertyValue('--ui-motion-duration').trim()
     const milliseconds = Number.parseFloat(duration) * (duration.endsWith('ms') ? 1 : 1000)
     if (!Number.isFinite(milliseconds) || milliseconds <= 0) {
@@ -1077,6 +1088,49 @@ html:not([data-motion='full'])
   transition: none !important;
 }
 
+html[data-motion='full'] [data-settings-control],
+html[data-motion='full'] [data-settings-control] :is(.n-switch__rail, .n-switch__button),
+html[data-motion='full'] [data-settings-control] [data-ui-radio-card-option] {
+  transition-duration: calc(var(--ui-motion-duration) / 2) !important;
+}
+
+/* Settings colors are committed as pairs. Choice owners opt in only approved paints. */
+html[data-pavp-settings-appearance]
+  :where(.pavp-admin-shell, #pavp-overlay-root)
+  :is(
+    .n-button,
+    .n-button__border,
+    .n-button__state-border,
+    .n-radio-button,
+    .n-radio-button__state-border,
+    .n-radio-group__splitor,
+    .n-switch__rail,
+    .n-base-selection,
+    .n-base-selection-label,
+    .n-base-selection__border,
+    .n-base-selection__state-border,
+    .n-menu-item-content,
+    .n-menu-item-content-header,
+    .n-menu-item-content-header a,
+    .n-menu-item-content__icon
+  ) {
+  transition-property: opacity !important;
+  transition-duration: calc(var(--ui-motion-duration) / 2) !important;
+}
+html[data-pavp-settings-appearance] .pavp-admin-shell .n-menu-item-content__arrow {
+  transition-property: opacity, transform !important;
+}
+html[data-pavp-settings-appearance] .pavp-admin-shell [data-settings-control] .n-switch__button {
+  transition-property: left, max-width, opacity !important;
+}
+html[data-pavp-settings-appearance~='sidebar'] .pavp-admin-shell__sidebar.n-layout-sider {
+  transition:
+    min-width var(--ui-motion-duration) var(--ui-motion-easing),
+    max-width var(--ui-motion-duration) var(--ui-motion-easing),
+    transform var(--ui-motion-duration) var(--ui-motion-easing),
+    background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing) !important;
+}
+
 @media (forced-colors: active) {
   .n-button:focus-visible,
   .n-checkbox:focus-visible .n-checkbox-box__border,
@@ -1102,6 +1156,12 @@ html:not([data-motion='full'])
 /* Root font scaling carries all rem-based text and geometry in the same frame. */
 html[data-motion='full'][data-ui-size-transition='font-scale'] {
   transition: font-size var(--ui-motion-duration) var(--ui-motion-easing);
+}
+
+html[data-ui-size-transition='instant']
+  :where(.pavp-admin-shell, #pavp-overlay-root)
+  :is(.n-icon-slot, .n-base-wave, .pavp-admin-shell__sidebar) {
+  transition-property: background-color, border-color, color, opacity, transform !important;
 }
 
 /* Geometry transitions exist only for a density commit, never ordinary editing or scrolling.

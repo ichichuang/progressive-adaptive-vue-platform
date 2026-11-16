@@ -94,6 +94,7 @@ const expectedPublicRootSymbols = [
   'EffectiveAppearanceState',
   'projectUiAppearance',
   'UiAppearanceSnapshot',
+  'projectSettingsColorMotion',
   'projectSequentialColorScale',
   'resolveColorMode',
   'EffectiveColorMode',
@@ -2275,6 +2276,20 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
         )
           failures.push(
             'Font scale 100→90 must arm before measuring old geometry only with effective full motion, persist immediately and preserve density.',
+          )
+        attributes.delete('data-ui-size-transition')
+        fontScaleEvents.length = 0
+        const instantWrites = storage.setCalls
+        if (
+          store.changeAppearancePreference(initial, currentEnvironment, { animateSize: false })
+            .status !== 'committed' ||
+          !isDeepStrictEqual(fontScaleEvents, ['write:1:instant']) ||
+          !isDeepStrictEqual(store.preference, initial) ||
+          storage.values.get(preferenceKey) !== JSON.stringify(initial) ||
+          storage.setCalls !== instantWrites + 1
+        )
+          failures.push(
+            'A full-scope settings presentation must commit and persist size immediately without the local animated size path in every motion mode.',
           )
         attributes.delete('data-ui-size-transition')
       }

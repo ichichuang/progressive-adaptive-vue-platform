@@ -1,0 +1,293 @@
+@layer app {
+  .error-scene {
+    --pavp-error-ink: var(--ui-color-control-primary);
+
+    color: var(--pavp-region-foreground, var(--ui-color-text-primary));
+    background: var(--pavp-region-background, var(--ui-color-surface-page));
+  }
+
+  .error-scene[data-error-tone='warning'] {
+    --pavp-error-ink: var(--ui-color-control-warning);
+  }
+
+  .error-scene[data-error-tone='info'] {
+    --pavp-error-ink: var(--ui-color-control-info);
+  }
+
+  .error-scene[data-error-tone='error'] {
+    --pavp-error-ink: var(--ui-color-control-error);
+  }
+
+  .error-scene--document {
+    min-block-size: 100dvh;
+  }
+
+  .error-scene--contained {
+    flex: 1;
+    min-inline-size: 0;
+    min-block-size: 0;
+  }
+
+  .error-scene__composition {
+    isolation: isolate;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: center;
+    background-image: radial-gradient(
+      ellipse at center,
+      transparent 20%,
+      color-mix(in srgb, var(--pavp-error-ink) 6%, transparent) 62%,
+      transparent 94%
+    );
+  }
+
+  .error-scene__artwork {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+    color: var(--pavp-error-ink);
+  }
+
+  .error-scene__glyph {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+    place-items: center;
+    overflow: clip;
+    mask-image: radial-gradient(
+      ellipse min(48cqw, 20rem) min(38cqh, 8rem) at center,
+      transparent 14%,
+      color-mix(in srgb, currentColor 12%, transparent) 57%,
+      color-mix(in srgb, currentColor 65%, transparent) 100%
+    );
+  }
+
+  .error-scene__dot-environment {
+    position: absolute;
+    inset: 0;
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .error-scene__focal {
+    grid-area: 1 / 1;
+    display: block;
+    inline-size: min(90cqw, 167cqh);
+    aspect-ratio: 24 / 11;
+  }
+
+  .error-scene__glyph > canvas {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .error-scene__content {
+    grid-area: 1 / 1;
+    z-index: 0;
+    justify-items: center;
+    gap: var(--ui-space-field-gap);
+    inline-size: min(100%, 32rem);
+    padding: var(--ui-space-page-inline);
+    text-align: center;
+  }
+
+  .error-scene--contained .error-scene__content {
+    grid-template-rows: minmax(0, 1fr) auto;
+    max-block-size: 100%;
+    min-block-size: 0;
+  }
+
+  .error-scene--contained .error-scene__reading {
+    max-block-size: 100%;
+  }
+
+  .error-scene__copy {
+    justify-items: center;
+    overflow-wrap: anywhere;
+  }
+
+  .error-scene__copy h1 {
+    font-size: var(--ui-font-size-title);
+    font-weight: calc((var(--ui-font-weight-body) + var(--ui-font-weight-title)) / 2);
+  }
+
+  .error-scene__actions {
+    max-inline-size: 100%;
+    justify-self: center;
+    justify-content: center;
+  }
+
+  .error-scene__content[data-foreground-pending] .error-scene__copy h1,
+  .error-scene__content[data-foreground-pending]:not([data-action-visible])
+    .error-scene__action-arrival {
+    opacity: 0;
+    transform: translateY(var(--ui-space-control-segment-gap));
+  }
+
+  .error-scene__content[data-foreground-pending] .error-scene__copy p {
+    opacity: 0;
+    transform: translateY(var(--ui-space-component-unit));
+  }
+
+  .error-scene__action {
+    max-inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .error-scene__action--fallback {
+    border: none;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .error-scene__action-surface {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ui-space-control-segment-gap);
+    min-inline-size: 0;
+    min-block-size: max(
+      var(--ui-control-height-large),
+      var(--ui-layout-target-enhanced-minimum-block-size)
+    );
+    padding-block: var(--ui-space-component-unit);
+    padding-inline: var(--ui-space-field-gap);
+    border-width: var(--ui-border-width);
+    border-style: solid;
+    border-color: color-mix(
+      in srgb,
+      var(--ui-color-border-default) 55%,
+      var(--ui-color-surface-panel)
+    );
+    background-color: color-mix(in srgb, var(--ui-color-surface-panel) 94%, var(--pavp-error-ink));
+    box-shadow:
+      inset 0 var(--ui-border-width) 0
+        color-mix(in srgb, var(--ui-color-text-primary) 9%, transparent),
+      var(--ui-shadow-panel);
+    color: var(--ui-color-text-primary);
+    font-size: var(--ui-font-size-control-large);
+    font-weight: var(--ui-font-weight-title);
+    line-height: var(--ui-font-line-height-compact);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .error-scene__action-arrow {
+    flex: none;
+    inline-size: var(--ui-icon-size-small);
+    block-size: var(--ui-icon-size-small);
+    color: var(--pavp-error-ink);
+  }
+
+  :where(html[data-motion='full']) .error-scene__action-surface {
+    transition:
+      background-color calc(var(--ui-motion-duration) * 3.5) var(--ui-motion-easing),
+      translate calc(var(--ui-motion-duration) * 3.5) var(--ui-motion-easing),
+      transform calc(var(--ui-motion-duration) * 2) var(--ui-motion-easing);
+  }
+
+  :where(html[data-motion='full']) .error-scene__action-arrow {
+    transition: translate calc(var(--ui-motion-duration) * 3.5) var(--ui-motion-easing);
+  }
+
+  .error-scene__action:not(.error-scene__action--fallback):dir(rtl) .error-scene__action-arrow {
+    scale: -1 1;
+  }
+
+  .error-scene__action:hover .error-scene__action-surface {
+    background-color: color-mix(in srgb, var(--ui-color-surface-panel) 89%, var(--pavp-error-ink));
+  }
+
+  :where(html[data-motion='full']) .error-scene__action:hover .error-scene__action-surface {
+    translate: 0 calc(-1 * var(--ui-border-width));
+    transition-duration:
+      calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 3),
+      calc(var(--ui-motion-duration) * 2);
+  }
+
+  :where(html[data-motion='full']) .error-scene__action:active .error-scene__action-surface {
+    transform: translateY(calc(2 * var(--ui-border-width)));
+    transition-duration:
+      calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 3),
+      calc(var(--ui-motion-duration) * 0.6);
+  }
+
+  :where(html[data-motion='full'])
+    .error-scene__action:not(.error-scene__action--fallback):hover
+    .error-scene__action-arrow {
+    translate: calc(-1 * var(--ui-space-component-unit)) 0;
+    transition: translate calc(var(--ui-motion-duration) * 3) var(--ui-motion-easing);
+  }
+
+  :where(html[data-motion='full'])
+    .error-scene__action:not(.error-scene__action--fallback):hover:dir(rtl)
+    .error-scene__action-arrow {
+    translate: var(--ui-space-component-unit) 0;
+  }
+
+  @container (max-width: 32rem) {
+    .error-scene__glyph {
+      mask-image: radial-gradient(
+        ellipse 57cqw min(35cqh, 8rem) at center,
+        transparent 12%,
+        color-mix(in srgb, currentColor 12%, transparent) 60%,
+        color-mix(in srgb, currentColor 56%, transparent) 100%
+      );
+    }
+
+    .error-scene__glyph[data-compact] {
+      mask-image: radial-gradient(
+        ellipse 53cqw min(27cqh, 6rem) at center,
+        transparent 14%,
+        color-mix(in srgb, currentColor 12%, transparent) 55%,
+        color-mix(in srgb, currentColor 62%, transparent) 100%
+      );
+    }
+
+    .error-scene__glyph[data-compact] > .error-scene__focal {
+      inline-size: min(131cqw, 195cqh);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .error-scene__composition {
+      background-image: none;
+    }
+
+    .error-scene__artwork {
+      display: none;
+    }
+
+    .error-scene__action-surface,
+    .error-scene__action:hover .error-scene__action-surface {
+      border-color: LinkText;
+      color: LinkText;
+      background-color: Canvas;
+      box-shadow: none;
+    }
+
+    .error-scene__action-arrow {
+      color: LinkText;
+    }
+  }
+}
+
+/* Naive's text button styles and its shared focus rule are unlayered. */
+.error-scene .error-scene__action,
+.error-scene__action-surface {
+  border-radius: max(var(--ui-radius-control), calc(var(--ui-control-height-large) / 3));
+}
+
+.error-scene .error-scene__action:focus-visible {
+  outline: calc(2 * var(--ui-border-width)) solid var(--ui-color-focus-ring);
+  outline-offset: calc(3 * var(--ui-border-width));
+}
+
+@media (forced-colors: active) {
+  .error-scene .error-scene__action:focus-visible {
+    outline-color: Highlight;
+  }
+}

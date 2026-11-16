@@ -31,6 +31,7 @@ const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/cinematic-text-recipes.ts',
   'packages/ui/src/adapters/motion/cinematic-gpu-stage.ts',
   'packages/ui/src/adapters/motion/cinematic-gpu-shaders.ts',
+  'packages/ui/src/adapters/motion/error-foreground.ts',
   'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue',
   'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
   'packages/ui/src/adapters/motion/motion-feature-runtime.ts',

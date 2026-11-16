@@ -1,6 +1,7 @@
 import type { NormalizedCoreError } from './core-error'
 import { getCoreErrorMessage } from './core-error-messages'
 import { getCoreErrorRecord } from './core-error-registry'
+import { appendErrorStaticDots } from './error-static-dots'
 
 export interface FatalBoundaryHandle {
   dispose(): void
@@ -33,47 +34,54 @@ function renderFatalBoundary(input: {
   }
 
   const boundary = document.createElement('main')
-  boundary.className =
-    'leading-body font-body-family grid place-items-center h-dvh min-h-0 overflow-hidden px-page-inline py-section-block text-body text-text-primary bg-surface-page'
+  boundary.className = 'error-scene error-scene--document grid'
+  boundary.dataset['errorTone'] = 'error'
   boundary.setAttribute('lang', 'zh-CN')
   boundary.setAttribute('dir', 'ltr')
   boundary.setAttribute('role', 'alert')
   boundary.setAttribute('aria-live', 'assertive')
 
-  const panel = document.createElement('section')
-  panel.className =
-    'mx-auto flex flex-col h-full min-h-0 min-w-0 w-full items-center justify-center gap-content-gap max-w-content'
+  const scene = document.createElement('section')
+  scene.className = 'error-scene__composition relative grid min-w-0 min-h-0'
 
   const illustration = document.createElement('div')
-  illustration.className =
-    'flex shrink min-h-0 min-w-0 w-full items-center justify-center overflow-hidden'
+  illustration.className = 'error-scene__artwork pointer-events-none'
   illustration.setAttribute('aria-hidden', 'true')
 
-  const illustrationCard = document.createElement('div')
-  illustrationCard.className = 'rounded-panel shadow-panel bg-surface-panel p-panel'
-  const illustrationIcon = document.createElement('span')
-  illustrationIcon.className =
-    'i-lucide-circle-alert size-icon-extra-large text-control-primary block'
-  illustrationCard.append(illustrationIcon)
-  illustration.append(illustrationCard)
+  const glyph = document.createElement('div')
+  glyph.className = 'error-scene__glyph'
+  glyph.setAttribute('data-compact', '')
+  try {
+    appendErrorStaticDots(glyph, 'ERROR')
+  } catch {
+    // Decoration is best-effort and must not prevent access to fatal recovery.
+  }
+  illustration.append(glyph)
 
   const content = document.createElement('div')
-  content.className =
-    'text-center grid shrink-0 min-w-0 w-full justify-items-center gap-content-gap'
+  content.className = 'error-scene__content grid min-w-0'
+
+  const copy = document.createElement('div')
+  copy.className = 'error-scene__copy grid gap-content-gap'
 
   const title = document.createElement('h1')
-  title.className = 'leading-title font-title-weight m-0 text-title'
+  title.className = 'm-0 leading-title'
   title.textContent = message.title
 
   const description = document.createElement('p')
-  description.className = 'm-0 text-pretty text-text-secondary'
+  description.className = 'm-0 text-pretty text-body text-text-secondary'
   description.textContent = message.description
 
   const action = document.createElement('button')
-  action.className =
-    'h-control min-h-target-enhanced rounded-control border-0 bg-action-primary px-button-inline text-text-on-action cursor-pointer'
+  action.className = 'error-scene__action error-scene__action--fallback'
   action.type = 'button'
-  action.textContent = actionLabel
+  const actionSurface = document.createElement('span')
+  actionSurface.className = 'error-scene__action-surface'
+  const actionIcon = document.createElement('span')
+  actionIcon.className = 'error-scene__action-arrow i-lucide-rotate-cw'
+  actionIcon.setAttribute('aria-hidden', 'true')
+  actionSurface.append(actionIcon, actionLabel)
+  action.append(actionSurface)
 
   let actionStarted = false
   let disposed = false
@@ -126,9 +134,10 @@ function renderFatalBoundary(input: {
   try {
     listenerInstalled = true
     action.addEventListener('click', runAction)
-    content.append(title, description, action)
-    panel.append(illustration, content)
-    boundary.append(panel)
+    copy.append(title, description)
+    content.append(copy, action)
+    scene.append(illustration, content)
+    boundary.append(scene)
     boundaryInstalled = true
     input.target.replaceChildren(boundary)
   } catch (source: unknown) {

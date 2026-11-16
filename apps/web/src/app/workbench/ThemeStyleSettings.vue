@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { NButton } from 'naive-ui/es/button'
 import {
   colorStyleIds,
   colorStyleSchema,
@@ -17,6 +18,12 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [value: ColorStyle] }>()
 const { t } = useConsoleI18n()
 const focusedStyle = ref<ColorStyle>(props.modelValue)
+watch(
+  () => props.modelValue,
+  (value) => {
+    focusedStyle.value = value
+  },
+)
 const labels = {
   unified: 'settings.styles.unified',
   'dark-navigation': 'settings.styles.dark-navigation',
@@ -80,7 +87,9 @@ function choose(style: ColorStyle): void {
 <template>
   <div
     :class="
-      previewOnly ? 'flex min-w-0 items-center gap-content-gap' : 'grid grid-cols-2 gap-content-gap'
+      previewOnly
+        ? 'theme-style-summary grid min-w-0 justify-items-start gap-component-unit'
+        : 'theme-style-gallery grid min-w-0 gap-component-unit'
     "
     :role="previewOnly ? undefined : 'group'"
     :aria-label="previewOnly ? undefined : t('settings.styles.title')"
@@ -91,20 +100,21 @@ function choose(style: ColorStyle): void {
       :key="option.value"
     >
       <component
-        :is="previewOnly ? 'span' : 'button'"
+        :is="previewOnly ? 'span' : NButton"
         :class="{
-          'w-admin-sidebar-rail shrink-0': previewOnly,
-          'rounded-control border-solid min-w-0 cursor-pointer bg-surface-panel border-border-default border-width-default p-panel-narrow px-button-inline':
-            !previewOnly,
-          'text-control-primary': !previewOnly && option.value === modelValue,
-          'text-text-primary': !previewOnly && option.value !== modelValue,
+          'theme-style-current shrink-0': previewOnly,
+          'theme-style-choice': !previewOnly,
+          'min-w-0 cursor-pointer': !previewOnly,
         }"
-        :type="previewOnly ? undefined : 'button'"
+        :attr-type="previewOnly ? undefined : 'button'"
+        :text="previewOnly ? undefined : true"
+        :block="previewOnly ? undefined : true"
         :disabled="previewOnly ? undefined : disabled"
         :aria-pressed="previewOnly ? undefined : option.value === modelValue"
         :aria-hidden="previewOnly ? 'true' : undefined"
         :tabindex="previewOnly ? undefined : option.value === focusedStyle ? 0 : -1"
         :data-style-choice="previewOnly ? undefined : ''"
+        :data-current-style="!previewOnly && option.value === modelValue ? '' : undefined"
         @focus="focusedStyle = option.value"
         @keydown="moveFocus"
         @click="choose(option.value)"
@@ -112,16 +122,6 @@ function choose(style: ColorStyle): void {
         <span
           class="theme-style-card grid min-w-0 whitespace-normal break-words gap-component-unit"
         >
-          <span
-            v-if="!previewOnly"
-            class="flex justify-end"
-          >
-            <span
-              class="i-lucide-circle-check"
-              :class="{ invisible: option.value !== modelValue }"
-              aria-hidden="true"
-            />
-          </span>
           <span
             class="theme-style-scene rounded-control"
             :style="previewStyle(colorStyleSchema.parse(option.value))"
@@ -168,13 +168,58 @@ function choose(style: ColorStyle): void {
 .theme-style-card {
   width: 100%;
 }
+.theme-style-current {
+  max-inline-size: 100%;
+}
+.theme-style-choice[data-style-choice] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  block-size: auto;
+  min-inline-size: 0;
+  white-space: normal;
+  padding: var(--ui-space-component-unit);
+  border-radius: var(--ui-radius-control);
+  border-width: var(--ui-border-width);
+  border-style: solid;
+  border-color: var(--ui-color-border-default);
+  background-color: var(--ui-color-surface-page);
+}
+.theme-style-choice[data-style-choice][aria-pressed='true'] {
+  border-color: currentColor;
+  background-color: var(--ui-color-surface-panel);
+}
+.theme-style-choice[data-style-choice]:not(:disabled):hover {
+  color: var(--ui-color-control-primary);
+}
+@media (forced-colors: active) {
+  .theme-style-choice[data-style-choice][aria-pressed='true'] {
+    border-color: Highlight;
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+html[data-pavp-settings-appearance~='fill']
+  .theme-style-gallery
+  .theme-style-choice[data-style-choice][aria-pressed='true'] {
+  transition: background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing) !important;
+}
+html[data-pavp-settings-appearance~='edge']
+  .theme-style-gallery
+  .theme-style-choice[data-style-choice][aria-pressed='false'] {
+  transition: border-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing) !important;
+}
+html[data-pavp-settings-appearance]
+  :is(.theme-style-tabs, .theme-style-content, .theme-style-metric, .theme-style-panel) {
+  transition: background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing);
+}
 .theme-style-scene {
   display: grid;
   overflow: hidden;
   width: 100%;
   aspect-ratio: 5 / 3;
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: 1fr 1fr 4fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 4fr);
 }
 .theme-style-header {
   grid-column: 1 / -1;

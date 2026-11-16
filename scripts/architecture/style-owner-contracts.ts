@@ -105,6 +105,7 @@ export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>
   'apps/web/src/app/workbench/layout/DisplayOperationsBoard.vue': [{ scoped: true, lang: 'css' }],
   'apps/web/src/app/workbench/layout/LayoutPreview.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/components/UiDashboardGrid.vue': [{ scoped: true, lang: 'css' }],
+  'apps/web/src/app/workbench/SettingsModePreview.vue': [{ scoped: true, lang: 'css' }],
   'apps/web/src/app/workbench/ThemeStyleSettings.vue': [{ scoped: true, lang: 'css' }],
   'apps/web/src/pages/control-center.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/providers/UiColorScope.vue': [{ scoped: true, lang: 'css' }],
@@ -211,8 +212,11 @@ export const generatedStyleOwners = [
   },
 ] as const
 
+const errorSceneStylePath = 'apps/web/src/app/errors/error-scene.css'
+
 export const standaloneStyleOwners: Readonly<Record<string, StyleResponsibility>> = {
   'apps/web/src/app/styles/layers.css': 'BROWSER_OR_PLATFORM_OWNER',
+  [errorSceneStylePath]: 'RUNTIME_STYLE_OWNER',
   'apps/web/src/app/appearance/appearance-transition.css': 'PRIVATE_INTERACTION_MOTION',
   'apps/web/src/app/workbench/workbench.css': 'RUNTIME_STYLE_OWNER',
   'apps/web/src/app/router/route-transition/route-transition.css': 'PRIVATE_INTERACTION_MOTION',
@@ -221,9 +225,1436 @@ export const standaloneStyleOwners: Readonly<Record<string, StyleResponsibility>
   ),
 }
 
+// Settings' 300ms indicator and gallery pace is local to these declarations.
+export const settingsPaceOwners = [
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    selector: "html[data-motion='full'] .wb-settings-tab-indicator",
+    declarations: [
+      [
+        'transition',
+        'transform calc(var(--ui-motion-duration) * 1.5) var(--ui-motion-easing), width calc(var(--ui-motion-duration) * 1.5) var(--ui-motion-easing)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    selector:
+      "html[data-motion='full'][data-pavp-settings-appearance~='indicator'] .wb-settings-tab-indicator",
+    declarations: [
+      [
+        'transition',
+        'transform calc(var(--ui-motion-duration) * 1.5) var(--ui-motion-easing), width calc(var(--ui-motion-duration) * 1.5) var(--ui-motion-easing), color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    selector:
+      ":global(html[data-motion='full'] .wb-settings-gallery-popover.popover-transition-enter-active), :global(html[data-motion='full'] .wb-settings-gallery-modal.fade-in-scale-up-transition-enter-active)",
+    declarations: [
+      [
+        'transition',
+        'opacity calc(var(--ui-motion-duration) * 1.5) var(--ui-motion-easing), transform calc(var(--ui-motion-duration) * 1.5) var(--ui-motion-easing)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+] as const satisfies readonly OwnedStyleContract[]
+
+const settingsStyleGroups: readonly {
+  readonly path: string
+  readonly block: number
+  readonly context: readonly string[]
+  readonly responsibility: OwnedStyleContract['responsibility']
+  readonly rules: readonly (readonly [string, OwnedStyleContract['declarations']])[]
+}[] = [
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      ['.wb-settings-page', [['container', 'settings-page / inline-size', false]]],
+      [
+        '.wb-settings-header,\n.wb-settings-tabs-scroll,\n.settings-content',
+        [['padding-inline', 'var(--ui-space-panel-padding-narrow)', false]],
+      ],
+      ['.wb-settings-header', [['padding-block', 'var(--ui-space-panel-padding-narrow)', false]]],
+      ['.wb-settings-tabs-scroll', [['block-size', 'auto', false]]],
+      [
+        '.settings-content',
+        [
+          ['max-inline-size', 'var(--ui-layout-content-max-width)', false],
+          ['padding-block-start', 'var(--ui-space-content-gap)', false],
+          ['padding-block-end', 'var(--ui-space-panel-padding)', false],
+        ],
+      ],
+      ['.wb-settings-group', [['padding', 'var(--ui-space-panel-padding-narrow)', false]]],
+      [
+        '.wb-settings-form',
+        [
+          ['container', 'settings-form / inline-size', false],
+          ['max-inline-size', 'calc(var(--ui-font-size-body) * 44)', false],
+        ],
+      ],
+      [
+        '.wb-settings-tabs',
+        [
+          ['position', 'relative', false],
+          ['inline-size', 'max-content', false],
+        ],
+      ],
+      [
+        '.wb-settings-tab',
+        [
+          ['color', 'var(--ui-color-text-secondary)', false],
+          ['min-inline-size', 'var(--ui-layout-target-enhanced-minimum-inline-size)', false],
+        ],
+      ],
+      [
+        ".wb-settings-tab[aria-selected='true'],\n.wb-settings-tab:hover",
+        [['color', 'var(--ui-color-control-primary)', false]],
+      ],
+      [
+        '.wb-language-options',
+        [
+          [
+            'max-inline-size',
+            'calc(var(--ui-layout-target-enhanced-minimum-inline-size) * 6)',
+            false,
+          ],
+        ],
+      ],
+      [
+        '.wb-setting-choice :deep(.pavp-radio-card-group__content)',
+        [
+          ['padding-block', 'var(--ui-space-component-unit)', false],
+          ['padding-inline', 'var(--ui-space-button-inline)', false],
+          ['text-align', 'center', false],
+        ],
+      ],
+      [
+        '.wb-settings-tab-indicator',
+        [
+          ['position', 'absolute', false],
+          ['inset-block-end', '0', false],
+          ['left', '0', false],
+          ['block-size', 'var(--ui-border-width)', false],
+          ['color', 'var(--ui-color-control-primary)', false],
+          ['background', 'currentColor', false],
+          ['pointer-events', 'none', false],
+        ],
+      ],
+      [
+        ":global(html[data-motion='reduced'] .wb-settings-gallery-modal),\n:global(html[data-motion='none'] .wb-settings-gallery-modal)",
+        [['transform', 'none', true]],
+      ],
+      [
+        ":deep([data-settings-reveal-state='pending'] > [data-settings-reveal-content])",
+        [['opacity', '0', false]],
+      ],
+      [
+        ":global(\n  html[data-motion='full']\n    .settings-content\n    [data-settings-reveal-state='pending']\n    > [data-settings-reveal-content]\n)",
+        [['transform', 'translateY(calc(-1 * var(--ui-space-component-unit)))', false]],
+      ],
+      [
+        '.wb-settings-section :deep(.wb-settings-field)',
+        [['grid-template-columns', 'minmax(0, 1fr)', false]],
+      ],
+      [
+        '.wb-settings-workspace :deep(.wb-settings-field)',
+        [['grid-template-columns', 'minmax(0, 1fr) auto', false]],
+      ],
+      ['.wb-mode-layout', [['container', 'settings-modes / inline-size', false]]],
+      [
+        '.wb-mode-preview-options',
+        [
+          ['grid-template-columns', 'minmax(0, 1fr)', false],
+          ['max-inline-size', 'calc(var(--ui-font-size-body) * 36)', false],
+        ],
+      ],
+      [
+        '.wb-mode-preview-options :deep(.pavp-radio-card-group__content)',
+        [
+          [
+            'grid-template-columns',
+            'minmax(0, calc(var(--ui-font-size-body) * 5)) minmax(0, 1fr)',
+            false,
+          ],
+          ['align-items', 'center', false],
+          ['padding', 'var(--ui-space-component-unit)', false],
+          ['gap', 'var(--ui-space-content-gap)', false],
+        ],
+      ],
+      [
+        '.wb-mode-caption',
+        [
+          ['min-inline-size', '0', false],
+          ['overflow-wrap', 'anywhere', false],
+        ],
+      ],
+      [
+        '.wb-theme-options',
+        [
+          ['max-inline-size', 'calc(var(--ui-font-size-body) * 39)', false],
+          [
+            'grid-template-columns',
+            'repeat(\n    auto-fill,\n    minmax(min(100%, calc(var(--ui-font-size-body) * 12)), 1fr)\n  )',
+            false,
+          ],
+        ],
+      ],
+      [
+        '.wb-theme-option',
+        [
+          ['border-width', 'var(--ui-border-width)', false],
+          ['border-style', 'solid', false],
+          ['border-color', 'var(--ui-color-border-default)', false],
+          ['border-radius', 'var(--ui-radius-control)', false],
+          ['background-color', 'var(--ui-color-surface-page)', false],
+        ],
+      ],
+      [
+        ".wb-theme-option[aria-pressed='true']",
+        [
+          ['border-color', 'currentColor', false],
+          ['background-color', 'var(--ui-color-action-primary)', false],
+          ['color', 'var(--ui-color-text-on-action)', false],
+        ],
+      ],
+      [
+        ".wb-theme-option[aria-pressed='false']:not(:disabled):hover",
+        [['color', 'var(--ui-color-control-primary)', false]],
+      ],
+      [
+        '.wb-theme-option-content',
+        [
+          ['padding-block', 'var(--ui-space-component-unit)', false],
+          ['padding-inline', 'var(--ui-space-button-inline)', false],
+          ['gap', 'var(--ui-space-content-gap)', false],
+        ],
+      ],
+      [
+        '.wb-theme-samples',
+        [
+          ['display', 'inline-flex', false],
+          ['flex', 'none', false],
+          ['align-items', 'center', false],
+          ['gap', 'var(--ui-space-component-unit)', false],
+          ['padding', 'var(--ui-space-component-unit)', false],
+          ['border-radius', 'var(--ui-radius-control)', false],
+          ['background-color', 'var(--ui-color-surface-panel)', false],
+        ],
+      ],
+      [
+        '.wb-theme-samples i:not(.wb-theme-swatch)',
+        [
+          ['inline-size', 'var(--ui-space-component-unit)', false],
+          ['block-size', 'var(--ui-space-content-gap)', false],
+          ['border-radius', 'var(--ui-radius-control)', false],
+        ],
+      ],
+      ['.wb-theme-accent-a', [['background', 'var(--pavp-settings-theme-accent-a)', false]]],
+      ['.wb-theme-accent-b', [['background', 'var(--pavp-settings-theme-accent-b)', false]]],
+      [
+        '.wb-settings-segments .wb-settings-segment',
+        [
+          ['display', 'inline-flex', false],
+          ['align-items', 'center', false],
+          ['min-block-size', 'var(--ui-layout-target-enhanced-minimum-block-size)', false],
+        ],
+      ],
+      [
+        '.wb-settings-gallery-scroll',
+        [
+          ['block-size', 'min(calc(var(--ui-control-height) * 9), 50dvh)', false],
+          ['min-block-size', '0', false],
+        ],
+      ],
+      [
+        '.wb-settings-gallery-panel',
+        [
+          ['grid-template-rows', 'auto minmax(0, 1fr)', false],
+          ['max-inline-size', 'min(100%, calc(100dvw - 2 * var(--ui-space-panel-padding)))', false],
+          [
+            'block-size',
+            'min(\n    calc(var(--ui-control-height) * 10),\n    calc(\n      50dvh - var(--ui-control-height) - var(--ui-space-panel-padding) - var(--ui-space-content-gap)\n    )\n  )',
+            false,
+          ],
+        ],
+      ],
+      [
+        ':global(.wb-settings-gallery-modal)',
+        [['max-block-size', 'calc(100dvh - 2 * var(--ui-space-content-gap))', false]],
+      ],
+      ['.wb-settings-gallery-panel .wb-settings-gallery-scroll', [['block-size', '100%', false]]],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        "html[data-pavp-settings-appearance~='content'] .wb-settings-page",
+        [
+          [
+            'transition',
+            'background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        "html[data-ui-size-transition='instant'] .wb-settings-tab-indicator",
+        [['transition', 'none', false]],
+      ],
+      [
+        "html[data-motion='reduced'][data-pavp-settings-appearance~='indicator'] .wb-settings-tab-indicator",
+        [
+          [
+            'transition',
+            'color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        ":global(html[data-motion='full'] .wb-settings-gallery-popover.popover-transition-leave-active),\n:global(\n  html[data-motion='full'] .wb-settings-gallery-modal.fade-in-scale-up-transition-leave-active\n)",
+        [
+          [
+            'transition',
+            'opacity var(--ui-motion-duration) var(--ui-motion-easing),\n    transform var(--ui-motion-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        "html[data-motion='full'] .wb-settings-panel-motion[data-entering]",
+        [
+          [
+            'animation',
+            'wb-settings-section-enter var(--ui-motion-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        "html[data-motion='reduced'] .wb-settings-panel-motion[data-entering]",
+        [
+          [
+            'animation',
+            'wb-settings-section-fade calc(var(--ui-motion-duration) / 2) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        ":global(html[data-motion='reduced'] .wb-settings-gallery-modal)",
+        [
+          [
+            'transition',
+            'opacity calc(var(--ui-motion-duration) / 2) var(--ui-motion-easing)',
+            true,
+          ],
+        ],
+      ],
+      [
+        ":global(html[data-motion='none'] .wb-settings-gallery-modal)",
+        [['transition', 'none', true]],
+      ],
+      [
+        ":deep([data-settings-reveal-state='entering'] > [data-settings-reveal-content])",
+        [
+          ['opacity', '1', false],
+          ['transform', 'none', false],
+          [
+            'transition',
+            'opacity calc(var(--ui-motion-duration) * 2) var(--ui-motion-easing),\n    transform calc(var(--ui-motion-duration) * 2) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        ":global(\n  html[data-motion='reduced']\n    .settings-content\n    [data-settings-reveal-state='entering']\n    > [data-settings-reveal-content]\n)",
+        [
+          [
+            'transition',
+            'opacity calc(var(--ui-motion-duration) / 2) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        ':deep([data-settings-reveal]:focus-within > [data-settings-reveal-content])',
+        [
+          ['opacity', '1', false],
+          ['transform', 'none', false],
+          ['transition', 'none', false],
+        ],
+      ],
+      [
+        'html[data-pavp-settings-appearance] .wb-theme-samples i',
+        [
+          [
+            'transition',
+            'background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+      [
+        "html[data-pavp-settings-appearance~='edge']\n  .wb-settings-page\n  .wb-theme-option[aria-pressed='false']",
+        [
+          [
+            'transition',
+            'border-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            true,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: ['@keyframes wb-settings-section-enter'],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        'from',
+        [
+          ['opacity', '0.96', false],
+          ['transform', 'translateY(var(--ui-space-component-unit))', false],
+        ],
+      ],
+      [
+        'to',
+        [
+          ['opacity', '1', false],
+          ['transform', 'none', false],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: ['@keyframes wb-settings-section-fade'],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      ['from', [['opacity', '0.96', false]]],
+      ['to', [['opacity', '1', false]]],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: ['@container settings-form (min-width: 34em)'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [
+        '.wb-settings-form :deep(.wb-settings-field)',
+        [
+          [
+            'grid-template-columns',
+            'minmax(0, calc(var(--ui-font-size-body) * 11)) minmax(0, 1fr)',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: ['@container settings-page (min-width: 48em)'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [
+        '.wb-settings-header,\n  .wb-settings-tabs-scroll,\n  .settings-content',
+        [['padding-inline', 'var(--ui-space-panel-padding)', false]],
+      ],
+      ['.wb-settings-group', [['padding', 'var(--ui-space-panel-padding)', false]]],
+      [
+        '.wb-settings-appearance',
+        [
+          [
+            'grid-template-columns',
+            'minmax(0, 1fr) minmax(0, calc(var(--ui-font-size-body) * 17))',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: ['@container settings-modes (min-width: 28em)'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      ['.wb-mode-preview-options', [['grid-template-columns', 'repeat(3, minmax(0, 1fr))', false]]],
+      [
+        '.wb-mode-preview-options :deep(.pavp-radio-card-group__content)',
+        [
+          ['grid-template-columns', 'minmax(0, 1fr)', false],
+          ['gap', 'var(--ui-space-component-unit)', false],
+          ['text-align', 'center', false],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: ['@media (forced-colors: active)'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [".wb-settings-tab[aria-selected='true']", [['color', 'Highlight', false]]],
+      [
+        '.wb-settings-tab-indicator',
+        [
+          ['color', 'Highlight', false],
+          ['forced-color-adjust', 'none', false],
+        ],
+      ],
+      [
+        ".wb-theme-option[aria-pressed='true'],\n  .wb-settings-segment:has(input:checked)",
+        [
+          ['border-color', 'Highlight', false],
+          ['background-color', 'Highlight', false],
+          ['color', 'HighlightText', false],
+          ['forced-color-adjust', 'none', false],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/SettingsModePreview.vue',
+    block: 0,
+    context: [],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [
+        '.settings-mode-preview',
+        [
+          ['display', 'flex', false],
+          ['overflow', 'hidden', false],
+          ['inline-size', '100%', false],
+          [
+            'block-size',
+            'calc(var(--ui-control-height) - 2 * var(--ui-space-component-unit))',
+            false,
+          ],
+          ['border-radius', 'var(--ui-radius-control)', false],
+        ],
+      ],
+      [
+        '.settings-mode-preview__plane',
+        [
+          ['display', 'flex', false],
+          ['flex', '1 1 0', false],
+          ['min-inline-size', '0', false],
+          ['padding', 'var(--ui-space-component-unit)', false],
+          ['background', 'var(--pavp-mode-preview-page)', false],
+        ],
+      ],
+      [
+        '.settings-mode-preview__surface',
+        [
+          ['display', 'grid', false],
+          ['align-content', 'center', false],
+          ['flex', '1 1 0', false],
+          ['gap', 'var(--ui-space-component-unit)', false],
+          ['min-inline-size', '0', false],
+          ['padding', 'var(--ui-space-component-unit)', false],
+          ['border-radius', 'var(--ui-radius-control)', false],
+          ['background', 'var(--pavp-mode-preview-panel)', false],
+        ],
+      ],
+      [
+        '.settings-mode-preview__line,\n.settings-mode-preview__action',
+        [
+          ['display', 'block', false],
+          ['block-size', 'var(--ui-space-component-unit)', false],
+          ['border-radius', 'var(--ui-radius-control)', false],
+        ],
+      ],
+      [
+        '.settings-mode-preview__line',
+        [
+          ['inline-size', '70%', false],
+          ['background', 'var(--pavp-mode-preview-control)', false],
+        ],
+      ],
+      [
+        '.settings-mode-preview__action',
+        [
+          ['inline-size', '45%', false],
+          ['background', 'var(--pavp-mode-preview-action)', false],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/SettingsModePreview.vue',
+    block: 0,
+    context: [],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        'html[data-pavp-settings-appearance]\n  :is(\n    .settings-mode-preview__plane,\n    .settings-mode-preview__surface,\n    .settings-mode-preview__line,\n    .settings-mode-preview__action\n  )',
+        [
+          [
+            'transition',
+            'background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/ThemeStyleSettings.vue',
+    block: 0,
+    context: [],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      ['.theme-style-current', [['max-inline-size', '100%', false]]],
+      [
+        '.theme-style-choice[data-style-choice]',
+        [
+          ['display', 'grid', false],
+          ['grid-template-columns', 'minmax(0, 1fr)', false],
+          ['block-size', 'auto', false],
+          ['min-inline-size', '0', false],
+          ['white-space', 'normal', false],
+          ['padding', 'var(--ui-space-component-unit)', false],
+          ['border-radius', 'var(--ui-radius-control)', false],
+          ['border-width', 'var(--ui-border-width)', false],
+          ['border-style', 'solid', false],
+          ['border-color', 'var(--ui-color-border-default)', false],
+          ['background-color', 'var(--ui-color-surface-page)', false],
+        ],
+      ],
+      [
+        ".theme-style-choice[data-style-choice][aria-pressed='true']",
+        [
+          ['border-color', 'currentColor', false],
+          ['background-color', 'var(--ui-color-surface-panel)', false],
+        ],
+      ],
+      [
+        '.theme-style-choice[data-style-choice]:not(:disabled):hover',
+        [['color', 'var(--ui-color-control-primary)', false]],
+      ],
+      [
+        '.theme-style-scene',
+        [
+          ['grid-template-columns', 'minmax(0, 1fr) minmax(0, 3fr)', false],
+          ['grid-template-rows', 'minmax(0, 1fr) minmax(0, 1fr) minmax(0, 4fr)', false],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/ThemeStyleSettings.vue',
+    block: 0,
+    context: ['@media (forced-colors: active)'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [
+        ".theme-style-choice[data-style-choice][aria-pressed='true']",
+        [
+          ['border-color', 'Highlight', false],
+          ['background-color', 'Highlight', false],
+          ['color', 'HighlightText', false],
+          ['forced-color-adjust', 'none', false],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/ThemeStyleSettings.vue',
+    block: 0,
+    context: [],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        "html[data-pavp-settings-appearance~='fill']\n  .theme-style-gallery\n  .theme-style-choice[data-style-choice][aria-pressed='true']",
+        [
+          [
+            'transition',
+            'background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            true,
+          ],
+        ],
+      ],
+      [
+        "html[data-pavp-settings-appearance~='edge']\n  .theme-style-gallery\n  .theme-style-choice[data-style-choice][aria-pressed='false']",
+        [
+          [
+            'transition',
+            'border-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            true,
+          ],
+        ],
+      ],
+      [
+        'html[data-pavp-settings-appearance]\n  :is(.theme-style-tabs, .theme-style-content, .theme-style-metric, .theme-style-panel)',
+        [
+          [
+            'transition',
+            'background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [
+        '.theme-style-gallery',
+        [
+          [
+            'grid-template-columns',
+            'repeat(\n      auto-fit,\n      minmax(\n        min(\n          100%,\n          calc(\n            var(--ui-workbench-specimen-preview-block-size) * 5 / 3 + var(--ui-space-content-gap) *\n              2\n          )\n        ),\n        1fr\n      )\n    )',
+            false,
+          ],
+        ],
+      ],
+      [
+        '.theme-style-current',
+        [['inline-size', 'calc(var(--ui-workbench-specimen-preview-block-size) * 5 / 3)', false]],
+      ],
+      [
+        '.wb-settings-gallery-panel',
+        [
+          [
+            'inline-size',
+            'calc(\n      var(--ui-workbench-specimen-preview-block-size) * 10 / 3 + var(--ui-space-content-gap) * 4 +\n        var(--ui-space-component-unit)\n    )',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app', '@media (forced-colors: none)'],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        "html[data-motion='reduced'][data-pavp-settings-appearance]",
+        [['--pavp-settings-appearance-duration', 'calc(var(--ui-motion-duration) / 2)', false]],
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+    rules: [
+      [
+        '.pavp-appearance-settings-frame',
+        [
+          ['position', 'fixed', false],
+          ['inset', '0', false],
+          ['z-index', 'var(--ui-z-base)', false],
+          ['overflow', 'hidden', false],
+          ['pointer-events', 'none', false],
+        ],
+      ],
+      [
+        '.pavp-appearance-settings-frame--rift',
+        [['background', 'var(--ui-color-surface-page)', false]],
+      ],
+      [
+        '.pavp-appearance-settings-old',
+        [
+          ['position', 'absolute', false],
+          ['inset', '0', false],
+          ['background', 'var(--ui-color-surface-page)', false],
+          ['font-size', 'var(--ui-font-size-body)', false],
+        ],
+      ],
+      [
+        '.pavp-appearance-settings-frame > .pavp-appearance-rift-edge',
+        [['clip-path', 'inset(50%)', false]],
+      ],
+      [
+        '.pavp-appearance-settings-frame > .pavp-appearance-rift-edge,\n  html:active-view-transition-type(pavp-appearance-rift) .pavp-appearance-rift-edge',
+        [
+          ['display', 'block', false],
+          ['position', 'fixed', false],
+          ['inset', '0', false],
+          ['pointer-events', 'none', false],
+          [
+            'background',
+            'linear-gradient(\n      150deg,\n      var(--ui-color-expression-accent-a-solid-background),\n      var(--ui-color-action-primary),\n      var(--ui-color-expression-accent-b-solid-background)\n    )',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'packages/ui/src/providers/UiProvider.vue',
+    block: 0,
+    context: [],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        "html[data-motion='full'] [data-settings-control],\nhtml[data-motion='full'] [data-settings-control] :is(.n-switch__rail, .n-switch__button),\nhtml[data-motion='full'] [data-settings-control] [data-ui-radio-card-option]",
+        [['transition-duration', 'calc(var(--ui-motion-duration) / 2)', true]],
+      ],
+      [
+        'html[data-pavp-settings-appearance]\n  :where(.pavp-admin-shell, #pavp-overlay-root)\n  :is(\n    .n-button,\n    .n-button__border,\n    .n-button__state-border,\n    .n-radio-button,\n    .n-radio-button__state-border,\n    .n-radio-group__splitor,\n    .n-switch__rail,\n    .n-base-selection,\n    .n-base-selection-label,\n    .n-base-selection__border,\n    .n-base-selection__state-border,\n    .n-menu-item-content,\n    .n-menu-item-content-header,\n    .n-menu-item-content-header a,\n    .n-menu-item-content__icon\n  )',
+        [
+          ['transition-property', 'opacity', true],
+          ['transition-duration', 'calc(var(--ui-motion-duration) / 2)', true],
+        ],
+      ],
+      [
+        'html[data-pavp-settings-appearance] .pavp-admin-shell .n-menu-item-content__arrow',
+        [['transition-property', 'opacity, transform', true]],
+      ],
+      [
+        'html[data-pavp-settings-appearance] .pavp-admin-shell [data-settings-control] .n-switch__button',
+        [['transition-property', 'left, max-width, opacity', true]],
+      ],
+      [
+        "html[data-pavp-settings-appearance~='sidebar'] .pavp-admin-shell__sidebar.n-layout-sider",
+        [
+          [
+            'transition',
+            'min-width var(--ui-motion-duration) var(--ui-motion-easing),\n    max-width var(--ui-motion-duration) var(--ui-motion-easing),\n    transform var(--ui-motion-duration) var(--ui-motion-easing),\n    background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            true,
+          ],
+        ],
+      ],
+      [
+        "html[data-ui-size-transition='instant']\n  :where(.pavp-admin-shell, #pavp-overlay-root)\n  :is(.n-icon-slot, .n-base-wave, .pavp-admin-shell__sidebar)",
+        [
+          [
+            'transition-property',
+            'background-color, border-color, color, opacity, transform',
+            true,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: [],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        'html[data-pavp-settings-appearance] .pavp-admin-shell__sidebar',
+        [
+          ['transition-property', 'min-width, max-width, transform', false],
+          ['transition-duration', 'var(--ui-motion-duration)', false],
+          ['transition-timing-function', 'var(--ui-motion-easing)', false],
+        ],
+      ],
+      [
+        "html[data-pavp-settings-appearance~='canvas'] .pavp-admin-shell,\nhtml[data-pavp-settings-appearance~='header'] .pavp-admin-shell__header,\nhtml[data-pavp-settings-appearance~='content'] .pavp-admin-shell__content",
+        [
+          [
+            'transition',
+            'background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing)',
+            false,
+          ],
+        ],
+      ],
+    ],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: [],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    rules: [
+      [
+        'html[data-pavp-settings-appearance] .pavp-admin-shell .pavp-admin-shell__collapsed-trigger',
+        [['transition-property', 'opacity', false]],
+      ],
+      [
+        'html[data-pavp-settings-appearance]\n  .pavp-admin-shell\n  :is(.n-menu-item-content, .pavp-admin-shell__collapsed-trigger)::before,\nhtml[data-motion][data-pavp-settings-appearance]\n  .pavp-admin-shell\n  .pavp-admin-navigation-selection-lens',
+        [['transition-property', 'opacity', false]],
+      ],
+    ],
+  },
+]
+
 // Exact selector/context/property responsibilities; private optical, gesture, scale, and vendor
 // !important values are local to these declarations, never file grants.
 export const ownedStyleContracts: readonly OwnedStyleContract[] = [
+  ...settingsPaceOwners,
+  ...settingsStyleGroups.flatMap(({ rules, ...owner }) =>
+    rules.map(([selector, declarations]) => ({ ...owner, selector, declarations })),
+  ),
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene',
+    declarations: [
+      ['--pavp-error-ink', 'var(--ui-color-control-primary)', false],
+      ['color', 'var(--pavp-region-foreground, var(--ui-color-text-primary))', false],
+      ['background', 'var(--pavp-region-background, var(--ui-color-surface-page))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: ".error-scene[data-error-tone='warning']",
+    declarations: [['--pavp-error-ink', 'var(--ui-color-control-warning)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: ".error-scene[data-error-tone='info']",
+    declarations: [['--pavp-error-ink', 'var(--ui-color-control-info)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: ".error-scene[data-error-tone='error']",
+    declarations: [['--pavp-error-ink', 'var(--ui-color-control-error)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene--document',
+    declarations: [['min-block-size', '100dvh', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene--contained',
+    declarations: [
+      ['flex', '1', false],
+      ['min-inline-size', '0', false],
+      ['min-block-size', '0', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__composition',
+    declarations: [
+      ['isolation', 'isolate', false],
+      ['grid-template', 'minmax(0, 1fr) / minmax(0, 1fr)', false],
+      ['place-items', 'center', false],
+      [
+        'background-image',
+        'radial-gradient( ellipse at center, transparent 20%, color-mix(in srgb, var(--pavp-error-ink) 6%, transparent) 62%, transparent 94% )',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__artwork',
+    declarations: [
+      ['position', 'absolute', false],
+      ['inset', '0', false],
+      ['container-type', 'size', false],
+      ['color', 'var(--pavp-error-ink)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__glyph',
+    declarations: [
+      ['position', 'absolute', false],
+      ['inset', '0', false],
+      ['display', 'grid', false],
+      ['grid-template', 'minmax(0, 1fr) / minmax(0, 1fr)', false],
+      ['place-items', 'center', false],
+      ['overflow', 'clip', false],
+      [
+        'mask-image',
+        'radial-gradient( ellipse min(48cqw, 20rem) min(38cqh, 8rem) at center, transparent 14%, color-mix(in srgb, currentColor 12%, transparent) 57%, color-mix(in srgb, currentColor 65%, transparent) 100% )',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__dot-environment',
+    declarations: [
+      ['position', 'absolute', false],
+      ['inset', '0', false],
+      ['display', 'block', false],
+      ['inline-size', '100%', false],
+      ['block-size', '100%', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__focal',
+    declarations: [
+      ['grid-area', '1 / 1', false],
+      ['display', 'block', false],
+      ['inline-size', 'min(90cqw, 167cqh)', false],
+      ['aspect-ratio', '24 / 11', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__glyph > canvas',
+    declarations: [
+      ['position', 'absolute', false],
+      ['inset', '0', false],
+      ['inline-size', '100%', false],
+      ['block-size', '100%', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__content',
+    declarations: [
+      ['grid-area', '1 / 1', false],
+      ['z-index', '0', false],
+      ['justify-items', 'center', false],
+      ['gap', 'var(--ui-space-field-gap)', false],
+      ['inline-size', 'min(100%, 32rem)', false],
+      ['padding', 'var(--ui-space-page-inline)', false],
+      ['text-align', 'center', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene--contained .error-scene__content',
+    declarations: [
+      ['grid-template-rows', 'minmax(0, 1fr) auto', false],
+      ['max-block-size', '100%', false],
+      ['min-block-size', '0', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene--contained .error-scene__reading',
+    declarations: [['max-block-size', '100%', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__copy',
+    declarations: [
+      ['justify-items', 'center', false],
+      ['overflow-wrap', 'anywhere', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__copy h1',
+    declarations: [
+      ['font-size', 'var(--ui-font-size-title)', false],
+      [
+        'font-weight',
+        'calc((var(--ui-font-weight-body) + var(--ui-font-weight-title)) / 2)',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__actions',
+    declarations: [
+      ['max-inline-size', '100%', false],
+      ['justify-self', 'center', false],
+      ['justify-content', 'center', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      '.error-scene__content[data-foreground-pending] .error-scene__copy h1,\n  .error-scene__content[data-foreground-pending]:not([data-action-visible])\n    .error-scene__action-arrival',
+    declarations: [
+      ['opacity', '0', false],
+      ['transform', 'translateY(var(--ui-space-control-segment-gap))', false],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__content[data-foreground-pending] .error-scene__copy p',
+    declarations: [
+      ['opacity', '0', false],
+      ['transform', 'translateY(var(--ui-space-component-unit))', false],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__action',
+    declarations: [
+      ['max-inline-size', '100%', false],
+      ['min-inline-size', '0', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__action--fallback',
+    declarations: [
+      ['border', 'none', false],
+      ['padding', '0', false],
+      ['background', 'transparent', false],
+      ['cursor', 'pointer', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__action-surface',
+    declarations: [
+      ['display', 'inline-flex', false],
+      ['align-items', 'center', false],
+      ['gap', 'var(--ui-space-control-segment-gap)', false],
+      ['min-inline-size', '0', false],
+      [
+        'min-block-size',
+        'max( var(--ui-control-height-large), var(--ui-layout-target-enhanced-minimum-block-size) )',
+        false,
+      ],
+      ['padding-block', 'var(--ui-space-component-unit)', false],
+      ['padding-inline', 'var(--ui-space-field-gap)', false],
+      ['border-width', 'var(--ui-border-width)', false],
+      ['border-style', 'solid', false],
+      [
+        'border-color',
+        'color-mix( in srgb, var(--ui-color-border-default) 55%, var(--ui-color-surface-panel) )',
+        false,
+      ],
+      [
+        'background-color',
+        'color-mix(in srgb, var(--ui-color-surface-panel) 94%, var(--pavp-error-ink))',
+        false,
+      ],
+      [
+        'box-shadow',
+        'inset 0 var(--ui-border-width) 0 color-mix(in srgb, var(--ui-color-text-primary) 9%, transparent), var(--ui-shadow-panel)',
+        false,
+      ],
+      ['color', 'var(--ui-color-text-primary)', false],
+      ['font-size', 'var(--ui-font-size-control-large)', false],
+      ['font-weight', 'var(--ui-font-weight-title)', false],
+      ['line-height', 'var(--ui-font-line-height-compact)', false],
+      ['white-space', 'normal', false],
+      ['overflow-wrap', 'anywhere', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__action-arrow',
+    declarations: [
+      ['flex', 'none', false],
+      ['inline-size', 'var(--ui-icon-size-small)', false],
+      ['block-size', 'var(--ui-icon-size-small)', false],
+      ['color', 'var(--pavp-error-ink)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: ":where(html[data-motion='full']) .error-scene__action-surface",
+    declarations: [
+      [
+        'transition',
+        'background-color calc(var(--ui-motion-duration) * 3.5) var(--ui-motion-easing), translate calc(var(--ui-motion-duration) * 3.5) var(--ui-motion-easing), transform calc(var(--ui-motion-duration) * 2) var(--ui-motion-easing)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: ":where(html[data-motion='full']) .error-scene__action-arrow",
+    declarations: [
+      [
+        'transition',
+        'translate calc(var(--ui-motion-duration) * 3.5) var(--ui-motion-easing)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      '.error-scene__action:not(.error-scene__action--fallback):dir(rtl) .error-scene__action-arrow',
+    declarations: [['scale', '-1 1', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector: '.error-scene__action:hover .error-scene__action-surface',
+    declarations: [
+      [
+        'background-color',
+        'color-mix(in srgb, var(--ui-color-surface-panel) 89%, var(--pavp-error-ink))',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      ":where(html[data-motion='full']) .error-scene__action:hover .error-scene__action-surface",
+    declarations: [
+      ['translate', '0 calc(-1 * var(--ui-border-width))', false],
+      [
+        'transition-duration',
+        'calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 2)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      ":where(html[data-motion='full']) .error-scene__action:active .error-scene__action-surface",
+    declarations: [
+      ['transform', 'translateY(calc(2 * var(--ui-border-width)))', false],
+      [
+        'transition-duration',
+        'calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 0.6)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      ":where(html[data-motion='full'])\n    .error-scene__action:not(.error-scene__action--fallback):hover\n    .error-scene__action-arrow",
+    declarations: [
+      ['translate', 'calc(-1 * var(--ui-space-component-unit)) 0', false],
+      [
+        'transition',
+        'translate calc(var(--ui-motion-duration) * 3) var(--ui-motion-easing)',
+        false,
+      ],
+    ],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      ":where(html[data-motion='full'])\n    .error-scene__action:not(.error-scene__action--fallback):hover:dir(rtl)\n    .error-scene__action-arrow",
+    declarations: [['translate', 'var(--ui-space-component-unit) 0', false]],
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@container (max-width: 32rem)'],
+    selector: '.error-scene__glyph',
+    declarations: [
+      [
+        'mask-image',
+        'radial-gradient( ellipse 57cqw min(35cqh, 8rem) at center, transparent 12%, color-mix(in srgb, currentColor 12%, transparent) 60%, color-mix(in srgb, currentColor 56%, transparent) 100% )',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@container (max-width: 32rem)'],
+    selector: '.error-scene__glyph[data-compact]',
+    declarations: [
+      [
+        'mask-image',
+        'radial-gradient( ellipse 53cqw min(27cqh, 6rem) at center, transparent 14%, color-mix(in srgb, currentColor 12%, transparent) 55%, color-mix(in srgb, currentColor 62%, transparent) 100% )',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@container (max-width: 32rem)'],
+    selector: '.error-scene__glyph[data-compact] > .error-scene__focal',
+    declarations: [['inline-size', 'min(131cqw, 195cqh)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@media (forced-colors: active)'],
+    selector: '.error-scene__composition',
+    declarations: [['background-image', 'none', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@media (forced-colors: active)'],
+    selector: '.error-scene__artwork',
+    declarations: [['display', 'none', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@media (forced-colors: active)'],
+    selector:
+      '.error-scene__action-surface,\n    .error-scene__action:hover .error-scene__action-surface',
+    declarations: [
+      ['border-color', 'LinkText', false],
+      ['color', 'LinkText', false],
+      ['background-color', 'Canvas', false],
+      ['box-shadow', 'none', false],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app', '@media (forced-colors: active)'],
+    selector: '.error-scene__action-arrow',
+    declarations: [['color', 'LinkText', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: [],
+    selector: '.error-scene .error-scene__action,\n.error-scene__action-surface',
+    declarations: [
+      [
+        'border-radius',
+        'max(var(--ui-radius-control), calc(var(--ui-control-height-large) / 3))',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: [],
+    selector: '.error-scene .error-scene__action:focus-visible',
+    declarations: [
+      ['outline', 'calc(2 * var(--ui-border-width)) solid var(--ui-color-focus-ring)', false],
+      ['outline-offset', 'calc(3 * var(--ui-border-width))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@media (forced-colors: active)'],
+    selector: '.error-scene .error-scene__action:focus-visible',
+    declarations: [['outline-color', 'Highlight', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
   {
     path: 'apps/web/src/app/workbench/layout/LayoutPreview.vue',
     block: 0,
@@ -249,18 +1680,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: ['@layer app'],
     selector: 'html:active-view-transition-type(pavp-appearance-rift) .pavp-appearance-rift-edge',
     responsibility: 'PRIVATE_INTERACTION_MOTION',
-    declarations: [
-      ['display', 'block', false],
-      ['position', 'fixed', false],
-      ['inset', '0', false],
-      ['pointer-events', 'none', false],
-      ['view-transition-name', 'pavp-rift-edge', false],
-      [
-        'background',
-        'linear-gradient(150deg, var(--ui-color-expression-accent-a-solid-background), var(--ui-color-action-primary), var(--ui-color-expression-accent-b-solid-background))',
-        false,
-      ],
-    ],
+    declarations: [['view-transition-name', 'pavp-rift-edge', false]],
   },
   {
     path: 'apps/web/src/app/appearance/appearance-transition.css',
@@ -342,7 +1762,8 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/appearance/appearance-transition.css',
     block: 0,
     context: ['@layer app', '@media (forced-colors: active)'],
-    selector: 'html:active-view-transition-type(pavp-appearance)::view-transition',
+    selector:
+      'html:active-view-transition-type(pavp-appearance)::view-transition, .pavp-appearance-settings-frame',
     responsibility: 'PRIVATE_INTERACTION_MOTION',
     declarations: [['display', 'none', false]],
   },
@@ -6106,29 +7527,6 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
-    selector: '.wb-mode-scene-sidebar > span',
-    declarations: [
-      ['block-size', 'var(--ui-border-width)', false],
-      ['background', 'var(--pavp-mode-preview-border)', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-mode-scene-tiles > span',
-    declarations: [
-      ['block-size', 'var(--ui-space-content-gap)', false],
-      ['background', 'var(--pavp-mode-preview-action)', false],
-      ['border-radius', 'var(--ui-radius-control)', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
     selector: '.wb-border-sample,\n  .wb-radius-sample,\n  .wb-shadow-sample,\n  .wb-layer-sample',
     declarations: [
       ['inline-size', '50%', false],
@@ -6718,67 +8116,6 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
-    selector: '.wb-mode-preview',
-    declarations: [['block-size', 'var(--ui-workbench-specimen-preview-block-size)', false]],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-mode-scene',
-    declarations: [
-      ['background', 'var(--pavp-mode-preview-page)', false],
-      ['padding', 'var(--ui-space-component-unit)', false],
-      ['grid-template-columns', 'minmax(0, 1fr) minmax(0, 3fr)', false],
-      ['grid-template-rows', 'auto 1fr', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-mode-scene-toolbar',
-    declarations: [
-      ['grid-column', '1 / -1', false],
-      ['block-size', 'var(--ui-space-component-unit)', false],
-      ['background', 'var(--pavp-mode-preview-panel)', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-mode-scene-sidebar',
-    declarations: [['background', 'var(--pavp-mode-preview-panel)', false]],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-mode-scene-title',
-    declarations: [
-      ['inline-size', '50%', false],
-      ['block-size', 'var(--ui-space-component-unit)', false],
-      ['background', 'var(--pavp-mode-preview-control)', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.wb-mode-scene-tiles',
-    declarations: [['grid-template-columns', 'repeat(2, minmax(0, 1fr))', false]],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
     selector: '.wb-theme-options',
     declarations: [
       [
@@ -6824,7 +8161,6 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['flex-shrink', '0', false],
       ['border-radius', 'var(--ui-radius-control)', false],
       ['background', 'var(--pavp-settings-theme-color)', false],
-      ['color', 'var(--pavp-settings-theme-on-color)', false],
     ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
@@ -8654,6 +9990,39 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
+    selector: '.wb-page--contained > .wb-page-heading',
+    declarations: [
+      ['padding-block', 'var(--ui-space-content-gap)', false],
+      ['padding-inline', 'var(--ui-space-panel-padding)', false],
+      ['border-radius', 'var(--ui-radius-panel)', false],
+      [
+        'background-image',
+        'linear-gradient(\n      145deg,\n      var(--ui-color-expression-accent-a-soft-background),\n      var(--ui-color-surface-panel) 54%,\n      var(--ui-color-expression-accent-b-soft-background)\n    )',
+        false,
+      ],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components', '@media (height < 36rem)'],
+    selector: '.wb-page--contained > .wb-page-heading',
+    declarations: [['padding-block', 'var(--ui-space-component-unit)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: "[data-layout-profile='narrow'] .wb-page--contained > .wb-page-heading",
+    declarations: [['padding-inline', 'var(--ui-space-panel-padding-narrow)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
     selector: '.wb-page-heading__title',
     declarations: [['font-size', 'var(--ui-font-size-title)', false]],
     responsibility: 'RUNTIME_STYLE_OWNER',
@@ -8701,8 +10070,22 @@ export const keyframeOwners: readonly {
   readonly block: number
   readonly context: readonly string[]
   readonly name: string
-  readonly family: 'appearance-preview' | 'admin-ambient' | 'route-transition'
+  readonly family: 'appearance-preview' | 'admin-ambient' | 'route-transition' | 'settings-panel'
 }[] = [
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    name: 'wb-settings-section-enter',
+    family: 'settings-panel',
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    name: 'wb-settings-section-fade',
+    family: 'settings-panel',
+  },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
@@ -8818,6 +10201,77 @@ export const styleAtRuleOwners: readonly {
   readonly params: string
   readonly occurrences?: number
 }[] = [
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    name: 'container',
+    params: 'settings-form (min-width: 34em)',
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    name: 'container',
+    params: 'settings-page (min-width: 48em)',
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    name: 'container',
+    params: 'settings-modes (min-width: 28em)',
+  },
+  {
+    path: 'apps/web/src/pages/control-center.vue',
+    block: 0,
+    context: [],
+    name: 'media',
+    params: '(forced-colors: active)',
+  },
+  {
+    path: 'apps/web/src/app/workbench/ThemeStyleSettings.vue',
+    block: 0,
+    context: [],
+    name: 'media',
+    params: '(forced-colors: active)',
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    name: 'media',
+    params: '(forced-colors: none)',
+  },
+  {
+    path: 'apps/web/src/app/styles/layers.css',
+    block: 0,
+    context: [],
+    name: 'import',
+    params: "'../errors/error-scene.css'",
+  },
+  { path: errorSceneStylePath, block: 0, context: [], name: 'layer', params: 'app' },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: [],
+    name: 'media',
+    params: '(forced-colors: active)',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    name: 'container',
+    params: '(max-width: 32rem)',
+  },
+  {
+    path: errorSceneStylePath,
+    block: 0,
+    context: ['@layer app'],
+    name: 'media',
+    params: '(forced-colors: active)',
+  },
   {
     path: 'packages/ui/src/components/UiReportPreview.vue',
     block: 1,
@@ -9306,6 +10760,12 @@ export const styleAtRuleOwners: readonly {
 
 export const privateStyleVariables = [
   {
+    name: '--pavp-error-ink',
+    source: 'error-scene-semantic-role',
+    valueKind: 'color',
+    writer: errorSceneStylePath,
+  },
+  {
     name: '--pavp-sidebar-scroll-track',
     source: 'regional-scroll-surface-projection',
     valueKind: 'color',
@@ -9520,31 +10980,25 @@ export const privateStyleVariables = [
     name: '--pavp-mode-preview-page',
     source: 'validated-theme-mode-preview',
     valueKind: 'color',
-    writer: 'apps/web/src/app/workbench/ColorModePreview.vue',
+    writer: 'apps/web/src/app/workbench/SettingsModePreview.vue',
   },
   {
     name: '--pavp-mode-preview-panel',
     source: 'validated-theme-mode-preview',
     valueKind: 'color',
-    writer: 'apps/web/src/app/workbench/ColorModePreview.vue',
+    writer: 'apps/web/src/app/workbench/SettingsModePreview.vue',
   },
   {
     name: '--pavp-mode-preview-action',
     source: 'validated-theme-mode-preview',
     valueKind: 'color',
-    writer: 'apps/web/src/app/workbench/ColorModePreview.vue',
+    writer: 'apps/web/src/app/workbench/SettingsModePreview.vue',
   },
   {
     name: '--pavp-mode-preview-control',
     source: 'validated-theme-mode-preview',
     valueKind: 'color',
-    writer: 'apps/web/src/app/workbench/ColorModePreview.vue',
-  },
-  {
-    name: '--pavp-mode-preview-border',
-    source: 'validated-theme-mode-preview',
-    valueKind: 'color',
-    writer: 'apps/web/src/app/workbench/ColorModePreview.vue',
+    writer: 'apps/web/src/app/workbench/SettingsModePreview.vue',
   },
   {
     name: '--n-item-color-active-hover',
@@ -9709,10 +11163,22 @@ export const privateStyleVariables = [
     writer: 'apps/web/src/pages/control-center.vue',
   },
   {
-    name: '--pavp-settings-theme-on-color',
+    name: '--pavp-settings-theme-accent-a',
     source: 'runtime-theme-preview',
     valueKind: 'color',
     writer: 'apps/web/src/pages/control-center.vue',
+  },
+  {
+    name: '--pavp-settings-theme-accent-b',
+    source: 'runtime-theme-preview',
+    valueKind: 'color',
+    writer: 'apps/web/src/pages/control-center.vue',
+  },
+  {
+    name: '--pavp-settings-appearance-duration',
+    source: 'settings-appearance-motion',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.css',
   },
   {
     name: '--pavp-navigation-pressed',

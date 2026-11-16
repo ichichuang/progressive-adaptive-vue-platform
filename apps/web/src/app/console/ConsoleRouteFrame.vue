@@ -13,7 +13,7 @@ import ThemeQuickPicker from './ThemeQuickPicker.vue'
 import { NCard } from 'naive-ui/es/card'
 import { useRuntimeUpdateReload } from '../config/use-runtime-update-reload'
 import { createRuntimeUpdateMonitor } from '../config/runtime-update-monitor'
-import { runtimeUpdateKey, type RuntimeUpdateStatus } from '../config/runtime-update-context'
+import { runtimeUpdateKey } from '../config/runtime-update-context'
 import type { CompiledBuildIdentity } from '../config/runtime-configuration'
 import { NButton } from 'naive-ui/es/button'
 import { NFlex } from 'naive-ui/es/flex'
@@ -268,18 +268,14 @@ watch(discardConfirmation, async (confirmation) => {
   }
 })
 const releaseCandidate = shallowRef<CompiledBuildIdentity | null>(null)
-const releaseStatus = ref<RuntimeUpdateStatus>('idle')
 const releaseMonitor = createRuntimeUpdateMonitor({
   document,
   window,
   onCandidate: (identity) => {
     releaseCandidate.value = identity
   },
-  onStatus: (status) => {
-    releaseStatus.value = status
-  },
 })
-provide(runtimeUpdateKey, { status: releaseStatus, check: releaseMonitor.check })
+provide(runtimeUpdateKey, { check: releaseMonitor.check })
 onScopeDispose(() => {
   releaseMonitor.dispose()
 })
@@ -548,7 +544,7 @@ function toggleColorMode(): void {
       const current = explicitThemePreferenceSchema.safeParse(appearanceMutation.preference.value)
       if (!current.success) {
         colorModeSwitchFailed.value = true
-        return
+        return false
       }
       const result = appearanceMutation.commitPreference({
         ...current.data,
@@ -558,7 +554,9 @@ function toggleColorMode(): void {
         },
       })
       colorModeSwitchFailed.value = result.status !== 'committed'
+      return result.status === 'committed'
     },
+    readSnapshot: () => appearance.snapshot.value,
   })
 }
 

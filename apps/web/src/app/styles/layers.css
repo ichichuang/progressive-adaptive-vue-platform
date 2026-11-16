@@ -4,6 +4,7 @@
 @import '../appearance/appearance-transition.css';
 @import '../router/route-transition/route-transition.css';
 @import '../workbench/workbench.css';
+@import '../errors/error-scene.css';
 
 @layer reset {
   *,

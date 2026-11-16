@@ -326,11 +326,10 @@ const shellVisualAuthorityRules = {
   ]),
 }
 const displayPreviewStylePath = 'apps/web/src/app/workbench/layout/DisplayOperationsBoard.vue'
-// The scoped display computes stage-relative sizes. Exact declaration ownership
-// still applies; the generic visual rule admits only the values in that contract.
-function displayPreviewPatterns(...properties) {
+// Local optical values still require an exact selector and declaration owner.
+function ownedStylePatterns(path, ...properties) {
   return ownedStyleContracts
-    .filter((contract) => contract.path === displayPreviewStylePath)
+    .filter((contract) => contract.path === path)
     .flatMap((contract) =>
       contract.declarations
         .filter(([property]) => properties.includes(property))
@@ -346,13 +345,20 @@ function displayPreviewPatterns(...properties) {
 const displayPreviewVisualAuthorityRules = {
   ...visualAuthorityRules,
   'font-size': [
-    disallowOutsideAuthorities(fontSizeVariables, ['0'], displayPreviewPatterns('font-size')),
+    disallowOutsideAuthorities(
+      fontSizeVariables,
+      ['0'],
+      ownedStylePatterns(displayPreviewStylePath, 'font-size'),
+    ),
   ],
   [spacingProperties]: [
     disallowOutsideAuthorities(
       spacingVariables,
       ['0', 'auto', 'normal'],
-      [...approvedSpacingPatterns, ...displayPreviewPatterns('gap', 'padding')],
+      [
+        ...approvedSpacingPatterns,
+        ...ownedStylePatterns(displayPreviewStylePath, 'gap', 'padding'),
+      ],
     ),
   ],
 }
@@ -469,9 +475,70 @@ const workbenchVisualAuthorityRules = {
   ],
 }
 
+const errorSceneStylePath = 'apps/web/src/app/errors/error-scene.css'
+const errorSceneVisualAuthorityRules = {
+  ...Object.fromEntries(
+    Object.entries(visualAuthorityRules).filter(
+      ([property]) => property !== motionDurationProperties,
+    ),
+  ),
+  '/^(?:animation-delay|animation-duration|transition-delay)$/':
+    motionAuthorityRules[motionDurationProperties],
+  'transition-duration': [
+    disallowOutsideAuthorities(
+      durationVariables,
+      [],
+      [
+        ...approvedDurationPatterns,
+        ...ownedStylePatterns(errorSceneStylePath, 'transition-duration'),
+      ],
+    ),
+  ],
+  'background-color': colorAuthorityRules(
+    backgroundColorVariables,
+    ownedStylePatterns(errorSceneStylePath, 'background-color'),
+  ),
+  color: colorAuthorityRules(
+    [...textColorVariables, '--pavp-error-ink'],
+    ownedStylePatterns(errorSceneStylePath, 'color'),
+  ),
+  [borderColorProperties]: colorAuthorityRules(
+    borderColorVariables,
+    ownedStylePatterns(errorSceneStylePath, 'border-color'),
+  ),
+  'font-weight': [
+    disallowOutsideAuthorities(
+      fontWeightVariables,
+      [],
+      ownedStylePatterns(errorSceneStylePath, 'font-weight'),
+    ),
+  ],
+  'box-shadow': [
+    rawColorFunction,
+    disallowOutsideAuthorities(
+      [...shadowVariables, ...adminShadowVariables],
+      ['none'],
+      ownedStylePatterns(errorSceneStylePath, 'box-shadow'),
+    ),
+  ],
+  [radiusProperties]: [
+    disallowOutsideAuthorities(
+      radiusVariables,
+      ['0'],
+      [zeroLengthPattern, ...ownedStylePatterns(errorSceneStylePath, 'border-radius')],
+    ),
+  ],
+}
+
 export default {
   plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
+    {
+      files: [`**/${errorSceneStylePath}`],
+      rules: {
+        'declaration-property-value-disallowed-list': errorSceneVisualAuthorityRules,
+      },
+    },
     {
       files: [`**/${displayPreviewStylePath}.style-*.css`],
       rules: {

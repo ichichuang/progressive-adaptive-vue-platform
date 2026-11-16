@@ -211,7 +211,7 @@ export async function verifyRuntimeUpdate(): Promise<void> {
       const first = monitor.check()
       assert.equal(first, monitor.check())
       requests[0]?.resolve(Response.json(candidate))
-      await first
+      assert.equal(await first, 'available')
       assert.equal(candidates.at(-1), candidate.releaseSha)
       focus.dispatchEvent(new Event('focus'))
       assert.equal(requests.length, 1)
@@ -224,7 +224,7 @@ export async function verifyRuntimeUpdate(): Promise<void> {
       assert.equal(requests.length, 2)
       const failure = monitor.check()
       requests[1]?.resolve(new Response('bad', { status: 500 }))
-      await failure
+      assert.equal(await failure, 'unavailable')
       assert.equal(statuses.at(-1), 'unavailable')
       assert.equal(candidates.at(-1), candidate.releaseSha)
       monitor.dismiss()
@@ -243,7 +243,7 @@ export async function verifyRuntimeUpdate(): Promise<void> {
       requests[4]?.resolve(
         Response.json({ ...candidate, releaseSha: 'a'.repeat(40), buildVersion: '1.0.0' }),
       )
-      await current
+      assert.equal(await current, 'current')
       assert.equal(statuses.at(-1), 'current')
       assert.equal(candidates.at(-1), null)
       now += 60001
@@ -275,7 +275,7 @@ export async function verifyRuntimeUpdate(): Promise<void> {
       monitor.dispose()
       assert.equal(requests[9]?.signal?.aborted, true)
       requests[9].resolve(Response.json(candidate))
-      await final
+      assert.equal(await final, undefined)
       assert.equal(candidates.length, count)
       assert.equal(intervals.size, 0)
       assert.equal(timeouts.size, 0)

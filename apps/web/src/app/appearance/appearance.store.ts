@@ -17,6 +17,7 @@ import {
 } from '@platform/design-system'
 import { defineStore } from 'pinia'
 
+import type { AppearanceMutationBoundary } from './appearance-mutation-boundary'
 import {
   readCustomThemeRegistry,
   validateCustomThemeRegistryEntries,
@@ -179,6 +180,7 @@ function commitAppearanceTransition(
   environment: AppearanceEnvironment,
   persistenceIntent: PersistenceIntent,
   rejectedCustomTheme?: Extract<CustomThemeValidationResult, { status: 'rejected' }>,
+  animateSize = true,
 ): AppearanceTransitionResult {
   const validatedPreference = explicitThemePreferenceSchema.safeParse(candidatePreference)
 
@@ -227,7 +229,9 @@ function commitAppearanceTransition(
 
   try {
     const fontScaleChanged = domCapture.fontScale.value !== String(effectiveAppearance.fontScale)
-    if (
+    if (!animateSize) {
+      target.setAttribute('data-ui-size-transition', 'instant')
+    } else if (
       previousState.preference !== null &&
       effectiveAppearance.motion === 'full' &&
       target.getAttribute('data-motion') === 'full' &&
@@ -407,6 +411,7 @@ export const useAppearanceStore = defineStore('appearance', {
     changeAppearancePreference(
       preference: unknown,
       environment: AppearanceEnvironment,
+      options?: Parameters<AppearanceMutationBoundary['commitPreference']>[1],
     ): AppearanceTransitionResult {
       const registry = readCustomThemeRegistry()
       return commitAppearanceTransition(
@@ -416,6 +421,8 @@ export const useAppearanceStore = defineStore('appearance', {
         registry.status === 'accessible' ? registry.entries : null,
         environment,
         'preference',
+        undefined,
+        options?.animateSize,
       )
     },
 

@@ -1,20 +1,53 @@
 @layer app {
+  @media (forced-colors: none) {
+    html[data-motion='reduced'][data-pavp-settings-appearance] {
+      --pavp-settings-appearance-duration: calc(var(--ui-motion-duration) / 2);
+    }
+  }
+
+  .pavp-appearance-settings-frame {
+    position: fixed;
+    inset: 0;
+    z-index: var(--ui-z-base);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .pavp-appearance-settings-frame--rift {
+    background: var(--ui-color-surface-page);
+  }
+
+  .pavp-appearance-settings-old {
+    position: absolute;
+    inset: 0;
+    background: var(--ui-color-surface-page);
+    font-size: var(--ui-font-size-body);
+  }
+
   .pavp-appearance-rift-edge {
     display: none;
   }
 
+  .pavp-appearance-settings-frame > .pavp-appearance-rift-edge {
+    clip-path: inset(50%);
+  }
+
+  .pavp-appearance-settings-frame > .pavp-appearance-rift-edge,
   html:active-view-transition-type(pavp-appearance-rift) .pavp-appearance-rift-edge {
     display: block;
     position: fixed;
     inset: 0;
     pointer-events: none;
-    view-transition-name: pavp-rift-edge;
     background: linear-gradient(
       150deg,
       var(--ui-color-expression-accent-a-solid-background),
       var(--ui-color-action-primary),
       var(--ui-color-expression-accent-b-solid-background)
     );
+  }
+
+  html:active-view-transition-type(pavp-appearance-rift) .pavp-appearance-rift-edge {
+    view-transition-name: pavp-rift-edge;
   }
 
   html:active-view-transition-type(pavp-appearance-rift)::view-transition-group(pavp-rift-edge) {
@@ -71,7 +104,8 @@
   }
 
   @media (forced-colors: active) {
-    html:active-view-transition-type(pavp-appearance)::view-transition {
+    html:active-view-transition-type(pavp-appearance)::view-transition,
+    .pavp-appearance-settings-frame {
       display: none;
     }
   }

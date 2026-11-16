@@ -126,6 +126,7 @@ export function createScrollRefreshStorage(
           confirmed.data.ownerId === parsed.data.ownerId &&
           confirmed.data.left === parsed.data.left &&
           confirmed.data.top === parsed.data.top &&
+          JSON.stringify(confirmed.data.settings) === JSON.stringify(parsed.data.settings) &&
           confirmed.data.context.length === parsed.data.context.length &&
           confirmed.data.context.every((value, index) => value === parsed.data.context[index])
         )

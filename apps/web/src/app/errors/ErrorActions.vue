@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import type { AnchorHTMLAttributes } from 'vue'
-import { UiCopyAction } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
+import type { AnchorHTMLAttributes } from 'vue'
 import { useConsoleI18n } from '../../shared/i18n'
 import {
   useApplicationLinkActivation,
   useApplicationNavigation,
 } from '../router/application-navigation'
 import { registeredRouteDestination } from '../router/route-input'
-
-defineProps<{ readonly code?: string }>()
 
 const { t } = useConsoleI18n()
 const navigation = useApplicationNavigation()
@@ -18,31 +15,24 @@ const destination = registeredRouteDestination({ name: 'workbench-welcome' })
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center justify-center gap-content-gap">
-    <NButton
-      tag="a"
-      type="primary"
-      class="min-h-target-enhanced"
-      v-bind="{ href: navigation.resolveHref(destination) } satisfies AnchorHTMLAttributes"
-      @click="activate($event, destination)"
-    >
-      <template #icon>
+  <NButton
+    tag="a"
+    text
+    :bordered="false"
+    size="large"
+    native-focus-behavior
+    class="error-scene__action"
+    v-bind="{ href: navigation.resolveHref(destination) } satisfies AnchorHTMLAttributes"
+    @click="activate($event, destination)"
+  >
+    <span class="error-scene__action-arrival inline-flex min-w-0 pointer-events-none">
+      <span class="error-scene__action-surface">
         <span
-          class="i-lucide-arrow-left"
+          class="error-scene__action-arrow i-lucide-arrow-left"
           aria-hidden="true"
         />
-      </template>
-      {{ t('error.backToWorkbench') }}
-    </NButton>
-    <UiCopyAction
-      v-if="code !== undefined"
-      :value="code"
-      :copy-label="code"
-      :label="t('error.copyCode')"
-      :success-label="t('error.codeCopied')"
-      :failure-label="t('error.codeCopyFailed')"
-      variant="tertiary"
-      class="min-h-target-enhanced"
-    />
-  </div>
+        {{ t('error.backToHome') }}
+      </span>
+    </span>
+  </NButton>
 </template>

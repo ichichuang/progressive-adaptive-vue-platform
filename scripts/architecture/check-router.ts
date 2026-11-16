@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from 'node:util'
 
 import stylelint from 'stylelint'
 import ts from 'typescript'
+import { settingsPaceOwners } from './style-owner-contracts'
 
 import { coreErrorRegistry } from '../../apps/web/src/app/errors/core-error-registry'
 import { getDefaultConsoleMessage } from '../../apps/web/src/shared/i18n/default-messages'
@@ -1482,13 +1483,13 @@ const expectedRouteTitles = {
     'route-title.component-table-editor',
   ),
   'route-title.control-center': getDefaultConsoleMessage('route-title.control-center'),
-  'route-title.error-invalid-route-input': '地址无效',
-  'route-title.error-authentication-required': '需要身份认证',
-  'route-title.error-permission-denied': '访问被拒绝',
-  'route-title.error-route-not-found': '未找到页面',
-  'route-title.error-application-route-failure': '页面不可用',
-  'route-title.error-network-unavailable': '当前离线',
-  'route-title.error-service-unavailable': '服务不可用',
+  'route-title.error-invalid-route-input': '这个链接打不开',
+  'route-title.error-authentication-required': '请登录后查看这个页面',
+  'route-title.error-permission-denied': '你没有权限查看这个页面',
+  'route-title.error-route-not-found': '找不到这个页面',
+  'route-title.error-application-route-failure': '这个页面暂时打不开',
+  'route-title.error-network-unavailable': '网络连不上',
+  'route-title.error-service-unavailable': '这项服务暂时无法使用',
   'route-title.preview-layout-admin': getDefaultConsoleMessage('route-title.preview-layout-admin'),
   'route-title.preview-layout-admin-footer': getDefaultConsoleMessage(
     'route-title.preview-layout-admin-footer',
@@ -1962,26 +1963,38 @@ const expectedMessages = [
   [
     'error-invalid-route-input',
     'route-message.error-invalid-route-input',
-    '请求的地址包含无效信息。',
+    '检查链接是否完整，或返回首页。',
   ],
   [
     'error-authentication-required',
     'route-message.error-authentication-required',
-    '需要完成身份认证才能继续。',
+    '你可以返回首页浏览其他内容。',
   ],
-  ['error-permission-denied', 'route-message.error-permission-denied', '你没有查看此页面的权限。'],
-  ['error-route-not-found', 'route-message.error-route-not-found', '未找到请求的页面。'],
+  [
+    'error-permission-denied',
+    'route-message.error-permission-denied',
+    '你可以返回首页浏览其他内容。',
+  ],
+  [
+    'error-route-not-found',
+    'route-message.error-route-not-found',
+    '检查网址是否正确，或返回首页。',
+  ],
   [
     'error-application-route-failure',
     'route-message.error-application-route-failure',
-    '应用无法打开此页面。',
+    '请先返回首页，稍后再试。',
   ],
   [
     'error-network-unavailable',
     'route-message.error-network-unavailable',
-    '当前处于离线状态，无法访问此页面。',
+    '请检查 Wi-Fi 或移动数据连接，然后重新打开页面。',
   ],
-  ['error-service-unavailable', 'route-message.error-service-unavailable', '此服务暂时不可用。'],
+  [
+    'error-service-unavailable',
+    'route-message.error-service-unavailable',
+    '请先返回首页，稍后再来。',
+  ],
   [
     'preview-status-404',
     'route-message.preview-status-404',
@@ -2121,6 +2134,7 @@ interface RouteTransitionSourceSnapshot {
   readonly manifestSource: string
   readonly presetSource: string
   readonly previewStyleSource: string
+  readonly settingsPanelSource: string
   readonly registrySource: string
   readonly routeInputSource: string
   readonly resolverSource: string
@@ -4968,18 +4982,53 @@ async function pageViolations(): Promise<string[]> {
       )
   }
 
+  function isErrorDocument(source: string, code: string): boolean {
+    const documentBody = /<main\b[^>]*>\s*<ErrorPresentation\b([^>]+)\/>\s*<\/main>/u.exec(
+      source,
+    )?.[1]
+    return (
+      documentBody !== undefined &&
+      documentBody.includes(`code="${code}"`) &&
+      documentBody.includes(':title="title"') &&
+      documentBody.includes(':message="message"') &&
+      count(source, /<main\b/gu) === 1 &&
+      count(source, /<ErrorPresentation\b/gu) === 1 &&
+      count(source, /<h1\b/gu) === 0
+    )
+  }
   const notFoundView = await readFile(
     resolve(rootDirectory, 'apps/web/src/app/errors/RouteNotFoundView.vue'),
     'utf8',
   )
   if (
-    count(notFoundView, /<main\b/gu) !== 1 ||
-    count(notFoundView, /<h1\b/gu) !== 1 ||
-    count(notFoundView, /data-route-focus="primary-heading"/gu) !== 1 ||
-    count(notFoundView, /tabindex="-1"/gu) !== 1
+    !notFoundView.includes("from './ErrorPresentation.vue'") ||
+    !isErrorDocument(notFoundView, '404')
+  )
+    violations.push('Shared not-found view must preserve its main landmark and shared error scene.')
+
+  const errorPresentation = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/errors/ErrorPresentation.vue'),
+    'utf8',
+  )
+  if (
+    count(errorPresentation, /<h1\b/gu) !== 1 ||
+    !/<h1\b[^>]*:data-route-focus="focusTarget"[^>]*:tabindex="focusTabIndex"/u.test(
+      errorPresentation,
+    ) ||
+    !/focusTarget:\s*'primary-heading'/u.test(errorPresentation) ||
+    !/focusTabIndex:\s*-1/u.test(errorPresentation) ||
+    count(errorPresentation, /<main\b/gu) !== 0 ||
+    count(errorPresentation, /<ErrorActions\b/gu) !== 1 ||
+    count(
+      errorPresentation,
+      /:owner-id="contained \? 'architecture-console-content' : undefined"/gu,
+    ) !== 1 ||
+    !errorPresentation.includes('UiScrollArea') ||
+    !errorPresentation.includes('inject(routerScrollControllerKey)') ||
+    /\bdata-scroll-owner\s*=/u.test(errorPresentation)
   )
     violations.push(
-      'Shared not-found view must preserve its reading-document heading and focus owner.',
+      'Shared error scene must own one route focus heading and reuse the contained scroll port.',
     )
   const layoutPreviewView = await readFile(
     resolve(rootDirectory, 'apps/web/src/app/workbench/layout/LayoutPreview.vue'),
@@ -5170,14 +5219,15 @@ async function pageViolations(): Promise<string[]> {
       violations.push(
         `${sourcePath}: Not-found wrapper must forward its route props to the shared focus owner.`,
       )
+    const errorPage = basename(sourcePath, '.vue')
+    const errorCode =
+      errorPage === 'offline' ? 'OFFLINE' : errorPage === 'maintenance' ? 'SERVICE' : errorPage
     const errorPageInvalid =
       !productPage &&
       !layoutPreview &&
       !notFoundWrapper &&
-      (count(source, /<main\b/gu) !== 1 ||
-        count(source, /<h1\b/gu) !== 1 ||
-        count(source, /data-route-focus="primary-heading"/gu) !== 1 ||
-        count(source, /tabindex="-1"/gu) !== 1)
+      (!source.includes("from '../../app/errors/ErrorPresentation.vue'") ||
+        !isErrorDocument(source, errorCode))
 
     if (
       productPageInvalid ||
@@ -6215,6 +6265,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     manifestSource: [rootManifestSource, webManifestSource, uiManifestSource].join('\n'),
     presetSource,
     previewStyleSource: /<style scoped>([\s\S]*?)<\/style>/u.exec(previewSource)?.[1] ?? '',
+    settingsPanelSource: await readFile(resolve(pagesDirectory, 'control-center.vue'), 'utf8'),
     registrySource,
     routeInputSource,
     resolverSource,
@@ -6768,7 +6819,7 @@ function routeTransitionSourceProofResults(
       passed:
         snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 119') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -7695,6 +7746,35 @@ function runRouteTransitionPresetSelectionNegativeProbes(
   })
 }
 
+function withoutOwnedSettingsPace(source: string): string {
+  const normalize = (value: string): string =>
+    value.trim().replace(/\s+/gu, ' ').replace(/\(\s+/gu, '(').replace(/\s+\)/gu, ')')
+  const remaining = new Map(
+    settingsPaceOwners.map((owner) => [
+      normalize(owner.selector),
+      new Set(owner.declarations.map(([property, value]) => `${property}:${normalize(value)}`)),
+    ]),
+  )
+  return source.replace(
+    /<style scoped>([\s\S]*?)<\/style>/u,
+    (_, css: string) =>
+      `<style scoped>${css.replace(
+        /([^{}]+)\{([^{}]*)\}/gu,
+        (rule, selector: string, body: string) => {
+          const allowed = remaining.get(normalize(selector))
+          if (allowed === undefined) return rule
+          const declarations = body.split(';').filter((declaration) => {
+            const colon = declaration.indexOf(':')
+            if (colon === -1) return true
+            const property = declaration.slice(0, colon).trim()
+            return !allowed.delete(`${property}:${normalize(declaration.slice(colon + 1))}`)
+          })
+          return `${selector}{${declarations.join(';')}}`
+        },
+      )}</style>`,
+  )
+}
+
 function routeTransitionFullPaceProofResults(
   snapshot: RouteTransitionSourceSnapshot,
 ): readonly RouteTransitionSourceProofResult[] {
@@ -7749,7 +7829,11 @@ function routeTransitionFullPaceProofResults(
   const nonRouteSource = [
     snapshot.applicationSource
       .replace(snapshot.cssSource, '')
-      .replace(snapshot.previewStyleSource, ''),
+      .replace(snapshot.previewStyleSource, '')
+      .replace(
+        snapshot.settingsPanelSource,
+        withoutOwnedSettingsPace(snapshot.settingsPanelSource),
+      ),
     snapshot.uiSource,
   ].join('\n')
   return [
@@ -7952,6 +8036,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const routePath = 'apps/web/src/app/router/route-transition/route-transition.css'
   const previewScope = '**/apps/web/src/app/workbench/MotionRoutePreview.vue.style-*.css'
   const workbenchScope = 'apps/web/src/app/workbench/workbench.css'
+  const errorScenePath = 'apps/web/src/app/errors/error-scene.css'
+  const errorSceneScope = `**/${errorScenePath}`
   const adminShellScope = '**/packages/ui/src/components/UiAdminShell.vue.style-*.css'
   const radioCardScope = '**/packages/ui/src/components/UiRadioCardGroup.vue.style-*.css'
   const radioCardPath = 'packages/ui/src/components/UiRadioCardGroup.vue.style-0.css'
@@ -7974,6 +8060,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     [routePath],
     [previewScope],
     [workbenchScope],
+    [errorSceneScope],
     [adminShellScope],
     [radioCardScope],
     [providerScope],
@@ -7991,6 +8078,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     chartRangePath,
     colorStylePath,
     displayPreviewPath,
+    errorScenePath,
   ]
   const configModule: unknown = await import(
     pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
@@ -8050,6 +8138,23 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const softButtonBackground = 'var(--pavp-soft-button-primary-background)'
   const tableSummaryForeground = 'var(--n-th-text-color)'
   const tableSummaryBackground = 'var(--n-merged-th-color)'
+  const errorSceneValues = [
+    ['color', 'var(--pavp-error-ink)'],
+    [
+      'background-color',
+      'color-mix(in srgb, var(--ui-color-surface-panel) 94%, var(--pavp-error-ink))',
+    ],
+    [
+      'border-color',
+      'color-mix( in srgb, var(--ui-color-border-default) 55%, var(--ui-color-surface-panel) )',
+    ],
+    [
+      'transition-duration',
+      'calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 3), calc(var(--ui-motion-duration) * 0.6)',
+    ],
+    ['font-weight', 'calc((var(--ui-font-weight-body) + var(--ui-font-weight-title)) / 2)'],
+    ['border-radius', 'max(var(--ui-radius-control), calc(var(--ui-control-height-large) / 3))'],
+  ] as const
   const rule = declarationPolicyRule
   const check = async (
     config: stylelint.Config,
@@ -8080,6 +8185,15 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   ): Promise<readonly RouteTransitionSourceProofResult[]> => {
     const scopeChecks = await Promise.all(
       snapshot.otherConfigs.flatMap((config, index) => [
+        ...errorSceneValues.map(([property, value]) =>
+          check(
+            config,
+            otherPaths[index] ?? '',
+            property,
+            value,
+            otherPaths[index] !== errorScenePath,
+          ),
+        ),
         check(config, otherPaths[index] ?? '', 'animation-duration', full, true),
         check(config, otherPaths[index] ?? '', 'animation-duration', half, false),
         check(
@@ -8122,6 +8236,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           isDeepStrictEqual(files, [routePath]) || isDeepStrictEqual(files, [previewScope])
         const shellScope = isDeepStrictEqual(files, [adminShellScope])
         const workbenchStyleScope = isDeepStrictEqual(files, [workbenchScope])
+        const errorStyleScope = isDeepStrictEqual(files, [errorSceneScope])
         const radioScope = isDeepStrictEqual(files, [radioCardScope])
         const providerStyleScope = isDeepStrictEqual(files, [providerScope])
         const tableStyleScope = isDeepStrictEqual(files, [tableScope])
@@ -8133,6 +8248,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             routeScope ||
             shellScope ||
             workbenchStyleScope ||
+            errorStyleScope ||
             radioScope ||
             providerStyleScope ||
             tableStyleScope ||
@@ -8167,6 +8283,13 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             true,
           )) &&
           (await check(config, globalPath, 'color', radioCardForeground, !radioScope)) &&
+          (
+            await Promise.all(
+              errorSceneValues.map(([property, value]) =>
+                check(config, globalPath, property, value, !errorStyleScope),
+              ),
+            )
+          ).every(Boolean) &&
           (await check(config, globalPath, 'color', softButtonForeground, true)) &&
           (await check(
             config,
@@ -8210,7 +8333,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
                 tableStyleScope ||
                 chartRangeStyleScope ||
                 colorStylePreviewScope ||
-                displayFitScope,
+                displayFitScope ||
+                errorStyleScope,
             )))
         )
       }),
@@ -8428,6 +8552,15 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             config: isDeepStrictEqual(scope.files, [chartRangeScope])
               ? baseline.routeConfig
               : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            files: isDeepStrictEqual(scope.files, [errorSceneScope])
+              ? ['**/apps/web/src/app/**/*.css']
+              : scope.files,
           })),
         },
         {

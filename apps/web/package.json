@@ -16,9 +16,13 @@
     "motion-v": "catalog:",
     "naive-ui": "catalog:",
     "pinia": "catalog:",
+    "three": "catalog:",
     "vue": "catalog:",
     "vue-i18n": "catalog:",
     "vue-router": "catalog:",
     "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/three": "catalog:"
   }
 }
