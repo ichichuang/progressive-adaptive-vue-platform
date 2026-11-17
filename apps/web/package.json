@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "@types/three": "catalog:"
+  },
+  "optionalDependencies": {
+    "@casl/ability": "catalog:"
   }
 }

@@ -5,6 +5,7 @@ import {
   accessDecisionSchema,
   accessInvalidationSchema,
   accessRequestSchema,
+  accessProposalSchema,
   accessScopeSchema,
   type AccessBoundary,
   type AccessContextChange,
@@ -15,9 +16,22 @@ import {
   type AccessRequest,
   type AccessState,
   type BoundAccessRequest,
+  type AccessProposal,
 } from './access-contract'
 
 const accessKey: InjectionKey<AccessBoundary> = Symbol('access-boundary')
+
+/** Copy and freeze candidate data once, independently of confirmed policy facts. */
+export function captureAccessProposal(value: AccessProposal): AccessProposal {
+  const proposal = accessProposalSchema.parse(value)
+  function freeze(value: unknown): void {
+    if (value === null || typeof value !== 'object') return
+    for (const item of Object.values(value)) freeze(item)
+    Object.freeze(value)
+  }
+  freeze(proposal.values)
+  return proposal
+}
 
 function state<const Status extends string>(status: Status): { readonly status: Status } {
   return Object.freeze({ status })
@@ -49,6 +63,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
     {
       readonly targets: ReadonlySet<AccessRequest['kind']>
       readonly evaluate: AccessHost['decisions'][number]['evaluate']
+      readonly subscribe: AccessHost['decisions'][number]['subscribe']
     } | null
   >()
   const selections: AccessHost['decisions'] =
@@ -63,7 +78,11 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
         typeof provider.evaluate !== 'function' ||
         !Array.isArray(provider.targets)
         ? null
-        : { targets: new Set(provider.targets), evaluate: provider.evaluate.bind(provider) },
+        : {
+            targets: new Set(provider.targets),
+            evaluate: provider.evaluate.bind(provider),
+            subscribe: provider.subscribe?.bind(provider),
+          },
     )
   }
 
@@ -139,11 +158,21 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
 
   const boundary: AccessBoundary = {
     readContext,
-    observe(input, onInvalidated) {
+    observe(input, onInvalidated, proposal) {
       const parsed = accessRequestSchema.safeParse(input)
       const request = parsed.data
       const provider = request === undefined ? undefined : providers.get(request.domain)
-      if (request === undefined || !provider?.targets.has(request.kind)) {
+      let candidate: AccessProposal | undefined
+      let invalidProposal = false
+      if (proposal !== undefined) {
+        try {
+          if (request?.kind !== 'record' && request?.kind !== 'field') throw new TypeError()
+          candidate = captureAccessProposal(proposal)
+        } catch {
+          invalidProposal = true
+        }
+      }
+      if (request === undefined || !provider?.targets.has(request.kind) || invalidProposal) {
         return Object.freeze({
           read: () => state(disposed ? 'disposed' : 'configuration-error'),
           evaluate: () => Promise.resolve(),
@@ -154,6 +183,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
 
       let closed = disposed
       let generation = 0
+      let expiry: ReturnType<typeof setTimeout> | undefined
       const evaluation = shallowRef<{
         readonly generation: number
         readonly binding: BoundAccessRequest
@@ -163,6 +193,8 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
       const owner = {
         request,
         advance() {
+          if (expiry !== undefined) clearTimeout(expiry)
+          expiry = undefined
           generation++
         },
         notify(change: AccessInvalidation) {
@@ -195,6 +227,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
         async evaluate() {
           const active = readContext()
           if (active.status !== 'ready' || closed || disposed) return
+          owner.advance()
           const pending = {
             generation,
             binding: Object.freeze({
@@ -202,6 +235,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
               context: active.snapshot,
               contextGeneration,
               request,
+              ...(candidate === undefined ? {} : { proposal: candidate }),
             }),
             result: state('pending'),
           }
@@ -218,7 +252,32 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
             const answer = await provider.evaluate(pending.binding)
             if (!current()) return
             const result = accessDecisionSchema.parse(answer)
-            if (current()) evaluation.value = { ...pending, result }
+            if (current()) {
+              const confirmed = { ...pending, result }
+              evaluation.value = confirmed
+              const deadline = Math.min(
+                result.expiresAt ?? Infinity,
+                active.snapshot.expiresAt ?? Infinity,
+              )
+              function expire(): void {
+                if (evaluation.value !== confirmed || closed || disposed) return
+                const remaining = deadline - Date.now()
+                if (remaining <= 0) {
+                  const { request } = pending.binding
+                  expiry = undefined
+                  evaluation.value = { ...confirmed, result: state('expired') }
+                  owner.notify(
+                    request.kind === 'field' || request.kind === 'record'
+                      ? request
+                      : { kind: 'domain', domain: request.domain, action: request.action },
+                  )
+                } else expiry = setTimeout(expire, Math.min(2_147_483_647, remaining))
+              }
+              // Only a previously current decision needs to withdraw owned presentation.
+              const delay = deadline - Date.now()
+              if (Number.isFinite(delay) && delay > 0)
+                expiry = setTimeout(expire, Math.min(2_147_483_647, delay))
+            }
           } catch {
             if (current()) evaluation.value = { ...pending, result: state('evaluation-failed') }
           }
@@ -233,7 +292,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
         },
         dispose() {
           closed = true
-          generation++
+          owner.advance()
           evaluation.value = undefined
           consumers.delete(owner)
         },
@@ -242,8 +301,28 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
   }
   application.provide(accessKey, Object.freeze(boundary))
   let unsubscribe: (() => void) | undefined
+  const providerSubscriptions: (() => void)[] = []
 
   if (configuredHost !== undefined) {
+    for (const [domain, provider] of providers) {
+      if (!provider?.subscribe) continue
+      try {
+        providerSubscriptions.push(
+          provider.subscribe((change) => {
+            const parsed = accessInvalidationSchema.safeParse(change)
+            if (
+              !disposed &&
+              parsed.success &&
+              'domain' in parsed.data &&
+              parsed.data.domain === domain
+            )
+              invalidate(parsed.data)
+          }),
+        )
+      } catch {
+        providers.set(domain, null)
+      }
+    }
     void replaceContext({ kind: 'identity' }, true)
     try {
       unsubscribe = configuredHost.subscribe?.(onHostChange)
@@ -259,6 +338,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
     contextGeneration++
     invalidate(Object.freeze({ kind: 'identity' }), state('disposed'))
     consumers.clear()
+    for (const unsubscribe of providerSubscriptions) unsubscribe()
     unsubscribe?.()
   }
 }

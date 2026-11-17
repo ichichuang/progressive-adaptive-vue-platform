@@ -1,16 +1,19 @@
 import { createApiAttempt } from '../../shared/api/cancellation'
+import { captureAccessProposal } from './access-boundary'
 import type {
   AccessBoundary,
   AccessInvalidation,
+  AccessProposal,
   AccessState,
   BoundAccessRequest,
 } from './access-contract'
-import { observeNativeRequirement, type NativeAccessRequirement } from './native-requirement'
+import { observeNativeRequirement, type AccessRequirement } from './native-requirement'
 
 export interface ActionTarget {
   readonly id: string
   readonly revision?: string
   readonly idempotencyKey?: string
+  readonly proposal?: AccessProposal
 }
 
 interface ActionCommand {
@@ -29,7 +32,7 @@ type ActionReply<Result> = {
 )
 
 export interface GuardedAction<Result> {
-  readonly requirement: (target: ActionTarget) => NativeAccessRequirement
+  readonly requirement: (target: ActionTarget) => AccessRequirement
   readonly isTargetCurrent: (target: ActionTarget) => boolean
   readonly businessAllows: (target: ActionTarget) => boolean
   /** The host owns transport, authoritative authorization and any transaction across commands. */
@@ -48,6 +51,7 @@ type ActionStatus =
   | 'business-blocked'
   | 'unresolved'
   | 'configuration-error'
+  | 'unsupported'
   | 'invalid-target'
   | 'not-dispatched'
   | 'completed'
@@ -98,7 +102,7 @@ export function observeActionTarget<Result>(
   target: ActionTarget,
   onInvalidated: (change: AccessInvalidation) => void,
 ) {
-  let requirement: NativeAccessRequirement | undefined
+  let requirement: AccessRequirement | undefined
   try {
     const selected = action.requirement(target)
     if (
@@ -111,12 +115,15 @@ export function observeActionTarget<Result>(
   } catch {
     // An unusable declaration keeps the target unavailable.
   }
-  return observeNativeRequirement(access, requirement, onInvalidated)
+  return observeNativeRequirement(access, requirement, onInvalidated, target.proposal)
 }
 
 function authorizationStatus(state: AccessState): ActionStatus {
   if (state.status === 'deny') return 'denied'
-  return state.status === 'configuration-error' ? state.status : 'unresolved'
+  if (state.status === 'evaluation-failed') return 'failed'
+  return state.status === 'configuration-error' || state.status === 'unsupported'
+    ? state.status
+    : 'unresolved'
 }
 
 /** Bind once at invocation; a new identity or target needs a new invocation. */
@@ -125,13 +132,19 @@ export async function executeGuardedAction<Result>(
   action: GuardedAction<Result>,
   input: ActionInvocation,
 ): Promise<readonly GuardedActionOutcome[]> {
-  const targets = Array.from(input.targets, ({ id, revision, idempotencyKey }) =>
-    Object.freeze({
-      id,
-      ...(revision === undefined ? {} : { revision }),
-      ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
-    }),
-  )
+  let targets: readonly ActionTarget[]
+  try {
+    targets = input.targets.map(({ id, revision, idempotencyKey, proposal }) =>
+      Object.freeze({
+        id,
+        ...(revision === undefined ? {} : { revision }),
+        ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
+        ...(proposal === undefined ? {} : { proposal: captureAccessProposal(proposal) }),
+      }),
+    )
+  } catch {
+    return input.targets.map((target) => outcome(target, 'invalid-target'))
+  }
   if (
     new Set(targets.map(({ id }) => id)).size !== targets.length ||
     targets.some(({ id }) => id.length === 0)

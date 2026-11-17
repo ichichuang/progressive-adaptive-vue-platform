@@ -50,7 +50,15 @@ export const accessInvalidationSchema = z
 
 export const accessDecisionSchema = z
   .strictObject({
-    status: z.enum(['allow', 'deny', 'indeterminate', 'configuration-error']),
+    status: z.enum([
+      'allow',
+      'deny',
+      'pending',
+      'indeterminate',
+      'configuration-error',
+      'unsupported',
+      'evaluation-failed',
+    ]),
     reasonCode: z
       .string()
       .max(80)
@@ -64,7 +72,19 @@ export const accessDecisionSchema = z
 export type AccessRequest = z.output<typeof accessRequestSchema>
 export type AccessInvalidation = z.output<typeof accessInvalidationSchema>
 type AccessContextSnapshot = z.output<typeof accessContextSchema>
-type AccessDecision = z.output<typeof accessDecisionSchema>
+export type AccessDecision = z.output<typeof accessDecisionSchema>
+
+export interface AccessProposal {
+  readonly revision: string
+  readonly values: Readonly<Record<string, z.output<ReturnType<typeof z.json>>>>
+}
+
+export const accessProposalSchema = z
+  .strictObject({
+    revision: identifier,
+    values: z.record(z.string(), z.json()).readonly(),
+  })
+  .readonly()
 
 export type AccessContextChange =
   | { readonly kind: 'identity' }
@@ -78,17 +98,26 @@ export interface BoundAccessRequest {
   readonly context: AccessContextSnapshot
   readonly contextGeneration: number
   readonly request: AccessRequest
+  readonly proposal?: AccessProposal
+}
+
+export type ProviderInvalidation = Exclude<
+  AccessInvalidation,
+  { readonly kind: 'identity' | 'scope' }
+>
+
+export interface AccessProvider {
+  readonly domain: string
+  readonly targets: readonly AccessRequest['kind'][]
+  evaluate(request: BoundAccessRequest): AccessDecision | Promise<AccessDecision>
+  subscribe?(notify: (change: ProviderInvalidation) => void): () => void
 }
 
 export interface AccessHost {
   resolveContext(
     change: AccessContextChange,
   ): AccessContextSnapshot | Promise<AccessContextSnapshot>
-  readonly decisions: readonly {
-    readonly domain: string
-    readonly targets: readonly AccessRequest['kind'][]
-    evaluate(request: BoundAccessRequest): AccessDecision | Promise<AccessDecision>
-  }[]
+  readonly decisions: readonly AccessProvider[]
   subscribe?(notify: (change: AccessHostChange) => Promise<void>): () => void
 }
 
@@ -135,5 +164,6 @@ export interface AccessBoundary {
   observe(
     request: AccessRequest,
     onInvalidated: (change: AccessInvalidation) => void,
+    proposal?: AccessProposal,
   ): AccessConsumer
 }

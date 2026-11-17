@@ -113,6 +113,7 @@ function readStatus(
   status: ReturnType<ReturnType<typeof observeNativeRequirement>['read']>['status'],
 ): Status {
   if (status === 'deny') return 'denied'
+  if (status === 'unsupported') return status
   if (status === 'configuration-error') return status
   if (status === 'evaluation-failed' || status === 'identity-failed') return 'failed'
   return 'unresolved'

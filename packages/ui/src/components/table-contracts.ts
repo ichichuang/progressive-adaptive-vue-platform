@@ -315,6 +315,7 @@ export interface UiTableBatchOutcome {
     | 'business-blocked'
     | 'unresolved'
     | 'configuration-error'
+    | 'unsupported'
     | 'invalid-target'
     | 'not-dispatched'
     | 'completed'

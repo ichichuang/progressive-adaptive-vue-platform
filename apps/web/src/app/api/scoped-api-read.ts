@@ -171,7 +171,7 @@ export function createScopedApiRead<Value>(
         return settle(
           status === 'deny'
             ? 'denied'
-            : status === 'configuration-error'
+            : status === 'configuration-error' || status === 'unsupported'
               ? status
               : status === 'evaluation-failed'
                 ? 'failed'

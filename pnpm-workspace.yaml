@@ -48,6 +48,7 @@ catalog:
   '@tiptap/pm': 3.34.0
   '@tiptap/starter-kit': 3.34.0
   '@antv/g2': 5.4.8
+  '@casl/ability': 7.1.1
   '@iconify-json/lucide': 1.2.120
   '@intlify/message-compiler': 11.4.10
   '@tanstack/vue-query': 5.105.1

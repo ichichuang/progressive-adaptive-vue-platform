@@ -10,7 +10,12 @@ import {
 } from '@platform/ui'
 import { onScopeDispose, shallowRef, watch } from 'vue'
 
-import type { AccessBoundary, AccessRequest, AccessState } from '../access/access-contract'
+import type {
+  AccessBoundary,
+  AccessProposal,
+  AccessRequest,
+  AccessState,
+} from '../access/access-contract'
 import {
   executeGuardedAction,
   type ActionTarget,
@@ -51,6 +56,8 @@ interface GuardedFormInput<S extends UiFormSchema> {
     payload: Payload,
   ) => Omit<GuardedAction<'acknowledged'>, 'requirement'>
   readonly recordWrite: (target: Target) => NativeAccessRequirement
+  readonly submitRequirement?: (target: Target) => NativeAccessRequirement
+  readonly proposal?: (payload: Payload, target: Target) => AccessProposal | undefined
   readonly businessAllows?: (target: Target) => boolean
   readonly customFields?: readonly string[]
   readonly validate?: UiFormProjection['validate']
@@ -284,13 +291,16 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
       const payload =
         input.payload === undefined ? operation.patch : input.payload(operation.patch, owner.target)
       if (payload === undefined) return 'failure'
+      const proposal = input.proposal?.(payload, owner.target)
+      const target = proposal === undefined ? owner.target : { ...owner.target, proposal }
       const action = input.action(operation.patch, payload)
       const eligible = (): boolean => current() === owner && operation.isCurrent() && mayWrite()
       const [result] = await executeGuardedAction(
         access,
         {
           ...action,
-          requirement: () => input.recordWrite(owner.target),
+          requirement: () =>
+            input.submitRequirement?.(owner.target) ?? input.recordWrite(owner.target),
           isTargetCurrent: (target) => eligible() && action.isTargetCurrent(target),
           businessAllows: (target) => eligible() && action.businessAllows(target),
           apply(acknowledgement: unknown, command) {
@@ -300,7 +310,7 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
             return undefined
           },
         },
-        { signal: operation.signal, targets: [owner.target] },
+        { signal: operation.signal, targets: [target] },
       )
       if (!eligible()) return 'cancelled'
       return result?.status === 'completed' && result.applied ? 'success' : 'failure'

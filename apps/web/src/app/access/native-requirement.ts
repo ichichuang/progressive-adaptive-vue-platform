@@ -4,6 +4,7 @@ import {
   accessRequestSchema,
   type AccessBoundary,
   type AccessInvalidation,
+  type AccessProposal,
   type AccessState,
 } from './access-contract'
 import { matchNativeScope, nativeScopeSchema } from './native-grants'
@@ -16,23 +17,31 @@ const requirementSchema = z
   })
   .refine(({ requests }) => requests.every(({ domain }) => domain === requests[0]?.domain))
 
-export type NativeAccessRequirement = Readonly<z.output<typeof requirementSchema>>
+export type AccessRequirement = Readonly<z.output<typeof requirementSchema>>
+export type NativeAccessRequirement = AccessRequirement
 
 const invalidRequirement = {
   status: 'configuration-error',
   reasonCode: 'native-access.invalid-requirement',
 } as const
 
-/** Compose already bound leaf permits within one native decision domain. */
+/** Compose already bound leaf permits within one selected decision domain. */
 export function observeNativeRequirement(
   access: AccessBoundary,
   input: unknown,
   onInvalidated: (change: AccessInvalidation) => void,
+  proposal?: AccessProposal,
 ) {
   const parsed = requirementSchema.safeParse(input)
   const requirement = parsed.data
   const leaves =
-    requirement?.requests.map((request) => access.observe(request, onInvalidated)) ?? []
+    requirement?.requests.map((request) =>
+      access.observe(
+        request,
+        onInvalidated,
+        request.kind === 'record' || request.kind === 'field' ? proposal : undefined,
+      ),
+    ) ?? []
   let disposed = false
 
   function checkScope(): AccessState | undefined {
