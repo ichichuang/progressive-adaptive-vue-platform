@@ -90,7 +90,12 @@ export function getFormValue(values: unknown, path: string): UiFormValue | undef
   }
   return current as UiFormValue | undefined
 }
-export function setFormValue(values: unknown, path: string, value: UiFormValue): void {
+export function setFormValue(
+  values: unknown,
+  path: string,
+  value: UiFormValue | undefined,
+  optionalLeaf = false,
+): void {
   const parts = formPathParts(path)
   const last = parts.pop()
   let current = values
@@ -103,35 +108,49 @@ export function setFormValue(values: unknown, path: string, value: UiFormValue):
     last === undefined ||
     typeof current !== 'object' ||
     current === null ||
-    !Object.hasOwn(current, last)
+    (!optionalLeaf && !Object.hasOwn(current, last))
   )
     throw new TypeError('Unknown form path.')
-  ;(current as Record<string, unknown>)[last] = value
+  const object = current as Record<string, unknown>
+  if (value === undefined) Reflect.deleteProperty(object, last)
+  else object[last] = value
 }
 export function createFormValues(
   nodes: readonly UiFormNode[],
   supplied?: unknown,
   budget = { remaining: 10000 },
+  selection?: (path: string) => 'default' | 'present' | 'omit',
+  prefix = '',
 ): Record<string, UiFormValue> {
   if (
     supplied !== undefined &&
     (typeof supplied !== 'object' || supplied === null || Array.isArray(supplied))
   )
     throw new TypeError('Form groups require an object.')
-  const input = supplied === undefined ? {} : (cloneDraft(supplied) as Record<string, UiFormValue>)
+  const input =
+    supplied === undefined
+      ? {}
+      : ((selection === undefined ? cloneDraft(supplied) : supplied) as Record<string, UiFormValue>)
   if (Object.keys(input).some((key) => !nodes.some((node) => node.name === key)))
     throw new TypeError('Unknown form value key.')
   const result: Record<string, UiFormValue> = {}
   for (const node of nodes) {
     if (--budget.remaining < 0) throw new TypeError('Form values exceed the supported size.')
-    const value = input[node.name]
-    if (node.kind === 'group') result[node.name] = createFormValues(node.fields, value, budget)
+    const path = prefix ? `${prefix}.${node.name}` : node.name
+    const selected = selection?.(path) ?? 'default'
+    if (selected === 'omit') continue
+    const value = Object.hasOwn(input, node.name) ? input[node.name] : undefined
+    if (node.kind === 'group')
+      result[node.name] = createFormValues(node.fields, value, budget, selection, path)
     else if (node.kind === 'repeat') {
       const rows =
         value === undefined ? Array.from({ length: node.minItems ?? 0 }, () => ({})) : value
       if (!Array.isArray(rows)) throw new TypeError('Repeat groups require an array.')
-      result[node.name] = rows.map((row) => createFormValues(node.fields, row, budget))
+      result[node.name] = rows.map((row, index) =>
+        createFormValues(node.fields, row, budget, selection, path + '.' + String(index)),
+      )
     } else {
+      if (selected === 'present' && value === undefined) continue
       const actual =
         value !== undefined
           ? value
@@ -228,13 +247,23 @@ export function evaluateFormFlag(
   flag: UiFormFlag | undefined,
   values: unknown,
   group: string,
-): boolean {
+  available?: (path: string) => boolean,
+): boolean | undefined {
   if (typeof flag === 'boolean' || flag === undefined) return flag === true
-  const evaluate = (condition: UiFormCondition): boolean => {
-    if ('all' in condition) return condition.all.every(evaluate)
-    if ('any' in condition) return condition.any.some(evaluate)
-    if ('not' in condition) return !evaluate(condition.not)
-    const value = getFormValue(values, resolveFormReference(condition, group))
+  const evaluate = (condition: UiFormCondition): boolean | undefined => {
+    if ('all' in condition || 'any' in condition) {
+      const all = 'all' in condition
+      const results = (all ? condition.all : condition.any).map(evaluate)
+      if (results.includes(!all)) return !all
+      return results.includes(undefined) ? undefined : all
+    }
+    if ('not' in condition) {
+      const result = evaluate(condition.not)
+      return result === undefined ? undefined : !result
+    }
+    const path = resolveFormReference(condition, group)
+    if (available?.(path) === false) return undefined
+    const value = getFormValue(values, path)
     const empty =
       value === undefined ||
       value === null ||

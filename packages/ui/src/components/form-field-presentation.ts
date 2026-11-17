@@ -34,7 +34,8 @@ export function useFormFieldPresentation<I>(
     if (
       field.kind === 'custom' &&
       props.mode !== 'detail' &&
-      !props.form.field(props.name).readonly &&
+      !binding.value.hidden &&
+      !binding.value.readonly &&
       !hasControlSlot()
     )
       throw new TypeError('Custom form fields require a typed control slot.')

@@ -20,6 +20,9 @@ provide(
 const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined) throw new TypeError('UiForm requires UiProvider.')
 
+const effectiveMode = computed(() =>
+  props.mode === 'detail' || props.form.projectionMode.value === 'detail' ? 'detail' : 'edit',
+)
 const steps = computed(() => props.form.schema.steps)
 const activeStepIndex = computed(() => props.form.activeStepIndex.value)
 const activeNodes = computed(() => {
@@ -61,7 +64,7 @@ const stepIndicators = computed(() => {
 
 function selectStep(index: number): void {
   if (props.form.submitting.value || props.form.phase.value === 'disposed') return
-  void props.form.setActiveStep(index, { relax: props.mode === 'detail' })
+  void props.form.setActiveStep(index, { relax: effectiveMode.value === 'detail' })
 }
 function goBack(): void {
   void props.form.goBackStep()
@@ -75,7 +78,7 @@ function goNext(): void {
   <PavpNaiveForm
     :form="form"
     :columns="columns ?? form.schema.columns ?? 1"
-    :mode="mode"
+    :mode="effectiveMode"
     v-bind="$attrs"
   >
     <slot :form="form">
@@ -118,7 +121,7 @@ function goNext(): void {
           :form="form"
           :nodes="activeNodes"
           prefix=""
-          :mode="mode"
+          :mode="effectiveMode"
           :columns="columns ?? form.schema.columns ?? 1"
         >
           <template
@@ -160,7 +163,7 @@ function goNext(): void {
             {{ form.copy.previousStep!() }}
           </NButton>
           <NButton
-            v-if="mode === 'edit' && !isLastStep"
+            v-if="effectiveMode === 'edit' && !isLastStep"
             class="min-h-target-enhanced min-w-target-enhanced"
             attr-type="button"
             type="primary"
@@ -170,17 +173,17 @@ function goNext(): void {
             {{ form.copy.nextStep!() }}
           </NButton>
           <NButton
-            v-else-if="mode === 'edit'"
+            v-else-if="effectiveMode === 'edit'"
             class="min-h-target-enhanced min-w-target-enhanced"
             attr-type="submit"
             v-bind="{ 'aria-busy': form.submitting.value } satisfies ButtonHTMLAttributes"
             type="primary"
-            :disabled="form.submitting.value || form.phase.value === 'disposed'"
+            :disabled="form.submitting.value || !form.canSubmit.value"
           >
             {{ form.copy.submit() }}
           </NButton>
           <NButton
-            v-if="mode === 'edit'"
+            v-if="effectiveMode === 'edit'"
             class="min-h-target-enhanced min-w-target-enhanced"
             :disabled="form.submitting.value || form.phase.value === 'disposed'"
             secondary
@@ -196,7 +199,7 @@ function goNext(): void {
             attr-type="submit"
             v-bind="{ 'aria-busy': form.submitting.value } satisfies ButtonHTMLAttributes"
             type="primary"
-            :disabled="form.submitting.value || form.phase.value === 'disposed'"
+            :disabled="form.submitting.value || !form.canSubmit.value"
           >
             {{ form.copy.submit() }}
           </NButton>

@@ -1738,6 +1738,9 @@ function dismiss(event?: MouseEvent): void {
       ),
       [
         'formId',
+        'persistence',
+        'canSubmit',
+        'projectionMode',
         'draftId',
         'fields',
         'schema',

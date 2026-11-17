@@ -14,6 +14,7 @@
         "src/shared/i18n/index.ts",
         "src/app/router/router-console-projection.ts",
         "src/app/workspace/workspace-content.ts",
+        "src/app/forms/use-guarded-form.ts",
       ],
     },
   },

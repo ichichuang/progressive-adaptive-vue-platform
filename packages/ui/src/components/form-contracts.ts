@@ -386,8 +386,35 @@ export interface UiFormChange<I> {
   readonly values: DeepReadonly<I>
   readonly changed: readonly string[]
 }
+/** The app supplies live capabilities and host-confirmed, scoped data. */
+export interface UiFormProjection {
+  /** Stable identity for a single context, target and mode. */
+  session(): object | undefined
+  mode(): UiFormMode | 'create'
+  field(path: string): { readonly read: boolean; readonly write: boolean } | undefined
+  confirmed():
+    | {
+        readonly receipt: string
+        readonly values: Readonly<UiFormRecord>
+        isCurrent(): boolean
+      }
+    | undefined
+  canRead(): boolean
+  canSubmit(): boolean
+  readonly customFields?: readonly string[]
+  validate?(operation: UiFormProjectedOperation): 'valid' | 'invalid' | Promise<'valid' | 'invalid'>
+  submit(operation: UiFormProjectedOperation): Promise<'success' | 'failure' | 'cancelled'>
+}
+export interface UiFormProjectedOperation extends UiFormWorkContext {
+  /** A recursive object patch. Array-valued leaves are atomic. Omission means unchanged. */
+  readonly patch: Readonly<Record<string, UiFormReadonlyValue>>
+  isCurrent(): boolean
+}
 export interface UiFormInput<I> {
   readonly formId: string
+  /** Record-only consumers can opt out without changing their value or callback contracts. */
+  readonly persistence?: 'disabled'
+  readonly projection?: UiFormProjection
   /** Normalized against schema; missing fields and nested groups receive their defaults. */
   readonly initial: UiFormSnapshot<unknown>
   readonly schema: UiFormSchema
@@ -413,6 +440,9 @@ export interface UiFormNodeState {
   readonly readonly: boolean
 }
 export interface UiFormController<I> {
+  readonly persistence: 'public' | 'disabled'
+  readonly canSubmit: Readonly<Ref<boolean>>
+  readonly projectionMode: Readonly<Ref<UiFormMode | undefined>>
   readonly formId: string
   readonly draftId: Readonly<Ref<string>>
   readonly schema: UiFormSchema
@@ -500,6 +530,9 @@ export interface UiFormController<I> {
   dispose(): void
 }
 export interface UiFormFieldBinding extends UiFormNodeState {
+  /** Whether original (rather than newly entered) data can be presented. */
+  readonly readable: boolean
+  readonly confirmedValue: UiFormReadonlyValue
   readonly name: string
   readonly value: UiFormReadonlyValue
   readonly controlId: string

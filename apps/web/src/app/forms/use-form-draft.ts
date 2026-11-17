@@ -27,8 +27,10 @@ export function useFormDraft<I extends Record<string, UiFormValue>>(input: {
   readonly automatic?: boolean
   readonly enabled: () => boolean
 }) {
-  const storage = useFormDraftStorage()
   const form = input.form
+  if (form.persistence === 'disabled')
+    throw new TypeError('Controlled forms cannot use unpartitioned draft storage.')
+  const storage = useFormDraftStorage()
   const draftIdentity = form.draftId.value
   for (const path of [...input.includeFields, ...(input.excludeFields ?? [])])
     if (

@@ -14,6 +14,7 @@ import {
   ref,
   useAttrs,
   useTemplateRef,
+  watch,
   watchPostEffect,
   type ComponentPublicInstance,
 } from 'vue'
@@ -73,22 +74,28 @@ function canNavigateIssue(field: string | null): field is string {
 async function focusIssue(field: string): Promise<void> {
   const form = props.form
   const owner = presentation.value
+  const revision = form.revision.value
+  const stillCurrent = () =>
+    props.form === form &&
+    presentation.value === owner &&
+    form.revision.value === revision &&
+    form.issues.value.some((issue) => issue.field === field)
   const step = form.stepIndexForField(field)
   if (step !== null && step !== form.activeStepIndex.value) {
     const outcome = await form.setActiveStep(step, { relax: true })
-    if (outcome !== 'applied') return
+    if (outcome !== 'applied' || !stillCurrent()) return
   }
   summaryExpanded.value = false
   cancelFeedback()
   const current = request
   await nextTick()
   await nextTick()
-  if (current !== request || props.form !== form || presentation.value !== owner) return
+  if (current !== request || !stillCurrent()) return
   const located = locateFirstIssue(true, field)
   if (located === undefined) return
   receipt = located.receipt
   const ready = await receipt.settled
-  if (current !== request || props.form !== form || presentation.value !== owner) return
+  if (current !== request || !stillCurrent()) return
   receipt = undefined
   if (!ready) return
   owner.focusField(field)
@@ -138,6 +145,13 @@ function cancelFeedback(): void {
   receipt?.cancel()
   receipt = undefined
 }
+watch(
+  () => props.form.revision.value,
+  () => {
+    if (props.form.projectionMode.value !== undefined) cancelFeedback()
+  },
+  { flush: 'sync' },
+)
 watchPostEffect(() => {
   const owner = presentation.value
   if (owner !== feedbackOwner) {

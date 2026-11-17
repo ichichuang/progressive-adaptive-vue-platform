@@ -25,7 +25,27 @@ const feedbackRevision = computed(() => {
   const target = formPresentation(props.form).feedbackTarget.value
   return target !== null && target.identity === controlScopeKey.value ? target.revision : 0
 })
-const detail = computed(() => props.mode === 'detail' || binding.value.readonly)
+const detail = computed(
+  () =>
+    props.mode === 'detail' ||
+    props.form.projectionMode.value === 'detail' ||
+    binding.value.readonly,
+)
+const detailBinding = computed(() => {
+  const field = binding.value
+  if (props.form.projectionMode.value === undefined) return field
+  return Object.freeze({
+    ...field,
+    value: field.confirmedValue,
+    readonly: true,
+    ...(props.mode === 'detail' && field.value !== field.confirmedValue
+      ? { selectedOptions: [] }
+      : {}),
+    setValue: () => 'blocked' as const,
+    setPendingInput: () => undefined,
+    setCommitTarget: () => undefined,
+  })
+})
 const choice = computed(
   () =>
     config.value.kind === 'select' ||
@@ -37,7 +57,7 @@ const dateTime = inject(uiDateTimeContext, undefined)
 const displayValues = computed(() =>
   formDetailDisplay(
     config.value,
-    binding.value,
+    detailBinding.value,
     props.form.copy,
     (label) => props.form.text(label),
     dateTime?.value,
@@ -47,7 +67,7 @@ const displayValues = computed(() =>
 
 <template>
   <div
-    v-if="controlScopeKey !== undefined && !binding.hidden"
+    v-if="controlScopeKey !== undefined && !binding.hidden && (!detail || binding.readable)"
     :data-span="config.span"
     :class="config.span === 2 ? 'col-span-full' : ''"
     class="min-w-0"
@@ -70,14 +90,14 @@ const displayValues = computed(() =>
           v-if="choice"
           readonly
           :form="form"
-          :binding="binding"
+          :binding="detailBinding"
           :label="form.text(config.label)"
         >
           <template #default="{ statusText }">
             <slot
               v-if="slots.detail"
               name="detail"
-              v-bind="binding"
+              v-bind="detailBinding"
             />
             <div
               v-else
@@ -114,17 +134,17 @@ const displayValues = computed(() =>
           v-else-if="config.kind === 'attachment' && !slots.detail"
           readonly
           :form="form"
-          :binding="binding"
+          :binding="detailBinding"
           :config="config"
         />
         <slot
           v-else
           name="detail"
-          v-bind="binding"
+          v-bind="detailBinding"
         >
           <PavpRichTextContent
             v-if="config.kind === 'rich-text'"
-            :document="parseRichTextDocument(binding.value)"
+            :document="parseRichTextDocument(detailBinding.value)"
           />
           <span
             v-else-if="displayValues.length === 0"

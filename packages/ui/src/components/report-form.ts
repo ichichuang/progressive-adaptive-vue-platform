@@ -9,6 +9,8 @@ export function captureUiFormReport<I>(
   form: UiFormController<I>,
   options: UiReportFormOptions,
 ): UiReportFormSection {
+  if (form.persistence === 'disabled')
+    throw new Error('Controlled form reports require an explicit authorized projection.')
   const ready = () => form.phase.value === 'idle' && !form.hasPendingInput.value
   if (!ready()) throw new Error('The form is not ready for a report.')
   const revision = form.revision.value

@@ -1,3 +1,4 @@
+import { verifyControlledForm } from './check-controlled-form'
 import { verifyFormAttachments } from './check-form-attachments'
 import assert from 'node:assert/strict'
 import type { UiFormCopy } from '../../packages/ui/src/components/form-contracts'
@@ -10,6 +11,7 @@ import { validateFormField } from '../../packages/ui/src/composables/form-valida
 import { useUiForm } from '../../packages/ui/src/composables/use-ui-form'
 
 export async function verifyFormSpecialFields(copy: UiFormCopy): Promise<void> {
+  await verifyControlledForm(copy)
   assert.equal(formatFormMask('abc1234', 'AAA-####'), 'abc-1234')
   assert.equal(formatFormMask('abc-12', 'AAA-####'), 'abc-12')
   assert.equal(formatFormMask('abc-', 'AAA-####'), 'abc')

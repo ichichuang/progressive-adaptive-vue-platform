@@ -5,6 +5,7 @@ import {
   onScopeDispose,
   shallowRef,
   triggerRef,
+  watch,
   type ShallowRef,
   type DeepReadonly,
 } from 'vue'
@@ -13,6 +14,9 @@ import type {
   UiFormAttachmentService,
   UiFormFieldBinding,
   UiFormFieldConfig,
+  UiFormFlag,
+  UiFormProjectedOperation,
+  UiFormRecord,
   UiFormInput,
   UiFormSchema,
   UiFormSchemaValues,
@@ -70,7 +74,71 @@ export function useUiForm<const Schema extends UiFormSchema>(
   type I = UiFormSchemaValues<Schema>
   if (!input.formId.trim() || !input.initial.draftId.trim())
     throw new TypeError('Form identities are required.')
-  const schema = parseUiFormSchema(input.schema)
+  const projection = input.projection
+  if (projection !== undefined && input.initial.values !== undefined)
+    throw new TypeError('Controlled originals require a current confirmed source.')
+  const originalSchema = parseUiFormSchema(input.schema)
+  // A governed schema exposes static control configuration, never a protected fallback.
+  function projectedNodes(
+    nodes: readonly UiFormNode[],
+    parent = '',
+    omitDefaults = false,
+  ): readonly UiFormNode[] {
+    return Object.freeze(
+      nodes.map((node) => {
+        const path = parent ? parent + '.' + node.name : node.name
+        if (node.kind === 'group' || node.kind === 'repeat')
+          return Object.freeze({
+            ...node,
+            fields: projectedNodes(
+              node.fields,
+              path,
+              omitDefaults || (node.kind === 'repeat' && projection?.field(path) !== undefined),
+            ),
+          })
+        if (!omitDefaults && projection?.field(path) === undefined) return node
+        const config = { ...node }
+        Reflect.deleteProperty(config, 'defaultValue')
+        return Object.freeze(config)
+      }),
+    )
+  }
+  const schema =
+    projection === undefined
+      ? originalSchema
+      : Object.freeze({ ...originalSchema, fields: projectedNodes(originalSchema.fields) })
+  const grants = (path: string) => projection?.field(path)
+  const readable = (path: string) =>
+    projection === undefined ||
+    (projection.session() !== undefined && projection.canRead() && grants(path)?.read !== false)
+  const writable = (path: string) =>
+    projection === undefined ||
+    (projection.session() !== undefined &&
+      projection.mode() !== 'detail' &&
+      projection.canSubmit() &&
+      grants(path)?.write !== false)
+  const projectionPaths =
+    projection === undefined
+      ? []
+      : formEntries(schema.fields, {}).filter(({ node }) => node.kind !== 'group')
+  function projectionRights() {
+    return projectionPaths.map(({ path }) => ({
+      path,
+      read: readable(path),
+      write: writable(path),
+    }))
+  }
+  function confirmationReceipt() {
+    const confirmed = projection?.confirmed()
+    return confirmed?.isCurrent() === true ? confirmed.receipt : undefined
+  }
+  const blockedRepeat = (path: string) =>
+    grants(path) !== undefined &&
+    projectionPaths.some((entry) => entry.path === path && entry.node.kind === 'repeat')
+  const normalizing = (path: string) =>
+    blockedRepeat(path) ? 'omit' : grants(path) === undefined ? 'default' : 'present'
+  const baselineSelection = (path: string) => (!readable(path) ? 'omit' : normalizing(path))
+
   const attachments = new Map<string, UiFormAttachmentService>()
   function captureAttachments(nodes: readonly UiFormNode[]): void {
     for (const node of nodes) {
@@ -186,8 +254,9 @@ export function useUiForm<const Schema extends UiFormSchema>(
       throw new TypeError('Form steps require previousStep and nextStep copy.')
   }
   const stepRoots = schema.steps?.map((step) => Object.freeze([...step.fields])) ?? null
-  const normalize = (value: unknown) => createFormValues(schema.fields, value) as I
-  const initial = normalize(input.initial.values)
+  const normalize = (value: unknown) =>
+    createFormValues(schema.fields, value, undefined, projection ? normalizing : undefined) as I
+  const initial = normalize(projection === undefined ? input.initial.values : undefined)
   // Baseline, current values and identity are one publication. Synchronous
   // observers must never see a new baseline paired with another record's values.
   const record = shallowRef({
@@ -197,7 +266,16 @@ export function useUiForm<const Schema extends UiFormSchema>(
   })
   const accepted = computed(() => record.value.accepted)
   const draft = computed(() => record.value.values)
-  const values = computed<DeepReadonly<I>>(() => freezeDraftValue<I>(draft.value))
+  const exposed = (source: I) =>
+    projection === undefined
+      ? source
+      : (createFormValues(schema.fields, source, undefined, (path) =>
+          entries.value.some((entry) => entry.path === path) &&
+          businessState(path, source).unresolved
+            ? 'omit'
+            : baselineSelection(path),
+        ) as I)
+  const values = computed<DeepReadonly<I>>(() => freezeDraftValue<I>(exposed(draft.value)))
   const draftId = computed(() => record.value.draftId)
   const activeStepIndex = shallowRef<number | null>(schema.steps === undefined ? null : 0)
   const generation = shallowRef(0)
@@ -344,19 +422,66 @@ export function useUiForm<const Schema extends UiFormSchema>(
       throw new TypeError('Expected a form field.')
     return { ...entry, node: entry.node }
   }
-  function nodeState(path: string, includeBusy = true) {
+  function factAvailable(path: string, source: I): boolean {
+    return (
+      readable(path) &&
+      projectionPaths.every(
+        (entry) =>
+          !entry.path.startsWith(path + '.') ||
+          (readable(entry.path) &&
+            (!grants(entry.path) || getFormValue(source, entry.path) !== undefined)),
+      ) &&
+      (!grants(path) || getFormValue(source, path) !== undefined)
+    )
+  }
+  function flag(rule: UiFormFlag | undefined, source: I, group: string) {
+    return evaluateFormFlag(
+      rule,
+      source,
+      group,
+      projection === undefined ? undefined : (path) => factAvailable(path, source),
+    )
+  }
+  function businessState(path: string, source: I) {
     const entry = entryFor(path)
     const lineage = [...entry.ancestors.map(entryFor), entry]
+    const hidden = lineage.map(({ node, group }) => flag(node.hidden, source, group))
+    const disabled = lineage.map(({ node, group }) => flag(node.disabled, source, group))
+    const readonly = lineage.map(({ node, group }) => flag(node.readonly, source, group))
+    return {
+      hidden: hidden.includes(true) || hidden.includes(undefined),
+      disabled: disabled.includes(true) || disabled.includes(undefined),
+      readonly: readonly.includes(true) || readonly.includes(undefined),
+      unresolved: [...hidden, ...disabled, ...readonly].includes(undefined),
+    }
+  }
+  function nodeState(path: string, includeBusy = true) {
+    const entry = entryFor(path)
+    const business = businessState(path, draft.value)
+    const leaf = entry.node.kind !== 'group' && entry.node.kind !== 'repeat'
+    const canRead = readable(path)
+    const canWrite = writable(path) && !business.readonly && !business.disabled
     return Object.freeze({
-      hidden: lineage.some(({ node, group }) => evaluateFormFlag(node.hidden, draft.value, group)),
+      hidden:
+        business.hidden ||
+        blockedRepeat(path) ||
+        (leaf && !canRead && (!canWrite || !registeredControl(path, entry.node))),
       disabled:
         disposed.value ||
-        (includeBusy && submission.value !== null && !committing) ||
-        lineage.some(({ node, group }) => evaluateFormFlag(node.disabled, draft.value, group)),
-      readonly: lineage.some(({ node, group }) =>
-        evaluateFormFlag(node.readonly, draft.value, group),
-      ),
+        business.disabled ||
+        (includeBusy && submission.value !== null && !committing),
+      readonly:
+        business.readonly ||
+        (projection !== undefined && leaf && (!canWrite || !registeredControl(path, entry.node))) ||
+        (entry.node.kind === 'repeat' && !writable(path)),
     })
+  }
+  function registeredControl(path: string, node: UiFormNode): boolean {
+    return (
+      projection === undefined ||
+      node.kind !== 'custom' ||
+      (projection.customFields?.includes(path) ?? false)
+    )
   }
   function rememberIssue(issue: UiFormIssue, origin: IssueOrigin): UiFormIssue {
     issueMetadata.set(issue, {
@@ -870,6 +995,16 @@ export function useUiForm<const Schema extends UiFormSchema>(
       optionView(state, { items: acceptOptions(source), status: 'ready' })
       return
     }
+    if (
+      projection !== undefined &&
+      (!source.dependsOn ||
+        source.dependsOn.some(
+          (ref) => !factAvailable(resolveFormReference(ref, group), draft.value),
+        ))
+    ) {
+      stopOptions(state, { status: 'failed', items: [], selected: [] })
+      return
+    }
     const dependencies =
       source.dependsOn === undefined
         ? cloneDraft(draft.value)
@@ -982,6 +1117,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     publishPendingInputs()
     for (const { path, node } of entries.value) {
       if (node.kind === 'repeat') {
+        if (blockedRepeat(path)) continue
         const value = getFormValue(draft.value, path)
         if (!Array.isArray(value)) throw new TypeError('Expected repeat rows.')
         const previous = keys.get(path) ?? []
@@ -1179,7 +1315,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     if (!ownsPublication()) return 'applied'
     changing = true
     try {
-      if (notify && changedValues)
+      if (projection === undefined && notify && changedValues)
         input.onChange?.(Object.freeze({ previous, values: values.value, changed }))
     } finally {
       changing = false
@@ -1187,6 +1323,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     return 'applied'
   }
   function setValues(patch: Partial<I>): UiFormMutationResult {
+    if (projection) return 'blocked'
     const blocked = mutationGuard()
     if (blocked !== null) return blocked
     const checked = cloneDraft(patch)
@@ -1206,7 +1343,20 @@ export function useUiForm<const Schema extends UiFormSchema>(
     if (blocked !== null) return blocked
     const entry = entryFor(path)
     const next = cloneDraft(draft.value)
-    setFormValue(next, path, cloneDraft(value))
+    if (projection !== undefined) {
+      const state = businessState(path, draft.value)
+      if (
+        !writable(path) ||
+        state.unresolved ||
+        state.disabled ||
+        state.readonly ||
+        !registeredControl(path, entry.node) ||
+        entry.node.kind === 'repeat' ||
+        entry.node.kind === 'group'
+      )
+        return 'blocked'
+    }
+    setFormValue(next, path, cloneDraft(value), projection !== undefined)
     return applyValues(next, (normalized) => {
       if (entry.node.kind === 'repeat' || entry.node.kind === 'group') {
         clearDescendants(path, normalized)
@@ -1214,6 +1364,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     })
   }
   function replaceValues(value: I): UiFormMutationResult {
+    if (projection) return 'blocked'
     const blocked = mutationGuard()
     if (blocked !== null) return blocked
     const next = normalize(value)
@@ -1238,6 +1389,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     loader: (context: UiFormWorkContext) => UiFormSnapshot<I> | Promise<UiFormSnapshot<I>>,
     options: UiFormLoadOptions = {},
   ): Promise<UiFormLoadOutcome> {
+    if (projection) return Promise.resolve('blocked')
     if (disposed.value) return Promise.resolve('cancelled')
     if (mutationGuard() !== null) return Promise.resolve('busy')
     const requestRevision = cancelLoad()
@@ -1339,22 +1491,52 @@ export function useUiForm<const Schema extends UiFormSchema>(
         result.push({ field: path, message: () => input.copy.maxItems(maximum) })
     }
     for (const config of fields.value) {
-      if (!inScope(config.name, scope, roots) || nodeState(config.name).hidden) continue
-      const { group } = fieldFor(config.name)
+      if (!inScope(config.name, scope, roots)) continue
+      if (
+        projection !== undefined &&
+        projection.validate === undefined &&
+        writable(config.name) &&
+        config.required !== undefined &&
+        config.required !== false &&
+        businessState(config.name, captured).unresolved
+      ) {
+        if (!result.some((issue) => issue.message === input.copy.validationUnavailable))
+          result.push({ field: null, message: input.copy.validationUnavailable })
+        continue
+      }
+      if (nodeState(config.name).hidden) continue
+      const { group, node } = fieldFor(config.name)
       const value = getFormValue(captured, config.name)
+      if (
+        projection !== undefined &&
+        (!writable(config.name) ||
+          businessState(config.name, captured).readonly ||
+          businessState(config.name, captured).disabled ||
+          !registeredControl(config.name, node) ||
+          (projection.mode() !== 'create' && !readable(config.name) && value === undefined))
+      )
+        continue
+      const required = flag(config.required, captured, group)
+      if (projection !== undefined && required === undefined) {
+        if (projection.validate === undefined)
+          result.push({ field: null, message: input.copy.validationUnavailable })
+        continue
+      }
       result.push(
-        ...validateFormField(
-          config,
-          value,
-          evaluateFormFlag(config.required, captured, group),
-          input.copy,
-          input.translate,
-        ),
+        ...validateFormField(config, value, required === true, input.copy, input.translate),
       )
     }
     for (const config of fields.value) {
       if (!inScope(config.name, scope, roots) || nodeState(config.name).hidden) continue
       const value = getFormValue(captured, config.name)
+      if (
+        projection !== undefined &&
+        (!writable(config.name) ||
+          businessState(config.name, captured).readonly ||
+          businessState(config.name, captured).disabled ||
+          (projection.mode() !== 'create' && !readable(config.name) && value === undefined))
+      )
+        continue
       const state = options.get(config.name)
       if (state !== undefined) {
         const selected = Array.isArray(value)
@@ -1392,7 +1574,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     roots?: readonly string[],
   ): Promise<readonly UiFormIssue[]> {
     const result: UiFormIssue[] = []
-    if (input.validation !== undefined) {
+    if (projection === undefined && input.validation !== undefined) {
       const custom = await input.validation(freezeDraftValue(captured), { signal })
       if (signal.aborted) return []
       result.push(...custom.map((issue) => rememberIssue(issue, 'validation')))
@@ -1669,11 +1851,26 @@ export function useUiForm<const Schema extends UiFormSchema>(
     if (blocked !== null) return blocked
     const roots = selectedRoots(paths)
     if (roots.length === 0) return 'unchanged'
+    if (
+      projection !== undefined &&
+      roots.some(
+        (path) =>
+          blockedRepeat(path) ||
+          (entryFor(path).node.kind === 'group' &&
+            getFormValue(accepted.value, path) === undefined),
+      )
+    )
+      return 'blocked'
+
     const selected = (path: string) => inScope(path, undefined, roots)
     const next = cloneDraft(draft.value)
     for (const path of roots) {
       const { node } = entryFor(path)
       const baseline = getFormValue(accepted.value, path)
+      if (projection !== undefined) {
+        setFormValue(next, path, baseline === undefined ? undefined : cloneDraft(baseline), true)
+        continue
+      }
       const fallback = createFormValues([node])[node.name]
       if (fallback === undefined) throw new TypeError('Missing field default.')
       setFormValue(next, path, cloneDraft(baseline === undefined ? fallback : baseline))
@@ -1858,7 +2055,8 @@ export function useUiForm<const Schema extends UiFormSchema>(
       )
     )
       cancelValidation(previous)
-    input.onBlur?.(Object.freeze({ field: name, values: values.value }))
+    if (projection === undefined)
+      input.onBlur?.(Object.freeze({ field: name, values: values.value }))
     if (originGeneration === generation.value) void check()
   }
   function field(name: string): UiFormFieldBinding {
@@ -1880,10 +2078,25 @@ export function useUiForm<const Schema extends UiFormSchema>(
       get name() {
         return name
       },
-      get value() {
+      get readable() {
+        return readable(name)
+      },
+      get confirmedValue() {
+        if (projection !== undefined && (!current() || !readable(name))) return null
         return freezeDraftValue<unknown>(
-          getFormValue(draft.value, name) ?? null,
+          getFormValue(accepted.value, name) ?? null,
         ) as UiFormReadonlyValue
+      },
+      get value() {
+        if (
+          projection !== undefined &&
+          (!current() ||
+            (!readable(name) &&
+              (!writable(name) || getFormValue(accepted.value, name) !== undefined)))
+        )
+          return null
+        const source = projection?.mode() === 'detail' ? accepted.value : draft.value
+        return freezeDraftValue<unknown>(getFormValue(source, name) ?? null) as UiFormReadonlyValue
       },
       get controlId() {
         return `${encodeURIComponent(input.formId)}:${encodeURIComponent(name)}:control`
@@ -1910,7 +2123,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
       },
       get required() {
         const { node, group } = fieldFor(name)
-        return evaluateFormFlag(node.required, draft.value, group)
+        return flag(node.required, draft.value, group) === true
       },
       get dirty() {
         return dirtyFields.value.includes(name)
@@ -1929,12 +2142,18 @@ export function useUiForm<const Schema extends UiFormSchema>(
           : []
       },
       get options() {
+        if (projection !== undefined && !current()) return []
         return options.get(name)?.view.value.items ?? []
       },
       get optionsState() {
         return options.get(name)?.view.value.status ?? 'idle'
       },
       get selectedOptions() {
+        if (
+          projection !== undefined &&
+          (!current() || (!readable(name) && getFormValue(accepted.value, name) !== undefined))
+        )
+          return []
         const state = options.get(name)
         if (state?.provider !== undefined) return state.view.value.selected
         return Object.freeze(
@@ -2055,9 +2274,12 @@ export function useUiForm<const Schema extends UiFormSchema>(
         } else if (current()) commits.set(name, { owner, run: commit, relocate })
       },
       setPendingInput(pending) {
-        if (!current()) return
+        if (!current() || (projection !== undefined && !pending && !pendingInputs.has(name))) return
         if (!pending && pendingInputs.get(name)?.owner !== owner) return
-        const previous = !committing && checkingItem !== undefined ? checking.value : null
+        const previous =
+          !committing && (projection !== undefined || checkingItem !== undefined)
+            ? checking.value
+            : null
         if (pending) {
           pendingInputs.set(name, { owner, relocate })
           revision.value += 1
@@ -2161,8 +2383,49 @@ export function useUiForm<const Schema extends UiFormSchema>(
     }
   }
 
+  function projectChanges(captured: I): UiFormRecord | undefined {
+    const patch: UiFormRecord = {}
+    for (const { path, node, ancestors } of entries.value) {
+      if (
+        node.kind === 'group' ||
+        blockedRepeat(path) ||
+        ancestors.some((ancestor) => entryFor(ancestor).node.kind === 'repeat')
+      )
+        continue
+      const value = getFormValue(captured, path)
+      if (value === undefined || sameDraftValue(value, getFormValue(accepted.value, path))) continue
+      const state = businessState(path, captured)
+      if (state.unresolved) return undefined
+      // Business-hidden fields retain their previous inclusion policy. Disabled/readonly
+      // values can be observed but cannot authorize a projected write.
+      if (!writable(path) || state.disabled || state.readonly || !registeredControl(path, node))
+        continue
+      let parent = patch
+      const parts = path.split('.')
+      for (const part of parts.slice(0, -1)) {
+        if (parent[part] === undefined) parent[part] = {}
+        parent = parent[part] as UiFormRecord
+      }
+      const key = parts.at(-1)
+      if (key !== undefined) parent[key] = cloneDraft(value)
+    }
+    return patch
+  }
+  function patchLeaves(patch: Readonly<UiFormRecord> | UiFormProjectedOperation['patch']) {
+    return entries.value.flatMap(({ path, node, ancestors }) => {
+      if (
+        node.kind === 'group' ||
+        blockedRepeat(path) ||
+        ancestors.some((ancestor) => entryFor(ancestor).node.kind === 'repeat')
+      )
+        return []
+      const value = getFormValue(patch, path)
+      return value === undefined ? [] : [[path, value] as const]
+    })
+  }
+
   function submit(): Promise<UiFormSubmitOutcome> {
-    if (disposed.value) return Promise.resolve('cancelled')
+    if (disposed.value || projection?.canSubmit() === false) return Promise.resolve('cancelled')
     if (submission.value !== null) return submission.value.work.promise
     const requestRevision = cancelLoad()
     if (requestRevision !== loadRevision) return Promise.resolve('cancelled')
@@ -2195,17 +2458,78 @@ export function useUiForm<const Schema extends UiFormSchema>(
           return
         }
         const captured = cloneDraft(draft.value)
-        const result = await validateCaptured(captured, attempt.work.signal)
+        const capturedRevision = revision.value
+        const session = projection?.session()
+        const rights = projectionRights()
+        const receipt = confirmationReceipt()
+        const applicable = () =>
+          current() &&
+          revision.value === capturedRevision &&
+          projection?.session() === session &&
+          projection?.canSubmit() !== false &&
+          confirmationReceipt() === receipt &&
+          rights.every(
+            ({ path, read, write }) => read === readable(path) && write === writable(path),
+          )
+        const patch = projection === undefined ? undefined : projectChanges(captured)
+        const operation: UiFormProjectedOperation | undefined =
+          patch === undefined
+            ? undefined
+            : Object.freeze({
+                patch: freezeDraftValue<unknown>(patch) as UiFormProjectedOperation['patch'],
+                isCurrent: applicable,
+                signal: attempt.work.signal,
+              })
+        const schemaIssues = await validateCaptured(captured, attempt.work.signal)
+        if (projection !== undefined && !applicable()) return
+        const result =
+          patch === undefined && projection !== undefined && schemaIssues.length === 0
+            ? [{ field: null, message: input.copy.validationUnavailable }]
+            : schemaIssues
         if (!current()) return
         publishIssues(result)
         if (issues.value.length > 0) {
           invalid()
           return
         }
+        if (projection !== undefined) {
+          if (!operation?.isCurrent()) return
+          if (Object.keys(operation.patch).length === 0) {
+            attempt.validation.resolve('valid')
+            return
+          }
+          const check = await projection.validate?.(operation)
+          if (!operation.isCurrent()) return
+          if (check === 'invalid') {
+            publishIssues([{ field: null, message: input.copy.validationUnavailable }])
+            invalid()
+            return
+          }
+        }
         attempt.validation.resolve('valid')
         attempt.stage = 'submitting'
         triggerRef(submission)
         try {
+          if (projection !== undefined) {
+            if (!operation?.isCurrent()) return
+            const completed = await projection.submit(operation)
+            if (!operation.isCurrent()) return
+            if (completed !== 'success') {
+              if (completed === 'failure') notice.value = input.copy.submitFailed
+              attempt.work.resolve(completed)
+              return
+            }
+            // Acknowledgement confirms only this patch. Write-only input is never a baseline.
+            const next = normalize(accepted.value)
+            for (const [path, value] of patchLeaves(operation.patch))
+              if (readable(path)) setFormValue(next, path, cloneDraft(value), true)
+            submission.value = null
+            if (hydrate({ draftId: draftId.value, values: next })) {
+              notice.value = input.copy.submitSucceeded
+              attempt.work.resolve('success')
+            }
+            return
+          }
           const submitted =
             input.onSubmit === undefined
               ? { status: 'success' as const }
@@ -2255,6 +2579,8 @@ export function useUiForm<const Schema extends UiFormSchema>(
         }
       } finally {
         if (current()) submission.value = null
+        attempt.validation.resolve('cancelled')
+        attempt.work.resolve('cancelled')
       }
     })
     return attempt.work.promise
@@ -2305,6 +2631,11 @@ export function useUiForm<const Schema extends UiFormSchema>(
   }
   const form: UiFormController<I> = Object.freeze({
     formId: input.formId,
+    persistence: projection === undefined ? (input.persistence ?? 'public') : 'disabled',
+    canSubmit: computed(() => !disposed.value && (projection?.canSubmit() ?? true)),
+    projectionMode: computed(() =>
+      projection === undefined ? undefined : projection.mode() === 'detail' ? 'detail' : 'edit',
+    ),
     text: (value: string) => (value === '' ? '' : (input.translate?.(value) ?? value)),
     schema,
     copy: input.copy,
@@ -2354,11 +2685,11 @@ export function useUiForm<const Schema extends UiFormSchema>(
     submitting: computed(() => submission.value !== null),
     notice: computed(() => notice.value),
     activeStepIndex: computed(() => activeStepIndex.value),
-    getValues: () => cloneDraft(draft.value),
-    getInitial: () => ({ draftId: draftId.value, values: cloneDraft(accepted.value) }),
+    getValues: () => cloneDraft(exposed(draft.value)),
+    getInitial: () => ({ draftId: draftId.value, values: cloneDraft(exposed(accepted.value)) }),
     getValue(path: string) {
       entryFor(path)
-      const value = getFormValue(draft.value, path)
+      const value = getFormValue(exposed(draft.value), path)
       return value === undefined ? undefined : cloneDraft(value)
     },
     setValues,
@@ -2397,15 +2728,22 @@ export function useUiForm<const Schema extends UiFormSchema>(
     reset() {
       if (!disposed.value) {
         if (hydrate({ draftId: draftId.value, values: accepted.value }))
-          input.onReset?.(values.value)
+          if (projection === undefined) input.onReset?.(values.value)
       }
     },
     replaceInitial(snapshot: UiFormSnapshot<I>) {
-      if (!disposed.value) hydrate(snapshot)
+      if (!disposed.value && projection === undefined) hydrate(snapshot)
     },
     dispose() {
       if (disposed.value) return
+      stopProjection?.()
       disposed.value = true
+      if (projection)
+        record.value = {
+          ...record.value,
+          values: normalize(undefined),
+          accepted: normalize(undefined),
+        }
       generation.value += 1
       cancelWork()
       focuses.clear()
@@ -2465,6 +2803,117 @@ export function useUiForm<const Schema extends UiFormSchema>(
     canFocusField,
     focusField,
   })
+  const retiredReceipts = new Map<string, string>()
+  // The watcher copies only authorized leaves and reacts synchronously to a WP-02 retirement.
+  // No controller reference to an upstream response survives this publication.
+  const stopProjection =
+    projection === undefined
+      ? undefined
+      : watch(
+          () => {
+            return {
+              session: projection.session(),
+              mode: projection.mode(),
+              submit: projection.canSubmit(),
+              receipt: confirmationReceipt(),
+              rights: projectionRights(),
+            }
+          },
+          (next, previous) => {
+            const replaced = next.session !== previous?.session || next.mode !== previous?.mode
+            const receiptChanged = next.receipt !== previous?.receipt
+            const changes = next.rights.filter((right, index) => {
+              const earlier = previous?.rights[index]
+              return (
+                replaced ||
+                receiptChanged ||
+                right.read !== earlier?.read ||
+                right.write !== earlier.write
+              )
+            })
+            if (changes.length === 0 && next.submit === previous?.submit) return
+            let confirmed = next.receipt === undefined ? undefined : projection.confirmed()
+            if (confirmed?.receipt !== next.receipt || confirmed?.isCurrent() !== true)
+              confirmed = undefined
+            const acceptedNext = normalize(replaced ? undefined : accepted.value)
+            const draftNext = normalize(replaced ? undefined : draft.value)
+            function discardInput(path: string, value: UiFormValue | undefined): void {
+              setFormValue(draftNext, path, value, true)
+              const affected = entries.value.filter(
+                (entry) => entry.path === path || entry.path.startsWith(path + '.'),
+              )
+              for (const entry of affected) {
+                controlKeys.delete(controlIdentity(entry.path))
+                focuses.delete(entry.path)
+                commits.delete(entry.path)
+                pendingInputs.delete(entry.path)
+              }
+              for (const entry of affected) keys.delete(entry.path)
+            }
+            for (const { path, read, write } of changes) {
+              if (blockedRepeat(path)) continue
+              const prior = previous?.rights.find((right) => right.path === path)
+              if ((!read || replaced) && previous?.receipt !== undefined)
+                retiredReceipts.set(path, previous.receipt)
+              const old = getFormValue(acceptedNext, path)
+              const value =
+                !read || confirmed === undefined
+                  ? undefined
+                  : retiredReceipts.get(path) === confirmed.receipt ||
+                      (!receiptChanged && !replaced && prior?.read === true)
+                    ? old
+                    : getFormValue(confirmed.values, path)
+              if (
+                read &&
+                confirmed !== undefined &&
+                retiredReceipts.get(path) !== confirmed.receipt
+              )
+                retiredReceipts.delete(path)
+              setFormValue(acceptedNext, path, value, true)
+              if (
+                replaced ||
+                !read ||
+                !write ||
+                !next.submit ||
+                receiptChanged ||
+                prior?.read !== read
+              ) {
+                discardInput(path, value)
+              }
+            }
+            if (!next.submit && previous?.submit) {
+              for (const { path } of projectionPaths) {
+                if (blockedRepeat(path)) continue
+                discardInput(path, getFormValue(acceptedNext, path))
+              }
+            }
+            for (const { path, node } of entries.value) {
+              if (
+                node.kind === 'group' ||
+                node.kind === 'repeat' ||
+                !businessState(path, draftNext).unresolved
+              )
+                continue
+              discardInput(path, getFormValue(acceptedNext, path))
+            }
+            const current = normalize(draftNext)
+            const baseline = normalize(acceptedNext)
+            valueRevision++
+            record.value = { ...record.value, values: current, accepted: baseline }
+            if (replaced) {
+              generation.value++
+              resetActiveStep()
+            }
+            revision.value++
+            feedbackTarget.value = null
+            issues.value = []
+            notice.value = null
+            touched.value = Object.freeze({})
+            cancelWork()
+            refreshMetadata()
+          },
+          { immediate: true, flush: 'sync' },
+        )
   refreshMetadata()
   if (getCurrentScope() !== undefined)
     onScopeDispose(() => {
