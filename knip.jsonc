@@ -15,6 +15,8 @@
         "src/app/router/router-console-projection.ts",
         "src/app/workspace/workspace-content.ts",
         "src/app/forms/use-guarded-form.ts",
+        "src/app/tables/use-guarded-table.ts",
+        "src/app/tables/guarded-table-editor.ts",
       ],
     },
   },

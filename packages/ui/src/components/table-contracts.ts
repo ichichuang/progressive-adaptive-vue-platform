@@ -2,7 +2,13 @@ import type { UiDateTimeContext, UiDateTimeColumnFormat } from '../date-time/dat
 import type { Ref } from 'vue'
 import type { useUiTableForm } from '../composables/use-ui-table-form'
 import type { UiDensity } from '@platform/design-system'
-import type { UiFormReadonlyValue, UiFormRecord, UiFormSchema, UiFormValue } from './form-contracts'
+import type {
+  UiFormController,
+  UiFormReadonlyValue,
+  UiFormRecord,
+  UiFormSchema,
+  UiFormValue,
+} from './form-contracts'
 
 export type UiTableRecord = UiFormRecord
 export type UiTableReadonlyRecord = Readonly<Record<string, UiFormReadonlyValue>>
@@ -287,6 +293,43 @@ export interface UiTableTransport {
   detail?(request: UiTableResolvedRequest, signal: AbortSignal): Promise<UiTableRecord>
   mutate?(request: UiTableResolvedRequest, signal: AbortSignal): Promise<void>
 }
+export type UiTableEditorMode = 'create' | 'edit' | 'detail'
+export interface UiTableEditorAccess {
+  canOpen(mode: UiTableEditorMode, row: UiTableReadonlyRecord, fields?: readonly string[]): boolean
+  prepare(input: {
+    readonly mode: UiTableEditorMode
+    readonly row: UiTableReadonlyRecord
+    readonly schema: UiFormSchema
+    readonly signal: AbortSignal
+  }): {
+    readonly form: UiFormController<UiTableRecord>
+    acknowledged(): boolean
+    readState?(): 'pending' | 'ready' | 'unavailable'
+  }
+  remove?(row: UiTableReadonlyRecord, confirm: () => boolean | Promise<boolean>): Promise<boolean>
+}
+export interface UiTableBatchOutcome {
+  readonly targetId: string
+  readonly status:
+    | 'denied'
+    | 'business-blocked'
+    | 'unresolved'
+    | 'configuration-error'
+    | 'invalid-target'
+    | 'not-dispatched'
+    | 'completed'
+    | 'failed'
+    | 'unknown'
+  readonly applied?: boolean
+}
+export interface UiTableBatchAccess {
+  execute(input: {
+    readonly action: UiTableBatchAction
+    readonly rows: readonly UiTableReadonlyRecord[]
+    readonly signal: AbortSignal
+    readonly confirm: (signal: AbortSignal) => boolean | Promise<boolean>
+  }): Promise<readonly UiTableBatchOutcome[]>
+}
 /** Only column order, visibility and width are persisted, never row or query data. */
 export interface UiTableColumnPreference {
   readonly schemaVersion: 1
@@ -302,7 +345,41 @@ export interface UiTableColumnPreferenceStorage {
   write(key: string, preference: UiTableColumnPreference): void
   clear(key: string): void
 }
+export type UiTableAccessState =
+  'pending' | 'ready' | 'empty' | 'denied' | 'unresolved' | 'configuration-error' | 'failed'
+
+/** Live application-owned presentation. The UI never evaluates authorization policy. */
+export interface UiTableAccess {
+  readonly context: () => object | undefined
+  /** Changes when an accepted source or any presentation decision becomes invalid. */
+  readonly revision: () => unknown
+  readonly state: () => UiTableAccessState
+  readonly column: (key: string) => boolean
+  queryColumn?(key: string): boolean
+  readonly filter: (path: string) => boolean
+  /** Return a new safe record, including the stable row key, or omit the record. */
+  row(record: UiTableReadonlyRecord): UiTableReadonlyRecord | undefined
+  local?(): readonly UiTableReadonlyRecord[]
+  /** Remote totals and summaries are valid only while the scoped receipt remains current. */
+  summary(path: string): boolean
+  readonly read?: (
+    query: UiTableQuery,
+    signal: AbortSignal,
+  ) => Promise<
+    | {
+        readonly page: UiTablePage
+        readonly isCurrent: () => boolean
+      }
+    | undefined
+  >
+  output?(
+    kind: 'csv' | 'copy',
+    scope: UiTableCsvScope,
+    rows: readonly UiTableReadonlyRecord[],
+  ): { readonly fields: readonly string[]; isCurrent(): boolean } | undefined
+}
 export interface UiTableInput {
+  readonly access?: UiTableAccess
   readonly sortComparators?: Readonly<Record<string, UiTableSortComparator>>
   readonly columnPreferenceStorage?: UiTableColumnPreferenceStorage
   readonly schema: UiTableSchema
@@ -316,10 +393,12 @@ export interface UiTableInput {
   readonly onSelectionChange?: (keys: readonly UiTableKey[]) => void
 }
 export interface UiTableController {
+  readonly access?: Pick<UiTableAccess, 'context' | 'revision' | 'state' | 'column' | 'filter'>
   readonly schema: UiTableSchema
   readonly columns: Readonly<Ref<readonly UiTableColumn[]>>
   /** The effective configuration, initially schema.summary. Copy this after setSummary. */
   readonly summary: Readonly<Ref<readonly UiTableSummaryRow[]>>
+  readonly totalKnown?: Readonly<Ref<boolean>>
   readonly summaryRows: Readonly<Ref<readonly UiTableResolvedSummaryRow[]>>
   readonly rows: Readonly<Ref<readonly UiTableReadonlyRecord[]>>
   readonly total: Readonly<Ref<number>>
@@ -362,6 +441,13 @@ export interface UiTableController {
   resetColumns(): void
   /** Produces a safe CSV snapshot; does not fetch or download data. */
   exportCsv(scope: UiTableCsvScope): UiTableCsvFile
+  /** Builds and delivers a controlled result in the same current access generation. */
+  readonly deliverOutput?: (
+    kind: 'csv' | 'copy',
+    scope: UiTableCsvScope,
+    deliver: (file: UiTableCsvFile, isCurrent: () => boolean) => void,
+  ) => boolean
+  canOutput?(kind: 'csv' | 'copy', scope: UiTableCsvScope): boolean
   /** Snapshot currently loaded rows only; no fetching and independent of CSV permissions. */
   captureRows(scope: UiTableCsvScope): readonly UiTableReadonlyRecord[]
   /** Replaces only summary configuration, preserving query, pagination, selection and columns. */
@@ -370,6 +456,10 @@ export interface UiTableController {
   dispose(): void
 }
 export interface UiTableCopy {
+  readonly accessStatus?: (status: UiTableAccessState) => string
+  readonly copyPage?: () => string
+  readonly copySelected?: () => string
+  readonly copySucceeded?: () => string
   readonly loadMore?: () => string
   readonly loadedAll?: () => string
   readonly maximize?: () => string

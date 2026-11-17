@@ -116,6 +116,10 @@ onBeforeUnmount(() => {
 })
 const blocked = ref(false)
 const title = computed(() => props.copy.title(props.session.mode.value))
+const saveDisabled = computed(() => {
+  const form = props.session.form.value
+  return !props.session.open.value || !form || !form.canSubmit.value || form.submitting.value
+})
 const status = computed(() =>
   props.session.loading.value
     ? props.copy.loading()
@@ -218,9 +222,7 @@ function updateShow(show: boolean): void {
             attr-type="submit"
             v-bind="{ form: session.form.value?.formId } satisfies ButtonHTMLAttributes"
             :loading="session.form.value?.submitting.value === true"
-            :disabled="
-              !session.open.value || !session.form.value || session.form.value.submitting.value
-            "
+            :disabled="saveDisabled"
           >
             {{ copy.save() }}
           </NButton>
@@ -322,9 +324,7 @@ function updateShow(show: boolean): void {
               attr-type="submit"
               v-bind="{ form: session.form.value?.formId } satisfies ButtonHTMLAttributes"
               :loading="session.form.value?.submitting.value === true"
-              :disabled="
-                !session.open.value || !session.form.value || session.form.value.submitting.value
-              "
+              :disabled="saveDisabled"
             >
               {{ copy.save() }}
             </NButton>
@@ -391,9 +391,7 @@ function updateShow(show: boolean): void {
         attr-type="submit"
         v-bind="{ form: session.form.value?.formId } satisfies ButtonHTMLAttributes"
         :loading="session.form.value?.submitting.value === true"
-        :disabled="
-          !session.open.value || !session.form.value || session.form.value.submitting.value
-        "
+        :disabled="saveDisabled"
       >
         {{ copy.save() }}
       </NButton>

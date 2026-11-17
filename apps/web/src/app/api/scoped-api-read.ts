@@ -59,7 +59,7 @@ type ReadOutcome =
 type ReadState<Value> =
   | { readonly status: 'idle' }
   | {
-      readonly status: Exclude<ReadOutcome, 'ready' | 'stale'> | 'pending'
+      readonly status: Exclude<ReadOutcome, 'ready' | 'stale'> | 'pending' | 'consumed'
       readonly requestId: string
     }
   | { readonly status: 'ready'; readonly requestId: string; readonly data: Value }
@@ -228,7 +228,9 @@ export function createScopedApiRead<Value>(
   return Object.freeze({
     state: computed(() => {
       const current = state.value
-      return (current.status === 'ready' || current.status === 'empty') &&
+      return (current.status === 'ready' ||
+        current.status === 'empty' ||
+        current.status === 'consumed') &&
         active?.isCurrent() !== true
         ? ({ status: 'idle' } as const)
         : current
@@ -236,10 +238,24 @@ export function createScopedApiRead<Value>(
     isCurrent: (requestId: string) => {
       const published = state.value
       return (
-        (published.status === 'ready' || published.status === 'empty') &&
+        (published.status === 'ready' ||
+          published.status === 'empty' ||
+          published.status === 'consumed') &&
         published.requestId === requestId &&
         active?.isCurrent() === true
       )
+    },
+    /** Transfer the value to its presentation owner while retaining the scoped read receipt. */
+    consume(requestId: string): Value | undefined {
+      const published = state.value
+      if (
+        published.status !== 'ready' ||
+        published.requestId !== requestId ||
+        active?.isCurrent() !== true
+      )
+        return undefined
+      state.value = { status: 'consumed', requestId }
+      return published.data
     },
     run,
     clear,

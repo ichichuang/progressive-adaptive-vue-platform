@@ -197,11 +197,29 @@ const pagination = computed<PaginationProps>(() => {
     ...(sizes === undefined ? {} : { pageSizes: [...sizes] }),
   }
 })
-const status = computed(() => (props.table.loading.value ? props.copy.loading() : ''))
+const status = computed(() => {
+  if (props.table.loading.value) return props.copy.loading()
+  const status = props.table.access?.state()
+  if (status === undefined || status === 'ready' || status === 'empty') return ''
+  return (
+    props.copy.accessStatus?.(status) ??
+    (status === 'pending' ? props.copy.loading() : props.copy.error())
+  )
+})
 const continuous = computed(() => props.table.schema.pagination?.mode === 'load-more')
 const continuationDisabled = computed(
   () =>
     (!props.table.error.value && !props.table.hasMore.value) ||
+    Boolean(props.inlineEditing?.session.open.value),
+)
+const keywordAvailable = computed(() => {
+  const parameter = props.table.schema.keywordSearch?.parameter
+  return parameter !== undefined && props.table.access?.filter(parameter) !== false
+})
+const paginationDisabled = computed(
+  () =>
+    props.table.totalKnown?.value === false ||
+    props.table.loading.value ||
     Boolean(props.inlineEditing?.session.open.value),
 )
 const continuationLabel = computed(() => {
@@ -321,7 +339,9 @@ function inlineButton(row: TableRow, field?: string, label?: string): VNodeChild
     {
       text: true,
       type: 'primary',
-      disabled: editing.session.open.value,
+      disabled:
+        editing.session.open.value ||
+        !editing.session.canOpen('edit', row.record, field === undefined ? undefined : [field]),
       'aria-label': `${editing.copy.title('edit')} · ${field ? props.table.text(props.table.columns.value.find((column) => column.key === field)?.title ?? field) + ' · ' : ''}${String(row.key)}`,
       'data-inline-edit-trigger': inlineTriggerKey(row, field),
       onClick: (event: MouseEvent) => {
@@ -764,7 +784,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
               class="flex flex-1 flex-wrap min-w-0 items-center gap-content-gap layout-narrow:flex-nowrap"
             >
               <TableKeywordSearch
-                v-if="table.schema.keywordSearch"
+                v-if="keywordAvailable"
                 :table="table"
                 :copy="copy"
                 :disabled="Boolean(inlineEditing?.session.open.value)"
@@ -990,7 +1010,8 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
           <NPagination
             v-else
             v-bind="pagination"
-            :disabled="table.loading.value || Boolean(inlineEditing?.session.open.value)"
+            :class="table.totalKnown?.value === false ? 'invisible' : undefined"
+            :disabled="paginationDisabled"
             @update:page="table.setPage"
             @update:page-size="table.setPageSize"
           />

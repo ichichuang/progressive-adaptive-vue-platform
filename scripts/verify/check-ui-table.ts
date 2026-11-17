@@ -1,4 +1,5 @@
 import { verifyTableFormSession } from './check-table-form-session'
+import { verifyGuardedTable } from './check-guarded-table'
 import { verifyRuntimeUpdate } from './check-runtime-update'
 import { verifyRuntimeConfigurationLoad } from './check-runtime-configuration'
 import { verifyTableQueryRestoration } from './check-table-query-restoration'
@@ -2627,6 +2628,7 @@ verifyPublicValueTypes()
 await verifyFormValueBoundaries()
 await verifyTableFormSources()
 await verifyTableFormSession(formCopy)
+await verifyGuardedTable()
 await verifyTableReadonlySnapshots()
 await verifyFormBindingLifecycle()
 await verifyGroupedQueries()

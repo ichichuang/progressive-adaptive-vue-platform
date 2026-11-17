@@ -24,6 +24,7 @@ import {
   type BrowserPageSessionSnapshot,
 } from './browser-page-session-contract'
 import { isRouterNavigationCurrent, type RouterNavigationOptions } from './router-lifecycle'
+import { routerWorkspaceRetentionKey } from './router-scroll-controller'
 import type {
   RouteTransitionCoordinator,
   RouteTransitionNavigationOptions,
@@ -679,10 +680,22 @@ export function useWorkspaceEditorNavigation(hasUnsavedChanges: () => boolean) {
   const router = useRouter()
   const instance = inject(workspaceInstanceKey)
   const retention = inject(workspaceRetentionKey)
+  const accessOwner = inject(routerWorkspaceRetentionKey)
+  const canShow = useRouteNavigationVisibility()
   if (instance === undefined || retention === undefined)
     throw new TypeError('The editor workspace lifecycle is unavailable.')
 
   return {
+    isCurrentControlled(): boolean {
+      return !isPublicRoute(router.currentRoute.value)
+    },
+    isControlled(destination: RegisteredRouteDestination): boolean {
+      const resolved = resolveRegisteredDestination(router, destination)
+      return resolved !== undefined && !isPublicRoute(resolved)
+    },
+    withdrawAccess(): boolean {
+      return accessOwner?.withdrawAccess(instance) === true
+    },
     open(destination: RegisteredRouteDestination): Promise<TypedNavigationResult> {
       const existing = workspace.entries.find(
         (entry) => entry.destination.name === destination.name,
@@ -701,15 +714,13 @@ export function useWorkspaceEditorNavigation(hasUnsavedChanges: () => boolean) {
       if (entry?.instance !== instance || hasUnsavedChanges()) return false
       const origin = entry.origin
       const target = workspace.entries.find((candidate) => candidate.identity === origin?.identity)
-      const result = await navigation.navigate(
-        target?.destination ?? origin?.destination ?? fallback,
-        {
-          replace: true,
-          ...(target !== undefined && isLiveWorkspace(target)
-            ? { workspaceActivation: target }
-            : {}),
-        },
-      )
+      const destination = target?.destination ?? origin?.destination ?? fallback
+      if (entry.controlled && !canShow(destination))
+        return accessOwner?.withdrawAccess(instance) === true
+      const result = await navigation.navigate(destination, {
+        replace: true,
+        ...(target !== undefined && isLiveWorkspace(target) ? { workspaceActivation: target } : {}),
+      })
       const activeEntry = workspace.active
       if (
         result.kind !== 'allow' ||

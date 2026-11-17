@@ -1,4 +1,12 @@
-import { computed, getCurrentScope, onScopeDispose, shallowRef, watch } from 'vue'
+import {
+  computed,
+  effectScope,
+  getCurrentScope,
+  onScopeDispose,
+  shallowRef,
+  watch,
+  type EffectScope,
+} from 'vue'
 import type {
   UiFormController,
   UiFormCopy,
@@ -11,6 +19,8 @@ import type {
 } from '../components/form-contracts'
 import type {
   UiTableController,
+  UiTableEditorAccess,
+  UiTableEditorMode,
   UiTableRecord,
   UiTableReadonlyRecord,
   UiTableTransport,
@@ -22,7 +32,8 @@ import { cloneDraft, freezeDraftValue, getFormValue } from './form-draft-values'
 
 export interface UiTableFormInput {
   readonly table: UiTableController
-  readonly transport: UiTableTransport
+  readonly transport?: UiTableTransport
+  readonly access?: UiTableEditorAccess
   readonly copy: UiFormCopy
   readonly sources?: Readonly<Record<string, UiFormOptionSource<UiTableRecord>>>
   /** Trusted attachment services named by the editor form schema, never part of the JSON. */
@@ -37,9 +48,19 @@ export interface UiTableFormScope {
 export function useUiTableForm(input: UiTableFormInput) {
   const configuration = input.table.schema.editor
   if (!configuration) throw new TypeError('Table editor configuration is required.')
+  if (input.table.access && !input.access)
+    throw new TypeError('A controlled table requires a guarded editor.')
   const editor = configuration
   const form = shallowRef<UiFormController<UiTableRecord> | null>(null)
   const row = shallowRef<UiTableReadonlyRecord | null>(null)
+  const controlledKey = shallowRef<UiTableReadonlyRecord[string]>()
+  const currentRow = computed(() =>
+    input.access
+      ? (input.table.rows.value.find(
+          (record) => getFormValue(record, input.table.schema.rowKey) === controlledKey.value,
+        ) ?? null)
+      : row.value,
+  )
   const mode = shallowRef<'create' | 'edit' | 'detail'>('create')
   const loading = shallowRef(false)
   const error = shallowRef<Error | null>(null)
@@ -49,6 +70,7 @@ export function useUiTableForm(input: UiTableFormInput) {
   let sequence = 0
   let disposed = false
   let stopSubmission: (() => void) | undefined
+  let formScope: EffectScope | undefined
   const context = cloneDraft(input.context ?? {})
   function current(ticket: number, signal: AbortSignal): boolean {
     return !disposed && ticket === sequence && !signal.aborted
@@ -84,7 +106,7 @@ export function useUiTableForm(input: UiTableFormInput) {
     open.value = false
     inlineFields.value = []
     loading.value = false
-    if (editor.presentation === 'page') release()
+    if (editor.presentation === 'page' || input.access) release()
     return true
   }
   // Overlay hosts release only after their leave transition. A reopened session
@@ -93,19 +115,30 @@ export function useUiTableForm(input: UiTableFormInput) {
     if (open.value) return
     stopSubmission?.()
     stopSubmission = undefined
+    formScope?.stop()
+    formScope = undefined
     form.value?.dispose()
     form.value = null
+    controlledKey.value = undefined
+  }
+  function canOpen(
+    nextMode: UiTableEditorMode,
+    record: UiTableReadonlyRecord,
+    fields?: readonly string[],
+  ): boolean {
+    return !disposed && input.access?.canOpen(nextMode, record, fields) !== false
   }
   async function show(
     nextMode: 'create' | 'edit' | 'detail',
     recordInput: UiTableReadonlyRecord = {},
     scope?: UiTableFormScope,
   ): Promise<boolean> {
-    if (disposed || !close()) return false
+    if (!canOpen(nextMode, recordInput, scope?.fields) || !close()) return false
     release()
-    const selected = cloneDraft(recordInput)
-    freezeDraftValue<unknown>(selected)
-    row.value = selected
+    const selected = input.access ? recordInput : cloneDraft(recordInput)
+    if (!input.access) freezeDraftValue<unknown>(selected)
+    if (input.access) controlledKey.value = getFormValue(selected, input.table.schema.rowKey)
+    else row.value = selected
     const ticket = ++sequence
     active = new AbortController()
     const signal = active.signal
@@ -119,9 +152,50 @@ export function useUiTableForm(input: UiTableFormInput) {
       const fields = scope === undefined ? undefined : [...scope.fields]
       const schema = fields === undefined ? editor.form : parseInlineFormScope(editor.form, fields)
       const names = fields === undefined ? undefined : new Set(fields)
+      if (input.access) {
+        formScope = effectScope(true)
+        const guarded = formScope.run(() =>
+          input.access?.prepare({ mode: nextMode, row: selected, schema, signal }),
+        )
+        if (guarded?.form.persistence !== 'disabled')
+          throw new TypeError('A controlled editor requires a non-persistent guarded form.')
+        form.value = guarded.form
+        if (fields !== undefined) inlineFields.value = fields
+        if (guarded.readState) {
+          formScope.run(() =>
+            watch(
+              () => guarded.readState?.(),
+              (state) => {
+                if (!current(ticket, signal)) return
+                loading.value = state === 'pending'
+                if (state === 'unavailable')
+                  error.value = new Error('Controlled record is unavailable.')
+              },
+              { flush: 'sync', immediate: true },
+            ),
+          )
+        } else loading.value = false
+        stopSubmission = watch(
+          guarded.form.submitting,
+          (submitting) => {
+            if (
+              !submitting &&
+              guarded.acknowledged() &&
+              !guarded.form.hasUnsavedChanges.value &&
+              guarded.form.notice.value === guarded.form.copy.submitSucceeded &&
+              ticket === sequence
+            ) {
+              close(true)
+              void input.table.refresh()
+            }
+          },
+          { flush: 'post' },
+        )
+        return true
+      }
       let record = selected
       if (nextMode !== 'create' && editor.detail) {
-        if (!input.transport.detail) throw new TypeError('Detail transport is required.')
+        if (!input.transport?.detail) throw new TypeError('Detail transport is required.')
         record = await input.transport.detail(
           resolveUiTableRequest(editor.detail, {
             ...input.table.query.value,
@@ -154,7 +228,7 @@ export function useUiTableForm(input: UiTableFormInput) {
             return { status: 'failure', message: input.copy.submitFailed }
           const request =
             nextMode === 'create' ? editor.create : nextMode === 'edit' ? editor.update : undefined
-          if (!request || !input.transport.mutate)
+          if (!request || !input.transport?.mutate)
             return { status: 'failure', message: input.copy.submitFailed }
           try {
             await input.transport.mutate(
@@ -189,6 +263,11 @@ export function useUiTableForm(input: UiTableFormInput) {
     } catch (cause) {
       if (current(ticket, signal)) {
         error.value = cause instanceof Error ? cause : new Error('Table detail request failed.')
+        if (input.access) {
+          formScope?.stop()
+          formScope = undefined
+          controlledKey.value = undefined
+        }
         if (scope !== undefined) {
           close(true)
           release()
@@ -197,7 +276,7 @@ export function useUiTableForm(input: UiTableFormInput) {
       }
       return false
     } finally {
-      if (ticket === sequence) loading.value = false
+      if (ticket === sequence && (!input.access || form.value === null)) loading.value = false
     }
   }
   async function showInline(record: UiTableReadonlyRecord, field?: string): Promise<boolean> {
@@ -213,9 +292,9 @@ export function useUiTableForm(input: UiTableFormInput) {
     return (
       open.value &&
       inlineFields.value.includes(field) &&
-      row.value !== null &&
+      currentRow.value !== null &&
       getFormValue(record, input.table.schema.rowKey) ===
-        getFormValue(row.value, input.table.schema.rowKey)
+        getFormValue(currentRow.value, input.table.schema.rowKey)
     )
   }
   async function saveInline() {
@@ -238,10 +317,15 @@ export function useUiTableForm(input: UiTableFormInput) {
       open.value ||
       loading.value ||
       form.value?.submitting.value ||
-      !editor.remove ||
-      !input.transport.mutate
+      (!input.access && (!editor.remove || !input.transport?.mutate))
     )
       return false
+    if (input.access) {
+      const removed = await input.access.remove?.(row, confirm)
+      if (removed) await input.table.refresh()
+      return removed === true
+    }
+    if (!editor.remove || !input.transport?.mutate) return false
     const selected = cloneDraft(row)
     const query = input.table.query.value
     const controller = new AbortController()
@@ -278,14 +362,18 @@ export function useUiTableForm(input: UiTableFormInput) {
     stopSubmission = undefined
     ++sequence
     active?.abort()
+    formScope?.stop()
+    formScope = undefined
     form.value?.dispose()
+    form.value = null
+    row.value = null
     loading.value = false
     open.value = false
   }
   if (getCurrentScope()) onScopeDispose(dispose)
   return {
     form: computed(() => form.value),
-    row: computed(() => row.value),
+    row: currentRow,
     mode: computed(() => mode.value),
     open: computed(() => open.value),
     loading: computed(() => loading.value),
@@ -293,6 +381,7 @@ export function useUiTableForm(input: UiTableFormInput) {
     presentation: editor.presentation ?? 'modal',
     modal: editor.modal,
     inlineFields: computed(() => inlineFields.value),
+    canOpen,
     showInline,
     isInlineEditing,
     saveInline,

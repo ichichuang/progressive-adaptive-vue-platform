@@ -281,6 +281,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       sourcePath: 'packages/ui/src/components/UiCopyAction.vue',
       props: Object.freeze([
         Object.freeze({ name: 'value', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'resolveValue',
+          type: 'false | (() => { readonly value: string; isCurrent(): boolean } | undefined)',
+          required: false,
+          defaultValue: 'false',
+        }),
         Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'copyLabel', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'successLabel', type: 'string', required: true, defaultValue: null }),

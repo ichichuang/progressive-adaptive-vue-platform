@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import UiCopyAction from './UiCopyAction.vue'
 import type { UiTableController, UiTableCopy, UiTableCsvScope } from './table-contracts'
 
 const props = defineProps<{ readonly table: UiTableController; readonly copy: UiTableCopy }>()
 const failed = ref(false)
 function isDisabled(scope: UiTableCsvScope): boolean {
+  if (props.table.canOutput) return !props.table.canOutput('csv', scope)
   return (
     props.table.loading.value ||
     !!props.table.error.value ||
@@ -14,12 +16,10 @@ function isDisabled(scope: UiTableCsvScope): boolean {
       : props.table.selectedKeys.value.length === 0)
   )
 }
-function download(scope: UiTableCsvScope): void {
-  failed.value = false
+function deliverFile(file: ReturnType<UiTableController['exportCsv']>): void {
   let url: string | undefined
   let link: HTMLAnchorElement | undefined
   try {
-    const file = props.table.exportCsv(scope)
     url = URL.createObjectURL(new Blob([file.content], { type: file.mimeType }))
     link = document.createElement('a')
     link.href = url
@@ -27,8 +27,6 @@ function download(scope: UiTableCsvScope): void {
     link.hidden = true
     document.body.appendChild(link)
     link.click()
-  } catch {
-    failed.value = true
   } finally {
     link?.remove()
     // Defer revocation so the browser can start consuming the object URL.
@@ -39,6 +37,23 @@ function download(scope: UiTableCsvScope): void {
       }, 1000)
     }
   }
+}
+function download(scope: UiTableCsvScope): void {
+  failed.value = false
+  try {
+    if (props.table.deliverOutput) {
+      failed.value = !props.table.deliverOutput('csv', scope, deliverFile)
+    } else deliverFile(props.table.exportCsv(scope))
+  } catch {
+    failed.value = true
+  }
+}
+function resolveCopy(scope: UiTableCsvScope) {
+  let result: { readonly value: string; isCurrent(): boolean } | undefined
+  props.table.deliverOutput?.('copy', scope, (file, isCurrent) => {
+    result = { value: file.content, isCurrent }
+  })
+  return result
 }
 </script>
 <template>
@@ -58,6 +73,26 @@ function download(scope: UiTableCsvScope): void {
       {{ scope === 'page' ? copy.exportPage() : copy.exportSelected() }}
     </span>
   </NButton>
+  <template v-if="table.deliverOutput">
+    <template
+      v-for="scope in table.schema.csvExport?.scopes"
+      :key="scope"
+    >
+      <UiCopyAction
+        v-if="
+          (scope === 'page' ? copy.copyPage : copy.copySelected) && table.canOutput?.('copy', scope)
+        "
+        class="min-h-target-enhanced min-w-target-enhanced"
+        variant="tertiary"
+        value=""
+        :label="(scope === 'page' ? copy.copyPage?.() : copy.copySelected?.()) ?? ''"
+        :copy-label="copy.actions()"
+        :success-label="copy.copySucceeded?.() ?? ''"
+        :failure-label="copy.error()"
+        :resolve-value="() => resolveCopy(scope)"
+      />
+    </template>
+  </template>
   <span
     v-if="failed"
     role="alert"

@@ -3,7 +3,7 @@ import type { InjectionKey } from 'vue'
 import type { SettingsScrollPosition } from '../scroll/settings-scroll-position'
 export type { SettingsSectionId, SettingsScrollPosition } from '../scroll/settings-scroll-position'
 import type { NormalizedCoreError } from '../errors/core-error'
-import type { LiveWorkspaceEntry } from '../workspace/workspace.store'
+import type { LiveWorkspaceEntry, WorkspaceInstanceIdentity } from '../workspace/workspace.store'
 import type { ValidatedRouteInput } from './route-input'
 import type { RouteName } from './route-registry'
 
@@ -42,6 +42,7 @@ export interface WorkspaceRetentionBinding {
 export const routerWorkspaceRetentionKey: InjectionKey<{
   connect(binding: WorkspaceRetentionBinding): () => void
   read(): WorkspaceRenderSnapshot | undefined
+  withdrawAccess(instance: WorkspaceInstanceIdentity): boolean
 }> = Symbol('PAVP Router Workspace Retention')
 
 export const routerWorkspaceRefreshKey: InjectionKey<

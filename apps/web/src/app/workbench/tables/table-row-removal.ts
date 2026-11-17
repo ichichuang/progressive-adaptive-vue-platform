@@ -21,7 +21,7 @@ interface RowRemovalBinding {
   readonly action: GuardedAction<unknown>
 }
 
-type SelectRowRemoval = (row: UiTableReadonlyRecord) => RowRemovalBinding | undefined
+export type SelectRowRemoval = (row: UiTableReadonlyRecord) => RowRemovalBinding | undefined
 
 export const tableRowRemovalKey: InjectionKey<SelectRowRemoval> = Symbol('Table Row Removal')
 

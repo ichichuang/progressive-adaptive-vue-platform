@@ -16,13 +16,19 @@ import type { UiTableReadonlyRecord } from '@platform/ui'
 import { useTableShowcase } from './table-showcase'
 import { tableRowRemovalKey, useTableRowRemoval } from './table-row-removal'
 
-const props = defineProps<{
-  readonly compact: boolean
-  readonly disabled: boolean
-  readonly row: UiTableReadonlyRecord
-  readonly stillListed: () => boolean
-  readonly removalBlocked: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    readonly compact: boolean
+    readonly disabled: boolean
+    readonly row: UiTableReadonlyRecord
+    readonly stillListed: () => boolean
+    readonly removalBlocked: boolean
+    readonly allowEdit?: boolean
+    readonly allowDetail?: boolean
+    readonly allowRemove?: boolean
+  }>(),
+  { allowEdit: true, allowDetail: true, allowRemove: true },
+)
 const emit = defineEmits<{ edit: []; detail: []; remove: [] }>()
 const { t } = useTableShowcase()
 const trigger = ref<InstanceType<typeof NButton> | null>(null)
@@ -37,7 +43,9 @@ const removal = useTableRowRemoval(
   () => props.stillListed(),
 )
 const controlled = computed(() => removal?.controlled.value === true)
-const removeDisabled = computed(() => props.disabled || removal?.canRemove.value === false)
+const removeDisabled = computed(
+  () => props.disabled || !props.allowRemove || removal?.canRemove.value === false,
+)
 
 function confirmRemoval(signal: AbortSignal): Promise<boolean> {
   if (signal.aborted || removeDisabled.value) return Promise.resolve(false)
@@ -68,6 +76,10 @@ function beginRemove(): void {
 }
 
 function completeRemove(): void {
+  if (removeDisabled.value) {
+    answer?.(false)
+    return
+  }
   if (answer !== undefined) answer(true)
   else if (!controlled.value && confirmationOwner === 'public') emit('remove')
 }
@@ -85,8 +97,16 @@ function menuShortcut(event: KeyboardEvent): void {
   menuOpen.value = true
 }
 const options = computed(() => [
-  { key: 'edit', label: t('tableShowcase.edit'), disabled: props.disabled },
-  { key: 'detail', label: t('tableShowcase.detail'), disabled: props.disabled },
+  {
+    key: 'edit',
+    label: t('tableShowcase.edit'),
+    disabled: props.disabled || !props.allowEdit,
+  },
+  {
+    key: 'detail',
+    label: t('tableShowcase.detail'),
+    disabled: props.disabled || !props.allowDetail,
+  },
   { key: 'remove', label: t('tableShowcase.remove'), disabled: removeDisabled.value },
 ])
 async function select(key: string | number): Promise<void> {
@@ -96,8 +116,8 @@ async function select(key: string | number): Promise<void> {
   const element: unknown = trigger.value?.$el
   if (element instanceof HTMLButtonElement) element.focus({ preventScroll: true })
   if (key === 'remove') beginRemove()
-  else if (key === 'edit') emit('edit')
-  else if (key === 'detail') emit('detail')
+  else if (key === 'edit' && props.allowEdit) emit('edit')
+  else if (key === 'detail' && props.allowDetail) emit('detail')
 }
 function dismiss(): void {
   menuOpen.value = false
@@ -157,16 +177,16 @@ onDeactivated(dismiss)
       quaternary
       type="primary"
       class="min-h-target-enhanced"
-      :disabled="disabled"
-      @click="emit('edit')"
+      :disabled="disabled || allowEdit === false"
+      @click="allowEdit !== false && emit('edit')"
     >
       {{ t('tableShowcase.edit') }}
     </NButton>
     <NButton
       quaternary
       class="min-h-target-enhanced"
-      :disabled="disabled"
-      @click="emit('detail')"
+      :disabled="disabled || allowDetail === false"
+      @click="allowDetail !== false && emit('detail')"
     >
       {{ t('tableShowcase.detail') }}
     </NButton>

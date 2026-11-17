@@ -716,6 +716,19 @@ export async function createAndReadyRouter(input: {
         ? renderSnapshot
         : undefined
     },
+    withdrawAccess(instance) {
+      const entry = committedEntry
+      if (
+        disposed ||
+        entry?.workspace?.instance !== instance ||
+        entry.navigation.access === undefined ||
+        entry.to !== router.currentRoute.value ||
+        renderSnapshot?.commit !== entry
+      )
+        return false
+      withdrawAccessEntry(entry)
+      return true
+    },
   })
   input.application.provide(workspaceContentKey, (instance, read) => {
     if (
@@ -1868,6 +1881,23 @@ export async function createAndReadyRouter(input: {
     })
   }
 
+  function withdrawAccessEntry(entry: CommittedEntry, release?: () => void): void {
+    const active = committedEntry === entry
+    const tab = entry.workspace
+    const current = workspace.entries.find(
+      (candidate) =>
+        candidate.identity === tab?.identity && candidate.destination === tab.destination,
+    )
+    if (active) {
+      const snapshot = renderSnapshot
+      renderSnapshot = undefined
+      if (snapshot !== undefined) retentionBinding?.withdraw(snapshot)
+    }
+    if (current !== undefined && isLiveWorkspace(current)) workspace.withdraw(current)
+    else release?.()
+    if (active) recoverAccessLoss(entry.to)
+  }
+
   function retainRouteAccess(entry: CommittedEntry): void {
     const check = entry.navigation.access
     if (check === undefined) return
@@ -1880,20 +1910,7 @@ export async function createAndReadyRouter(input: {
       check.read,
       (status) => {
         if (status === 'allow' || disposed) return
-        const active = committedEntry === entry
-        const tabs = workspace.entries
-        const current = tabs.find(
-          (candidate) =>
-            candidate.identity === tab?.identity && candidate.destination === tab.destination,
-        )
-        if (active) {
-          const snapshot = renderSnapshot
-          renderSnapshot = undefined
-          if (snapshot !== undefined) retentionBinding?.withdraw(snapshot)
-        }
-        if (current !== undefined && isLiveWorkspace(current)) workspace.withdraw(current)
-        else release()
-        if (active) recoverAccessLoss(entry.to)
+        withdrawAccessEntry(entry, release)
       },
       { flush: 'sync' },
     )

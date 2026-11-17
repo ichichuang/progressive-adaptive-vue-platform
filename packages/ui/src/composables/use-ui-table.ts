@@ -6,6 +6,7 @@ import {
   onDeactivated,
   onScopeDispose,
   shallowRef,
+  watch,
 } from 'vue'
 import type {
   UiTableColumn,
@@ -14,6 +15,7 @@ import type {
   UiTableInput,
   UiTableKey,
   UiTableQuery,
+  UiTablePage,
   UiTableReadonlyRecord,
   UiTableSummaryRow,
   UiTableSort,
@@ -40,14 +42,19 @@ import {
   resolveUiTableTree,
   walkTreeRecords,
 } from '../components/table-tree'
-import { cloneDraft, freezeDraftValue, getFormValue } from './form-draft-values'
+import { cloneDraft, freezeDraftValue, getFormValue, sameDraftValue } from './form-draft-values'
 
 /** One owner for applied query, selection and cancellable list work. No HTTP or storage singleton. */
 export function useUiTable(input: UiTableInput): UiTableController {
   const schema = parseUiTableSchema(input.schema)
-  if (schema.source.kind === 'remote' && !input.transport)
+  const access = input.access
+  if (schema.source.kind === 'remote' && !(access ? access.read : input.transport))
     throw new TypeError('A remote table requires a transport.')
   const tree = schema.tree ? resolveUiTableTree(schema.tree) : undefined
+  if (access && (tree?.childrenRequest || schema.pagination?.mode === 'load-more'))
+    throw new TypeError('Controlled incremental data requires a scoped append contract.')
+  if (access && (input.rows !== undefined || input.transport !== undefined))
+    throw new TypeError('Controlled sources must be provided through the table access owner.')
   if (tree?.childrenRequest && !input.transport)
     throw new TypeError('Tree childrenRequest requires a transport.')
   for (const column of schema.columns) {
@@ -65,11 +72,22 @@ export function useUiTable(input: UiTableInput): UiTableController {
     const candidate: unknown = value
     if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
       throw new TypeError('Table filters must be a JSON record.')
-    const filters = snapshot(value)
+    const filters = snapshot(access ? allowedFilters(value) : value)
     if (tree && schema.source.kind === 'local' && Object.keys(filters).length)
       throw new TypeError('Tree tables do not support local filters.')
     validateLocalFilters(filters, schema.localFilters ?? [])
     return filters
+  }
+  function allowedFilters(value: UiTableReadonlyRecord, group = ''): UiTableReadonlyRecord {
+    return Object.fromEntries(
+      Object.entries(value).flatMap(([key, item]) => {
+        const path = group ? group + '.' + key : key
+        if (access?.filter(path)) return [[key, item]]
+        if (item === null || typeof item !== 'object' || Array.isArray(item)) return []
+        const next = allowedFilters(item as UiTableReadonlyRecord, path)
+        return Object.keys(next).length ? [[key, next]] : []
+      }),
+    )
   }
   const initialFilters = acceptFilters(input.filters ?? {})
   const transport = input.transport
@@ -85,8 +103,8 @@ export function useUiTable(input: UiTableInput): UiTableController {
   )
   const queryChangeReason = shallowRef<'change' | 'page-correction'>('change')
   const preferenceKey = schema.columnPreferenceKey
-  const preferenceStorage = input.columnPreferenceStorage
-  if (preferenceKey && !preferenceStorage)
+  const preferenceStorage = access ? undefined : input.columnPreferenceStorage
+  if (preferenceKey && !preferenceStorage && !access)
     throw new TypeError('Column preferences require an application storage port.')
   let initialColumns = schema.columns
   if (preferenceKey && preferenceStorage) {
@@ -99,6 +117,20 @@ export function useUiTable(input: UiTableInput): UiTableController {
     }
   }
   const columns = shallowRef<readonly UiTableColumn[]>(snapshot(initialColumns))
+  const readableColumn = (key: string) => access?.column(key) !== false
+  const sortableColumn = (key: string) =>
+    readableColumn(key) && access?.queryColumn?.(key) !== false
+  const effectiveColumns = computed(() =>
+    access
+      ? columns.value
+          .filter((column) => readableColumn(column.key))
+          .map((column) =>
+            column.sortable && !sortableColumn(column.key)
+              ? { ...column, sortable: false }
+              : column,
+          )
+      : columns.value,
+  )
   function persistColumns(): void {
     if (!preferenceKey || !preferenceStorage) return
     try {
@@ -124,6 +156,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
   })
   const rows = computed(() => accepted.value.rows)
   const total = computed(() => accepted.value.total)
+  const totalKnown = shallowRef(!access || schema.source.kind === 'local')
   const loading = shallowRef(false)
   const error = shallowRef<Error | null>(null)
   const selectedKeys = shallowRef<readonly UiTableKey[]>([])
@@ -132,6 +165,8 @@ export function useUiTable(input: UiTableInput): UiTableController {
   let sequence = 0
   let disposed = false
   let active: AbortController | undefined
+  let remoteReceipt: (() => boolean) | undefined
+  let stopAccess: (() => void) | undefined
   const treeLoadErrors = shallowRef<readonly { readonly key: UiTableKey; readonly error: Error }[]>(
     [],
   )
@@ -158,6 +193,21 @@ export function useUiTable(input: UiTableInput): UiTableController {
   function visibleKeys(value: readonly UiTableReadonlyRecord[] = rows.value): Set<UiTableKey> {
     if (!tree) return new Set(value.map(rowKey))
     return new Set(collectTreeKeys(value, rowKey, tree.childrenKey))
+  }
+  function projectRows(source: readonly UiTableReadonlyRecord[]): readonly UiTableReadonlyRecord[] {
+    if (!access) return source
+    if (access.context() === undefined) return []
+    return source.flatMap((record) => {
+      const safe = access.row(record)
+      if (safe === undefined) return []
+      if (rowKey(safe) !== rowKey(record))
+        throw new TypeError('The table projection changed a row key.')
+      if (!tree) return [safe]
+      const children = readTreeChildren(record, tree.childrenKey)
+      return [
+        children === undefined ? safe : { ...safe, [tree.childrenKey]: projectRows(children) },
+      ]
+    })
   }
   function publishRows(
     nextRows: readonly UiTableReadonlyRecord[],
@@ -213,9 +263,15 @@ export function useUiTable(input: UiTableInput): UiTableController {
     // Grouped form values retain their nested request shape. Only the local
     // matcher projects them to the same paths used by flat filters and columns.
     const filters = filterLeaves(current.filters)
-    const matching = localRows.filter(
+    const matching = projectRows(access ? (access.local?.() ?? []) : localRows).filter(
       (row) =>
-        matchesLocalFilters(row, current.filters, schema.localFilters ?? []) &&
+        matchesLocalFilters(
+          row,
+          current.filters,
+          (schema.localFilters ?? []).filter(
+            ({ parameter }) => access?.filter(parameter) !== false,
+          ),
+        ) &&
         filters.every(([key, value]) => {
           if (key === schema.keywordSearch?.parameter) {
             if (value === null || value === '') return true
@@ -223,8 +279,10 @@ export function useUiTable(input: UiTableInput): UiTableController {
             const keyword = value.trim().toLocaleLowerCase()
             return (
               !keyword ||
-              schema.keywordSearch.fields.some((field) =>
-                display(getFormValue(row, field)).toLocaleLowerCase().includes(keyword),
+              schema.keywordSearch.fields.some(
+                (field) =>
+                  readableColumn(field) &&
+                  display(getFormValue(row, field)).toLocaleLowerCase().includes(keyword),
               )
             )
           }
@@ -271,7 +329,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
     if (!transport) throw new TypeError('A remote table requires a transport.')
     return transport.list(request, signal)
   }
-  validateRows(localRows)
+  if (!access) validateRows(localRows)
   const continuous = schema.pagination?.mode === 'load-more'
   let activeAppend = false
   async function refresh(): Promise<void> {
@@ -292,39 +350,59 @@ export function useUiTable(input: UiTableInput): UiTableController {
     active = controller
     const ticket = ++sequence
     const current = append ? snapshot({ ...query.value, page: query.value.page + 1 }) : query.value
+    const origin = access?.context()
     loading.value = true
     error.value = null
     try {
+      if (access && origin === undefined) {
+        publishRows([], 0, [], {})
+        return
+      }
+      let controlledPage: UiTablePage | undefined
+      if (access && schema.source.kind === 'remote') {
+        const response = await access.read?.(current, controller.signal)
+        if (!isCurrent(ticket, controller.signal) || access.context() !== origin) return
+        if (!response?.isCurrent()) {
+          totalKnown.value = false
+          publishRows([], 0, [], {})
+          return
+        }
+        remoteReceipt = response.isCurrent
+        controlledPage = response.page
+      }
       const next =
         schema.source.kind === 'local'
           ? localPage(current)
           : {
-              page: await remoteList(
-                resolveUiTableRequest(schema.source.request, {
-                  ...current,
-                  context,
-                  row: {},
-                  form: {},
-                }),
-                controller.signal,
-              ),
+              page:
+                controlledPage ??
+                (await remoteList(
+                  resolveUiTableRequest(schema.source.request, {
+                    ...current,
+                    context,
+                    row: {},
+                    form: {},
+                  }),
+                  controller.signal,
+                )),
               filteredRows: [],
             }
       if (!isCurrent(ticket, controller.signal)) return
       const result = next.page
       if (!Number.isSafeInteger(result.total) || result.total < 0 || !Array.isArray(result.rows))
         throw new TypeError('Invalid table page response.')
+      const nextRows = snapshot(controlledPage ? projectRows(result.rows) : result.rows)
+      const complete = !controlledPage || nextRows.length === result.rows.length
       const lastPage = Math.max(1, Math.ceil(result.total / current.pageSize))
       if (append && current.page > lastPage)
         throw new TypeError('Table total changed; refresh the collection before continuing.')
-      if (current.page > lastPage) {
+      if (complete && current.page > lastPage) {
         queryChangeReason.value = 'page-correction'
         query.value = snapshot({ ...current, page: lastPage })
         input.onQueryChange?.(query.value)
         await refresh()
         return
       }
-      const nextRows = snapshot(result.rows)
       const summaryData = parseTableSummaryData('summary' in result ? result.summary : undefined)
       validateRows(nextRows)
       if (nextRows.length > current.pageSize || result.total < nextRows.length)
@@ -340,7 +418,15 @@ export function useUiTable(input: UiTableInput): UiTableController {
         publishRows([...merged.values()], result.total, snapshot(next.filteredRows), summaryData)
         query.value = current
         input.onQueryChange?.(query.value)
-      } else publishRows(nextRows, result.total, snapshot(next.filteredRows), summaryData)
+      } else {
+        totalKnown.value = complete
+        publishRows(
+          nextRows,
+          complete ? result.total : 0,
+          snapshot(next.filteredRows),
+          complete ? summaryData : {},
+        )
+      }
     } catch (cause) {
       if (isCurrent(ticket, controller.signal))
         error.value = cause instanceof Error ? cause : new Error('Table request failed.')
@@ -442,11 +528,16 @@ export function useUiTable(input: UiTableInput): UiTableController {
   }
   function setSorts(sorts: readonly UiTableSort[]): Promise<void> {
     const entries = validateSorts(sorts)
-    return change({ page: 1, sorts: entries, sort: entries[0] ?? null })
+    const allowed = entries.filter(({ key }) => sortableColumn(key))
+    return change({ page: 1, sorts: allowed, sort: allowed[0] ?? null })
   }
   function captureRows(scope: UiTableCsvScope): readonly UiTableReadonlyRecord[] {
+    if (access) throw new TypeError('Controlled rows require an explicit output operation.')
+    return captureOutputRows(scope)
+  }
+  function captureOutputRows(scope: UiTableCsvScope): readonly UiTableReadonlyRecord[] {
     if (!['page', 'selected'].includes(scope)) throw new TypeError('Invalid table row scope.')
-    if (disposed || loading.value || error.value)
+    if (disposed || loading.value || error.value || (access && access.state() !== 'ready'))
       throw new Error('Table data is not ready for export.')
     const selected = new Set(selectedKeys.value)
     const loaded = tree ? flattenTreeRecords(rows.value, tree.childrenKey) : rows.value
@@ -455,13 +546,71 @@ export function useUiTable(input: UiTableInput): UiTableController {
     return snapshot(captured)
   }
   const controller: UiTableController = {
+    ...(access === undefined
+      ? {}
+      : {
+          access: {
+            context: access.context,
+            revision: access.revision,
+            state: access.state,
+            column: access.column,
+            filter: access.filter,
+          },
+          totalKnown: computed(() => totalKnown.value),
+          canOutput(kind, scope) {
+            try {
+              return (
+                schema.csvExport?.scopes.includes(scope) === true &&
+                access.output?.(kind, scope, captureOutputRows(scope))?.isCurrent() === true
+              )
+            } catch {
+              return false
+            }
+          },
+          deliverOutput(kind, scope, deliver) {
+            const configuration = schema.csvExport
+            if (!configuration?.scopes.includes(scope)) return false
+            const origin = access.context()
+            if (origin === undefined) return false
+            const generation = access.revision()
+            const records = captureOutputRows(scope)
+            const permit = access.output?.(kind, scope, records)
+            const current = () =>
+              access.context() === origin &&
+              access.revision() === generation &&
+              permit?.isCurrent() === true
+            if (!permit || !current()) return false
+            const fields = effectiveColumns.value.filter(({ key }) => permit.fields.includes(key))
+            if (!fields.some(({ hidden }) => !hidden)) return false
+            const file = createTableCsv(configuration.fileName, fields, records, (title) =>
+              controller.text(title),
+            )
+            if (!current()) return false
+            deliver(file, current)
+            return true
+          },
+        }),
     schema,
     text: (value) => input.translate?.(value) ?? value,
-    columns: computed(() => columns.value),
+    columns: effectiveColumns,
     summary: computed(() => summary.value),
     summaryRows: computed(() =>
       resolveTableSummary(
-        summary.value,
+        access
+          ? summary.value.map((row) => ({
+              ...row,
+              cells: Object.fromEntries(
+                Object.entries(row.cells).filter(
+                  ([key, cell]) =>
+                    readableColumn(key) &&
+                    (cell.kind !== 'aggregate' ||
+                      cell.operation === 'count' ||
+                      readableColumn(cell.field ?? key)) &&
+                    (cell.kind !== 'value' || cell.from === undefined || access.summary(cell.from)),
+                ),
+              ),
+            }))
+          : summary.value,
         accepted.value.rows,
         accepted.value.filteredRows,
         accepted.value.summary,
@@ -495,7 +644,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
         value.pageSize < 1
       )
         throw new TypeError('Invalid table pagination.')
-      const sorts = validateSorts(value.sorts)
+      const sorts = validateSorts(value.sorts).filter(({ key }) => sortableColumn(key))
       const candidate: unknown = value.filters
       if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
         throw new TypeError('Table filters must be a JSON record.')
@@ -509,7 +658,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
       })
     },
     search: (filters) => change({ page: 1, filters: acceptFilters(filters) }),
-    reset: () => change({ page: 1, filters: initialFilters, sort: null, sorts: [] }),
+    reset: () => change({ page: 1, filters: acceptFilters(initialFilters), sort: null, sorts: [] }),
     setPage: (page) => {
       if (!Number.isSafeInteger(page) || page < 1) throw new TypeError('Invalid table page.')
       return change({ page })
@@ -562,10 +711,13 @@ export function useUiTable(input: UiTableInput): UiTableController {
     loadTreeChildren,
     setColumnVisibility: (key, visible) => {
       if (disposed) return
-      if (!columns.value.some((column) => column.key === key))
+      if (!effectiveColumns.value.some((column) => column.key === key))
         throw new TypeError('Unknown table column.')
       if (typeof visible !== 'boolean') throw new TypeError('Invalid table column visibility.')
-      if (!visible && !columns.value.some((column) => column.key !== key && !column.hidden))
+      if (
+        !visible &&
+        !effectiveColumns.value.some((column) => column.key !== key && !column.hidden)
+      )
         throw new TypeError('A table requires at least one visible column.')
       columns.value = snapshot(
         columns.value.map((column) =>
@@ -576,10 +728,18 @@ export function useUiTable(input: UiTableInput): UiTableController {
     },
     moveColumn: (key, direction) => {
       if (disposed) return
+      if (!readableColumn(key)) throw new TypeError('Unknown table column.')
       const index = columns.value.findIndex((column) => column.key === key)
       if (index === -1) throw new TypeError('Unknown table column.')
       if (!['up', 'down'].includes(direction)) throw new TypeError('Invalid column direction.')
-      const target = index + (direction === 'up' ? -1 : 1)
+      const step = direction === 'up' ? -1 : 1
+      let target = index + step
+      while (
+        target >= 0 &&
+        target < columns.value.length &&
+        !readableColumn(columns.value[target]?.key ?? '')
+      )
+        target += step
       if (target < 0 || target >= columns.value.length) return
       const next = [...columns.value]
       const [column] = next.splice(index, 1)
@@ -590,7 +750,11 @@ export function useUiTable(input: UiTableInput): UiTableController {
     reorderColumn: (key, targetKey, placement) => {
       if (disposed) return
       const column = columns.value.find((item) => item.key === key)
-      if (!column || !columns.value.some((item) => item.key === targetKey))
+      if (
+        !column ||
+        !readableColumn(key) ||
+        !effectiveColumns.value.some((item) => item.key === targetKey)
+      )
         throw new TypeError('Unknown table column.')
       if (!['before', 'after'].includes(placement)) throw new TypeError('Invalid column placement.')
       if (key === targetKey) return
@@ -603,7 +767,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
     setColumnWidth: (key, width) => {
       if (disposed) return
       const column = columns.value.find((item) => item.key === key)
-      if (!column) throw new TypeError('Unknown table column.')
+      if (!column || !readableColumn(key)) throw new TypeError('Unknown table column.')
       if (!Number.isFinite(width) || width <= 0)
         throw new TypeError('Table column width must be a positive finite number.')
       const bounded = Math.min(column.maxWidth ?? Infinity, Math.max(column.minWidth ?? 1, width))
@@ -625,6 +789,8 @@ export function useUiTable(input: UiTableInput): UiTableController {
     },
     captureRows,
     exportCsv: (scope) => {
+      if (access)
+        throw new TypeError('Controlled output must be delivered through its access owner.')
       const configuration = schema.csvExport
       if (!configuration?.scopes.includes(scope))
         throw new TypeError('This CSV scope is not enabled.')
@@ -638,7 +804,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
       if (!disposed) summary.value = parseTableSummary(value, schema.columns, schema.source.kind)
     },
     setRows: (value) => {
-      if (schema.source.kind !== 'local')
+      if (access || schema.source.kind !== 'local')
         throw new TypeError('Remote data is owned by the transport.')
       const next = snapshot(value)
       validateRows(next)
@@ -647,6 +813,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
     },
     dispose: () => {
       disposed = true
+      stopAccess?.()
       ++sequence
       active?.abort()
       for (const controller of childLoads.values()) controller.abort()
@@ -654,6 +821,45 @@ export function useUiTable(input: UiTableInput): UiTableController {
       loading.value = false
     },
   }
+  if (access)
+    stopAccess = watch(
+      [access.context, access.revision],
+      ([owner], [previous]) => {
+        const current = query.value
+        const filters = owner === previous ? acceptFilters(current.filters) : {}
+        const sorts = current.sorts.filter(({ key }) => sortableColumn(key))
+        const queryChanged =
+          !sameDraftValue(filters, current.filters) || sorts.length !== current.sorts.length
+        if (queryChanged || owner !== previous) {
+          query.value = snapshot({ ...current, page: 1, filters, sorts, sort: sorts[0] ?? null })
+          input.onQueryChange?.(query.value)
+        }
+        if (
+          owner === undefined ||
+          owner !== previous ||
+          (schema.source.kind === 'remote' && queryChanged)
+        ) {
+          ++sequence
+          active?.abort()
+          remoteReceipt = undefined
+          totalKnown.value = schema.source.kind === 'local'
+          loading.value = false
+          error.value = null
+          publishRows([], 0, [], {})
+        } else if (schema.source.kind === 'remote') {
+          if (remoteReceipt?.() === true) {
+            const safe = snapshot(projectRows(rows.value))
+            if (safe.length !== rows.value.length) totalKnown.value = false
+            publishRows(safe, totalKnown.value ? total.value : 0, [], {})
+          } else {
+            totalKnown.value = false
+            publishRows([], 0, [], {})
+          }
+        }
+        if (owner !== undefined && schema.source.kind === 'local') void refresh()
+      },
+      { flush: 'sync' },
+    )
   if (continuous && getCurrentInstance()) {
     let resume = false
     onDeactivated(() => {

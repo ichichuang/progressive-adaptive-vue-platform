@@ -19,6 +19,8 @@ defineOptions({ name: 'UiCopyAction' })
 const props = withDefaults(
   defineProps<{
     readonly value: string
+    readonly resolveValue?:
+      false | (() => { readonly value: string; isCurrent(): boolean } | undefined)
     readonly label: string
     readonly copyLabel: string
     readonly successLabel: string
@@ -27,7 +29,7 @@ const props = withDefaults(
     readonly disabled?: boolean
     readonly iconPlacement?: 'left' | 'right'
   }>(),
-  { disabled: false, iconPlacement: 'left' },
+  { resolveValue: false, disabled: false, iconPlacement: 'left' },
 )
 defineSlots<{ default?: () => unknown }>()
 
@@ -56,6 +58,7 @@ function clear(): void {
   state.value = 'idle'
 }
 watch(() => props.value, clear, { flush: 'sync' })
+watch(() => props.disabled, clear, { flush: 'sync' })
 onActivated(() => {
   active = true
 })
@@ -76,20 +79,33 @@ function isCurrent(current: number, value: string): boolean {
 async function copy(): Promise<void> {
   if (props.disabled || disposed || !active || state.value === 'pending') return
   const current = ++attempt
-  const value = props.value
+  const staticValue = props.value
+  let lease: ReturnType<Exclude<typeof props.resolveValue, false>>
   cancelFeedbackTimer()
   state.value = 'pending'
   function finish(result: 'success' | 'failure'): void {
-    if (!isCurrent(current, value)) return
+    if (!isCurrent(current, staticValue)) return
+    if (lease?.isCurrent() === false) {
+      clear()
+      return
+    }
     state.value = result
     feedbackTimer = setTimeout(() => {
-      if (isCurrent(current, value)) state.value = 'idle'
+      if (isCurrent(current, staticValue)) state.value = 'idle'
       feedbackTimer = undefined
     }, 2000)
   }
   try {
     if (!('clipboard' in navigator)) throw new Error('Clipboard unavailable.')
-    await navigator.clipboard.writeText(value)
+    if (props.resolveValue !== false) {
+      lease = props.resolveValue()
+      if (!lease?.isCurrent()) {
+        lease = undefined
+        finish('failure')
+        return
+      }
+    }
+    await navigator.clipboard.writeText(lease?.value ?? staticValue)
     finish('success')
   } catch {
     finish('failure')

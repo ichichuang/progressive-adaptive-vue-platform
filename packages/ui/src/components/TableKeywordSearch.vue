@@ -15,6 +15,13 @@ const parameter = configuration.parameter
 const value = ref('')
 const applied = computed(() => props.table.query.value.filters[parameter])
 watch(
+  () => [props.table.access?.context(), props.table.access?.revision()] as const,
+  () => {
+    if (props.table.access?.filter(parameter) === false) value.value = ''
+  },
+  { flush: 'sync' },
+)
+watch(
   applied,
   (next) => {
     value.value = typeof next === 'string' ? next : ''
