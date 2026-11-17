@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import type { BusinessAvailabilitySource } from './business-availability'
+import type { ActionTarget, GuardedAction } from './guarded-action'
 
 const identifier = z.string().min(1)
 const expiresAt = z.number().int().nonnegative()
@@ -17,7 +19,21 @@ export const accessContextSchema = z
     scope: accessScopeSchema,
     revision: identifier.optional(),
     expiresAt: expiresAt.optional(),
+    delegation: z
+      .strictObject({
+        actorId: identifier,
+        reference: identifier,
+        restrictions: z.array(identifier).readonly(),
+        expiresAt,
+      })
+      .readonly()
+      .optional(),
   })
+  .refine(
+    ({ identity, delegation }) =>
+      delegation === undefined ||
+      (identity.kind === 'known' && identity.principalId !== delegation.actorId),
+  )
   .readonly()
 
 const resource = { domain: identifier, resource: identifier }
@@ -71,7 +87,7 @@ export const accessDecisionSchema = z
 
 export type AccessRequest = z.output<typeof accessRequestSchema>
 export type AccessInvalidation = z.output<typeof accessInvalidationSchema>
-type AccessContextSnapshot = z.output<typeof accessContextSchema>
+export type AccessContextSnapshot = z.output<typeof accessContextSchema>
 export type AccessDecision = z.output<typeof accessDecisionSchema>
 
 export interface AccessProposal {
@@ -118,7 +134,16 @@ export interface AccessHost {
     change: AccessContextChange,
   ): AccessContextSnapshot | Promise<AccessContextSnapshot>
   readonly decisions: readonly AccessProvider[]
+  readonly availability?: readonly BusinessAvailabilitySource[]
+  readonly delegation?: {
+    exit(context: AccessContextSnapshot): DelegationCommand | undefined
+  }
   subscribe?(notify: (change: AccessHostChange) => Promise<void>): () => void
+}
+
+export interface DelegationCommand {
+  readonly target: ActionTarget
+  readonly action: GuardedAction<unknown>
 }
 
 export type AccessContextState =
@@ -161,6 +186,9 @@ interface AccessConsumer {
 
 export interface AccessBoundary {
   readContext(): AccessContextState
+  availabilitySource?(id: string): BusinessAvailabilitySource | undefined
+  delegationExit?(context: AccessContextSnapshot): DelegationCommand | undefined
+  reconfirm?(origin: AccessContextSnapshot): Promise<AccessContextSnapshot | undefined>
   observe(
     request: AccessRequest,
     onInvalidated: (change: AccessInvalidation) => void,

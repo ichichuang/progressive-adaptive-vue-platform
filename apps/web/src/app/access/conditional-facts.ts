@@ -25,20 +25,24 @@ const packetSchema = z.strictObject({
   expiresAt: z.number().int().nonnegative().optional(),
 })
 export type ConditionalInput = 'confirmed' | 'candidate'
-export type FactPacket = z.input<typeof packetSchema> & {
-  readonly binding: BoundAccessRequest
+type FactBinding = Pick<BoundAccessRequest, 'proposal'>
+export type FactPacket<Binding extends FactBinding = BoundAccessRequest> = z.input<
+  typeof packetSchema
+> & {
+  readonly binding: Binding
   readonly input: ConditionalInput
   readonly proposalRevision?: string
 }
-export type LoadConditionalFacts = (
-  binding: BoundAccessRequest,
+export type LoadConditionalFacts<Binding extends FactBinding = BoundAccessRequest> = (
+  binding: Binding,
   input: ConditionalInput,
   required: readonly string[],
-) => FactPacket | undefined | Promise<FactPacket | undefined>
+) => FactPacket<Binding> | undefined | Promise<FactPacket<Binding> | undefined>
 
 interface ProjectedFacts {
   readonly facts: Record<string, unknown>
   readonly validity: Pick<AccessDecision, 'expiresAt'>
+  readonly revision?: string
 }
 
 export function validFactPaths(paths: readonly string[]): boolean {
@@ -53,9 +57,9 @@ export function validFactPaths(paths: readonly string[]): boolean {
   )
 }
 
-export async function readDeclaredFacts(
-  load: LoadConditionalFacts | undefined,
-  binding: BoundAccessRequest,
+export async function readDeclaredFacts<Binding extends FactBinding>(
+  load: LoadConditionalFacts<Binding> | undefined,
+  binding: Binding,
   input: ConditionalInput,
   required: readonly string[],
 ): Promise<ProjectedFacts | { readonly unavailable: AccessDecision }> {
@@ -80,7 +84,7 @@ export async function readDeclaredFacts(
     })
     if (!parsed.success)
       return { unavailable: { status: 'configuration-error', reasonCode: 'access.invalid-facts' } }
-    const { facts, complete, expiresAt } = parsed.data
+    const { facts, complete, expiresAt, revision } = parsed.data
     const covered = new Set(complete)
     if (expiresAt !== undefined && expiresAt <= Date.now()) return { unavailable: incomplete }
     if (required.some((path) => facts[path]?.status === 'pending'))
@@ -101,7 +105,11 @@ export async function readDeclaredFacts(
       }
       parent[leaf] = fact.value
     }
-    return { facts: result, validity: expiresAt === undefined ? {} : { expiresAt } }
+    return {
+      facts: result,
+      ...(revision === undefined ? {} : { revision }),
+      validity: expiresAt === undefined ? {} : { expiresAt },
+    }
   } catch {
     return { unavailable: { status: 'evaluation-failed', reasonCode: 'access.fact-load-failed' } }
   }

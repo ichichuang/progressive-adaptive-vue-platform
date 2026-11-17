@@ -17,6 +17,7 @@
         "src/app/forms/use-guarded-form.ts",
         "src/app/tables/use-guarded-table.ts",
         "src/app/tables/guarded-table-editor.ts",
+        "src/app/access/advanced-interactions.ts",
       ],
     },
   },

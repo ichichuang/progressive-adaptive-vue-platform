@@ -9,6 +9,7 @@ import {
   accessScopeSchema,
   type AccessBoundary,
   type AccessContextChange,
+  type AccessContextSnapshot,
   type AccessContextState,
   type AccessHost,
   type AccessHostChange,
@@ -18,6 +19,7 @@ import {
   type BoundAccessRequest,
   type AccessProposal,
 } from './access-contract'
+import type { BusinessAvailabilitySource } from './business-availability'
 
 const accessKey: InjectionKey<AccessBoundary> = Symbol('access-boundary')
 
@@ -85,6 +87,17 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
           },
     )
   }
+  const availability = new Map<string, BusinessAvailabilitySource | undefined>()
+  const sources: readonly BusinessAvailabilitySource[] = Array.isArray(configuredHost?.availability)
+    ? configuredHost.availability
+    : []
+  for (const source of sources) {
+    if (typeof source.id !== 'string' || source.id.length === 0) continue
+    availability.set(
+      source.id,
+      !availability.has(source.id) && typeof source.evaluate === 'function' ? source : undefined,
+    )
+  }
 
   const consumers = new Set<{
     readonly request: AccessRequest
@@ -94,10 +107,15 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
   let disposed = false
   let contextGeneration = 0
   let requestId = 0
+  let delegationExpiry: ReturnType<typeof setTimeout> | undefined
+
+  function contextDeadline(snapshot: AccessContextSnapshot): number {
+    return Math.min(snapshot.expiresAt ?? Infinity, snapshot.delegation?.expiresAt ?? Infinity)
+  }
 
   function readContext(): AccessContextState {
     const current = context.value
-    if (current.status === 'ready' && (current.snapshot.expiresAt ?? Infinity) <= Date.now())
+    if (current.status === 'ready' && contextDeadline(current.snapshot) <= Date.now())
       return state('expired')
     return current
   }
@@ -110,8 +128,12 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
     for (const consumer of affected) consumer.notify(change)
   }
 
-  async function replaceContext(change: AccessContextChange, initial = false): Promise<void> {
+  async function replaceContext(
+    change: AccessContextChange,
+    initial = false,
+  ): Promise<AccessContextSnapshot | undefined> {
     if (configuredHost === undefined || disposed) return
+    clearTimeout(delegationExpiry)
     const generation = ++contextGeneration
     const current = () => !disposed && generation === contextGeneration
     invalidate(
@@ -141,7 +163,18 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
       ) {
         throw new TypeError('The host did not confirm the requested access scope.')
       }
-      if (current()) context.value = Object.freeze({ status: 'ready', snapshot })
+      if (snapshot.delegation !== undefined && contextDeadline(snapshot) <= Date.now())
+        throw new TypeError('The host returned an expired delegation.')
+      if (!current()) return
+      context.value = Object.freeze({ status: 'ready', snapshot })
+      function expireDelegation(): void {
+        if (!current()) return
+        const remaining = contextDeadline(snapshot) - Date.now()
+        if (remaining <= 0) void replaceContext({ kind: 'identity' })
+        else delegationExpiry = setTimeout(expireDelegation, Math.min(remaining, 2_147_483_647))
+      }
+      if (snapshot.delegation !== undefined) expireDelegation()
+      return snapshot
     } catch {
       if (current()) context.value = state('identity-failed')
     }
@@ -158,6 +191,28 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
 
   const boundary: AccessBoundary = {
     readContext,
+    availabilitySource: (id) => (disposed ? undefined : availability.get(id)),
+    delegationExit: (snapshot) => {
+      const active = readContext()
+      if (
+        active.status === 'ready' &&
+        active.snapshot === snapshot &&
+        snapshot.delegation !== undefined
+      ) {
+        try {
+          return configuredHost?.delegation?.exit(snapshot)
+        } catch {
+          return undefined
+        }
+      }
+      return undefined
+    },
+    async reconfirm(origin) {
+      const active = readContext()
+      if (active.status === 'ready' && active.snapshot === origin)
+        return await replaceContext({ kind: 'identity' })
+      return undefined
+    },
     observe(input, onInvalidated, proposal) {
       const parsed = accessRequestSchema.safeParse(input)
       const request = parsed.data
@@ -257,7 +312,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
               evaluation.value = confirmed
               const deadline = Math.min(
                 result.expiresAt ?? Infinity,
-                active.snapshot.expiresAt ?? Infinity,
+                contextDeadline(active.snapshot),
               )
               function expire(): void {
                 if (evaluation.value !== confirmed || closed || disposed) return
@@ -335,6 +390,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
   return () => {
     if (disposed) return
     disposed = true
+    clearTimeout(delegationExpiry)
     contextGeneration++
     invalidate(Object.freeze({ kind: 'identity' }), state('disposed'))
     consumers.clear()

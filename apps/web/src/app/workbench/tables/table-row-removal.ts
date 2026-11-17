@@ -44,14 +44,18 @@ export function useTableRowRemoval(
       allowed.value = false
       if (bound === undefined || context.status !== 'ready' || !active) return
       const contextExpiry = context.snapshot.expiresAt ?? Infinity
+      const supportsAssurance = bound.action.availability?.verify !== undefined
       let released = false
       let expires: ReturnType<typeof setTimeout> | undefined
       let sequence = 0
-      const check = observeActionTarget(access, bound.action, bound.target, () => {
+      function invalidate(): void {
         allowed.value = false
         queueMicrotask(() => {
           if (!released) void evaluate()
         })
+      }
+      const check = observeActionTarget(access, bound.action, bound.target, invalidate, {
+        businessInvalidated: invalidate,
       })
       async function evaluate(): Promise<void> {
         const current = ++sequence
@@ -59,7 +63,10 @@ export function useTableRowRemoval(
         await check.evaluate()
         if (released || current !== sequence) return
         const permit = check.permit()
-        allowed.value = permit?.isCurrent() === true
+        const { primary } = check.assessment()
+        allowed.value =
+          permit?.isCurrent() === true &&
+          (primary === undefined || (primary.status === 'challenge' && supportsAssurance))
         const deadline = Math.min(contextExpiry, permit?.expiresAt ?? Infinity)
         if (allowed.value && Number.isFinite(deadline))
           expires = setTimeout(

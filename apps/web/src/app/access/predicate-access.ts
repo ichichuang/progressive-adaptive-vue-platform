@@ -1,5 +1,10 @@
 import { z } from 'zod'
-import type { AccessProvider, AccessRequest, BoundAccessRequest } from './access-contract'
+import type {
+  AccessDecision,
+  AccessProvider,
+  AccessRequest,
+  BoundAccessRequest,
+} from './access-contract'
 import {
   capabilityKey,
   capabilityShape,
@@ -16,13 +21,40 @@ import {
 import { nativeScopeSchema } from './native-grants'
 import { createProviderSnapshot } from './provider-snapshot'
 
-type PredicateRule = Pick<AccessRequest, 'kind' | 'resource' | 'action'> & {
+export interface DeclaredPredicate<Binding> {
   readonly input?: ConditionalInput
   readonly requires: readonly string[]
   readonly test: (input: {
     readonly facts: Readonly<Record<string, unknown>>
-    readonly binding: BoundAccessRequest
+    readonly binding: Binding
   }) => boolean
+}
+
+type PredicateRule = Pick<AccessRequest, 'kind' | 'resource' | 'action'> &
+  DeclaredPredicate<BoundAccessRequest>
+
+export async function evaluateDeclaredPredicate<
+  Binding extends Pick<BoundAccessRequest, 'proposal'>,
+>(
+  rule: DeclaredPredicate<Binding>,
+  binding: Binding,
+  load?: LoadConditionalFacts<Binding>,
+): Promise<{ readonly decision: AccessDecision; readonly factRevision?: string }> {
+  const facts = await readDeclaredFacts(load, binding, rule.input ?? 'confirmed', rule.requires)
+  if ('unavailable' in facts) return { decision: facts.unavailable }
+  try {
+    const result = rule.test({ facts: facts.facts, binding })
+    if (typeof result !== 'boolean')
+      return {
+        decision: { status: 'configuration-error', reasonCode: 'access.invalid-predicate-result' },
+      }
+    return {
+      decision: { status: result ? 'allow' : 'deny', ...facts.validity },
+      ...(facts.revision === undefined ? {} : { factRevision: facts.revision }),
+    }
+  } catch {
+    return { decision: { status: 'evaluation-failed', reasonCode: 'access.predicate-failed' } }
+  }
 }
 
 export function createPredicateAccess(options: {
@@ -62,16 +94,7 @@ export function createPredicateAccess(options: {
         return { status: 'unsupported', reasonCode: 'access.capability-unsupported' }
       const denied = scopeDecision(scope, binding)
       if (denied) return denied
-      const facts = await readDeclaredFacts(options.loadFacts, binding, rule.input, rule.requires)
-      if ('unavailable' in facts) return facts.unavailable
-      try {
-        const result = rule.test({ facts: facts.facts, binding })
-        if (typeof result !== 'boolean')
-          return { status: 'configuration-error', reasonCode: 'access.invalid-predicate-result' }
-        return { status: result ? 'allow' : 'deny', ...facts.validity }
-      } catch {
-        return { status: 'evaluation-failed', reasonCode: 'access.predicate-failed' }
-      }
+      return (await evaluateDeclaredPredicate(rule, binding, options.loadFacts)).decision
     },
   }
   return Object.freeze({ provider: Object.freeze(provider), invalidateFacts: boundary.invalidate })

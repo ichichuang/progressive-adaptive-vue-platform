@@ -76,6 +76,7 @@ import {
   type RouteMotionOrigin,
 } from '../router/route-transition/route-motion-player'
 import { useShellScrollRestoration } from '../scroll/use-shell-scroll-restoration'
+import DelegatedContextNotice from '../access/DelegatedContextNotice.vue'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
 let routeActivation: { readonly origin: RouteMotionOrigin; readonly capturedAt: number } | undefined
@@ -712,6 +713,7 @@ async function navigate(routeName: string): Promise<void> {
       <ThemeQuickPicker />
     </template>
     <template #workspace>
+      <DelegatedContextNotice />
       <UiWorkspaceTabs
         v-if="activeRouteName !== 'control-center' && !layoutPreview"
         :items="workspaceTabs"

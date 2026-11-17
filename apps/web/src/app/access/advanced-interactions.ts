@@ -1,0 +1,7 @@
+export { default as AccessRequestDialog } from './AccessRequestDialog.vue'
+export { default as AssuranceDialog } from './AssuranceDialog.vue'
+export { default as GuardedOperationButton } from './GuardedOperationButton.vue'
+export { default as ResourceSharingDialog } from './ResourceSharingDialog.vue'
+export type { AccessRequestInteractionHost } from './access-request-interaction'
+export type { SharingHost } from './resource-sharing'
+export { useAssurancePrompt } from './use-assurance-prompt'

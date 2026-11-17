@@ -28,6 +28,7 @@ import { readUapiWorldTime } from '../../apps/web/src/shared/services/uapi-world
 import { verifyAccessBoundary } from './check-access-boundary'
 import { verifyNativeAccess } from './check-native-access'
 import { verifyAdvancedAccess } from './check-advanced-access'
+import { verifyBusinessAccess } from './check-business-access'
 import { verifyRouteAccess } from './check-route-access'
 import { verifyScopedOperations } from './check-scoped-operations'
 import { validateArchitectureAdminConsole } from './check-architecture-admin-console'
@@ -2630,6 +2631,7 @@ if (process.argv[1]?.endsWith('check-boundaries.ts')) {
   await verifyAccessBoundary()
   await verifyNativeAccess()
   await verifyAdvancedAccess()
+  await verifyBusinessAccess()
   await verifyRouteAccess()
   await verifyScopedOperations()
   const violations = [

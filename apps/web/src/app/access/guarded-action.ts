@@ -2,19 +2,37 @@ import { createApiAttempt } from '../../shared/api/cancellation'
 import { captureAccessProposal } from './access-boundary'
 import type {
   AccessBoundary,
+  AccessContextSnapshot,
   AccessInvalidation,
   AccessProposal,
   AccessState,
   BoundAccessRequest,
 } from './access-contract'
 import { observeNativeRequirement, type AccessRequirement } from './native-requirement'
+import {
+  observeBusinessAvailability,
+  sameBusinessScope,
+  type AvailabilityResult,
+  type BusinessConstraint,
+  type OperationIntent,
+} from './business-availability'
 
 export interface ActionTarget {
   readonly id: string
+  readonly mode?: string
   readonly revision?: string
   readonly idempotencyKey?: string
   readonly proposal?: AccessProposal
 }
+
+export type AssuranceResult =
+  | { readonly status: 'cancelled' | 'expired' | 'failed' }
+  | {
+      readonly status: 'verified'
+      readonly intent: OperationIntent
+      readonly expiresAt: number
+      readonly refreshContext?: true
+    }
 
 interface ActionCommand {
   readonly requestId: string
@@ -35,6 +53,11 @@ export interface GuardedAction<Result> {
   readonly requirement: (target: ActionTarget) => AccessRequirement
   readonly isTargetCurrent: (target: ActionTarget) => boolean
   readonly businessAllows: (target: ActionTarget) => boolean
+  readonly availability?: {
+    readonly operation: string
+    constraints(target: ActionTarget): readonly BusinessConstraint[]
+    verify?(intent: OperationIntent, signal: AbortSignal): Promise<AssuranceResult>
+  }
   /** The host owns transport, authoritative authorization and any transaction across commands. */
   readonly dispatch: (
     commands: readonly ActionCommand[],
@@ -57,13 +80,17 @@ type ActionStatus =
   | 'completed'
   | 'failed'
   | 'unknown'
+type PreflightStatus = ActionStatus | 'assurance-required'
 
 export interface GuardedActionOutcome {
   readonly targetId: string
   readonly status: ActionStatus
   readonly requestId?: string
   readonly applied?: boolean
+  readonly reason?: AvailabilityReason
 }
+
+type AvailabilityReason = Pick<AvailabilityResult, 'kind' | 'status'>
 
 interface ActionInvocation {
   readonly targets: readonly ActionTarget[]
@@ -75,9 +102,16 @@ interface ActionInvocation {
 type Requirement = ReturnType<typeof observeNativeRequirement>
 type Permit = NonNullable<ReturnType<Requirement['permit']>>
 
+interface AssuranceProof {
+  readonly intent: OperationIntent
+  readonly context: AccessContextSnapshot
+  readonly revision: string
+  readonly expiresAt: number
+}
+
 interface Candidate {
   readonly target: ActionTarget
-  readonly check: Requirement
+  readonly check: ReturnType<typeof observeActionTarget>
   isBound(): boolean
   permit: Permit | undefined
 }
@@ -87,12 +121,25 @@ function outcome(
   status: ActionStatus,
   requestId?: string,
   applied?: boolean,
+  reason?: AvailabilityReason,
 ): GuardedActionOutcome {
   return Object.freeze({
     targetId: target.id,
     status,
     ...(requestId === undefined ? {} : { requestId }),
     ...(applied === undefined ? {} : { applied }),
+    ...(reason === undefined ? {} : { reason }),
+  })
+}
+
+function captureTarget(target: ActionTarget): ActionTarget {
+  const { id, mode, revision, idempotencyKey, proposal } = target
+  return Object.freeze({
+    id,
+    ...(mode === undefined ? {} : { mode }),
+    ...(revision === undefined ? {} : { revision }),
+    ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
+    ...(proposal === undefined ? {} : { proposal: captureAccessProposal(proposal) }),
   })
 }
 
@@ -101,6 +148,7 @@ export function observeActionTarget<Result>(
   action: GuardedAction<Result>,
   target: ActionTarget,
   onInvalidated: (change: AccessInvalidation) => void,
+  options?: { readonly mode?: ActionInvocation['mode']; readonly businessInvalidated?: () => void },
 ) {
   let requirement: AccessRequirement | undefined
   try {
@@ -115,7 +163,64 @@ export function observeActionTarget<Result>(
   } catch {
     // An unusable declaration keeps the target unavailable.
   }
-  return observeNativeRequirement(access, requirement, onInvalidated, target.proposal)
+  const authorization = observeNativeRequirement(
+    access,
+    requirement,
+    onInvalidated,
+    target.proposal,
+  )
+  const context = access.readContext()
+  const definition = action.availability
+  let intent: OperationIntent | undefined
+  try {
+    if (context.status === 'ready' && definition?.operation)
+      intent = Object.freeze({
+        operation: definition.operation,
+        target: captureTarget(target),
+        mode: options?.mode ?? 'all',
+        context: context.snapshot,
+      })
+  } catch {
+    /* Malformed proposals stay unavailable. */
+  }
+  const business = observeBusinessAvailability(
+    access,
+    intent,
+    definition === undefined
+      ? undefined
+      : () => {
+          if (!intent) throw new TypeError('Missing operation intent.')
+          return definition.constraints(target)
+        },
+    options?.businessInvalidated ?? (() => undefined),
+  )
+  function assessment() {
+    const state = authorization.read()
+    const results = authorization.permit()?.isCurrent() === true ? business.read() : []
+    // Declaration order breaks ties. Other restrictions take priority over recovery.
+    const primary =
+      results.find(({ status }) => status !== 'available' && status !== 'challenge') ??
+      results.find(({ status }) => status === 'challenge')
+    return { state, results, primary }
+  }
+  return {
+    ...authorization,
+    intent,
+    async evaluate(signal?: AbortSignal): Promise<void> {
+      await authorization.evaluate()
+      if (
+        !signal?.aborted &&
+        authorization.permit()?.isCurrent() === true &&
+        action.businessAllows(target)
+      )
+        await business.evaluate(signal)
+    },
+    assessment,
+    dispose(): void {
+      business.dispose()
+      authorization.dispose()
+    },
+  }
 }
 
 function authorizationStatus(state: AccessState): ActionStatus {
@@ -134,14 +239,7 @@ export async function executeGuardedAction<Result>(
 ): Promise<readonly GuardedActionOutcome[]> {
   let targets: readonly ActionTarget[]
   try {
-    targets = input.targets.map(({ id, revision, idempotencyKey, proposal }) =>
-      Object.freeze({
-        id,
-        ...(revision === undefined ? {} : { revision }),
-        ...(idempotencyKey === undefined ? {} : { idempotencyKey }),
-        ...(proposal === undefined ? {} : { proposal: captureAccessProposal(proposal) }),
-      }),
-    )
+    targets = input.targets.map(captureTarget)
   } catch {
     return input.targets.map((target) => outcome(target, 'invalid-target'))
   }
@@ -150,6 +248,30 @@ export async function executeGuardedAction<Result>(
     targets.some(({ id }) => id.length === 0)
   )
     return targets.map((target) => outcome(target, 'invalid-target'))
+  return await runGuardedAction(access, action, input, targets)
+}
+
+function sameSubject(left: AccessContextSnapshot, right: AccessContextSnapshot): boolean {
+  return (
+    left.identity.kind === 'known' &&
+    right.identity.kind === 'known' &&
+    left.identity.principalId === right.identity.principalId &&
+    left.delegation?.actorId === right.delegation?.actorId &&
+    left.delegation?.reference === right.delegation?.reference &&
+    left.delegation?.expiresAt === right.delegation?.expiresAt &&
+    JSON.stringify(left.delegation?.restrictions) ===
+      JSON.stringify(right.delegation?.restrictions) &&
+    sameBusinessScope(left.scope, right.scope)
+  )
+}
+
+async function runGuardedAction<Result>(
+  access: AccessBoundary,
+  action: GuardedAction<Result>,
+  input: ActionInvocation,
+  targets: readonly ActionTarget[],
+  proof?: AssuranceProof,
+): Promise<readonly GuardedActionOutcome[]> {
   const start = access.readContext()
   if (start.status !== 'ready') return targets.map((target) => outcome(target, 'unresolved'))
   const context = start.snapshot
@@ -167,30 +289,110 @@ export async function executeGuardedAction<Result>(
     return !lifecycle.signal.aborted && current.status === 'ready' && current.snapshot === context
   }
 
-  async function authorize(candidate: Candidate): Promise<ActionStatus | undefined> {
-    const { target, check } = candidate
+  async function authorize(candidate: Candidate): Promise<PreflightStatus | undefined> {
+    const { check } = candidate
     if (!candidate.isBound()) return 'not-dispatched'
-    if (!action.businessAllows(target)) return 'business-blocked'
     const attempt = createApiAttempt(lifecycle.signal, 10_000)
     try {
-      await attempt.run(() => check.evaluate())
+      await attempt.run(() => check.evaluate(attempt.signal))
     } catch {
       return candidate.isBound() ? 'unresolved' : 'not-dispatched'
     } finally {
       attempt.dispose()
     }
     if (!candidate.isBound()) return 'not-dispatched'
-    if (!action.businessAllows(target)) return 'business-blocked'
     candidate.permit = check.permit()
-    return candidate.permit === undefined ? authorizationStatus(check.read()) : undefined
+    return eligibility(candidate)
   }
 
-  function eligibility(candidate: Candidate): ActionStatus | undefined {
+  function eligibility(candidate: Candidate): PreflightStatus | undefined {
     if (!candidate.isBound()) return 'not-dispatched'
+    if (candidate.permit?.isCurrent() !== true) return authorizationStatus(candidate.check.read())
     if (!action.businessAllows(candidate.target)) return 'business-blocked'
-    return candidate.permit?.isCurrent() === true
-      ? undefined
-      : authorizationStatus(candidate.check.read())
+    const { primary } = candidate.check.assessment()
+    if (!primary) return undefined
+    if (primary.status === 'challenge') {
+      if (
+        proof?.context === context &&
+        proof.revision === primary.revision &&
+        proof.intent.operation === candidate.check.intent?.operation &&
+        proof.expiresAt > Date.now()
+      )
+        return undefined
+      return action.availability?.verify !== undefined &&
+        targets.length === 1 &&
+        proof === undefined
+        ? 'assurance-required'
+        : 'business-blocked'
+    }
+    if (primary.status === 'configuration-error') return 'configuration-error'
+    if (primary.status === 'failed') return 'failed'
+    return primary.status === 'restricted' ? 'business-blocked' : 'unresolved'
+  }
+
+  function blocked(candidate: Candidate, status: PreflightStatus): GuardedActionOutcome {
+    const primary = candidate.check.assessment().primary
+    return outcome(
+      candidate.target,
+      status === 'assurance-required' ? 'business-blocked' : status,
+      undefined,
+      undefined,
+      primary === undefined
+        ? undefined
+        : { ...(primary.kind === undefined ? {} : { kind: primary.kind }), status: primary.status },
+    )
+  }
+
+  async function verify(candidate: Candidate): Promise<readonly GuardedActionOutcome[]> {
+    const intent = candidate.check.intent
+    const assurance = candidate.check.assessment().primary
+    const definition = action.availability
+    const unavailable = (status: ActionStatus) => [blocked(candidate, status)]
+    if (!intent || assurance?.status !== 'challenge' || !assurance.revision || !definition?.verify)
+      return unavailable('configuration-error')
+    if (context.identity.kind !== 'known' || !candidate.isBound())
+      return unavailable('not-dispatched')
+    let result: AssuranceResult
+    try {
+      result = await definition.verify(intent, lifecycle.signal)
+    } catch {
+      return unavailable(candidate.isBound() ? 'failed' : 'not-dispatched')
+    }
+    if (!candidate.isBound()) return unavailable('not-dispatched')
+    if (result.status !== 'verified')
+      return unavailable(result.status === 'failed' ? 'failed' : 'not-dispatched')
+    const expiresAt = Math.min(result.expiresAt, assurance.expiresAt ?? Infinity)
+    if (result.intent !== intent || !Number.isFinite(expiresAt) || expiresAt <= Date.now())
+      return unavailable('not-dispatched')
+    let continuation = context
+    if (result.refreshContext) {
+      const refreshed = await access.reconfirm?.(context)
+      if (!refreshed || !sameSubject(context, refreshed)) return unavailable('not-dispatched')
+      continuation = refreshed
+    }
+    const current = access.readContext()
+    if (
+      input.signal.aborted ||
+      current.status !== 'ready' ||
+      current.snapshot !== continuation ||
+      !action.isTargetCurrent(candidate.target) ||
+      expiresAt <= Date.now()
+    )
+      return unavailable('not-dispatched')
+    for (const { check } of candidates) check.dispose()
+    const { signal, mode } = input
+    return await runGuardedAction(
+      access,
+      action,
+      { signal, targets, ...(mode === undefined ? {} : { mode }) },
+      targets,
+      {
+        intent,
+        context: continuation,
+        revision: assurance.revision,
+        expiresAt,
+      },
+    )
   }
 
   async function dispatch(group: readonly Candidate[]): Promise<void> {
@@ -248,19 +450,22 @@ export async function executeGuardedAction<Result>(
         const candidate = group.find(({ target }) => target.id === command.target.id)
         outcomes.set(
           command.target.id,
-          outcome(
-            command.target,
-            candidate === undefined
-              ? 'not-dispatched'
-              : (eligibility(candidate) ?? 'not-dispatched'),
-          ),
+          candidate === undefined
+            ? outcome(command.target, 'not-dispatched')
+            : blocked(candidate, eligibility(candidate) ?? 'not-dispatched'),
         )
         continue
       }
       const reply = correlate(command, replies)
       if (reply?.status === 'completed') {
         let applied = false
-        if (command.isCurrent() && action.apply !== undefined) {
+        const candidate = group.find(({ target }) => target.id === command.target.id)
+        // A completed command may itself change the quota or workflow that enabled dispatch.
+        const applyCurrent =
+          action.availability === undefined
+            ? command.isCurrent()
+            : candidate?.isBound() && candidate.permit?.isCurrent()
+        if (applyCurrent && action.apply !== undefined) {
           try {
             action.apply(reply.value, command)
             applied = true
@@ -284,16 +489,22 @@ export async function executeGuardedAction<Result>(
     // Subscribe all targets before any awaits, including while confirmation is open.
     for (const target of targets) {
       let invalidated = false
-      const check = observeActionTarget(access, action, target, (change) => {
-        invalidated = true
-        if (
-          change.kind === 'identity' ||
-          change.kind === 'scope' ||
-          input.mode !== 'partial' ||
-          targets.length === 1
-        )
-          cancel()
-      })
+      const check = observeActionTarget(
+        access,
+        action,
+        target,
+        (change) => {
+          invalidated = true
+          if (
+            change.kind === 'identity' ||
+            change.kind === 'scope' ||
+            input.mode !== 'partial' ||
+            targets.length === 1
+          )
+            cancel()
+        },
+        { mode: input.mode },
+      )
       candidates.push({
         target,
         check,
@@ -305,8 +516,8 @@ export async function executeGuardedAction<Result>(
       const approved: Candidate[] = []
       for (const candidate of group) {
         const status = await authorize(candidate)
-        if (status === undefined) approved.push(candidate)
-        else outcomes.set(candidate.target.id, outcome(candidate.target, status))
+        if (status === undefined || status === 'assurance-required') approved.push(candidate)
+        else outcomes.set(candidate.target.id, blocked(candidate, status))
       }
       return approved
     }
@@ -321,12 +532,16 @@ export async function executeGuardedAction<Result>(
         (!lifecycle.signal.aborted && (await input.confirm(lifecycle.signal)))
       if (confirmed && input.confirm !== undefined) approved = await preflight(approved)
       if (confirmed) {
+        const required = approved.find(
+          (candidate) => eligibility(candidate) === 'assurance-required',
+        )
+        if (required !== undefined) return await verify(required)
         if (input.mode === 'partial') {
           for (const candidate of approved) {
             // A previous command may cross an asynchronous boundary or change business state.
             const status = await authorize(candidate)
             if (status === undefined) await dispatch([candidate])
-            else outcomes.set(candidate.target.id, outcome(candidate.target, status))
+            else outcomes.set(candidate.target.id, blocked(candidate, status))
           }
         } else if (approved.length === candidates.length) await dispatch(approved)
       }
