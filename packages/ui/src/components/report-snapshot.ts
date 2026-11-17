@@ -8,9 +8,13 @@ export async function captureUiChartReport(
   options: { readonly title: string; readonly alt: string; readonly signal?: AbortSignal },
 ): Promise<UiReportChartSection> {
   options.signal?.throwIfAborted()
+  if (chart.allowsReportCapture?.() === false)
+    throw new Error('Controlled charts cannot use the general report snapshot.')
   // exportImage copies the ready canvas synchronously before encoding it asynchronously.
   const image = await chart.exportImage()
   options.signal?.throwIfAborted()
+  if (chart.allowsReportCapture?.() === false)
+    throw new Error('Controlled charts cannot use the general report snapshot.')
   if (image.type !== 'image/png' || image.size === 0)
     throw new TypeError('Chart reports require a nonempty PNG snapshot.')
   return Object.freeze({

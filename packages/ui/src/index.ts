@@ -59,6 +59,8 @@ export { useUiTableActions, type UiTableActionsInput } from './composables/use-u
 export { default as UiG2Chart } from './components/UiG2Chart.vue'
 export type {
   UiG2ChartDateTimeChannels,
+  UiG2ChartAccess,
+  UiG2ChartFrame,
   UiG2ChartHandle,
   UiG2ChartOptions,
   UiChartTourTarget,
@@ -72,6 +74,7 @@ export {
   panUiChartTimeRange,
   zoomUiChartTimeRange,
   type UiChartTimeRangeValue,
+  type UiChartTimeSample,
 } from './components/chart-time-range'
 
 export { inspectUiFormSchema } from './components/form-schema'

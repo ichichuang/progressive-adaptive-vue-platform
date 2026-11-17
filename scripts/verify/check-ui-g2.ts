@@ -1,3 +1,4 @@
+import { verifyGuardedChart } from './check-guarded-chart'
 import { computed } from 'vue'
 import {
   linkedSamples,
@@ -1652,3 +1653,5 @@ console.log(
   disposeG2LabelContrast(lifecycleContext)
   assert.equal(events.size, 0, 'Disposal removes scene listeners.')
 }
+
+await verifyGuardedChart()

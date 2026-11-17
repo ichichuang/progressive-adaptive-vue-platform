@@ -64,6 +64,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       sourcePath: 'packages/ui/src/components/UiChartTimeRange.vue',
       props: Object.freeze([
         Object.freeze({
+          name: 'isCurrent',
+          type: '() => boolean',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'value',
           type: 'UiChartTimeRangeValue',
           required: true,
@@ -73,7 +79,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         Object.freeze({ name: 'max', type: 'number', required: true, defaultValue: null }),
         Object.freeze({
           name: 'overview',
-          type: 'readonly number[]',
+          type: 'readonly (number | UiChartTimeSample)[]',
           required: true,
           defaultValue: null,
         }),
@@ -103,6 +109,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       exportName: 'UiG2Chart',
       sourcePath: 'packages/ui/src/components/UiG2Chart.vue',
       props: Object.freeze([
+        Object.freeze({
+          name: 'access',
+          type: 'UiG2ChartAccess',
+          required: false,
+          defaultValue: null,
+        }),
         Object.freeze({
           name: 'dateTime',
           type: 'UiDateTimeContext',

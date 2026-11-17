@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { computed, onActivated, onDeactivated, onMounted, onScopeDispose, ref, useId } from 'vue'
+import {
+  computed,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onScopeDispose,
+  ref,
+  useId,
+  watch,
+} from 'vue'
 import {
   chartTimeRangeExtent,
   normalizeUiChartTimeRange,
   panUiChartTimeRange,
   zoomUiChartTimeRange,
   type UiChartTimeRangeValue,
+  type UiChartTimeSample,
 } from './chart-time-range'
 
 defineOptions({ name: 'UiChartTimeRange' })
@@ -14,12 +24,13 @@ const props = defineProps<{
   readonly value: UiChartTimeRangeValue
   readonly min: number
   readonly max: number
-  readonly overview: readonly number[]
+  readonly overview: readonly (number | UiChartTimeSample)[]
   readonly formatValue: (value: number) => string
   readonly label: string
   readonly startLabel: string
   readonly endLabel: string
   readonly helpText: string
+  readonly isCurrent?: () => boolean
 }>()
 const emit = defineEmits<{
   'update:value': [value: [number, number]]
@@ -33,6 +44,7 @@ const svg = ref<SVGSVGElement>()
 const width = ref(1)
 const height = ref(1)
 const dragging = ref(false)
+const available = computed(() => props.isCurrent?.() ?? true)
 const range = computed(() => normalizeUiChartTimeRange(props.value, props.min, props.max))
 // Keep a full-height pointer target around the slimmer visible track and grips.
 const handleWidth = computed(() => (height.value * 3) / 4)
@@ -50,11 +62,20 @@ const endX = computed(() => position(range.value[1]))
 const trend = computed(() => {
   const values = props.overview
   if (values.length === 0) return ''
-  const [minimum, maximum] = chartTimeRangeExtent(values)
-  return values
+  const samples = values.filter(
+    (sample) => typeof sample === 'number' || (sample.at >= props.min && sample.at <= props.max),
+  )
+  const [minimum, maximum] = chartTimeRangeExtent(
+    samples.map((sample) => (typeof sample === 'number' ? sample : sample.value)),
+  )
+  return samples
     .map((sample, index) => {
-      const value = Number.isFinite(sample) ? sample : 0
-      const x = inset.value + (index / Math.max(1, values.length - 1)) * trackWidth.value
+      const value =
+        typeof sample === 'number' ? (Number.isFinite(sample) ? sample : 0) : sample.value
+      const x =
+        typeof sample === 'number'
+          ? inset.value + (index / Math.max(1, values.length - 1)) * trackWidth.value
+          : position(sample.at)
       const y = bottom.value - ((value - minimum) / (maximum - minimum)) * trackHeight.value * 0.8
       return `${index === 0 ? 'M' : 'L'}${String(x)},${String(y)}`
     })
@@ -62,7 +83,9 @@ const trend = computed(() => {
 })
 const area = computed(() =>
   trend.value
-    ? `${trend.value} L${String(inset.value + trackWidth.value)},${String(bottom.value)} L${String(inset.value)},${String(bottom.value)} Z`
+    ? props.isCurrent
+      ? ''
+      : `${trend.value} L${String(inset.value + trackWidth.value)},${String(bottom.value)} L${String(inset.value)},${String(bottom.value)} Z`
     : '',
 )
 const handles = computed(() => [
@@ -106,8 +129,10 @@ let wheel: WheelSession | undefined
 let wheelTimer: ReturnType<typeof setTimeout> | undefined
 let observer: ResizeObserver | undefined
 let connected = false
+let active = false
 
 function publish(value: UiChartTimeRangeValue): void {
+  if (!available.value) return
   const next = normalizeUiChartTimeRange(value, props.min, props.max)
   if (next[0] !== range.value[0] || next[1] !== range.value[1]) emit('update:value', next)
 }
@@ -127,7 +152,7 @@ function finishWheel(cancel = false): void {
   emit('end')
 }
 function beginPointer(event: PointerEvent, mode: PointerMode): void {
-  if (!event.isPrimary || event.button !== 0 || pointer || !svg.value) return
+  if (!available.value || !event.isPrimary || event.button !== 0 || pointer || !svg.value) return
   event.preventDefault()
   event.stopPropagation()
   finishWheel()
@@ -182,7 +207,7 @@ function cancelPointer(event: PointerEvent): void {
   if (pointer?.id === event.pointerId) finishPointer(true)
 }
 function onWheel(event: WheelEvent): void {
-  if (event.ctrlKey || event.metaKey || pointer) return
+  if (!available.value || event.ctrlKey || event.metaKey || pointer) return
   if (!event.altKey && !root.value?.contains(document.activeElement)) return
   const raw = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX
   if (raw === 0) return
@@ -236,7 +261,7 @@ function onWheel(event: WheelEvent): void {
   }, 160)
 }
 function onKey(event: KeyboardEvent, mode: 'start' | 'end' | 'pan'): void {
-  if (event.ctrlKey || event.metaKey || event.altKey || pointer) return
+  if (!available.value || event.ctrlKey || event.metaKey || event.altKey || pointer) return
   const [start, end] = range.value
   const page = Math.max(1, Math.round((props.max - props.min) / 10))
   const delta =
@@ -293,7 +318,7 @@ function onFocusOut(event: FocusEvent): void {
     finishWheel()
 }
 function connect(): void {
-  if (connected || !root.value || !svg.value) return
+  if (!active || !available.value || connected || !root.value || !svg.value) return
   connected = true
   observer = new ResizeObserver(([entry]) => {
     if (!entry || entry.contentRect.width <= 0 || entry.contentRect.height <= 0) return
@@ -313,9 +338,24 @@ function disconnect(): void {
   root.value?.removeEventListener('keydown', onRootKey)
   connected = false
 }
-onMounted(connect)
-onActivated(connect)
-onDeactivated(disconnect)
+function activate(): void {
+  active = true
+  connect()
+}
+watch(
+  available,
+  (current) => {
+    if (!current) disconnect()
+  },
+  { flush: 'sync' },
+)
+watch(svg, connect, { flush: 'post' })
+onMounted(activate)
+onActivated(activate)
+onDeactivated(() => {
+  active = false
+  disconnect()
+})
 onScopeDispose(disconnect)
 </script>
 
@@ -327,6 +367,7 @@ onScopeDispose(disconnect)
     @focusout="onFocusOut"
   >
     <svg
+      v-if="available"
       ref="svg"
       class="pavp-chart-time-range-track rounded-control w-full"
       :viewBox="`0 0 ${String(width)} ${String(height)}`"
@@ -445,9 +486,15 @@ onScopeDispose(disconnect)
         />
       </g>
     </svg>
+    <span
+      v-else
+      class="block h-control"
+      aria-hidden="true"
+    />
     <div class="flex flex-wrap items-baseline justify-between gap-component-unit">
       <span class="text-caption text-text-secondary">{{ label }}</span>
       <span
+        v-if="available"
         class="tabular-nums text-caption text-text-primary"
         v-text="`${formatValue(range[0])} → ${formatValue(range[1])}`"
       />

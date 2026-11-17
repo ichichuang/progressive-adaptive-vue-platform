@@ -10,6 +10,19 @@ export interface UiG2ChartDateTimeChannels {
 /** Native G2 grammar. The component owns container sizing and motion policy. */
 export type UiG2ChartOptions = G2Spec
 
+/** The application owns projection and the lifetime of these already authorized options. */
+export interface UiG2ChartFrame {
+  readonly options: UiG2ChartOptions
+  isCurrent(): boolean
+}
+
+export interface UiG2ChartAccess {
+  /** Reactive. An unavailable frame must never fall back to the public options. */
+  read(): UiG2ChartFrame | undefined
+  /** An operation lease independent of the chart's read lease. */
+  permitImage?(): (() => boolean) | undefined
+}
+
 /** Narrow imperative capability; does not expose the vendor instance or its lifecycle. */
 export interface UiG2ChartHandle {
   /** Export the current ready canvas as an opaque themed PNG, at its rendered pixel density.
@@ -17,6 +30,8 @@ export interface UiG2ChartHandle {
    * titles/controls are not part of the image. Does not fetch data or initiate a download.
    */
   exportImage(): Promise<Blob>
+  /** Generic report snapshots lack the controlled image's lifetime. */
+  allowsReportCapture?(): boolean
   playTour(): void
   pauseTour(): void
   stopTour(): void

@@ -1,6 +1,11 @@
 /** Integer sample windows shared by the plot and its overview navigator. */
 export type UiChartTimeRangeValue = readonly [number, number]
 
+export interface UiChartTimeSample {
+  readonly at: number
+  readonly value: number
+}
+
 /** Private overview geometry: preserve the zero baseline without variadic argument limits. */
 export function chartTimeRangeExtent(values: readonly number[]): readonly [number, number] {
   let minimum = 0

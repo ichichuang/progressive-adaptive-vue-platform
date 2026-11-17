@@ -19,7 +19,9 @@ import { createChartTour } from './chart-tour-runtime'
 import type {
   UiChartTourConfig,
   UiChartTourState,
+  UiG2ChartAccess,
   UiG2ChartDateTimeChannels,
+  UiG2ChartFrame,
   UiG2ChartHandle,
   UiG2ChartOptions,
 } from './g2-chart-contracts'
@@ -27,6 +29,7 @@ import type {
 defineOptions({ name: 'UiG2Chart' })
 const props = defineProps<{
   readonly options: UiG2ChartOptions
+  readonly access?: UiG2ChartAccess
   readonly label: string
   readonly tour?: UiChartTourConfig
   readonly dateTime?: UiDateTimeContext
@@ -92,6 +95,10 @@ const busy = ref(false)
 const revealed = ref(false)
 let chart: Chart | undefined
 let chartHost: HTMLElement | undefined
+let chartTooltipMount: HTMLElement | undefined
+let displayedFrame: UiG2ChartFrame | undefined
+const pendingRenders = new Set<() => void>()
+let renderAttempt = 0
 let observer: ResizeObserver | undefined
 let frame: number | undefined
 let resizeFrame: number | undefined
@@ -193,7 +200,12 @@ function schedule(): void {
 }
 
 function isCurrent(currentGeneration: number, currentRevision: number): boolean {
-  return active && generation === currentGeneration && revision === currentRevision
+  return (
+    active &&
+    generation === currentGeneration &&
+    revision === currentRevision &&
+    (!props.access || displayedFrame?.isCurrent() === true)
+  )
 }
 function renderPending(): void {
   if (
@@ -224,11 +236,12 @@ function hasTimeline(options: unknown): boolean {
   )
 }
 function painted(): void {
+  const paintedGeneration = generation
   // The initializer is an empty view. Reveal on the frame after the data scene is
   // committed so the first visible pixels are that scene, not the blank canvas.
   if (presentData && active && !revealed.value) {
     requestAnimationFrame(() => {
-      if (presentData && active) revealed.value = true
+      if (presentData && active && paintedGeneration === generation) revealed.value = true
     })
   }
   if (resizing.value && resizeFrame === undefined && !dirty) {
@@ -236,7 +249,7 @@ function painted(): void {
     previewFrame = requestAnimationFrame(() => {
       previewFrame = requestAnimationFrame(() => {
         previewFrame = undefined
-        if (resizeFrame === undefined && !dirty) {
+        if (resizeFrame === undefined && !dirty && paintedGeneration === generation) {
           resizing.value = false
           if (resizePreview.value) {
             resizePreview.value.width = 0
@@ -268,10 +281,15 @@ async function render(): Promise<void> {
   let width = host.value.clientWidth
   let height = host.value.clientHeight
   if (width <= 0 || height <= 0) return
+  const authorized = props.access?.read()
+  if (props.access && authorized?.isCurrent() !== true) return
+  displayedFrame = authorized
   dirty = false
   painting = true
   busy.value = true
   const currentGeneration = generation
+  const attempt = ++renderAttempt
+  let releaseRender: (() => void) | undefined
   let currentRevision = revision
   let sequence = false
   try {
@@ -279,12 +297,28 @@ async function render(): Promise<void> {
       chartHost = document.createElement('div')
       container.value.append(chartHost)
       chart = new Chart({ container: chartHost, autoFit: false })
+      const instance = chart
       // Initialize the supported canvas/context once, without playing an empty scene.
       chart.options({ type: 'view', width, height, animate: false })
-      await chart.render()
+      await Promise.race([
+        chart.render(),
+        new Promise<void>((resolve) => {
+          releaseRender = resolve
+          pendingRenders.add(resolve)
+        }),
+      ])
       if (generation !== currentGeneration) return
-      chart.on(ChartEvent.AFTER_PAINT, painted)
-      if (tooltipViewport) chart.on('tooltip:show', tooltipViewport.constrain)
+      if (releaseRender) pendingRenders.delete(releaseRender)
+      releaseRender = undefined
+      instance.on(ChartEvent.AFTER_PAINT, () => {
+        if (instance === chart && (!props.access || displayedFrame?.isCurrent())) painted()
+      })
+      const viewport = tooltipViewport
+      if (viewport)
+        instance.on('tooltip:show', () => {
+          if (instance === chart && (!props.access || displayedFrame?.isCurrent()))
+            viewport.constrain()
+        })
     }
     // Initialization may span a ResizeObserver notification. Paint the latest snapshot
     // once rather than immediately replacing its enter animation with a duplicate update.
@@ -298,23 +332,20 @@ async function render(): Promise<void> {
       paintedSize !== undefined && (paintedSize.width !== width || paintedSize.height !== height)
     paintedSize = { width, height }
     const metrics = readMetrics()
+    const source = authorized?.options ?? props.options
     const options = projectG2Options(
-      projectG2DateTime(
-        props.options,
-        props.dateTimeChannels,
-        props.dateTime ?? globalDateTime.value,
-      ),
+      projectG2DateTime(source, props.dateTimeChannels, props.dateTime ?? globalDateTime.value),
       appearance.value,
       metrics,
       width,
       height,
       tooltipViewport?.options(metrics.spacing),
       resized,
-      tourConfig
+      tourConfig && !props.access
         ? {
             runtime: tourRuntime,
             targets: tourConfig.targets,
-            seriesTooltip: tourSeriesTooltip(props.options),
+            seriesTooltip: tourSeriesTooltip(source),
           }
         : undefined,
     )
@@ -330,22 +361,25 @@ async function render(): Promise<void> {
         resolve()
         return
       }
+      releaseRender = resolve
+      pendingRenders.add(resolve)
       resetG2LabelContrast(chart.getContext())
       renderG2(options, chart.getContext(), resolve, reject)
     })
-    if (isCurrent(currentGeneration, currentRevision)) {
+    if (attempt === renderAttempt && isCurrent(currentGeneration, currentRevision)) {
       tourRuntime.suspend('rendering', false)
       emit('rendered')
     }
   } catch (error: unknown) {
-    if (generation === currentGeneration) {
+    if (generation === currentGeneration && attempt === renderAttempt) {
       painting = false
       resizing.value = false
     }
-    if (isCurrent(currentGeneration, currentRevision))
+    if (attempt === renderAttempt && isCurrent(currentGeneration, currentRevision))
       emit('error', error instanceof Error ? error : new Error(String(error)))
   } finally {
-    if (generation === currentGeneration) {
+    if (releaseRender) pendingRenders.delete(releaseRender)
+    if (generation === currentGeneration && attempt === renderAttempt) {
       if (sequence) timeline = false
       if (isCurrent(currentGeneration, currentRevision)) {
         painting = false
@@ -358,6 +392,12 @@ async function render(): Promise<void> {
 
 /** Snapshot the ready canvas, rather than restarting animation or exporting stale options. */
 async function exportImage(): Promise<Blob> {
+  const access = props.access
+  const allowed = access?.permitImage?.()
+  const currentGeneration = generation
+  const currentRevision = revision
+  if (access && (allowed?.() !== true || displayedFrame?.isCurrent() !== true))
+    throw new Error('Chart image export is unavailable.')
   if (
     !active ||
     !chart ||
@@ -388,13 +428,18 @@ async function exportImage(): Promise<Blob> {
   context.drawImage(source, 0, 0)
   return await new Promise<Blob>((resolve, reject) => {
     snapshot.toBlob((blob) => {
-      if (blob) resolve(blob)
+      snapshot.width = 0
+      snapshot.height = 0
+      if (access && (!isCurrent(currentGeneration, currentRevision) || allowed?.() !== true))
+        reject(new Error('The chart image is no longer current.'))
+      else if (blob) resolve(blob)
       else reject(new Error('The chart image could not be encoded.'))
     }, 'image/png')
   })
 }
 defineExpose<UiG2ChartHandle>({
   exportImage,
+  allowsReportCapture: () => props.access === undefined,
   playTour: () => {
     tourRuntime.play()
   },
@@ -427,9 +472,14 @@ function start(): void {
     syncVisibility()
   })
   visibilityObserver.observe(host.value)
+  const mount = props.access ? document.createElement('div') : tooltipMount.value
+  if (props.access) {
+    chartTooltipMount = mount
+    tooltipMount.value.append(mount)
+  }
   tooltipViewport = createG2TooltipViewport(
     host.value,
-    tooltipMount.value,
+    mount,
     () => {
       chart?.emit('tooltip:hide', {})
     },
@@ -450,6 +500,8 @@ function stop(): void {
   visibilityObserver = undefined
   document.removeEventListener('visibilitychange', syncVisibility)
   generation += 1
+  for (const release of pendingRenders) release()
+  pendingRenders.clear()
   observer?.disconnect()
   observer = undefined
   if (frame !== undefined) cancelAnimationFrame(frame)
@@ -461,23 +513,32 @@ function stop(): void {
   observedSize = undefined
   observedMetrics = ''
   resizing.value = false
-  if (chart) disposeG2LabelContrast(chart.getContext())
-  chart?.destroy()
+  if (resizePreview.value) {
+    resizePreview.value.width = 0
+    resizePreview.value.height = 0
+  }
+  const retired = chart
+  chart = undefined
+  // Detach both owned surfaces before G2 or a pending vendor callback can run.
+  chartHost?.remove()
+  chartTooltipMount?.remove()
+  chartTooltipMount = undefined
+  if (retired) disposeG2LabelContrast(retired.getContext())
+  retired?.destroy()
   tooltipViewport?.destroy()
   tooltipViewport = undefined
-  chart = undefined
-  chartHost?.remove()
   chartHost = undefined
   painting = false
   timeline = false
   labelFrames = undefined
   paintedSize = undefined
   presentData = false
+  displayedFrame = undefined
   revealed.value = false
   busy.value = false
 }
 watch(
-  () => props.tour,
+  () => (props.access ? undefined : props.tour),
   (value) => {
     try {
       tourRuntime.configure(value)
@@ -493,6 +554,25 @@ watch(
   { deep: true, immediate: true },
 )
 watch(() => props.options, schedule, { deep: true, flush: 'post' })
+watch(
+  () => {
+    const access = props.access
+    const next = access?.read()
+    return {
+      access,
+      next: next?.isCurrent() === true ? next : undefined,
+      stillReadable: displayedFrame?.isCurrent(),
+    }
+  },
+  ({ access, stillReadable }, previous) => {
+    if (!active) return
+    if (access !== previous.access || stillReadable === false) {
+      stop()
+      start()
+    } else schedule()
+  },
+  { flush: 'sync' },
+)
 watch(
   () => [props.dateTimeChannels, props.dateTime ?? globalDateTime.value] as const,
   ([nextChannels], [previousChannels]) => {
