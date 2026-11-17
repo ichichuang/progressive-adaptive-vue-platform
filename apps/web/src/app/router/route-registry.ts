@@ -8,6 +8,14 @@ import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
 import type { RouteParamsSchemaId, RouteQuerySchemaId } from './route-schemas'
 import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
 import type { AccessRequest } from '../access/access-contract'
+import {
+  administrationAccessDomain,
+  administrationLayout,
+  administrationPages,
+  administrationRouteFolder,
+  resolveAdministrationSelection,
+  type AdministrationModule,
+} from '../administration/administration-routes'
 
 type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required' | 'policy'
 
@@ -416,7 +424,7 @@ const formWorkspaceRoutes = Object.freeze([
   defineFormWorkspaceRoute('builder'),
 ] as const)
 
-export const routeRegistry = Object.freeze([
+export const publicRouteRegistry = Object.freeze([
   defineConsoleWorkspaceRoute({
     name: 'workbench-welcome',
     pathPattern: '/',
@@ -590,6 +598,89 @@ export const routeRegistry = Object.freeze([
   defineLayoutPreview('fixed-display', 'route-layout.content-only', 'none'),
 ] as const satisfies readonly RouteRegistryRecord[])
 
+const optionalAdministrationRecords = [administrationLayout, ...administrationPages].map((route) =>
+  defineRoute({
+    name: route.name,
+    pathPattern: route.path,
+    sourcePath: `apps/web/${administrationRouteFolder}/${route.file}`,
+    module: route.module,
+    parentName: 'parent' in route ? route.parent : null,
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      auth: 'required',
+      keepAlive: 'never',
+      requiredPermissionIds: Object.freeze(['administration-view']),
+      permissionRequests: Object.freeze({
+        'administration-view': Object.freeze({
+          kind: 'type',
+          domain: administrationAccessDomain,
+          resource: route.resource,
+          action: 'view',
+        }),
+      }),
+      titleKey: `route-title.${route.name}` as const,
+      breadcrumbKey: null,
+      telemetryName: `route.administration.${route.resource}` as const,
+    }),
+  } as const),
+)
+
+export function composeRouteRegistry(selection: readonly AdministrationModule[]) {
+  const resolved = resolveAdministrationSelection(selection)
+  const records = [
+    ...publicRouteRegistry,
+    ...optionalAdministrationRecords.filter(({ module }) =>
+      module === null ? resolved.length !== 0 : resolved.includes(module),
+    ),
+  ]
+  assertRouteComposition(records)
+  return Object.freeze(records)
+}
+
+export function assertRouteComposition(records: readonly RouteRegistryRecord[]): void {
+  const names = new Set<string>()
+  const paths = new Set<string>()
+  const sources = new Set<string>()
+  for (const route of records) {
+    const normalized = route.pathPattern.toLowerCase().replace(/\/$/u, '') || '/'
+    if (names.has(route.name) || paths.has(normalized) || sources.has(route.sourcePath))
+      throw new TypeError(`Duplicate route name, path or component: ${route.name}`)
+    names.add(route.name)
+    paths.add(normalized)
+    sources.add(route.sourcePath)
+    if (!route.name.startsWith('administration-')) continue
+    const declared = optionalAdministrationRecords.find(({ name }) => name === route.name)
+    if (
+      declared?.pathPattern !== route.pathPattern ||
+      declared.sourcePath !== route.sourcePath ||
+      route.paramsSchemaId !== declared.paramsSchemaId ||
+      route.querySchemaId !== declared.querySchemaId
+    )
+      throw new TypeError(`Invalid administration route declaration: ${route.name}`)
+    if (
+      route.meta.auth !== 'required' ||
+      route.meta.requiredPermissionIds.length !== 1 ||
+      route.meta.requiredPermissionIds[0] !== 'administration-view' ||
+      JSON.stringify(route.meta.permissionRequests) !==
+        JSON.stringify(declared.meta.permissionRequests)
+    )
+      throw new TypeError(`Administration route lacks its required access binding: ${route.name}`)
+    if (declared.parentName !== null && !records.some(({ name }) => name === declared.parentName))
+      throw new TypeError(`Administration layout missing for ${route.name}`)
+  }
+}
+
+const compiledAdministration =
+  typeof __PAVP_ADMINISTRATION_MODULES__ === 'undefined' ? [] : __PAVP_ADMINISTRATION_MODULES__
+export const routeRegistry = composeRouteRegistry(compiledAdministration)
+
 export type RouteName = (typeof routeRegistry)[number]['name']
 export function isDisplayLayoutPreview(name: string): boolean {
   return name === 'preview-layout-display' || name === 'preview-layout-fixed-display'
@@ -623,12 +714,17 @@ export const routeBreadcrumbRegistry = /* @__PURE__ */ getDefaultRouteMessages(
   /* @__PURE__ */ routeBreadcrumbKeys.filter((key) => key !== null),
 )
 
+export function getRouteMessageKey(
+  record: (typeof routeRegistry)[number],
+): ConsoleCommonMessageKey {
+  return record.messageScope === 'common'
+    ? `route-message.${record.name}`
+    : `route-message.${record.name}-summary`
+}
+
 export const routeMessageRegistry = Object.freeze(
   routeRegistry.map((record) => {
-    const key: ConsoleCommonMessageKey =
-      record.messageScope === 'common'
-        ? `route-message.${record.name}`
-        : `route-message.${record.name}-summary`
+    const key = getRouteMessageKey(record)
     return Object.freeze({ routeName: record.name, key, text: getDefaultConsoleMessage(key) })
   }),
 )
@@ -795,7 +891,7 @@ function definePreviewNavigationItem<
   })
 }
 
-export const consoleNavigationRegistry = Object.freeze([
+const publicConsoleNavigationRegistry = Object.freeze([
   Object.freeze({
     id: 'workbench',
     labelKey: 'navigation.workbench',
@@ -963,6 +1059,29 @@ export const consoleNavigationRegistry = Object.freeze([
     ]),
   }),
 ] as const satisfies readonly ConsoleNavigationGroup[])
+
+const administrationNavigation = routeRegistry.flatMap((record) =>
+  'module' in record && record.module !== null
+    ? [
+        Object.freeze({
+          iconClass: 'i-lucide-layout-dashboard',
+          destination: Object.freeze({ name: record.name }),
+        }),
+      ]
+    : [],
+)
+export const consoleNavigationRegistry = Object.freeze([
+  ...publicConsoleNavigationRegistry,
+  ...(administrationNavigation.length === 0
+    ? []
+    : [
+        Object.freeze({
+          id: 'administration' as const,
+          labelKey: 'route-title.administration-shell' as const,
+          items: Object.freeze(administrationNavigation),
+        }),
+      ]),
+] as const)
 
 function flattenNavigationGroups(
   groups: readonly ConsoleNavigationGroup[],

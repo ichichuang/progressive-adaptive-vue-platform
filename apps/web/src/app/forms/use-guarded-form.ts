@@ -20,6 +20,7 @@ import {
   executeGuardedAction,
   type ActionTarget,
   type GuardedAction,
+  type GuardedActionOutcome,
 } from '../access/guarded-action'
 import {
   observeNativeRequirement,
@@ -61,6 +62,7 @@ interface GuardedFormInput<S extends UiFormSchema> {
   readonly businessAllows?: (target: Target) => boolean
   readonly customFields?: readonly string[]
   readonly validate?: UiFormProjection['validate']
+  readonly onOutcome?: (outcome: GuardedActionOutcome) => void
   /** Replacement APIs must explicitly provide a host-supported adapter. */
   readonly payload?: (patch: Patch, target: Target) => Payload | undefined
 }
@@ -313,6 +315,7 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
         { signal: operation.signal, targets: [target] },
       )
       if (!eligible()) return 'cancelled'
+      if (result !== undefined) input.onOutcome?.(result)
       return result?.status === 'completed' && result.applied ? 'success' : 'failure'
     },
   }

@@ -342,7 +342,10 @@ export function provideApplicationNavigation(
     try {
       const record = getRouteRecord(binding.routeName)
       if (binding.deploymentBase !== deploymentBase || routeHasPageInput(record)) return undefined
-      const resolved = router.resolve({ name: record.name })
+      const resolved =
+        'module' in record
+          ? router.resolve(record.pathPattern)
+          : router.resolve({ name: record.name })
       if (validateRouteInput(resolved).kind !== 'valid') return undefined
       return resolveRegisteredDestination(router, routeDestination(resolved))
     } catch {

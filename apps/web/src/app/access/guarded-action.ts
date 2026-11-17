@@ -46,7 +46,8 @@ type ActionReply<Result> = {
   readonly targetId: string
 } & (
   | { readonly status: 'completed'; readonly value: Result }
-  | { readonly status: 'failed' | 'unknown' | 'not-dispatched' }
+  | { readonly status: 'failed'; readonly failure?: 'revision-conflict' }
+  | { readonly status: 'unknown' | 'not-dispatched' }
 )
 
 export interface GuardedAction<Result> {
@@ -88,6 +89,7 @@ export interface GuardedActionOutcome {
   readonly requestId?: string
   readonly applied?: boolean
   readonly reason?: AvailabilityReason
+  readonly failure?: 'revision-conflict'
 }
 
 type AvailabilityReason = Pick<AvailabilityResult, 'kind' | 'status'>
@@ -477,11 +479,15 @@ async function runGuardedAction<Result>(
           command.target.id,
           outcome(command.target, 'completed', command.requestId, applied),
         )
-      } else
+      } else {
+        const result = outcome(command.target, reply?.status ?? 'unknown', command.requestId)
         outcomes.set(
           command.target.id,
-          outcome(command.target, reply?.status ?? 'unknown', command.requestId),
+          reply?.status === 'failed' && reply.failure === 'revision-conflict'
+            ? Object.freeze({ ...result, failure: reply.failure })
+            : result,
         )
+      }
     }
   }
 

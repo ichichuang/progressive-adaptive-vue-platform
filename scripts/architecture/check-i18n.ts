@@ -10,9 +10,11 @@ import ts from 'typescript'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import {
   getRouteMessageScope,
-  routeMessageRegistry,
+  composeRouteRegistry,
+  getRouteMessageKey,
   routeRegistry,
 } from '../../apps/web/src/app/router/route-registry'
+import { administrationModules } from '../../apps/web/src/app/administration/administration-routes'
 import {
   consoleLocaleRegistry,
   consoleLocaleSchema,
@@ -579,11 +581,10 @@ export async function validateI18nArchitecture(): Promise<string[]> {
   const sources = new Map<string, ts.SourceFile>()
   const sourceText = new Map<string, string>()
   const usedKeys = new Set<string>()
-  for (const route of routeRegistry) {
-    const message = routeMessageRegistry.find((record) => record.routeName === route.name)
-    report(message !== undefined, `${route.name}: a route presentation message is required.`)
-    for (const key of [route.meta.titleKey, route.meta.breadcrumbKey, message?.key]) {
-      if (key === null || key === undefined) continue
+  for (const route of composeRouteRegistry(administrationModules)) {
+    const keyForRoute = getRouteMessageKey(route)
+    for (const key of [route.meta.titleKey, route.meta.breadcrumbKey, keyForRoute]) {
+      if (key === null) continue
       report(
         keyScopes.get(key) === 'common',
         `${route.name}: route presentation message ${key} must exist in the common catalog.`,

@@ -24,10 +24,12 @@ import {
   type routeQuerySchemaRegistry,
 } from './route-schemas'
 
-type RouteDeclarationFor<N extends RouteName> = Extract<
-  (typeof routeRegistry)[number],
-  { readonly name: N }
->
+type RouteDeclarationFor<N extends RouteName> =
+  | Extract<(typeof routeRegistry)[number], { readonly name: N }>
+  | (N extends `administration-${string}`
+      ? Extract<(typeof routeRegistry)[number], { readonly module: unknown }>
+      : never)
+
 type ParamsSchemaFor<N extends RouteName> = Extract<
   (typeof routeParamsSchemaRegistry)[number],
   { readonly id: RouteDeclarationFor<N>['paramsSchemaId'] }
@@ -37,9 +39,11 @@ type QuerySchemaFor<N extends RouteName> = Extract<
   { readonly id: RouteDeclarationFor<N>['querySchemaId'] }
 >['schema']
 type RouteQueryInput<N extends RouteName> = z.input<QuerySchemaFor<N>>
-type ParamsField<N extends RouteName> = keyof RouteNamedMap[N]['paramsRaw'] extends never
-  ? { readonly params?: never }
-  : { readonly params: RouteNamedMap[N]['paramsRaw'] }
+type ParamsField<N extends RouteName> = N extends keyof RouteNamedMap
+  ? keyof RouteNamedMap[N]['paramsRaw'] extends never
+    ? { readonly params?: never }
+    : { readonly params: RouteNamedMap[N]['paramsRaw'] }
+  : { readonly params?: never }
 type QueryField<N extends RouteName> =
   RouteDeclarationFor<N>['querySchemaId'] extends 'route-query.none'
     ? { readonly query?: never }
@@ -110,6 +114,19 @@ export function validateRouteInput(location: RouteLocationNormalized): RouteInpu
   const record = routeRegistry.find((candidate) => candidate.name === location.name)
   if (record === undefined || location.matched.at(-1)?.name !== record.name)
     return { kind: 'invalid' }
+  if ('parentName' in record) {
+    const expected = record.parentName === null ? [record.name] : [record.parentName, record.name]
+    if (
+      location.matched.length !== expected.length ||
+      location.matched.some(
+        (matched, index) =>
+          matched.name !== expected[index] ||
+          matched.aliasOf !== undefined ||
+          matched.redirect !== undefined,
+      )
+    )
+      return { kind: 'invalid' }
+  }
   for (const matched of location.matched) {
     if (
       location.matched.length === 2 &&
@@ -251,7 +268,10 @@ export function resolveRegisteredDestination(
     if (!caller.success) return undefined
     // Resolution context deliberately clears required current-route params: this is not a committed route.
     const context = { ...router.currentRoute.value, params: {} } as typeof router.currentRoute.value
-    const resolved = router.resolve(destination, context)
+    const resolved =
+      'module' in record
+        ? router.resolve(record.pathPattern, context)
+        : router.resolve(destination as RegisteredRouteDestination<keyof RouteNamedMap>, context)
     const roundTrip = router.resolve(resolved.fullPath)
     if (
       resolved.matched.at(-1) !== roundTrip.matched.at(-1) ||

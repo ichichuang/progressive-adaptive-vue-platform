@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { AdministrationHost } from '../administration/administration-host'
 import type { BusinessAvailabilitySource } from './business-availability'
 import type { ActionTarget, GuardedAction } from './guarded-action'
 
@@ -130,6 +131,7 @@ export interface AccessProvider {
 }
 
 export interface AccessHost {
+  readonly administration?: AdministrationHost
   resolveContext(
     change: AccessContextChange,
   ): AccessContextSnapshot | Promise<AccessContextSnapshot>
@@ -185,6 +187,7 @@ interface AccessConsumer {
 }
 
 export interface AccessBoundary {
+  administration?(): AdministrationHost | undefined
   readContext(): AccessContextState
   availabilitySource?(id: string): BusinessAvailabilitySource | undefined
   delegationExit?(context: AccessContextSnapshot): DelegationCommand | undefined

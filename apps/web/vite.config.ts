@@ -18,7 +18,17 @@ import {
   type CompiledEnvironment,
   type CoreRuntimeConfiguration,
 } from './src/app/config/runtime-configuration-contract'
-import { getRouteRecordBySourcePath, routeRegistry } from './src/app/router/route-registry'
+import {
+  composeRouteRegistry,
+  getRouteRecordBySourcePath,
+  publicRouteRegistry,
+} from './src/app/router/route-registry'
+import {
+  administrationPages,
+  administrationRouteFolder,
+  resolveAdministrationSelection,
+  type AdministrationModule,
+} from './src/app/administration/administration-routes'
 
 type JsonObject = Record<string, unknown>
 type VueRouterPluginOptions = NonNullable<Parameters<typeof VueRouter>[0]>
@@ -114,18 +124,27 @@ function projectCanonicalFileRoute(route: EditableTreeNode): void {
   route.path = record.pathPattern
 }
 
-function verifyCanonicalFileRouteTree(rootRoute: EditableTreeNode): void {
+function verifyCanonicalFileRouteTree(
+  rootRoute: EditableTreeNode,
+  records = publicRouteRegistry as ReturnType<typeof composeRouteRegistry>,
+): void {
   const generatedSourcePaths = [...rootRoute]
     .flatMap((route) => [...route.components.values()])
     .map(canonicalPageSourcePath)
     .sort()
-  const registeredSourcePaths = routeRegistry.map((record) => record.sourcePath).sort()
+  const registeredSourcePaths = records.map((record) => record.sourcePath).sort()
 
   if (
     generatedSourcePaths.length !== registeredSourcePaths.length ||
     generatedSourcePaths.some((sourcePath, index) => sourcePath !== registeredSourcePaths[index])
   ) {
-    throw new Error('The official file-route source set diverged from the Route Registry.')
+    const discovered = new Set(generatedSourcePaths)
+    const registered = new Set<string>(registeredSourcePaths)
+    const missing = registeredSourcePaths.filter((sourcePath) => !discovered.has(sourcePath))
+    const undeclared = generatedSourcePaths.filter((sourcePath) => !registered.has(sourcePath))
+    throw new Error(
+      `The official file-route source set diverged from the Route Registry. Missing: ${missing.join(', ') || 'none'}. Undeclared: ${undeclared.join(', ') || 'none'}.`,
+    )
   }
 }
 
@@ -138,6 +157,40 @@ export const routerFileGenerationOptions = {
   extendRoute: projectCanonicalFileRoute,
   beforeWriteFiles: verifyCanonicalFileRouteTree,
 } as const satisfies VueRouterPluginOptions
+
+export function administrationFileOptions(selection: readonly AdministrationModule[]) {
+  const modules = resolveAdministrationSelection(selection)
+  const records = composeRouteRegistry(modules)
+  if (modules.length === 0) return { ...routerFileGenerationOptions, dts: false as const }
+  const profile = modules.join('-')
+  return {
+    ...routerFileGenerationOptions,
+    routesFolder: [
+      routerFileGenerationOptions.routesFolder,
+      {
+        src: administrationRouteFolder,
+        exclude: administrationPages
+          .filter(({ module }) => !modules.includes(module))
+          .map(({ file }) => `**/${file}`),
+      },
+    ],
+    dts: `node_modules/.pavp-route-types/${profile}/route-map.d.ts`,
+    extendRoute(route: EditableTreeNode) {
+      const source = route.component
+      if (!source) return
+      const record = records.find(
+        ({ sourcePath }) => sourcePath === canonicalPageSourcePath(source),
+      )
+      if (!record)
+        throw new Error(`Undeclared administration page: ${canonicalPageSourcePath(source)}`)
+      route.name = record.name
+      route.path = record.pathPattern
+    },
+    beforeWriteFiles: (tree: EditableTreeNode) => {
+      verifyCanonicalFileRouteTree(tree, records)
+    },
+  } satisfies VueRouterPluginOptions
+}
 
 if (deploymentBase !== '/') {
   throw new Error('The Runtime Kernel currently requires the exact root deployment base.')
@@ -398,114 +451,127 @@ function productionRuntimeConfigurationCarrier(): Plugin {
   }
 }
 
-export default defineConfig(async ({ command, isPreview, mode }) => {
-  assertCompiledEnvironment(mode)
+export function createApplicationBuildConfig(selection: readonly AdministrationModule[] = []) {
+  const administration = resolveAdministrationSelection(selection)
+  const fileOptions = administrationFileOptions(administration)
+  return defineConfig(async ({ command, isPreview, mode }) => {
+    assertCompiledEnvironment(mode)
 
-  const deployment = await readDeploymentConfig(mode, command === 'serve' && !isPreview)
-  const developmentProxy = deployment.developmentProxy
-  const developmentProxyOptions: Record<string, ProxyOptions> | undefined =
-    developmentProxy === undefined
-      ? undefined
-      : {
-          [developmentProxy.prefix]: {
-            target: developmentProxy.target,
-            changeOrigin: true,
-            followRedirects: false,
-            rewrite: (path) => path.slice(developmentProxy.prefix.length - 1),
-            configure(proxy) {
-              proxy.on('proxyReq', (request) => {
-                request.removeHeader('cookie')
-                request.removeHeader('referer')
-                request.removeHeader('proxy-authorization')
-              })
-              proxy.on('proxyRes', (response) => {
-                delete response.headers['set-cookie']
-              })
+    const deployment = await readDeploymentConfig(mode, command === 'serve' && !isPreview)
+    const developmentProxy = deployment.developmentProxy
+    const developmentProxyOptions: Record<string, ProxyOptions> | undefined =
+      developmentProxy === undefined
+        ? undefined
+        : {
+            [developmentProxy.prefix]: {
+              target: developmentProxy.target,
+              changeOrigin: true,
+              followRedirects: false,
+              rewrite: (path) => path.slice(developmentProxy.prefix.length - 1),
+              configure(proxy) {
+                proxy.on('proxyReq', (request) => {
+                  request.removeHeader('cookie')
+                  request.removeHeader('referer')
+                  request.removeHeader('proxy-authorization')
+                })
+                proxy.on('proxyRes', (response) => {
+                  delete response.headers['set-cookie']
+                })
+              },
+            },
+          }
+    const buildVersion = await readBuildVersion()
+    const releaseSha = readReleaseSha()
+    const developmentPort =
+      command === 'serve' && !isPreview ? await resolveDevelopmentPort() : defaultDevelopmentPort
+    const runtimeConfiguration = Object.freeze(
+      coreRuntimeConfigurationSchema.parse({
+        schemaVersion: 2,
+        environment: mode,
+        deploymentBase: deployment.deploymentBase,
+        releaseSha,
+        buildVersion,
+        api: deployment.api,
+        presentation: defaultRuntimePresentation,
+      }),
+    )
+
+    return {
+      base: deployment.deploymentBase,
+      envDir: false as const,
+      envPrefix: [],
+      define: {
+        __VUE_I18N_FULL_INSTALL__: false,
+        __VUE_I18N_LEGACY_API__: false,
+        __PAVP_COMPILED_ENVIRONMENT__: JSON.stringify(runtimeConfiguration.environment),
+        __PAVP_COMPILED_RELEASE_SHA__: JSON.stringify(runtimeConfiguration.releaseSha),
+        __PAVP_COMPILED_BUILD_VERSION__: JSON.stringify(runtimeConfiguration.buildVersion),
+        __PAVP_ADMINISTRATION_MODULES__: JSON.stringify(administration),
+      },
+      plugins: [
+        runtimeConfigurationArtifacts(runtimeConfiguration),
+        productionRuntimeConfigurationCarrier(),
+        VueRouter(fileOptions),
+        vue(),
+        UnoCSS(),
+      ],
+      // File routes are generated virtually, outside Vite's initial HTML dependency scan.
+      // Scan their real sources up front; production routes remain asynchronously imported.
+      optimizeDeps: {
+        entries: [
+          'index.html',
+          `${routerFileGenerationOptions.routesFolder}/**/*.vue`,
+          ...composeRouteRegistry(administration)
+            .filter((record) => 'module' in record)
+            .map(({ sourcePath }) => sourcePath.replace(/^apps\/web\//u, '')),
+        ],
+      },
+      build: {
+        cssCodeSplit: true,
+        emptyOutDir: true,
+        manifest: true,
+        outDir: administration.length === 0 ? 'dist' : 'dist-administration',
+        reportCompressedSize: true,
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              groups: [
+                {
+                  name: 'initial-app',
+                  // Consolidate only already-initial application, UI and motion owners.
+                  // Keep shared resource loaders separate from the startup application.
+                  test: /(?:\/apps\/web\/src\/(?:app\/|App\.vue|main\.ts)|\/packages\/(?:ui|design-system)\/src\/|node_modules\/(?:motion-v|motion-dom|motion-utils)\/)/,
+                  tags: ['$initial' as const],
+                  includeDependenciesRecursively: false,
+                },
+                {
+                  name: 'initial-naive',
+                  // Keep the already-initial Naive helpers together without pulling
+                  // shared Vue/i18n dependencies into every lazy UI consumer.
+                  test: /node_modules\/(?:naive-ui|vueuc|vooks|vdirs|evtd|seemly|treemate|css-render|@css-render\/[^/]+|date-fns|lodash-es)\//,
+                  tags: ['$initial' as const],
+                  includeDependenciesRecursively: false,
+                },
+              ],
             },
           },
-        }
-  const buildVersion = await readBuildVersion()
-  const releaseSha = readReleaseSha()
-  const developmentPort =
-    command === 'serve' && !isPreview ? await resolveDevelopmentPort() : defaultDevelopmentPort
-  const runtimeConfiguration = Object.freeze(
-    coreRuntimeConfigurationSchema.parse({
-      schemaVersion: 2,
-      environment: mode,
-      deploymentBase: deployment.deploymentBase,
-      releaseSha,
-      buildVersion,
-      api: deployment.api,
-      presentation: defaultRuntimePresentation,
-    }),
-  )
-
-  return {
-    base: deployment.deploymentBase,
-    envDir: false as const,
-    envPrefix: [],
-    define: {
-      __VUE_I18N_FULL_INSTALL__: false,
-      __VUE_I18N_LEGACY_API__: false,
-      __PAVP_COMPILED_ENVIRONMENT__: JSON.stringify(runtimeConfiguration.environment),
-      __PAVP_COMPILED_RELEASE_SHA__: JSON.stringify(runtimeConfiguration.releaseSha),
-      __PAVP_COMPILED_BUILD_VERSION__: JSON.stringify(runtimeConfiguration.buildVersion),
-    },
-    plugins: [
-      runtimeConfigurationArtifacts(runtimeConfiguration),
-      productionRuntimeConfigurationCarrier(),
-      VueRouter(routerFileGenerationOptions),
-      vue(),
-      UnoCSS(),
-    ],
-    // File routes are generated virtually, outside Vite's initial HTML dependency scan.
-    // Scan their real sources up front; production routes remain asynchronously imported.
-    optimizeDeps: {
-      entries: ['index.html', `${routerFileGenerationOptions.routesFolder}/**/*.vue`],
-    },
-    build: {
-      cssCodeSplit: true,
-      emptyOutDir: true,
-      manifest: true,
-      outDir: 'dist',
-      reportCompressedSize: true,
-      rolldownOptions: {
-        output: {
-          codeSplitting: {
-            groups: [
-              {
-                name: 'initial-app',
-                // Consolidate only already-initial application, UI and motion owners.
-                // Keep shared resource loaders separate from the startup application.
-                test: /(?:\/apps\/web\/src\/(?:app\/|App\.vue|main\.ts)|\/packages\/(?:ui|design-system)\/src\/|node_modules\/(?:motion-v|motion-dom|motion-utils)\/)/,
-                tags: ['$initial' as const],
-                includeDependenciesRecursively: false,
-              },
-              {
-                name: 'initial-naive',
-                // Keep the already-initial Naive helpers together without pulling
-                // shared Vue/i18n dependencies into every lazy UI consumer.
-                test: /node_modules\/(?:naive-ui|vueuc|vooks|vdirs|evtd|seemly|treemate|css-render|@css-render\/[^/]+|date-fns|lodash-es)\//,
-                tags: ['$initial' as const],
-                includeDependenciesRecursively: false,
-              },
-            ],
-          },
         },
+        sourcemap: false,
+        target: 'es2022',
       },
-      sourcemap: false,
-      target: 'es2022',
-    },
-    preview: {
-      host: '127.0.0.1',
-      port: 4173,
-      strictPort: true,
-    },
-    server: {
-      host: true,
-      port: developmentPort,
-      strictPort: false,
-      ...(developmentProxyOptions === undefined ? {} : { proxy: developmentProxyOptions }),
-    },
-  }
-})
+      preview: {
+        host: '127.0.0.1',
+        port: 4173,
+        strictPort: true,
+      },
+      server: {
+        host: true,
+        port: developmentPort,
+        strictPort: false,
+        ...(developmentProxyOptions === undefined ? {} : { proxy: developmentProxyOptions }),
+      },
+    }
+  })
+}
+
+export default createApplicationBuildConfig()

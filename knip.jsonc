@@ -6,6 +6,12 @@
     "progressive-adaptive-vue-platform/**",
   ],
   "workspaces": {
+    ".": {
+      "entry": [
+        "scripts/verify/administration-browser-probe.ts",
+        "scripts/verify/check-administration.ts",
+      ],
+    },
     "apps/web": {
       "entry": [
         "src/shared/api/index.ts",
@@ -18,6 +24,8 @@
         "src/app/tables/use-guarded-table.ts",
         "src/app/tables/guarded-table-editor.ts",
         "src/app/access/advanced-interactions.ts",
+        "src/administration-pages/**/*.vue",
+        "vite.administration.config.ts",
       ],
     },
   },

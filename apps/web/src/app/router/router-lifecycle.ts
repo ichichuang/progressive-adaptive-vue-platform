@@ -330,6 +330,16 @@ function validateGeneratedRouteClosure(): void {
     if (generated === undefined || !prepareGeneratedRoute(record, generated)) {
       throw new TypeError('The generated runtime route set diverged from the Route Registry.')
     }
+    if ('parentName' in record) {
+      const parent = namedRecords.find((candidate) => candidate.name === record.parentName)
+      if (
+        generated.alias !== undefined ||
+        'redirect' in generated ||
+        (record.parentName !== null &&
+          parent?.children?.filter((child) => child === generated).length !== 1)
+      )
+        throw new TypeError(`Invalid generated administration hierarchy: ${record.name}`)
+    }
   }
 }
 
@@ -1925,7 +1935,10 @@ export async function createAndReadyRouter(input: {
     const record = routeRegistry.find((route) => route.name === name)
     if (record === undefined || !router.hasRoute(record.name)) return false
     try {
-      const location = router.resolve({ name: record.name })
+      const location =
+        'module' in record
+          ? router.resolve(record.pathPattern)
+          : router.resolve({ name: record.name })
       return validateRouteInput(location).kind === 'valid' && isPublicRoute(location)
     } catch {
       return false

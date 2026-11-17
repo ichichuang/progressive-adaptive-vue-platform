@@ -191,6 +191,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
 
   const boundary: AccessBoundary = {
     readContext,
+    administration: () => (disposed ? undefined : configuredHost?.administration),
     availabilitySource: (id) => (disposed ? undefined : availability.get(id)),
     delegationExit: (snapshot) => {
       const active = readContext()

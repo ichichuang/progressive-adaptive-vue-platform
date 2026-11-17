@@ -1,5 +1,6 @@
+import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { access, lstat, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { access, lstat, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { extname, join, relative, resolve } from 'node:path'
@@ -17,8 +18,15 @@ import {
   rootDeploymentBase,
 } from '../../apps/web/config'
 import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/runtime-configuration-contract'
-import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
-import { routerFileGenerationOptions } from '../../apps/web/vite.config'
+import {
+  assertRouteComposition,
+  composeRouteRegistry,
+} from '../../apps/web/src/app/router/route-registry'
+import {
+  administrationModules,
+  type AdministrationModule,
+} from '../../apps/web/src/app/administration/administration-routes'
+import { administrationFileOptions, routerFileGenerationOptions } from '../../apps/web/vite.config'
 import { runtimePreflightAuthority } from './check-runtime'
 
 type JsonObject = Record<string, unknown>
@@ -140,12 +148,14 @@ function canonicalPageSourcePath(filePath: string): string {
   return relative(rootDirectory, filePath).split('\\').join('/')
 }
 
-async function validateOfficialRouteDtsRegeneration(): Promise<void> {
+async function validateOfficialRouteDtsRegeneration(
+  selection: readonly AdministrationModule[] = [],
+): Promise<void> {
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'pavp-router-dts-'))
   const generatedPath = resolve(temporaryDirectory, 'route-map.d.ts')
   const context = officialVueRouterGenerator.createRoutesContext(
     officialVueRouterGenerator.resolveOptions({
-      ...routerFileGenerationOptions,
+      ...administrationFileOptions(selection),
       dts: generatedPath,
     }),
   )
@@ -158,7 +168,8 @@ async function validateOfficialRouteDtsRegeneration(): Promise<void> {
       readFile(resolve(rootDirectory, 'apps/web/src/route-map.d.ts'), 'utf8'),
     ])
 
-    expectEqual(repositoryArtifact, generated, 'Official generated Router DTS equality')
+    if (selection.length === 0)
+      expectEqual(repositoryArtifact, generated, 'Official generated Router DTS equality')
     const runtimeSource = ts.createSourceFile(
       '<official-vue-router-runtime-routes>',
       generatedRuntimeRoutes,
@@ -199,9 +210,13 @@ async function validateOfficialRouteDtsRegeneration(): Promise<void> {
         ]
       },
     )
-    const expectedRecords = routeRegistry.map(
+    const expectedRecords = composeRouteRegistry(selection).map(
       (record) => [record.sourcePath, record.name, record.pathPattern, false] as const,
     )
+    for (const [, name] of expectedRecords) {
+      if (!generated.includes(`'${name}': RouteRecordInfo`))
+        throw new Error(`Missing generated Router type for ${name}.`)
+    }
     const bySourcePath = (
       left: readonly [string, string, string, boolean],
       right: readonly [string, string, string, boolean],
@@ -2249,6 +2264,7 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
       '__PAVP_COMPILED_ENVIRONMENT__',
       '__PAVP_COMPILED_RELEASE_SHA__',
       '__PAVP_COMPILED_BUILD_VERSION__',
+      '__PAVP_ADMINISTRATION_MODULES__',
     ]) ||
     objectPropertyExpression(defineRecord, '__VUE_I18N_FULL_INSTALL__')?.kind !==
       ts.SyntaxKind.FalseKeyword ||
@@ -2298,7 +2314,16 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
       ts.isIdentifier(declaration.name) &&
       sameSymbol(checker, routerOptionsArgument, declaration.name),
   )
-  const routerOptionsStatement = routerOptionsDeclaration?.parent.parent
+  const routerOptionsInitializer = routerOptionsDeclaration?.initializer
+  const fileOptionsFactory = collectNodes(viteSourceFile, ts.isFunctionDeclaration).find(
+    (declaration) => declaration.name?.text === 'administrationFileOptions',
+  )
+  const emptySelection = administrationFileOptions([])
+  assert.equal(
+    emptySelection.dts,
+    false,
+    'Public builds leave the tracked route declaration alone.',
+  )
   const runtimeRouterOptions: Readonly<Record<string, unknown>> = routerFileGenerationOptions
   const runtimeRouterOptionKeys = Object.keys(runtimeRouterOptions).sort()
 
@@ -2314,11 +2339,10 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     !ts.isIdentifier(routerOptionsDeclaration.name) ||
     routerOptionsArgument === undefined ||
     !sameSymbol(checker, routerOptionsArgument, routerOptionsDeclaration.name) ||
-    routerOptionsStatement === undefined ||
-    !ts.isVariableStatement(routerOptionsStatement) ||
-    !routerOptionsStatement.modifiers?.some(
-      (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
-    ) ||
+    routerOptionsInitializer === undefined ||
+    !ts.isCallExpression(routerOptionsInitializer) ||
+    fileOptionsFactory === undefined ||
+    functionImplementationForCall(checker, routerOptionsInitializer) !== fileOptionsFactory ||
     !isDeepStrictEqual(runtimeRouterOptionKeys, [
       'beforeWriteFiles',
       'dts',
@@ -3740,6 +3764,70 @@ expectEqual(rootDeploymentBase, '/', 'Exact root-only deployment compatibility c
 await validateDeploymentConfigurationInputs()
 await validateConfigurationEnvironments()
 await validateRuntimeKernelBuildConfiguration()
+async function validateAdministrationCompositionFailures(): Promise<void> {
+  const roles = composeRouteRegistry(['roles'])
+  const role = roles.find(({ name }) => name === 'administration-roles')
+  assert.ok(role)
+  const remaining = roles.filter(({ name }) => name !== role.name)
+  assert.throws(() => composeRouteRegistry(['roles', 'roles']), /Duplicate administration module/u)
+  assert.throws(
+    () => administrationFileOptions(['unknown' as AdministrationModule]),
+    /Unknown administration module/u,
+  )
+  assert.throws(() => {
+    assertRouteComposition([...roles, role])
+  }, /Duplicate route name/u)
+  assert.throws(() => {
+    assertRouteComposition([
+      ...roles,
+      { ...role, name: 'collision-probe', sourcePath: 'collision-probe.vue' },
+    ])
+  }, /Duplicate route name, path or component/u)
+  assert.throws(() => {
+    assertRouteComposition([...remaining, { ...role, pathPattern: '/administration/roles/:id' }])
+  }, /Invalid administration route/u)
+  assert.throws(() => {
+    assertRouteComposition([...remaining, { ...role, meta: { ...role.meta, auth: 'public' } }])
+  }, /required access binding/u)
+  assert.throws(() => {
+    assertRouteComposition([
+      ...remaining,
+      { ...role, meta: { ...role.meta, permissionRequests: {} } },
+    ])
+  }, /required access binding/u)
+  assert.throws(() => {
+    assertRouteComposition(roles.filter(({ name }) => name !== 'administration-shell'))
+  }, /layout missing/u)
+
+  const temporary = await mkdtemp(join(tmpdir(), 'pavp-administration-discovery-'))
+  try {
+    const admitted = administrationFileOptions(['roles'])
+    const publicPages = 'src/pages'
+    const folder = resolve(temporary, 'extra')
+    await mkdir(folder)
+    await writeFile(resolve(folder, 'undeclared.vue'), '<template><div /></template>')
+    for (const [routesFolder, error] of [
+      [[publicPages], /Missing:.*administration\.vue/u],
+      [[publicPages, folder], /Undeclared administration page:.*undeclared\.vue/u],
+    ] as const) {
+      const context = officialVueRouterGenerator.createRoutesContext(
+        officialVueRouterGenerator.resolveOptions({ ...admitted, dts: false, routesFolder }),
+      )
+      try {
+        await assert.rejects(() => context.scanPages(false), error)
+      } finally {
+        context.stopWatcher()
+      }
+    }
+  } finally {
+    await rm(temporary, { force: true, recursive: true })
+  }
+}
+
+await validateAdministrationCompositionFailures()
+await validateOfficialRouteDtsRegeneration()
+await validateOfficialRouteDtsRegeneration(['roles'])
+await validateOfficialRouteDtsRegeneration(administrationModules)
 await validateOfficialRouteDtsRegeneration()
 await validateVueRouterCompatibilityProbe()
 
