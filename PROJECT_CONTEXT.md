@@ -58,7 +58,7 @@ PC/iPad/平板/移动 H5 响应式体验，以及可强制执行静态验证的 
 
 ## 身份与访问能力开发计划
 
-WP-01 已完成源码盘点。WP-02 至 WP-04 已实现，生产应用入口和现有产品路由沿用公开模式。
+WP-01 已完成源码盘点。WP-02 至 WP-05 已实现，生产应用入口和现有产品路由沿用公开模式。
 以下工作包记录完整交付目标与依赖，实施按工作包授权。
 
 ### 交付目标
@@ -76,7 +76,7 @@ WP-01 已完成源码盘点。WP-02 至 WP-04 已实现，生产应用入口和�
 | 职责             | 当前实现及接入边界                                                                                                                                                                                                                                                                  |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 应用装配与导航   | [启动流程](./apps/web/src/app/bootstrap/runtime-kernel.ts)统一装配应用服务；[路由注册表](./apps/web/src/app/router/route-registry.ts)当前使用公开路由和空权限清单。[现有守卫](./apps/web/src/app/router/router-lifecycle.ts)根据候选地址及匹配到的各级路由检查访问要求。            |
-| 请求与数据       | [请求层](./apps/web/src/shared/api/client.ts)支持注入请求凭据；[查询层](./apps/web/src/shared/query/query-runtime.ts)仅缓存匿名 GET/JSON 读取。接入受控数据时需要为受影响的上下文绑定请求和结果，拒收迟到的旧结果。                                                                 |
+| 请求与数据       | [请求层](./apps/web/src/shared/api/client.ts)支持注入请求凭据；[查询层](./apps/web/src/shared/query/query-runtime.ts)仅缓存匿名 GET/JSON 读取。[受控读取](./apps/web/src/app/api/scoped-api-read.ts)显式装配范围计划，在当前读取所有者中交付结果。                                  |
 | 工作区与存储     | [标签页会话](./apps/web/src/app/workspace/workspace-session.ts)按当前完整路由分类过滤读写并恢复公开标签。受控实例及浮层随工作区生命周期撤回，受保护的表单草稿留待 WP-06。                                                                                                           |
 | 表单、表格和图表 | [表单](./packages/ui/src/composables/use-ui-form.ts)目前将整份快照交给提交回调；受控提交需要按授权生成变更。复用[表格](./packages/ui/src/composables/use-ui-table.ts)和 [G2 图表](./packages/ui/src/components/UiG2Chart.vue)的数据入口，使记录、汇总、提示和导出遵守同一数据范围。 |
 
@@ -107,7 +107,7 @@ WP-01 已完成源码盘点。WP-02 至 WP-04 已实现，生产应用入口和�
 - [访问边界](./apps/web/src/app/access/access-boundary.ts)提供 `useAccessBoundary()`、`readContext()` 和 `observe(request, onInvalidated)`。消费者用 `evaluate()` 发起检查，用 `read()` 读取当前状态，需要执行或应用异步结果时取得 `permit()` 并调用 `isCurrent()`，随所属状态释放 `dispose()`。同步结果与异步结果经过同一校验，绑定不可变快照、请求标识和本地代次。迟到的结果由代次校验丢弃。
 - 身份、范围、资源域、记录和字段失效分别匹配。局部失效可指定动作，先统一停止匹配许可，再同步调用各状态所有者的 `onInvalidated`。撤销写入时停止编辑和提交，仍可读取的内容使用已确认的数据，未保存的草稿不作为已保存结果展示。受保护状态只在内存中管理，匿名查询缓存与现有公共存储、恢复流程维持原契约。
 
-隔离[运行验证](./scripts/architecture/check-access-boundary.ts)随 `pnpm check:arch` 执行，覆盖公开模式、初始化、决定结果、范围确认与竞态、局部失效、写入撤销及迟到结果。WP-04 接入路由、外壳与工作区。表单、表格、导出、图表、管理界面和受控查询由对应工作包单独接入并验证。
+隔离[运行验证](./scripts/architecture/check-access-boundary.ts)随 `pnpm check:arch` 执行，覆盖公开模式、初始化、决定结果、范围确认与竞态、局部失效、写入撤销及迟到结果。WP-04 接入路由、外壳与工作区，WP-05 接入受控操作和范围读取。表单、表格、导出、图表和管理界面的业务集成由对应工作包验证。
 
 ### WP-03 实现与验证
 
@@ -126,7 +126,17 @@ WP-01 已完成源码盘点。WP-02 至 WP-04 已实现，生产应用入口和�
 - [应用导航](./apps/web/src/app/router/application-navigation.ts)向菜单、设置入口、欢迎页入口、组件导航和搜索、仪表盘卡片库及快捷链接提供 `canShow(destination)`。面包屑、标题及 Tabs 跟随当前已授权工作区，菜单注册仍决定入口是否存在。当前没有全局最近项目或命令面板。
 - 受控标签在会话内保留重新导航所需的地址，离开时通过 [工作区保留边界](./apps/web/src/app/workspace/workspace-retention.ts)卸载页面和 Vue 所属浮层，保留公开页的 KeepAlive。地址变化使用新受控实例。活动页和未激活的受控标签继续订阅本身的访问要求。失效时先撤回呈现和交互，再由工作区移除标签，等待旧实例卸载后回到最近访问且仍获授权的标签或公开欢迎页。普通导航和关闭仍按原流程确认未保存更改。受控来源和目的地不进入页面转场快照，退场的受控标签立即隐藏。
 - 标签会话与多浏览器页面关联只恢复或保存当前分类为公开的条目。受控页面的刷新和历史回退重新授权，工作区保持受控持久化关闭。
-- [隔离架构探针](./scripts/architecture/check-route-access.ts)验证匹配记录、按域决定、等待与取消、局部失效及标签快照。使用 `pnpm exec tsx scripts/architecture/check-route-access.ts --browser` 可在环回地址启动真实外壳的隔离测试，测试提供方和路由只在该命令加载。WP-04 的覆盖范围是导航、呈现和工作区生命周期。业务数据、实际宿主认证与服务端授权，以及表单、表格、图表和查询集成仍由相应工作包验证。
+- [隔离架构探针](./scripts/architecture/check-route-access.ts)验证匹配记录、按域决定、等待与取消、局部失效及标签快照。使用 `pnpm exec tsx scripts/architecture/check-route-access.ts --browser` 可在环回地址启动真实外壳的隔离测试，测试提供方和路由只在该命令加载。WP-04 的覆盖范围是导航、呈现和工作区生命周期。WP-05 提供范围读取与受控操作入口。实际宿主认证、服务端授权及表单、表格和图表的业务覆盖由相应工作包验证。
+
+### WP-05 实现与验证
+
+- [受控操作](./apps/web/src/app/access/guarded-action.ts)通过 `GuardedAction` 声明 WP-03 要求、当前目标和独立业务限制。执行开始绑定宿主确认的身份及范围，捕获目标 ID、记录修订号、幂等键等命令元数据。确认或预检后重新判定，派发时再检查原始上下文、目标及许可。记录或字段要求必须匹配当前目标 ID。字段写入投影及业务表单对象留在各自消费者。
+- [行操作](./apps/web/src/app/workbench/tables/TableRowActions.vue)复用删除按钮、紧凑下拉菜单、菜单快捷键和既有确认浮层。`tableRowRemovalKey` 将显式选定的操作绑定到当前行，呈现和确认调用同一要求。公开页面照常使用原有处理器，其他编辑、选择和业务回调由各自所有者决定何时接入。
+- `executeGuardedAction` 默认全项预检，全部满足后才把固定命令组交给宿主。显式 `partial` 按目标顺序派发，在异步边界后复核未派发目标。结果按独立请求 ID 和目标 ID 两者关联，缺失、冲突或重复条目保持未知。拒绝、业务阻止、未决、未派发、服务失败和已完成各自保留。宿主负责事务，已派发但未取得确定回复的命令以未知报告。仅显式声明幂等重试的宿主可在原许可有效且所有命令携带幂等键时重试一次，并沿用相同命令 ID。
+- [请求客户端](./apps/web/src/shared/api/client.ts)支持可选 `isDispatchCurrent`，在现有钩子和凭据准备后、调用传输前复核。守卫请求在进入传输前失败时返回 `dispatched: false`。命令完成后，仅当前所有者可执行同步 `apply`，跨异步边界的后续刷新使用自己的当前读取许可。
+- [范围读取](./apps/web/src/app/api/scoped-api-read.ts)由既有请求客户端派发，`createScopedApiRead` 为每个消费者建立独立、手动的读取所有者。宿主 `plan` 使用确认的上下文和捕获的查询输入，提供带范围引用、标识清单、查询约束或服务端预定范围的已配置读取。空范围、未决和不支持均有独立结果。列表、直读、计数、汇总及后续导出各自声明要求及投影，宿主确认服务端结果的范围。集合投影改变时宿主应发出相应的域及读动作失效通知，直接记录可使用记录粒度通知。
+- 受控响应仅在当前读取所有者的内存中发布，按请求 ID 和许可复核。运行时拒收迟到的旧结果；读失效时清除结果并通知 `clearDerived` 清理该消费者的计数、选中项等派生状态，单独撤销写权限保留仍获准读取的数据。匿名 GET/JSON 缓存继续沿用现有查询契约。
+- [隔离检查](./scripts/architecture/check-scoped-operations.ts)随 `pnpm check:arch` 执行。可用 `pnpm exec tsx scripts/architecture/check-scoped-operations.ts --browser` 在环回地址验证现有按钮、菜单、快捷键和确认，以及读写撤权和范围切换。隔离宿主和请求测试数据仅由探针加载。WP-05 验证前端执行和读取边界；真实宿主服务、字段投影、表格选择、完整 CRUD、具体 CSV 授权以及图表授权留给相应集成。
 
 登录模板和展示页依照 [AGENTS.md](./AGENTS.md) 的核心验收和页面授权边界排期。
 

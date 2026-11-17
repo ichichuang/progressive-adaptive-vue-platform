@@ -164,6 +164,9 @@ async function removeSelected(id: string): Promise<void> {
       <template #rowActions="{ row }">
         <TableRowActions
           :compact="compactActions"
+          :row="row"
+          :still-listed="() => table.rows.value.includes(row)"
+          :removal-blocked="session.open.value"
           :disabled="session.loading.value || session.form.value?.submitting.value === true"
           @edit="open('edit', row)"
           @detail="open('detail', row)"

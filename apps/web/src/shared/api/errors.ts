@@ -15,7 +15,7 @@ export function createApiRequestIdentity(endpointId: string): {
 export function createApiFailure<ErrorData = never>(
   identity: { readonly endpointId: string; readonly requestId: string },
   category: ApiErrorCategory,
-  extra: Pick<ApiError<ErrorData>, 'httpStatus' | 'data' | 'retryAfterSeconds'> = {},
+  extra: Pick<ApiError<ErrorData>, 'httpStatus' | 'data' | 'retryAfterSeconds' | 'dispatched'> = {},
 ): Extract<ApiResult<never, ErrorData>, { status: 'failure' }> {
   return Object.freeze({
     status: 'failure',

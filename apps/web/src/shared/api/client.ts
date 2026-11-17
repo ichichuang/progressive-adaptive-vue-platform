@@ -59,10 +59,16 @@ export function createApiClient(input: ApiClientInput): ApiClient {
   ): Promise<ApiResult<Output, ErrorData>> {
     const identity = createApiRequestIdentity(endpoint.id)
     const { endpointId, requestId } = identity
+    const isDispatchCurrent = request.isDispatchCurrent
+    let dispatched = false
     const failure = (
       category: ApiErrorCategory,
       extra: Pick<ApiError<ErrorData>, 'httpStatus' | 'data' | 'retryAfterSeconds'> = {},
-    ): ApiResult<Output, ErrorData> => createApiFailure(identity, category, extra)
+    ): ApiResult<Output, ErrorData> =>
+      createApiFailure(identity, category, {
+        ...extra,
+        ...(isDispatchCurrent !== undefined && !dispatched ? { dispatched: false } : {}),
+      })
     if (baseUrl === undefined || policies === undefined) return failure('configuration')
     if (
       endpointId === 'invalid-endpoint' ||
@@ -133,6 +139,9 @@ export function createApiClient(input: ApiClientInput): ApiClient {
       }
       phase = 'network'
       const receive = async (): Promise<Response> => {
+        if (isDispatchCurrent?.() === false) throw new ApiProcessingError('authorization')
+        attempt.signal.throwIfAborted()
+        dispatched = true
         const received = await fetcher(prepared.url, {
           method: definition.method,
           headers: prepared.headers,

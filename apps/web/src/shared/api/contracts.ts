@@ -79,6 +79,7 @@ export interface ApiHooks {
 
 export interface ApiRequestInput extends ApiRequestParameters {
   readonly signal: AbortSignal
+  readonly isDispatchCurrent?: () => boolean
   readonly hooks?: ApiHooks
 }
 
@@ -87,6 +88,8 @@ export interface ApiError<ErrorData = never> {
   readonly endpointId: string
   readonly requestId: string
   readonly httpStatus?: number
+  /** A guarded request failed before invoking the transport. */
+  readonly dispatched?: false
   readonly data?: ErrorData
   readonly retryAfterSeconds?: number
 }

@@ -12,9 +12,11 @@ const requirementSchema = z
   .strictObject({
     operator: z.enum(['all', 'any']),
     scope: nativeScopeSchema,
-    requests: z.array(accessRequestSchema).min(1),
+    requests: z.array(accessRequestSchema).min(1).readonly(),
   })
   .refine(({ requests }) => requests.every(({ domain }) => domain === requests[0]?.domain))
+
+export type NativeAccessRequirement = Readonly<z.output<typeof requirementSchema>>
 
 const invalidRequirement = {
   status: 'configuration-error',
@@ -82,7 +84,13 @@ export function observeNativeRequirement(
         const permit = leaf.permit()
         return permit === undefined ? [] : [permit]
       })
+      const deadlines = leaves.flatMap((leaf) => {
+        const decision = leaf.read()
+        return decision.status === 'allow' ? [decision.expiresAt ?? Infinity] : []
+      })
       return Object.freeze({
+        expiresAt:
+          requirement?.operator === 'any' ? Math.max(...deadlines) : Math.min(...deadlines),
         isCurrent: () =>
           read().status === 'allow' &&
           (requirement?.operator === 'any'
