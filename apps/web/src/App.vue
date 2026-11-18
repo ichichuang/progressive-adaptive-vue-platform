@@ -81,6 +81,7 @@ const containedContent = computed(() => {
   return (
     (routeRecord.value.name === 'control-center' ||
       routeRecord.value.name === 'workbench-welcome' ||
+      routeRecord.value.name === 'login' ||
       isDisplayLayoutPreview(routeRecord.value.name) ||
       routeRecord.value.name === 'workbench-dashboard' ||
       routeRecord.value.name === 'workbench-motion' ||

@@ -596,6 +596,25 @@ export const publicRouteRegistry = Object.freeze([
   defineLayoutPreview('content', 'route-layout.content-only'),
   defineLayoutPreview('display', 'route-layout.content-only', 'none'),
   defineLayoutPreview('fixed-display', 'route-layout.content-only', 'none'),
+  defineRoute({
+    name: 'login',
+    pathPattern: '/login',
+    sourcePath: 'apps/web/src/pages/login.vue',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      ...layoutMeta('route-layout.content-only'),
+      titleKey: 'route-title.login',
+      breadcrumbKey: null,
+      keepAlive: 'never',
+      telemetryName: 'route.login',
+    }),
+  }),
 ] as const satisfies readonly RouteRegistryRecord[])
 
 const optionalAdministrationRecords = [administrationLayout, ...administrationPages].map((route) =>

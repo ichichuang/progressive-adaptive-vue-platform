@@ -102,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 105
+const expectedLazyRouteCount = routeRegistry.length
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -123,9 +123,7 @@ const localizationResourceManifestKeys = [
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
 const cinematicGpuManifestKey = '../../packages/ui/src/adapters/motion/cinematic-gpu-stage.ts'
 const errorParticlesManifestKey = 'src/app/errors/error-particles.ts'
-const expectedDynamicRootCount = 120
-const expectedDynamicRootKeys = new Set([
-  ...expectedLazyRouteKeys,
+const expectedFeatureDynamicRootKeys = [
   motionFeatureManifestKey,
   cinematicGpuManifestKey,
   errorParticlesManifestKey,
@@ -135,6 +133,11 @@ const expectedDynamicRootKeys = new Set([
   shellScrollManifestKey,
   navigationFocusManifestKey,
   ...localizationResourceManifestKeys,
+]
+const expectedDynamicRootCount = expectedLazyRouteCount + expectedFeatureDynamicRootKeys.length
+const expectedDynamicRootKeys = new Set([
+  ...expectedLazyRouteKeys,
+  ...expectedFeatureDynamicRootKeys,
 ])
 
 const richTextDynamicRootKey = '../../packages/ui/src/adapters/naive/PavpFormRichText.vue'
@@ -1007,17 +1010,6 @@ if (
 
 if (
   expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
-  expectedLazyRouteCount +
-    expectedMotionFeatureDynamicRootCount +
-    1 + // Cinematic GPU renderer
-    1 + // Error artwork renderer
-    1 +
-    1 +
-    1 +
-    1 +
-    1 +
-    localizationResourceManifestKeys.length !==
-    expectedDynamicRootCount ||
   expectedDynamicRootKeys.size !== expectedDynamicRootCount ||
   !expectedDynamicRootKeys.has(motionFeatureManifestKey) ||
   expectedLazyRouteKeys.has(motionFeatureManifestKey)

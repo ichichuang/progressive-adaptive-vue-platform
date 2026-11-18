@@ -173,6 +173,7 @@ const expectedPageSources = [
   'apps/web/src/pages/preview-layout-content.vue',
   'apps/web/src/pages/preview-layout-display.vue',
   'apps/web/src/pages/preview-layout-fixed-display.vue',
+  'apps/web/src/pages/login.vue',
 ] as const
 const expectedProductPageSources = expectedPageSources.slice(0, 89)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
@@ -1240,6 +1241,16 @@ const expectedRouteRecords = [
     'route.preview.layout.fixed-display',
     'route-boundary',
   ],
+  [
+    'apps/web/src/pages/login.vue',
+    'login',
+    '/login',
+    'route-params.none',
+    'route-query.none',
+    'route-title.login',
+    'route.login',
+    'route-boundary',
+  ],
 ] as const
 const previewLayoutCapabilities: Readonly<Record<string, string>> = {
   'preview-layout-admin': 'route-layout.architecture-admin-console',
@@ -1280,6 +1291,7 @@ const expectedConsoleCommonMeta = {
   routeTransitionFamilyId: 'route-family.architecture-workspace',
 } as const
 const expectedRouteTitles = {
+  'route-title.login': getDefaultConsoleMessage('route-title.login'),
   'route-title.api-overview': getDefaultConsoleMessage('route-title.api-overview'),
   'route-title.api-basics': getDefaultConsoleMessage('route-title.api-basics'),
   'route-title.api-responses': getDefaultConsoleMessage('route-title.api-responses'),
@@ -2040,6 +2052,7 @@ const expectedMessages = [
     'route-message.preview-layout-fixed-display-summary',
     getDefaultConsoleMessage('route-message.preview-layout-fixed-display-summary'),
   ],
+  ['login', 'route-message.login', getDefaultConsoleMessage('route-message.login')],
 ] as const
 const expectedErrorRoutes = [
   ['400', 'invalid-route-input', 'error-invalid-route-input'],
@@ -4460,7 +4473,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact 105-record authority.')
+    violations.push('Router Route Registry diverged from the exact expected route records.')
   }
 
   if (
@@ -4480,18 +4493,26 @@ function registryViolations(): string[] {
               ...expectedConsoleCommonMeta,
               keepAlive: 'never',
             }
-          : record.name.startsWith('preview-layout-')
+          : record.name === 'login'
             ? {
                 ...expectedConsoleCommonMeta,
-                layout: record.name.startsWith('preview-layout-admin')
-                  ? 'workspace'
-                  : 'focused-task',
-                layoutCapabilityId: previewLayoutCapabilities[record.name],
+                layout: 'focused-task',
+                layoutCapabilityId: 'route-layout.content-only',
                 keepAlive: 'never',
               }
-            : expectedReadingCommonMeta
+            : record.name.startsWith('preview-layout-')
+              ? {
+                  ...expectedConsoleCommonMeta,
+                  layout: record.name.startsWith('preview-layout-admin')
+                    ? 'workspace'
+                    : 'focused-task',
+                  layoutCapabilityId: previewLayoutCapabilities[record.name],
+                  keepAlive: 'never',
+                }
+              : expectedReadingCommonMeta
     const expectedBreadcrumbKey =
       !record.name.startsWith('preview-') &&
+      record.name !== 'login' &&
       record.meta.routeTransitionFamilyId === 'route-family.architecture-workspace'
         ? `route-breadcrumb.${record.name}`
         : null
@@ -4901,7 +4922,7 @@ async function pageViolations(): Promise<string[]> {
     .map((path) => relative(rootDirectory, path).split('\\').join('/'))
 
   if (!exactSet(pageFiles, expectedPageSources)) {
-    return ['Official Router page source root must contain exactly the 105 admitted Vue files.']
+    return ['Official Router page source root must match the exact admitted Vue files.']
   }
 
   const workbenchOwner = await readFile(
@@ -5055,6 +5076,7 @@ async function pageViolations(): Promise<string[]> {
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
     const productPage = expectedProductPageSources.includes(sourcePath)
+    const standaloneLogin = sourcePath === 'apps/web/src/pages/login.vue'
     const tablePageComponent = expectedTablePageComponents[sourcePath]
     if (productPage) {
       const options = [
@@ -5224,15 +5246,29 @@ async function pageViolations(): Promise<string[]> {
       errorPage === 'offline' ? 'OFFLINE' : errorPage === 'maintenance' ? 'SERVICE' : errorPage
     const errorPageInvalid =
       !productPage &&
+      !standaloneLogin &&
       !layoutPreview &&
       !notFoundWrapper &&
       (!source.includes("from '../../app/errors/ErrorPresentation.vue'") ||
         !isErrorDocument(source, errorCode))
+    const loginDocumentInvalid =
+      standaloneLogin &&
+      (count(source, /<main\b/gu) !== 0 ||
+        count(source, /<h1\b/gu) !== 1 ||
+        !/<h1\b[^>]*\bdata-route-focus="architecture-console-page-heading"[^>]*\btabindex="-1"/u.test(
+          source,
+        ) ||
+        !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*\s@controller=/u.test(
+          source,
+        ) ||
+        count(source, /<form\b/gu) !== 1 ||
+        !/<form\b[^>]*\bnovalidate\b[^>]*\s@submit.prevent=/u.test(source))
 
     if (
       productPageInvalid ||
       welcomeDocumentInvalid ||
       errorPageInvalid ||
+      loginDocumentInvalid ||
       /\b(?:definePage|fetch|useRoute|useRouter)\s*\(/u.test(source) ||
       /<route\b/gu.test(source)
     ) {
@@ -6289,6 +6325,7 @@ function routeTransitionSourceProofResults(
   const productRoutes = routeRegistry.filter(
     (route) =>
       !route.name.startsWith('preview-') &&
+      route.meta.layout === 'workspace' &&
       route.meta.routeTransitionFamilyId === 'route-family.architecture-workspace',
   )
   const errorRoutes = routeRegistry.filter(
@@ -6817,9 +6854,13 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
+        snapshot.checkBundleSource.includes(
+          'const expectedLazyRouteCount = routeRegistry.length',
+        ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') &&
+        snapshot.checkBundleSource.includes(
+          'const expectedDynamicRootCount = expectedLazyRouteCount + expectedFeatureDynamicRootKeys.length',
+        ) &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -6952,7 +6993,9 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
+        snapshot.checkBundleSource.includes(
+          'const expectedLazyRouteCount = routeRegistry.length',
+        ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),

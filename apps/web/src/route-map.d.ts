@@ -619,6 +619,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'login': RouteRecordInfo<
+      'login',
+      '/login',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'workbench-motion': RouteRecordInfo<
       'workbench-motion',
       '/motion',
@@ -1446,6 +1453,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/interactions.vue': {
       routes:
         | 'workbench-interactions'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/login.vue': {
+      routes:
+        | 'login'
       views:
         | never
       pathParamNames:

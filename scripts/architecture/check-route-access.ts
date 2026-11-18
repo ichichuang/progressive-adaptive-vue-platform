@@ -68,7 +68,7 @@ async function exerciseRouteAccess(
     createPiniaProvider: (startupAttemptId: string) => PiniaProviderHandle
   }
   const { getRouteRecord } = registry as {
-    getRouteRecord: (name: string) => { name: string; meta: ProbeMeta }
+    getRouteRecord: (name: string) => { name: string; pathPattern: string; meta: ProbeMeta }
   }
   const { isPublicRoute, observeRouteAccess, waitForRouteAccess } = policy as {
     isPublicRoute: (location: ProbeLocation) => boolean
@@ -108,6 +108,7 @@ async function exerciseRouteAccess(
   }
   const parent = getRouteRecord('workbench-date-time')
   const child = getRouteRecord('workbench-colors')
+  const login = getRouteRecord('login')
   const parentMeta: ProbeMeta = {
     ...parent.meta,
     auth: 'required',
@@ -126,6 +127,7 @@ async function exerciseRouteAccess(
         component,
         meta: getRouteRecord('workbench-welcome').meta,
       },
+      { path: login.pathPattern, name: login.name, component, meta: login.meta },
       {
         path: '/date-time',
         name: parent.name,
@@ -219,6 +221,13 @@ async function exerciseRouteAccess(
   const signal = new AbortController().signal
   try {
     assert.equal(isPublicRoute(router.resolve('/')), true)
+    const loginLocation = router.resolve('/login')
+    const loginDestination = { name: login.name, params: {}, query: {}, hash: '' }
+    assert.deepEqual(
+      loginLocation.matched.map(({ name }) => name),
+      ['login'],
+    )
+    assert.equal(isPublicRoute(loginLocation), true)
     assert.equal(isPublicRoute(router.resolve('/colors')), false)
     const nestedPublicChild = observe({ name: 'workbench-colors', params: {}, query: {}, hash: '' })
     const both = observe({ name: 'workbench-dashboard', params: {}, query: {}, hash: '' })
@@ -228,6 +237,9 @@ async function exerciseRouteAccess(
     anonymous = false
     assert.ok(notify)
     await notify({ kind: 'identity' })
+    const confirmed = access.readContext()
+    assert.equal(observe(loginDestination).read(), 'allow')
+    assert.equal(access.readContext(), confirmed)
     assert.equal(await waitForRouteAccess(nestedPublicChild, signal), 'deny')
     allowShell = true
     await notify({ kind: 'domain', domain: 'shell' })

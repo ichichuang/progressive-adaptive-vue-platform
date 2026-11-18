@@ -137,6 +137,7 @@ const contentRoutes = Object.freeze([
   ...layoutPreviewRoutes,
   ...displayPreviewRoutes,
   'control-center',
+  'login',
 ] as const)
 
 const formExampleRoutes = Object.freeze([

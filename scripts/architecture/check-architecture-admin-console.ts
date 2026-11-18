@@ -8070,7 +8070,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 105 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== routeRegistry.length ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
@@ -8764,8 +8764,10 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') &&
-        snapshot.routeCount === 105 &&
+        snapshot.checkBundleSource.includes(
+          'const expectedDynamicRootCount = expectedLazyRouteCount + expectedFeatureDynamicRootKeys.length',
+        ) &&
+        snapshot.routeCount === routeRegistry.length &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 13,
@@ -9160,7 +9162,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 105) {
+  if (snapshot.routeCount !== routeRegistry.length) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -12465,9 +12467,11 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes('to: `#${sidebarOverlayId}`') &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = routeRegistry.length') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') &&
+    snapshot.checkBundleSource.includes(
+      'const expectedDynamicRootCount = expectedLazyRouteCount + expectedFeatureDynamicRootKeys.length',
+    ) &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -12566,7 +12570,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 105,
+      passed: snapshot.routeCount === routeRegistry.length,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -13593,7 +13597,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 105',
+          'const expectedLazyRouteCount = routeRegistry.length',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -14946,9 +14950,9 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 105',
+    'const expectedLazyRouteCount = routeRegistry.length',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 120',
+    'const expectedDynamicRootCount = expectedLazyRouteCount + expectedFeatureDynamicRootKeys.length',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14970,10 +14974,12 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 105 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 105') ||
+    snapshot.routeCount !== routeRegistry.length ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = routeRegistry.length') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 120') ||
+    !snapshot.checkBundleSource.includes(
+      'const expectedDynamicRootCount = expectedLazyRouteCount + expectedFeatureDynamicRootKeys.length',
+    ) ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -15460,7 +15466,10 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   const violations: string[] = []
   const errorNames = new Set<string>(errorRouteRegistry.map((record) => record.routeName))
   const productRoutes = routeRegistry.filter(
-    (record) => !errorNames.has(record.name) && !record.name.startsWith('preview-'),
+    (record) =>
+      record.meta.layout === 'workspace' &&
+      !errorNames.has(record.name) &&
+      !record.name.startsWith('preview-'),
   )
   const breadcrumbRegistry: Readonly<Record<RouteBreadcrumbKey, string>> = routeBreadcrumbRegistry
   const layoutPresets: readonly LayoutPresetId[] = [
@@ -15495,8 +15504,9 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 105 ||
-    runtimeCount(productRoutes) !== 89 ||
+    runtimeCount(routeRegistry) !==
+      productRouteContract.length + errorRouteRegistry.length + 9 + 1 ||
+    runtimeCount(productRoutes) !== productRouteContract.length ||
     routeRegistry.filter((record) => record.name.startsWith('preview-')).length !== 9 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
     Object.keys(breadcrumbRegistry).length !== 89 ||
@@ -15504,7 +15514,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
     violations.push(
-      'The exact 105 total / 89 workbench / 7 error / 9 preview Route Registry closure drifted.',
+      'The workbench, error, preview, and standalone login Route Registry closure drifted.',
     )
   }
 
@@ -15824,7 +15834,8 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
           path,
         )) ||
       (/<(?:NForm|NFormItem)\b/u.test(template) &&
-        path !== 'apps/web/src/pages/component-inputs.vue') ||
+        path !== 'apps/web/src/pages/component-inputs.vue' &&
+        (path !== 'apps/web/src/pages/login.vue' || /<NForm\b/u.test(template))) ||
       (/<NDataTable\b/u.test(template) && path !== 'apps/web/src/pages/component-data.vue')
     )
       violations.push(
@@ -16218,10 +16229,11 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 105 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 98 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== routeRegistry.length ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !==
+      routeRegistry.length - errorRouteRegistry.length ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 105 ||
+    runtimeCount(routerRecords) !== routeRegistry.length ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
     runtimeCount(storageRecords) !== 13 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 18 ||
