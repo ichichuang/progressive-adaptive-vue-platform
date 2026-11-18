@@ -20,6 +20,7 @@ import {
   type AccessProposal,
 } from './access-contract'
 import type { BusinessAvailabilitySource } from './business-availability'
+import { openAccessWindowInvalidation } from './access-window-invalidation'
 
 const accessKey: InjectionKey<AccessBoundary> = Symbol('access-boundary')
 
@@ -103,11 +104,24 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
     readonly request: AccessRequest
     advance(): void
     notify(change: AccessInvalidation): void
+    expire(): void
   }>()
   let disposed = false
   let contextGeneration = 0
   let requestId = 0
-  let delegationExpiry: ReturnType<typeof setTimeout> | undefined
+  let contextExpiry: ReturnType<typeof setTimeout> | undefined
+  const windowHints = configuredHost?.windowInvalidation
+  let audience: string | undefined
+  const windowChannel =
+    windowHints === undefined
+      ? undefined
+      : openAccessWindowInvalidation(
+          windowHints,
+          () => audience,
+          () => {
+            void replaceContext({ kind: 'identity' })
+          },
+        )
 
   function contextDeadline(snapshot: AccessContextSnapshot): number {
     return Math.min(snapshot.expiresAt ?? Infinity, snapshot.delegation?.expiresAt ?? Infinity)
@@ -133,7 +147,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
     initial = false,
   ): Promise<AccessContextSnapshot | undefined> {
     if (configuredHost === undefined || disposed) return
-    clearTimeout(delegationExpiry)
+    clearTimeout(contextExpiry)
     const generation = ++contextGeneration
     const current = () => !disposed && generation === contextGeneration
     invalidate(
@@ -166,27 +180,59 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
       if (snapshot.delegation !== undefined && contextDeadline(snapshot) <= Date.now())
         throw new TypeError('The host returned an expired delegation.')
       if (!current()) return
+      try {
+        audience = windowHints?.audience(snapshot)
+      } catch {
+        audience = undefined
+      }
       context.value = Object.freeze({ status: 'ready', snapshot })
-      function expireDelegation(): void {
+      function enforceContextExpiry(): void {
         if (!current()) return
         const remaining = contextDeadline(snapshot) - Date.now()
-        if (remaining <= 0) void replaceContext({ kind: 'identity' })
-        else delegationExpiry = setTimeout(expireDelegation, Math.min(remaining, 2_147_483_647))
+        if (remaining > 0)
+          contextExpiry = setTimeout(enforceContextExpiry, Math.min(remaining, 2_147_483_647))
+        else if (snapshot.delegation !== undefined) void replaceContext({ kind: 'identity' })
+        else invalidate({ kind: 'identity' }, state('expired'))
       }
-      if (snapshot.delegation !== undefined) expireDelegation()
+      if (Number.isFinite(contextDeadline(snapshot))) enforceContextExpiry()
       return snapshot
     } catch {
-      if (current()) context.value = state('identity-failed')
+      if (current()) {
+        audience = undefined
+        context.value = state('identity-failed')
+      }
     }
   }
 
   async function onHostChange(change: AccessHostChange): Promise<void> {
     if (disposed) return
     if (change.kind === 'identity' || change.kind === 'scope') {
-      await replaceContext(change)
+      const replacement = replaceContext(change)
+      if (change.kind === 'identity' && change.notifyWindows === true) windowChannel?.publish()
+      await replacement
     } else {
       invalidate(accessInvalidationSchema.parse(change))
     }
+  }
+
+  function resume(): void {
+    if (disposed) return
+    const active = readContext()
+    if (
+      active.status === 'expired' ||
+      (windowHints !== undefined &&
+        (active.status === 'ready' || active.status === 'identity-failed'))
+    ) {
+      void replaceContext({ kind: 'identity' })
+    } else {
+      for (const consumer of [...consumers]) consumer.expire()
+    }
+  }
+  function visibilityChanged(): void {
+    if (document.visibilityState === 'visible') resume()
+  }
+  function pageShown(event: PageTransitionEvent): void {
+    if (event.persisted) resume()
   }
 
   const boundary: AccessBoundary = {
@@ -240,6 +286,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
       let closed = disposed
       let generation = 0
       let expiry: ReturnType<typeof setTimeout> | undefined
+      const cleanupFailed = shallowRef(false)
       const evaluation = shallowRef<{
         readonly generation: number
         readonly binding: BoundAccessRequest
@@ -259,14 +306,25 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
           try {
             onInvalidated(change)
           } catch {
-            // One consumer cannot keep other owners from clearing invalidated state.
+            // An owner that failed to redact its state must dispose this observation.
+            owner.advance()
+            cleanupFailed.value = true
+            evaluation.value = undefined
           }
+        },
+        expire() {
+          const active = evaluation.value
+          const deadline =
+            active?.result && 'expiresAt' in active.result ? active.result.expiresAt : undefined
+          if (deadline !== undefined && deadline <= Date.now()) expireDecision()
         },
       }
       if (!closed) consumers.add(owner)
 
       function read(): AccessState {
         if (closed || disposed) return state('disposed')
+        if (cleanupFailed.value)
+          return { status: 'evaluation-failed', reasonCode: 'access.cleanup-failed' }
         const active = readContext()
         if (active.status === 'unconfigured') return state('configuration-error')
         if (active.status !== 'ready') return state(active.status)
@@ -282,7 +340,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
         read,
         async evaluate() {
           const active = readContext()
-          if (active.status !== 'ready' || closed || disposed) return
+          if (active.status !== 'ready' || closed || disposed || cleanupFailed.value) return
           owner.advance()
           const pending = {
             generation,
@@ -319,14 +377,7 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
                 if (evaluation.value !== confirmed || closed || disposed) return
                 const remaining = deadline - Date.now()
                 if (remaining <= 0) {
-                  const { request } = pending.binding
-                  expiry = undefined
-                  evaluation.value = { ...confirmed, result: state('expired') }
-                  owner.notify(
-                    request.kind === 'field' || request.kind === 'record'
-                      ? request
-                      : { kind: 'domain', domain: request.domain, action: request.action },
-                  )
+                  expireDecision()
                 } else expiry = setTimeout(expire, Math.min(2_147_483_647, remaining))
               }
               // Only a previously current decision needs to withdraw owned presentation.
@@ -353,6 +404,20 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
           consumers.delete(owner)
         },
       })
+
+      function expireDecision(): void {
+        const current = evaluation.value
+        if (current === undefined || closed || disposed || current.generation !== generation) return
+        if (expiry !== undefined) clearTimeout(expiry)
+        expiry = undefined
+        const { request } = current.binding
+        evaluation.value = { ...current, result: state('expired') }
+        owner.notify(
+          request.kind === 'field' || request.kind === 'record'
+            ? request
+            : { kind: 'domain', domain: request.domain, action: request.action },
+        )
+      }
     },
   }
   application.provide(accessKey, Object.freeze(boundary))
@@ -360,6 +425,10 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
   const providerSubscriptions: (() => void)[] = []
 
   if (configuredHost !== undefined) {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pageshow', pageShown)
+      document.addEventListener('visibilitychange', visibilityChanged)
+    }
     for (const [domain, provider] of providers) {
       if (!provider?.subscribe) continue
       try {
@@ -391,12 +460,23 @@ export function installAccessBoundary(application: App, host?: AccessHost): () =
   return () => {
     if (disposed) return
     disposed = true
-    clearTimeout(delegationExpiry)
+    clearTimeout(contextExpiry)
     contextGeneration++
     invalidate(Object.freeze({ kind: 'identity' }), state('disposed'))
     consumers.clear()
-    for (const unsubscribe of providerSubscriptions) unsubscribe()
-    unsubscribe?.()
+    if (typeof window !== 'undefined' && configuredHost !== undefined) {
+      window.removeEventListener('pageshow', pageShown)
+      document.removeEventListener('visibilitychange', visibilityChanged)
+    }
+    const cleanupErrors: unknown[] = []
+    for (const cleanup of [...providerSubscriptions, unsubscribe, () => windowChannel?.dispose()]) {
+      try {
+        cleanup?.()
+      } catch (error) {
+        cleanupErrors.push(error)
+      }
+    }
+    if (cleanupErrors.length > 0) throw new AggregateError(cleanupErrors, 'Access disposal failed.')
   }
 }
 

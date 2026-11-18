@@ -70,16 +70,28 @@ export function createScopedApiRead<Value>(
   definition: ScopedReadDefinition<Value>,
 ) {
   const state = shallowRef<ReadState<Value>>({ status: 'idle' })
-  let active: { release(): void; isCurrent(): boolean } | undefined
+  let active: { readonly requestId: string; release(): void; isCurrent(): boolean } | undefined
+  let cleanupFailure: string | undefined
   let disposed = false
   let generation = 0
 
-  function releaseActive(): void {
+  function releaseActive(): boolean {
     const previous = active
     active = undefined
     previous?.release()
-    state.value = { status: 'idle' }
-    if (previous !== undefined) definition.clearDerived?.()
+    if (previous !== undefined) {
+      state.value = { status: 'idle' }
+      try {
+        definition.clearDerived?.()
+      } catch {
+        cleanupFailure = previous.requestId
+      }
+    }
+    state.value =
+      cleanupFailure === undefined
+        ? { status: 'idle' }
+        : { status: 'failed', requestId: cleanupFailure }
+    return cleanupFailure === undefined
   }
 
   function clear(): void {
@@ -90,7 +102,7 @@ export function createScopedApiRead<Value>(
   async function run(input: ReadQuery = {}, signal?: AbortSignal): Promise<ReadOutcome> {
     if (disposed) return 'stale'
     const ticket = ++generation
-    releaseActive()
+    if (!releaseActive()) return 'failed'
     if (ticket !== generation || signal?.aborted === true) return 'stale'
     const requestId = crypto.randomUUID()
     const observed = access.readContext()
@@ -126,6 +138,7 @@ export function createScopedApiRead<Value>(
       if (active === owner) clear()
     }
     const owner = {
+      requestId,
       isCurrent: () => ownsRead() && permit?.isCurrent() === true,
       release() {
         cancellation.abort()

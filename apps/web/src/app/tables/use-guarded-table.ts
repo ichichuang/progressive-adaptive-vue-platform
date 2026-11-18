@@ -11,7 +11,15 @@ import {
   type UiTableRecord,
   type UiTableBatchAccess,
 } from '@platform/ui'
-import { computed, onScopeDispose, shallowRef, watch } from 'vue'
+import {
+  computed,
+  getCurrentInstance,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  shallowRef,
+  watch,
+} from 'vue'
 import { createScopedApiRead } from '../api/scoped-api-read'
 import type {
   AccessBoundary,
@@ -153,10 +161,11 @@ export function useGuardedTable(input: GuardedTableInput) {
   const output = new Map<'csv' | 'copy', Check>()
   const localRead = shallowRef<Check>()
   let owner: AccessContextSnapshot | undefined
-  let expiry: ReturnType<typeof setTimeout> | undefined
   let disposed = false
   let sourceGeneration = 0
+  const active = shallowRef(true)
   const context = () => {
+    if (!active.value || disposed) return undefined
     const current = access.readContext()
     return current.status === 'ready' ? current.snapshot : undefined
   }
@@ -173,33 +182,15 @@ export function useGuardedTable(input: GuardedTableInput) {
           },
         })
       : undefined
-  function arm() {
-    clearTimeout(expiry)
-    if (disposed) return
-    const deadline = Math.min(
-      owner?.expiresAt ?? Infinity,
-      ...[...checks].map((check) => check.permit()?.expiresAt ?? Infinity),
-    )
-    if (Number.isFinite(deadline) && deadline > Date.now())
-      expiry = setTimeout(
-        () => {
-          revision.value++
-          arm()
-        },
-        Math.min(2_147_483_647, deadline - Date.now()),
-      )
-  }
-  function observe(requirement: NativeAccessRequirement): Check {
+  function observe(requirement: NativeAccessRequirement, changesRows = true): Check {
     const evaluate = () => {
       if (checks.has(check))
         void check.evaluate().then(() => {
-          if (!checks.has(check)) return
-          revision.value++
-          arm()
+          if (changesRows && checks.has(check)) revision.value++
         })
     }
     const check = observeNativeRequirement(access, requirement, () => {
-      revision.value++
+      if (changesRows) revision.value++
       queueMicrotask(evaluate)
     })
     checks.add(check)
@@ -253,7 +244,7 @@ export function useGuardedTable(input: GuardedTableInput) {
       const captured = Object.freeze({ ...target })
       const read = observe(exact(captured, input.recordAction))
       const actions = new Map(
-        input.recordActions?.map((action) => [action, observe(exact(captured, action))]),
+        input.recordActions?.map((action) => [action, observe(exact(captured, action), false)]),
       )
       const fieldChecks = new Map<string, Check>()
       for (const [path, config] of Object.entries(fields?.paths ?? {}))
@@ -279,7 +270,6 @@ export function useGuardedTable(input: GuardedTableInput) {
       return false
     }
     await Promise.all(checksForRows.map((check) => check.evaluate()))
-    arm()
     return !disposed && context() === origin
   }
   const column = (path: string) => {
@@ -429,6 +419,7 @@ export function useGuardedTable(input: GuardedTableInput) {
     async ([current, local], [previous]) => {
       const generation = ++sourceGeneration
       if (current !== previous) {
+        remote?.clear()
         for (const check of checks) release(check)
         records.clear()
         metadata.clear()
@@ -441,7 +432,7 @@ export function useGuardedTable(input: GuardedTableInput) {
           if (data.kind === 'local') localRead.value = observe(data.read)
           for (const kind of ['csv', 'copy'] as const) {
             const requirement = input.output?.[kind]?.requirement
-            if (requirement) output.set(kind, observe(requirement))
+            if (requirement) output.set(kind, observe(requirement, false))
           }
         }
       }
@@ -455,7 +446,6 @@ export function useGuardedTable(input: GuardedTableInput) {
         missingIdentity.value = !bound
       }
       revision.value++
-      arm()
       if (data.kind === 'remote' && input.immediate !== false) await table.refresh()
     },
     { flush: 'sync', immediate: true },
@@ -558,10 +548,17 @@ export function useGuardedTable(input: GuardedTableInput) {
   onScopeDispose(() => {
     disposed = true
     stop()
-    clearTimeout(expiry)
     for (const check of checks) release(check)
     records.clear()
     remote?.dispose()
   }, true)
+  if (getCurrentInstance()) {
+    onDeactivated(() => {
+      active.value = false
+    })
+    onActivated(() => {
+      active.value = true
+    })
+  }
   return { table, target, can, execute, batch }
 }

@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { createServer } from 'vite'
 
 const probeId = 'virtual:pavp-guarded-chart-probe'
-const fixture = String.raw`
+export const guardedChartFixtureSource = String.raw`
 import { computed, h, ref } from 'vue'
 import { UiChartTimeRange, UiG2Chart } from '@platform/ui'
 import { useAccessBoundary } from '/src/app/access/access-boundary.ts'
@@ -58,9 +58,9 @@ export const Fixture = { setup() {
       private:{fields:['time','privateAmount','caption'],input:'complete'},
     },
     records:{domain, resource, id: row=>row.id, read:'record', fields:{privateAmount:'field',caption:'field'}},
-    source:{kind:'local',read:()=>{
+    source:{kind:'local',read:(context)=>{
       if (team === 'empty') return {kind:'records',completeness:'complete',rows:[]}
-      return {kind:'records',completeness:'complete',rows:team==='alpha' ? rows : rows.slice(1)}
+      return {kind:'records',completeness:'complete',rows:team==='alpha' && context.scope[0]?.id !== 'second' ? rows : rows.slice(1)}
     }},
     time:{field:'time',overview:'amount',permitted:()=>team==='empty' ? undefined : [0,7]},
     output:{image:requirement('image'), data:{requirement:requirement('csv'),fields:['amount']}},
@@ -93,6 +93,12 @@ export const Fixture = { setup() {
     'Switch identity':()=>{ principalId=principalId.endsWith('alternate') ? 'guarded-chart-fixture-principal' : 'guarded-chart-fixture-alternate'; void notify?.({kind:'identity'}) },
     'Narrow':()=>{ narrow.value=!narrow.value },
     'Capture image': async()=>{ try {const blob=await chart.value.exportImage(); result.value='Image '+blob.size} catch {result.value='Unavailable'} },
+    'Revoke pending image': async()=> {
+      const pending=chart.value.exportImage()
+      revoke('domain','image')
+      try { await pending; result.value='Unexpected image' }
+      catch { result.value='Image rejected after revocation' }
+    },
     'Read export rows':()=>{ const output=model.exportData('amounts'); result.value=output?.isCurrent() ? JSON.stringify(output.rows) : 'Unavailable' },
   }
   return ()=>h('section',{style:{padding:'16px',width:narrow.value?'390px':'min(680px, 100%)'},'aria-label':'Guarded chart fixture'},[
@@ -134,7 +140,7 @@ export async function serveGuardedChartBrowserProbe(): Promise<void> {
           return id === probeId ? '\0' + id : undefined
         },
         load(id) {
-          return id === '\0' + probeId ? fixture : undefined
+          return id === '\0' + probeId ? guardedChartFixtureSource : undefined
         },
         transform(source, id) {
           if (id.endsWith('/src/pages/component-chart-linked.vue') && !id.includes('?'))

@@ -35,6 +35,7 @@ export function useResourceInteraction<
   let lifetime: AbortController | undefined
   let refresh: (() => void) | undefined
   let commandContext: AccessContextSnapshot | undefined
+  let commandAttempt: AbortController | undefined
   let lease: (() => boolean) | undefined
   onDeactivated(close)
 
@@ -71,8 +72,10 @@ export function useResourceInteraction<
           : undefined
       const view = observeNativeRequirement(access, requirement, () => {
         attempt?.abort()
+        commandAttempt?.abort()
         value.value = undefined
         status.value = 'pending'
+        activity.value = 'idle'
         queueMicrotask(reload)
       })
       function reload(): void {
@@ -108,6 +111,8 @@ export function useResourceInteraction<
       onCleanup(() => {
         owner.abort()
         attempt?.abort()
+        commandAttempt?.abort()
+        commandAttempt = undefined
         view.dispose()
         refresh = undefined
         lease = undefined
@@ -161,15 +166,24 @@ export function useResourceInteraction<
 
   async function run(selection: ReturnType<typeof operation>): Promise<void> {
     const origin = commandContext
-    const signal = lifetime?.signal
-    if (!selection || !signal || !origin || activity.value === 'working') return
+    const ownerSignal = lifetime?.signal
+    const snapshot = current.value
+    if (!selection || !ownerSignal || !origin || !snapshot || activity.value === 'working') return
+    const attempt = new AbortController()
+    commandAttempt = attempt
+    const signal = AbortSignal.any([ownerSignal, attempt.signal])
+    const ownsOutcome = () =>
+      !signal.aborted &&
+      commandAttempt === attempt &&
+      commandContext === origin &&
+      isCurrent(snapshot)
     activity.value = 'working'
     try {
       const [outcome] = await executeGuardedAction(access, selection.action, {
         targets: [selection.target],
         signal,
       })
-      if (signal.aborted || commandContext !== origin) return
+      if (!ownsOutcome()) return
       activity.value =
         outcome?.status === 'completed'
           ? 'done'
@@ -184,7 +198,9 @@ export function useResourceInteraction<
         refresh?.()
       }
     } catch {
-      if (!signal.aborted && commandContext === origin) activity.value = 'failed'
+      if (ownsOutcome()) activity.value = 'failed'
+    } finally {
+      if (commandAttempt === attempt) commandAttempt = undefined
     }
   }
 

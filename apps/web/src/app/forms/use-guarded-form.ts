@@ -8,7 +8,14 @@ import {
   type UiFormSchema,
   type UiFormSchemaValues,
 } from '@platform/ui'
-import { onScopeDispose, shallowRef, watch } from 'vue'
+import {
+  getCurrentInstance,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  shallowRef,
+  watch,
+} from 'vue'
 
 import type {
   AccessBoundary,
@@ -130,6 +137,7 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
   const watches = new Set<Observe>()
   const pending = new Set<Observe>()
   let running = true
+  const active = shallowRef(true)
   let deadline: ReturnType<typeof setTimeout> | undefined
   const isAllowed = (check: Observe | undefined) => check?.permit()?.isCurrent() === true
 
@@ -199,12 +207,16 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
     return [target?.id, target?.mode, target?.revision, target?.idempotencyKey] as const
   }
   const stop = watch(
-    [() => access.readContext(), ...[0, 1, 2, 3].map((index) => () => targetParts()[index])],
+    [
+      active,
+      () => access.readContext(),
+      ...[0, 1, 2, 3].map((index) => () => targetParts()[index]),
+    ],
     () => {
       reset()
       const context = access.readContext()
       const supplied = input.target()
-      if (context.status !== 'ready' || !supplied?.id) return
+      if (!active.value || context.status !== 'ready' || !supplied?.id) return
       const target = Object.freeze({ ...supplied })
       const mode = target.mode === 'create' ? 'create' : 'edit'
       const read =
@@ -241,6 +253,7 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
     const target = input.target()
     if (
       owner === undefined ||
+      !active.value ||
       context.status !== 'ready' ||
       owner.context !== context.snapshot ||
       target?.id !== owner.target.id ||
@@ -332,6 +345,14 @@ export function useGuardedForm<const S extends UiFormSchema>(input: GuardedFormI
     reset()
   }
   onScopeDispose(dispose, true)
+  if (getCurrentInstance()) {
+    onDeactivated(() => {
+      active.value = false
+    })
+    onActivated(() => {
+      active.value = true
+    })
+  }
   function status(path: string, access: 'read' | 'write'): FieldStatus {
     if (unsupported.has(path)) return 'unsupported-collection'
     if (unregistered.has(path)) return 'unregistered-field'

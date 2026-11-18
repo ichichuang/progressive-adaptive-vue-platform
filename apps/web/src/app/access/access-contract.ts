@@ -108,7 +108,9 @@ export type AccessContextChange =
   | { readonly kind: 'scope'; readonly candidate?: z.output<typeof accessScopeSchema> }
 
 export type AccessHostChange =
-  AccessContextChange | Exclude<AccessInvalidation, { readonly kind: 'identity' | 'scope' }>
+  | { readonly kind: 'identity'; readonly notifyWindows?: true }
+  | Exclude<AccessContextChange, { readonly kind: 'identity' }>
+  | ProviderInvalidation
 
 export interface BoundAccessRequest {
   readonly id: number
@@ -130,6 +132,12 @@ export interface AccessProvider {
   subscribe?(notify: (change: ProviderInvalidation) => void): () => void
 }
 
+export interface AccessWindowHint {
+  readonly application: string
+  readonly id: string
+  readonly audience: string
+}
+
 export interface AccessHost {
   readonly administration?: AdministrationHost
   resolveContext(
@@ -137,6 +145,13 @@ export interface AccessHost {
   ): AccessContextSnapshot | Promise<AccessContextSnapshot>
   readonly decisions: readonly AccessProvider[]
   readonly availability?: readonly BusinessAvailabilitySource[]
+  /** Opt in to identity reread hints for this application. Keys are opaque, non-secret audiences. */
+  readonly windowInvalidation?: {
+    readonly application: string
+    audience(context: AccessContextSnapshot): string | undefined
+    send(hint: AccessWindowHint): void
+    subscribe(receive: (message: unknown) => void): () => void
+  }
   readonly delegation?: {
     exit(context: AccessContextSnapshot): DelegationCommand | undefined
   }

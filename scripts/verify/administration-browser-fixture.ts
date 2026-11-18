@@ -667,15 +667,16 @@ export function createAdministrationFixture(mode: 'editable' | 'readonly' | 'mis
   function conflictNextSave(): void {
     nextSaveFailure = 'revision-conflict'
   }
-  function confirmEffectiveness(): void {
+  function confirmEffectiveness(): boolean {
     const policy = rows.policies[0]
-    if (policy?.draftState !== 'published') return
+    if (policy?.draftState !== 'published') return false
     policy.draftState = 'effective'
     policy.status = 'Effective'
     policy.revision = `fixture-${String(++version)}`
     policy.activeRevision = policy.revision
     if (policy.draftSummary !== undefined) policy.baselineSummary = policy.draftSummary
     void publish({ kind: 'record', domain, resource: 'policies', recordId: policy.id })
+    return true
   }
   return { accessHost, revoke, denyParent, failNextSave, conflictNextSave, confirmEffectiveness }
 }

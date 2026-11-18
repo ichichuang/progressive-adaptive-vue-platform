@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { createServer, normalizePath } from 'vite'
 import { administrationModules } from '../../apps/web/src/app/administration/administration-routes'
+import { accessLifecycleBrowserProbe } from './access-lifecycle-browser-probe'
 
 const mode = process.argv.includes('--readonly')
   ? 'readonly'
@@ -9,9 +10,12 @@ const mode = process.argv.includes('--readonly')
     : process.argv.includes('--deny')
       ? 'deny'
       : 'editable'
-const port = process.argv.includes('--public')
-  ? 41815
-  : { editable: 41814, readonly: 41816, missing: 41817, deny: 41818 }[mode]
+const lifecycle = process.argv.includes('--lifecycle')
+const port = lifecycle
+  ? 41819
+  : process.argv.includes('--public')
+    ? 41815
+    : { editable: 41814, readonly: 41816, missing: 41817, deny: 41818 }[mode]
 const configFile = process.argv.includes('--public')
   ? 'apps/web/vite.config.ts'
   : 'apps/web/vite.administration.config.ts'
@@ -22,18 +26,22 @@ const server = await createServer({
   configLoader: 'runner',
   cacheDir: `node_modules/.vite-administration-probe-${String(port)}`,
   server: { host: '127.0.0.1', port, strictPort: true, hmr: false },
-  plugins: process.argv.includes('--public')
-    ? []
-    : [
-        {
-          name: 'administration-fixture-host',
-          enforce: 'pre',
-          transform(source, id) {
-            if (!id.endsWith('/src/main.ts')) return undefined
-            const anchor = '  retainedAppearanceSafetyRestorationAuthority,\n)'
-            if (source.split(anchor).length !== 2)
-              throw new Error('Administration fixture could not find the host bootstrap boundary.')
-            return `import { createAdministrationFixture } from '${fixtureFile}'
+  plugins: lifecycle
+    ? [accessLifecycleBrowserProbe()]
+    : process.argv.includes('--public')
+      ? []
+      : [
+          {
+            name: 'administration-fixture-host',
+            enforce: 'pre',
+            transform(source, id) {
+              if (!id.endsWith('/src/main.ts')) return undefined
+              const anchor = '  retainedAppearanceSafetyRestorationAuthority,\n)'
+              if (source.split(anchor).length !== 2)
+                throw new Error(
+                  'Administration fixture could not find the host bootstrap boundary.',
+                )
+              return `import { createAdministrationFixture } from '${fixtureFile}'
 const administrationFixture = createAdministrationFixture('${mode}')
 ${source.replace(anchor, '  retainedAppearanceSafetyRestorationAuthority,\n  administrationFixture.accessHost,\n)')}
 const controls = document.createElement('div')
@@ -52,9 +60,9 @@ for (const [label, run] of [
 }
 document.body.append(controls)
 `
+            },
           },
-        },
-      ],
+        ],
 })
 await server.listen()
 console.log(

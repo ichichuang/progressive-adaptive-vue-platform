@@ -370,6 +370,19 @@ export async function verifyScopedOperations(): Promise<void> {
     } as unknown as Pick<ApiClient, 'request'>
     const collection = () =>
       requirement({ domain, kind: 'collection', resource: 'item', action: 'read' })
+    const cleanupFailed = createScopedApiRead(access, {
+      client,
+      requirement: collection,
+      plan,
+      clearDerived() {
+        throw new Error('Derived presentation could not be cleared.')
+      },
+    })
+    assert.equal(await cleanupFailed.run(), 'ready')
+    await notify({ kind: 'domain', domain, action: 'read' })
+    assert.equal(cleanupFailed.state.value.status, 'failed')
+    assert.equal(await cleanupFailed.run(), 'failed')
+    cleanupFailed.dispose()
     const delayed = createScopedApiRead(access, {
       client: delayedClient,
       requirement: collection,

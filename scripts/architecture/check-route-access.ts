@@ -257,7 +257,7 @@ async function exerciseRouteAccess(
             status: 'found',
             session: {
               schemaVersion: 1,
-              openRouteNames: ['workbench-colors', 'workbench-welcome'],
+              openRouteNames: ['workbench-colors', 'administration-policies', 'workbench-welcome'],
             },
           }),
           write(snapshot) {

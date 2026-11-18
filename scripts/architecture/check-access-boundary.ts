@@ -5,7 +5,12 @@ import {
   installAccessBoundary,
   useAccessBoundary,
 } from '../../apps/web/src/app/access/access-boundary'
-import type { AccessHost, AccessHostChange } from '../../apps/web/src/app/access/access-contract'
+import type {
+  AccessHost,
+  AccessHostChange,
+  AccessWindowHint,
+} from '../../apps/web/src/app/access/access-contract'
+import { observeNativeRequirement } from '../../apps/web/src/app/access/native-requirement'
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -227,10 +232,195 @@ export async function verifyAccessBoundary(): Promise<void> {
     assert.equal(switched.snapshot.scope[0]?.id, 'organization-d')
     assert.equal(read.permit(), undefined)
 
+    const returning = deferred<{ status: 'allow' }>()
+    result = returning.promise
+    const beforeReturn = read.evaluate()
+    await notify({ kind: 'scope' })
+    await notify({ kind: 'scope', candidate: [{ kind: 'organization', id: 'organization-d' }] })
+    const returned = access.readContext()
+    assert.equal(returned.status, 'ready')
+    assert.deepEqual(returned.snapshot.scope, switched.snapshot.scope)
+    assert.notEqual(returned.snapshot, switched.snapshot)
+    returning.resolve({ status: 'allow' })
+    await beforeReturn
+    assert.equal(read.permit(), undefined)
+
+    const broken = observeNativeRequirement(
+      access,
+      {
+        operator: 'any',
+        scope: { kind: 'global' },
+        requests: [readField, { ...readField, recordId: 'task-two' }],
+      },
+      () => {
+        throw new Error('Owner failed to clear derived state.')
+      },
+    )
+    let survivorCleared = 0
+    const survivor = access.observe(readField, () => {
+      survivorCleared++
+    })
+    await Promise.all([broken.evaluate(), survivor.evaluate()])
+    const survivorPermit = survivor.permit()
+    assert.ok(survivorPermit)
+    await notify({ kind: 'record', domain, resource, recordId })
+    assert.equal(survivorCleared, 1)
+    assert.equal(survivorPermit.isCurrent(), false)
+    await broken.evaluate()
+    assert.equal(broken.permit(), undefined)
+    assert.deepEqual(broken.read(), {
+      status: 'evaluation-failed',
+      reasonCode: 'access.cleanup-failed',
+    })
+    await notify({ kind: 'record', domain, resource, recordId })
+    assert.equal(survivorCleared, 2)
+    broken.dispose()
+    survivor.dispose()
+
     read.dispose()
     assert.equal(read.read().status, 'disposed')
   } finally {
     dispose()
   }
   assert.equal(unsubscribed, true)
+  await verifyExpiryAndDisposal()
+  await verifyWindowHints()
+}
+
+async function verifyWindowHints(): Promise<void> {
+  const listeners = new Set<(hint: unknown) => void>()
+  const sent: AccessWindowHint[] = []
+  let signedOut = false
+  function createWindow(organization: string, session: string) {
+    const app = createProbeApplication()
+    let scope = [{ kind: 'organization', id: organization }]
+    let notify!: (change: AccessHostChange) => Promise<void>
+    let confirmations = 0
+    const stop = installAccessBoundary(app, {
+      resolveContext(change) {
+        confirmations++
+        if (change.kind === 'scope' && change.candidate !== undefined) scope = [...change.candidate]
+        return {
+          identity:
+            signedOut && session === 'shared'
+              ? { kind: 'anonymous' }
+              : { kind: 'known', principalId: session },
+          scope,
+        }
+      },
+      decisions: [],
+      subscribe(listener) {
+        notify = listener
+        return () => undefined
+      },
+      windowInvalidation: {
+        application: 'window-fixture',
+        audience: (context) => (context.identity.kind === 'known' ? session : undefined),
+        send(message) {
+          sent.push(message)
+          for (const receive of listeners) {
+            receive(message)
+            receive(message)
+          }
+        },
+        subscribe(receive) {
+          listeners.add(receive)
+          return () => {
+            listeners.delete(receive)
+          }
+        },
+      },
+    })
+    return {
+      access: app.runWithContext(useAccessBoundary),
+      stop,
+      confirmCount: () => confirmations,
+      change: (change: AccessHostChange) => notify(change),
+    }
+  }
+  const first = createWindow('first', 'shared')
+  const second = createWindow('second', 'shared')
+  const unrelated = createWindow('third', 'other')
+  try {
+    await Promise.resolve()
+    await first.change({ kind: 'scope', candidate: [{ kind: 'organization', id: 'updated' }] })
+    assert.equal(sent.length, 0)
+    const secondBefore = second.access.readContext()
+    assert.equal(secondBefore.status, 'ready')
+    assert.equal(secondBefore.snapshot.scope[0]?.id, 'second')
+    assert.equal(second.confirmCount(), 1)
+    for (const receive of listeners) {
+      const identityHint = { id: crypto.randomUUID(), audience: 'shared' }
+      receive({ ...identityHint, application: 'other-application' })
+      receive({
+        ...identityHint,
+        application: 'window-fixture',
+        scope: [{ kind: 'organization', id: 'forged' }],
+      })
+    }
+    assert.equal(second.confirmCount(), 1)
+    signedOut = true
+    await first.change({ kind: 'identity', notifyWindows: true })
+    assert.equal(sent.length, 1)
+    assert.equal(first.confirmCount(), 3)
+    assert.equal(second.confirmCount(), 2)
+    assert.equal(unrelated.confirmCount(), 1)
+    const secondAfter = second.access.readContext()
+    assert.equal(secondAfter.status, 'ready')
+    assert.equal(secondAfter.snapshot.identity.kind, 'anonymous')
+    assert.equal(secondAfter.snapshot.scope[0]?.id, 'second')
+  } finally {
+    first.stop()
+    second.stop()
+    unrelated.stop()
+  }
+  assert.equal(listeners.size, 0)
+}
+
+async function verifyExpiryAndDisposal(): Promise<void> {
+  const app = createProbeApplication()
+  let cleared = false
+  let detached = false
+  const expired = deferred<true>()
+  const stop = installAccessBoundary(app, {
+    resolveContext: () => ({
+      identity: { kind: 'known', principalId: 'fixture-expiry' },
+      scope: [],
+      expiresAt: Date.now() + 30,
+    }),
+    decisions: [
+      {
+        domain: 'expiry',
+        targets: ['type'],
+        evaluate: () => ({ status: 'allow' }),
+        subscribe: () => () => {
+          throw new Error('Provider unsubscribe failed.')
+        },
+      },
+    ],
+    subscribe: () => () => {
+      detached = true
+    },
+  })
+  const access = app.runWithContext(useAccessBoundary)
+  await Promise.resolve()
+  const view = access.observe(
+    { kind: 'type', domain: 'expiry', resource: 'report', action: 'view' },
+    () => {
+      if (!cleared) {
+        cleared = true
+        expired.resolve(true)
+      }
+    },
+  )
+  await view.evaluate()
+  const permit = view.permit()
+  assert.ok(permit)
+  await expired.promise
+  assert.equal(access.readContext().status, 'expired')
+  assert.equal(permit.isCurrent(), false)
+  assert.throws(stop, AggregateError)
+  assert.equal(detached, true)
+  assert.equal(view.read().status, 'disposed')
+  stop()
 }

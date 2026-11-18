@@ -1,7 +1,9 @@
 import {
   computed,
   effectScope,
+  getCurrentInstance,
   getCurrentScope,
+  onDeactivated,
   onScopeDispose,
   shallowRef,
   watch,
@@ -99,7 +101,7 @@ export function useUiTableForm(input: UiTableFormInput) {
     return result
   }
   function close(force = false): boolean {
-    if (form.value?.submitting.value) return false
+    if (form.value?.submitting.value && !(force && input.access)) return false
     if (open.value && !force && form.value?.hasUnsavedChanges.value) return false
     ++sequence
     active?.abort()
@@ -300,7 +302,9 @@ export function useUiTableForm(input: UiTableFormInput) {
   async function saveInline() {
     if (!inlineFields.value.length || !form.value) return undefined
     const session = form.value
+    const ticket = sequence
     const result = await session.submit()
+    if (ticket !== sequence || form.value !== session) return result
     if (result === 'invalid') {
       const first = session.issues.value.find((issue) => issue.field !== null)
       if (first?.field) session.focusField(first.field)
@@ -321,9 +325,26 @@ export function useUiTableForm(input: UiTableFormInput) {
     )
       return false
     if (input.access) {
-      const removed = await input.access.remove?.(row, confirm)
-      if (removed) await input.table.refresh()
-      return removed === true
+      const origin = input.table.access?.context()
+      const operation = new AbortController()
+      active?.abort()
+      active = operation
+      const ticket = ++sequence
+      const ownsRemoval = () =>
+        current(ticket, operation.signal) && input.table.access?.context() === origin
+      loading.value = true
+      error.value = null
+      try {
+        const removed = await input.access.remove?.(row, confirm, operation.signal)
+        if (!removed || !ownsRemoval()) return false
+        await input.table.refresh()
+        return ownsRemoval()
+      } catch {
+        if (ownsRemoval()) error.value = new Error('Controlled table removal failed.')
+        return false
+      } finally {
+        if (ownsRemoval()) loading.value = false
+      }
     }
     if (!editor.remove || !input.transport?.mutate) return false
     const selected = cloneDraft(row)
@@ -369,6 +390,21 @@ export function useUiTableForm(input: UiTableFormInput) {
     row.value = null
     loading.value = false
     open.value = false
+  }
+  if (input.access) {
+    if (getCurrentInstance())
+      onDeactivated(() => {
+        close(true)
+      })
+    const access = input.table.access
+    if (access)
+      watch(
+        access.context,
+        () => {
+          close(true)
+        },
+        { flush: 'sync' },
+      )
   }
   if (getCurrentScope()) onScopeDispose(dispose)
   return {

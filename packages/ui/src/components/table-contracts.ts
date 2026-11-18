@@ -306,7 +306,11 @@ export interface UiTableEditorAccess {
     acknowledged(): boolean
     readState?(): 'pending' | 'ready' | 'unavailable'
   }
-  remove?(row: UiTableReadonlyRecord, confirm: () => boolean | Promise<boolean>): Promise<boolean>
+  remove?(
+    row: UiTableReadonlyRecord,
+    confirm: () => boolean | Promise<boolean>,
+    signal: AbortSignal,
+  ): Promise<boolean>
 }
 export interface UiTableBatchOutcome {
   readonly targetId: string

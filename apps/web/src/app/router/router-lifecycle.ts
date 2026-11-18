@@ -1851,17 +1851,18 @@ export async function createAndReadyRouter(input: {
   }
 
   function recoverAccessLoss(from: RouteLocationNormalized): void {
-    operation?.presentationAbort.abort()
-    if (operation !== undefined)
-      operation.finish({
+    const withdrawnOperation = operation
+    withdrawnOperation?.presentationAbort.abort()
+    if (withdrawnOperation !== undefined)
+      withdrawnOperation.finish({
         kind: 'cancel',
-        navigationId: operation.navigationId,
+        navigationId: withdrawnOperation.navigationId,
         reason: 'access-invalidated',
       })
     showSafeTitle()
     // The retained owner unmounts the page and its Teleports, including its leave guard.
     void nextTick(() => {
-      if (disposed || router.currentRoute.value !== from) return
+      if (disposed || router.currentRoute.value !== from || operation !== withdrawnOperation) return
       const previous = Array.from(workspace.entries)
         .filter((entry) => workspaceVisits.has(entry.identity))
         .sort(

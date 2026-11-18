@@ -3,7 +3,7 @@ import { createServer } from 'vite'
 
 const probeId = 'virtual:pavp-guarded-table-probe'
 const routeId = probeId + '-routes'
-const fixture = String.raw`
+export const guardedTableFixtureSource = String.raw`
 import { h, ref, inject, onScopeDispose, onErrorCaptured } from 'vue'
 import { z } from 'zod'
 import { NButton } from 'naive-ui/es/button'
@@ -49,6 +49,12 @@ const lastPatch = ref('')
 const lastBatch = ref('')
 const hold = ref(false)
 let release
+let releaseWrite
+let releaseValidation
+const holdValidation = ref(false)
+const waitingValidation = ref(false)
+const holdWrite = ref(false)
+const waitingWrite = ref(false)
 const waiting = ref(false)
 const rows = () => [
   { id: 'item-a', title: saved.value['item-a'] ?? 'Authorized item A', price: 17.5, stock: 22, ignored: 'fixture raw private value' },
@@ -81,6 +87,13 @@ const action = (name, patch, label) => ({
     for (const command of commands) {
       if (!command.isCurrent()) continue
       dispatches.value++
+      if (patch && holdWrite.value) {
+        waitingWrite.value = true
+        await new Promise((resolve) => { releaseWrite = resolve })
+        waitingWrite.value = false
+        results.push({ status: 'completed', requestId: command.requestId, targetId: command.target.id, value: 'acknowledged' })
+        continue
+      }
       if (patch) {
         lastPatch.value = JSON.stringify(patch)
         if (patch.title) saved.value = { ...saved.value, [command.target.id]: patch.title }
@@ -99,7 +112,7 @@ const editorSchema = {
   ],
 }
 const batchActions = ['all-remove', 'partial-remove'].map((id) => ({ id, label: id, request: { api: id, method: 'DELETE' } }))
-function setupTable(mode) {
+export function setupTable(mode) {
   const access = useAccessBoundary()
   const demo = useTableShowcase()
   const base = tableExampleSchema(mode)
@@ -141,6 +154,13 @@ function setupTable(mode) {
     recordRead: (item) => requirement(request('record', 'read', item.id)),
     recordWrite: (item) => requirement(request('record', 'edit', item.id)),
     action: (patch) => action('edit', patch),
+    async validate() {
+      if (!holdValidation.value) return 'valid'
+      waitingValidation.value = true
+      await new Promise(resolve => { releaseValidation = resolve })
+      waitingValidation.value = false
+      return 'invalid'
+    },
   })
   return {
     schema,
@@ -214,14 +234,14 @@ export const DedicatedProbe = {
     }
   },
 }
-export function probeApp(App) {
+function tableFixtureControls() {
   const revoke = (kind, action, id, fieldPath) => {
     revocations.add(key(id, action, fieldPath))
     const change = kind === 'domain' ? { kind, domain, action }
       : { kind, domain, resource, action, recordId: id, ...(fieldPath ? { fieldPath } : {}) }
     void notify?.(change)
   }
-  const actions = {
+  return {
     'Withhold fixture write': () => revoke('record', 'edit', 'item-a'),
     'Withhold fixture read': () => revoke('record', 'read', 'item-a'),
     'Withhold fixture column': () => revoke('domain', 'price-column'),
@@ -230,14 +250,29 @@ export function probeApp(App) {
     'Change fixture identity': () => { principal.value = 'fixture-table-alternate'; void notify?.({ kind: 'identity' }) },
     'Hold fixture detail': () => { hold.value = true },
     'Release fixture detail': () => { hold.value = false; release?.() },
+    'Hold fixture validation': () => { holdValidation.value = true },
+    'Release fixture validation': () => { holdValidation.value = false; releaseValidation?.() },
+    'Hold fixture command': () => { holdWrite.value = true },
+    'Release fixture command': () => { holdWrite.value = false; releaseWrite?.() },
+    'Withhold fixture export': () => revoke('domain', 'export'),
   }
+}
+export { tableFixtureControls }
+export function setFixtureTableScope(value) { team.value = value }
+export function fixtureTableStatus() {
+  return dispatches.value + ' | ' + lastPatch.value + ' | ' + lastBatch.value +
+    (waiting.value ? ' | Waiting detail' : '') + (waitingWrite.value ? ' | Waiting command' : '') +
+    (waitingValidation.value ? ' | Waiting validation' : '')
+}
+export function probeApp(App) {
+  const actions = tableFixtureControls()
   return { setup() {
     onErrorCaptured((cause) => { console.error('Guarded table fixture', cause) })
     return () => [
     h(App),
     h('aside', { 'aria-label': 'Guarded fixture controls', style: 'position: fixed; bottom:0; right:0; z-index:99999; background:white; color:black; max-width:80vw' },
       Object.entries(actions).map(([label, onClick]) => h('button', { type: 'button', onClick }, label)).concat(
-        h('output', { 'aria-label': 'Guarded fixture result' }, dispatches.value + ' | ' + lastPatch.value + ' | ' + lastBatch.value + (waiting.value ? ' | Waiting' : '')),
+        h('output', { 'aria-label': 'Guarded fixture result' }, fixtureTableStatus()),
       ),
     ),
   ] } }
@@ -264,7 +299,7 @@ export async function serveGuardedTableBrowserProbe(): Promise<void> {
           return id === probeId || id === routeId ? '\0' + id : undefined
         },
         load(id) {
-          if (id === '\0' + probeId) return fixture
+          if (id === '\0' + probeId) return guardedTableFixtureSource
           if (id === '\0' + routeId)
             return `import { routes as generated } from 'vue-router/auto-routes'
 export const routes = generated.map((record) => record.name === 'component-combination-modal'

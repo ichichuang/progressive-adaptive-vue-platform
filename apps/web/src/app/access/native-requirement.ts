@@ -59,6 +59,10 @@ export function observeNativeRequirement(
   function read(): AccessState {
     if (disposed) return { status: 'disposed' }
     const decisions = leaves.map((leaf) => leaf.read())
+    const cleanupFailure = decisions.find(
+      (decision) => 'reasonCode' in decision && decision.reasonCode === 'access.cleanup-failed',
+    )
+    if (cleanupFailure !== undefined) return cleanupFailure
     const configuration = decisions.find(({ status }) => status === 'configuration-error')
     if (configuration !== undefined) return configuration
     const scope = checkScope()

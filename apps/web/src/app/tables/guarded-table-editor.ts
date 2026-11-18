@@ -81,9 +81,10 @@ export function createGuardedTableEditor(input: GuardedEditorInput): UiTableEdit
       const isCurrent = (): boolean =>
         !signal.aborted && session.value === origin && context() === origin && !lostRecord.value
       function withdraw(): void {
+        if (lostRecord.value || signal.aborted || session.value !== origin) return
+        lostRecord.value = true
         readState.value = 'unavailable'
         receipt.value = undefined
-        lostRecord.value = true
         session.value = undefined
         input.onRecordUnavailable?.()
       }
@@ -138,28 +139,38 @@ export function createGuardedTableEditor(input: GuardedEditorInput): UiTableEdit
             return undefined
           },
         })
-        let reloading = false
+        let pendingRead: AbortController | undefined
         const recordCheck = observeNativeRequirement(access, requirement, () => {
+          pendingRead?.abort()
           receipt.value = undefined
           readState.value = 'pending'
           queueMicrotask(() => {
-            if (isCurrent()) void load()
+            if (isCurrent() && (pendingRead === undefined || pendingRead.signal.aborted))
+              void load()
           })
         })
-        onScopeDispose(recordCheck.dispose)
+        onScopeDispose(() => {
+          pendingRead?.abort()
+          recordCheck.dispose()
+        })
         async function load() {
-          if (reloading || !isCurrent()) return
-          reloading = true
+          if (!isCurrent()) return
+          const attempt = new AbortController()
+          pendingRead = attempt
+          const ownsLoad = () => pendingRead === attempt && !attempt.signal.aborted && isCurrent()
           try {
             await recordCheck.evaluate()
-            if (!isCurrent()) return
+            if (!ownsLoad()) return
             if (recordCheck.permit()?.isCurrent() !== true) {
               withdraw()
               return
             }
-            const result = await read.run({ id: target.id }, signal)
+            const result = await read.run(
+              { id: target.id },
+              AbortSignal.any([signal, attempt.signal]),
+            )
             const answer = read.state.value
-            if (!isCurrent()) return
+            if (!ownsLoad()) return
             if (result !== 'ready' || answer.status !== 'ready') {
               if (result !== 'stale') withdraw()
               return
@@ -170,13 +181,13 @@ export function createGuardedTableEditor(input: GuardedEditorInput): UiTableEdit
               isCurrent: () => isCurrent() && read.isCurrent(answer.requestId),
             }
             readState.value = 'ready'
+          } catch {
+            if (ownsLoad()) withdraw()
           } finally {
-            reloading = false
+            if (pendingRead === attempt) pendingRead = undefined
           }
         }
-        void load().catch(() => {
-          if (isCurrent()) withdraw()
-        })
+        void load()
       }
       return {
         form: guarded.form,
@@ -184,13 +195,12 @@ export function createGuardedTableEditor(input: GuardedEditorInput): UiTableEdit
         readState: () => readState.value,
       }
     },
-    async remove(row, confirm) {
+    async remove(row, confirm, signal) {
       const target = input.target('edit', row)
       if (!target || !input.remove) return false
-      const operation = new AbortController()
       const [outcome] = await executeGuardedAction(access, input.remove, {
         targets: [target],
-        signal: operation.signal,
+        signal,
         confirm: () => confirm(),
       })
       return outcome?.status === 'completed' && outcome.applied === true

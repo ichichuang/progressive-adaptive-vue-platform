@@ -133,18 +133,17 @@ watch(
   },
   { flush: 'sync' },
 )
-watch(
-  () => [selected.value, subject.value] as const,
-  () => {
-    simulationAttempt?.abort()
-    simulated.value = ''
-    simulationPending.value = false
-  },
-  { flush: 'sync' },
-)
+watch(() => [selected.value, subject.value] as const, clearSimulation, { flush: 'sync' })
 onScopeDispose(() => {
-  simulationAttempt?.abort()
+  clearSimulation()
 })
+
+function clearSimulation(): void {
+  simulationAttempt?.abort()
+  simulationAttempt = undefined
+  simulated.value = ''
+  simulationPending.value = false
+}
 
 async function simulate(): Promise<void> {
   const row = selected.value
@@ -154,6 +153,7 @@ async function simulate(): Promise<void> {
   if (!row || !model || !selectedTarget || !id || simulationPending.value) return
   const request = model.request(row)
   if (!request) return
+  clearSimulation()
   const attempt = new AbortController()
   simulationAttempt = attempt
   simulationPending.value = true
@@ -167,6 +167,9 @@ async function simulate(): Promise<void> {
     },
     attempt.signal,
     () => selected.value === row && subject.value === id,
+    () => {
+      if (simulationAttempt === attempt) clearSimulation()
+    },
   )
   if (simulationAttempt === attempt && !attempt.signal.aborted) {
     simulated.value =
@@ -185,13 +188,15 @@ async function refreshed(): Promise<void> {
 }
 
 function updateSharing(open: boolean): void {
+  const shouldRefresh = !open && sharingOpen.value && target.value !== undefined
   sharingOpen.value = open
-  if (!open) void refreshed()
+  if (shouldRefresh) void refreshed()
 }
 
 function updateReview(open: boolean): void {
+  const shouldRefresh = !open && reviewOpen.value && target.value !== undefined
   reviewOpen.value = open
-  if (!open) void refreshed()
+  if (shouldRefresh) void refreshed()
 }
 </script>
 
