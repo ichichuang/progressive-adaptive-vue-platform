@@ -36,7 +36,8 @@ const server = await createServer({
             enforce: 'pre',
             transform(source, id) {
               if (!id.endsWith('/src/main.ts')) return undefined
-              const anchor = '  retainedAppearanceSafetyRestorationAuthority,\n)'
+              const anchor =
+                '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)'
               if (source.split(anchor).length !== 2)
                 throw new Error(
                   'Administration fixture could not find the host bootstrap boundary.',

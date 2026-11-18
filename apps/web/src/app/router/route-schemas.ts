@@ -32,6 +32,13 @@ export const routeQuerySchemaRegistry = Object.freeze([
       .refine((value) => value.mode === 'create' || value.id),
   }),
   Object.freeze({
+    id: 'route-query.showcase-editor',
+    schema: z.strictObject({
+      mode: z.enum(['edit', 'detail']),
+      id: z.string().regex(/^showcase-[a-z]+-task-[1-9]\d{0,6}$/u),
+    }),
+  }),
+  Object.freeze({
     id: 'route-query.none',
     schema: z.strictObject({}),
   }),

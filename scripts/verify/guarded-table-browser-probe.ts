@@ -343,7 +343,7 @@ export const routes = generated.map((record) => record.name === 'component-combi
                   'startRuntimeKernel(\n  App,',
                   'startRuntimeKernel(\n  probeApp(App),',
                 ),
-                '  retainedAppearanceSafetyRestorationAuthority,\n)',
+                '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)',
                 '  retainedAppearanceSafetyRestorationAuthority,\n  accessHost,\n)',
               )
             )

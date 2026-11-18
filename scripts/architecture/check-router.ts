@@ -4785,6 +4785,7 @@ function schemaViolations(): string[] {
   const noQuery = query.get('route-query.none')
   const tableEditor = query.get('route-query.table-editor')
   const motionTransition = query.get('route-query.motion-transition')
+  const showcaseEditor = query.get('route-query.showcase-editor')
 
   if (
     paramsSchemas.length !== 2 ||
@@ -4801,7 +4802,14 @@ function schemaViolations(): string[] {
   }
 
   if (
-    querySchemas.length !== 4 ||
+    querySchemas.length !== 5 ||
+    showcaseEditor === undefined ||
+    !showcaseEditor.safeParse({ mode: 'edit', id: 'showcase-signal-task-1' }).success ||
+    showcaseEditor.safeParse({ mode: 'edit' }).success ||
+    showcaseEditor.safeParse({ mode: 'create', id: 'showcase-signal-task-1' }).success ||
+    showcaseEditor.safeParse({ mode: 'detail', id: 'showcase-atlas-task-2', extra: 'no' })
+      .success ||
+    showcaseEditor.safeParse({ mode: 'detail', id: ['showcase-atlas-task-2'] }).success ||
     motionTransition === undefined ||
     !motionTransition.safeParse({}).success ||
     !motionTransition.safeParse({ preset: 'route-transition.none' }).success ||
@@ -4824,7 +4832,7 @@ function schemaViolations(): string[] {
     tableEditor.safeParse({ mode: 'detail', id: '1', unexpected: 'value' }).success
   ) {
     violations.push(
-      'Router Query Schema Registry diverged from its strict empty, table and motion-preview schemas.',
+      'Router Query Schema Registry diverged from its strict empty, table, showcase-editor and motion-preview schemas.',
     )
   }
 

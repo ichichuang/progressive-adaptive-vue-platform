@@ -17,6 +17,14 @@ import {
   type AdministrationModule,
 } from '../administration/administration-routes'
 
+import {
+  accessShowcaseProfiles,
+  showcasePages,
+  showcaseProjectRequirement,
+  showcaseRouteFolder,
+  type AccessShowcaseProfile,
+} from '../access-showcase/showcase-routes'
+
 type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required' | 'policy'
 
 type RouteKeepAlivePolicy = 'never' | 'route-instance'
@@ -651,13 +659,65 @@ const optionalAdministrationRecords = [administrationLayout, ...administrationPa
   } as const),
 )
 
-export function composeRouteRegistry(selection: readonly AdministrationModule[]) {
+function defineShowcaseRoute<
+  const Name extends (typeof showcasePages)[number]['name'],
+  const Query extends RouteQuerySchemaId,
+>(
+  route: { readonly name: Name; readonly path: string; readonly file: string },
+  querySchemaId: Query,
+) {
+  return defineRoute({
+    name: route.name,
+    pathPattern: route.path,
+    sourcePath: `apps/web/${showcaseRouteFolder}/${route.file}`,
+    showcase: true,
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'console',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId,
+    capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      ...layoutMeta('route-layout.architecture-admin-console-footer'),
+      keepAlive: 'never',
+      ...(route.name === 'access-showcase-projects' || route.name === 'access-showcase-editor'
+        ? {
+            auth: 'required',
+            requiredPermissionIds: Object.freeze(['showcase-project-view']),
+            permissionRequests: Object.freeze({
+              'showcase-project-view': showcaseProjectRequirement,
+            }),
+          }
+        : {}),
+      titleKey: `route-title.${route.name}`,
+      breadcrumbKey: null,
+      telemetryName: `route.${route.name}`,
+    }),
+  } as const)
+}
+
+const optionalShowcaseRecords = [
+  defineShowcaseRoute(showcasePages[0], 'route-query.none'),
+  defineShowcaseRoute(showcasePages[1], 'route-query.none'),
+  defineShowcaseRoute(showcasePages[2], 'route-query.showcase-editor'),
+  defineShowcaseRoute(showcasePages[3], 'route-query.none'),
+] as const
+
+export function composeRouteRegistry(
+  selection: readonly AdministrationModule[],
+  showcase: AccessShowcaseProfile | null = null,
+) {
+  if (showcase !== null && !accessShowcaseProfiles.includes(showcase))
+    throw new TypeError('Unknown access showcase profile.')
   const resolved = resolveAdministrationSelection(selection)
   const records = [
     ...publicRouteRegistry,
     ...optionalAdministrationRecords.filter(({ module }) =>
       module === null ? resolved.length !== 0 : resolved.includes(module),
     ),
+    ...(showcase === null ? [] : optionalShowcaseRecords),
   ]
   assertRouteComposition(records)
   return Object.freeze(records)
@@ -674,6 +734,21 @@ export function assertRouteComposition(records: readonly RouteRegistryRecord[]):
     names.add(route.name)
     paths.add(normalized)
     sources.add(route.sourcePath)
+    if (route.name.startsWith('access-showcase')) {
+      const declared = optionalShowcaseRecords.find(({ name }) => name === route.name)
+      if (
+        declared?.pathPattern !== route.pathPattern ||
+        declared.sourcePath !== route.sourcePath ||
+        route.paramsSchemaId !== declared.paramsSchemaId ||
+        route.querySchemaId !== declared.querySchemaId ||
+        route.meta.auth !== declared.meta.auth ||
+        JSON.stringify(route.meta.requiredPermissionIds) !==
+          JSON.stringify(declared.meta.requiredPermissionIds) ||
+        JSON.stringify(route.meta.permissionRequests) !==
+          JSON.stringify(declared.meta.permissionRequests)
+      )
+        throw new TypeError(`Invalid showcase route declaration: ${route.name}`)
+    }
     if (!route.name.startsWith('administration-')) continue
     const declared = optionalAdministrationRecords.find(({ name }) => name === route.name)
     if (
@@ -698,7 +773,9 @@ export function assertRouteComposition(records: readonly RouteRegistryRecord[]):
 
 const compiledAdministration =
   typeof __PAVP_ADMINISTRATION_MODULES__ === 'undefined' ? [] : __PAVP_ADMINISTRATION_MODULES__
-export const routeRegistry = composeRouteRegistry(compiledAdministration)
+const compiledShowcase =
+  typeof __PAVP_ACCESS_SHOWCASE__ === 'undefined' ? null : __PAVP_ACCESS_SHOWCASE__
+export const routeRegistry = composeRouteRegistry(compiledAdministration, compiledShowcase)
 
 export type RouteName = (typeof routeRegistry)[number]['name']
 export function isDisplayLayoutPreview(name: string): boolean {
@@ -870,21 +947,21 @@ export const focusContractRegistry = Object.freeze([
   }),
 ] as const)
 
+type ConsoleNavigationName = Exclude<
+  Extract<(typeof routeRegistry)[number], { readonly paramsSchemaId: 'route-params.none' }>['name'],
+  Extract<
+    (typeof routeRegistry)[number],
+    { readonly querySchemaId: 'route-query.showcase-editor' }
+  >['name']
+>
+
 export interface ConsoleNavigationItem {
   readonly iconClass: string
   readonly openIn?: 'new-page'
   readonly labelKey?: ConsoleCommonMessageKey
   readonly destination: {
-    [
-      Name in Extract<
-        (typeof routeRegistry)[number],
-        { readonly paramsSchemaId: 'route-params.none' }
-      >['name']
-    ]: { readonly name: Name }
-  }[Extract<
-    (typeof routeRegistry)[number],
-    { readonly paramsSchemaId: 'route-params.none' }
-  >['name']]
+    [Name in ConsoleNavigationName]: { readonly name: Name }
+  }[ConsoleNavigationName]
 }
 
 export interface ConsoleNavigationGroup {
@@ -1091,6 +1168,18 @@ const administrationNavigation = routeRegistry.flatMap((record) =>
 )
 export const consoleNavigationRegistry = Object.freeze([
   ...publicConsoleNavigationRegistry,
+  ...(compiledShowcase === null
+    ? []
+    : [
+        {
+          id: 'access-showcase' as const,
+          labelKey: 'route-title.access-showcase' as const,
+          items: [
+            defineNavigationItem('access-showcase', 'i-lucide-layout-dashboard'),
+            defineNavigationItem('access-showcase-projects', 'i-lucide-workflow'),
+          ],
+        },
+      ]),
   ...(administrationNavigation.length === 0
     ? []
     : [

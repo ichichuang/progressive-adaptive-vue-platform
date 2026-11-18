@@ -27,6 +27,7 @@ import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/ru
 import { readUapiWorldTime } from '../../apps/web/src/shared/services/uapi-world-time'
 import { verifyAccessBoundary } from './check-access-boundary'
 import { verifyNativeAccess } from './check-native-access'
+import { verifyAccessShowcase } from '../verify/check-access-showcase'
 import { verifyAdvancedAccess } from './check-advanced-access'
 import { verifyBusinessAccess } from './check-business-access'
 import { verifyRouteAccess } from './check-route-access'
@@ -2631,6 +2632,7 @@ if (process.argv[1]?.endsWith('check-boundaries.ts')) {
   await verifyAccessBoundary()
   await verifyNativeAccess()
   await verifyAdvancedAccess()
+  await verifyAccessShowcase()
   await verifyBusinessAccess()
   await verifyRouteAccess()
   await verifyScopedOperations()

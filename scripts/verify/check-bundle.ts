@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import { verifyAccessArtifact } from './check-access-showcase'
 import { createRequire } from 'node:module'
 import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 import { readFile } from 'node:fs/promises'
@@ -902,6 +903,7 @@ const manifestValue = JSON.parse(
   await readFile(resolve(distributionDirectory, '.vite/manifest.json'), 'utf8'),
 ) as unknown
 validateProductionHtmlNegativeProbes()
+await verifyAccessArtifact('public', distributionDirectory)
 const manifest = parseManifest(manifestValue)
 const entries = Object.entries(manifest).filter(([, chunk]) => chunk.isEntry === true)
 

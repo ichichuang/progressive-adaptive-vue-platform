@@ -1,0 +1,36 @@
+export const showcasePresets = [
+  { id: 1, view: 'overview', en: 'Anonymous and controlled navigation', zh: '匿名与受控导航' },
+  { id: 2, view: 'projects', en: 'Assigned task editing', zh: '仅编辑分配给我的任务' },
+  { id: 3, view: 'projects', en: 'Hidden budget and readonly owner', zh: '隐藏预算与只读所有者' },
+  { id: 4, view: 'projects', en: 'Write-only replacement', zh: '只写密钥替换' },
+  { id: 5, view: 'projects', en: 'Presentation and command metadata', zh: '展示隐藏与命令元数据' },
+  { id: 6, view: 'projects', en: 'Roles across organizations', zh: '跨组织角色' },
+  { id: 7, view: 'projects', en: 'Mixed batch outcomes', zh: '批量操作的混合结果' },
+  { id: 8, view: 'projects', en: 'Revoke writing', zh: '撤销写入权限' },
+  { id: 9, view: 'projects', en: 'Revoke reading', zh: '撤销读取权限' },
+  { id: 10, view: 'projects', en: 'Confirmed values and drafts', zh: '确认值与未保存草稿' },
+  { id: 11, view: 'projects', en: 'Late data and decisions', zh: '迟到的数据和访问决定' },
+  { id: 12, view: 'projects', en: 'Record-specific invalidation', zh: '单条记录失效' },
+  { id: 13, view: 'projects', en: 'Export availability', zh: '导出可用性' },
+  { id: 14, view: 'projects', en: 'Independent review', zh: '独立审批' },
+  { id: 15, view: 'projects', en: 'Temporary approval expiry', zh: '临时审批权限到期' },
+  { id: 16, view: 'projects', en: 'Readonly sharing modes', zh: '只读分享方式' },
+  { id: 17, view: 'projects', en: 'Sharing expiry and revocation', zh: '分享过期与撤销' },
+  {
+    id: 18,
+    view: 'diagnostics',
+    en: 'Empty, incomplete, and failed results',
+    zh: '空结果、未决和失败',
+  },
+  { id: 19, view: 'diagnostics', en: 'Relationship snapshot validation', zh: '关系快照校验' },
+  { id: 20, view: 'diagnostics', en: 'Safe workspace restoration', zh: '安全恢复工作区' },
+  { id: 21, view: 'diagnostics', en: 'Saved and effective policy', zh: '已保存与生效策略' },
+  {
+    id: 22,
+    view: 'diagnostics',
+    en: 'Administration revision and scope',
+    zh: '管理操作修订和范围',
+  },
+] as const
+
+export type ShowcasePreset = (typeof showcasePresets)[number]['id']

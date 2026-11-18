@@ -12,3 +12,9 @@ declare module '*.vue' {
 }
 
 declare module 'virtual:uno.css'
+
+declare module 'virtual:pavp-access-showcase' {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports -- A relative import declaration cannot be used inside the ambient virtual module.
+  function createSelectedAccessHost(): import('./app/access/access-contract').AccessHost | undefined
+  export default createSelectedAccessHost
+}

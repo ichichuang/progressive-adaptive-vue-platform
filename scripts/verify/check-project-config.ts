@@ -26,7 +26,10 @@ import {
   administrationModules,
   type AdministrationModule,
 } from '../../apps/web/src/app/administration/administration-routes'
+import type { AccessShowcaseProfile } from '../../apps/web/src/app/access-showcase/showcase-routes'
 import { administrationFileOptions, routerFileGenerationOptions } from '../../apps/web/vite.config'
+import nativeShowcaseConfig from '../../apps/web/vite.access-showcase.config'
+import caslShowcaseConfig from '../../apps/web/vite.access-showcase-casl.config'
 import { runtimePreflightAuthority } from './check-runtime'
 
 type JsonObject = Record<string, unknown>
@@ -150,12 +153,13 @@ function canonicalPageSourcePath(filePath: string): string {
 
 async function validateOfficialRouteDtsRegeneration(
   selection: readonly AdministrationModule[] = [],
+  showcase: AccessShowcaseProfile | null = null,
 ): Promise<void> {
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'pavp-router-dts-'))
   const generatedPath = resolve(temporaryDirectory, 'route-map.d.ts')
   const context = officialVueRouterGenerator.createRoutesContext(
     officialVueRouterGenerator.resolveOptions({
-      ...administrationFileOptions(selection),
+      ...administrationFileOptions(selection, showcase),
       dts: generatedPath,
     }),
   )
@@ -168,7 +172,7 @@ async function validateOfficialRouteDtsRegeneration(
       readFile(resolve(rootDirectory, 'apps/web/src/route-map.d.ts'), 'utf8'),
     ])
 
-    if (selection.length === 0)
+    if (selection.length === 0 && showcase === null)
       expectEqual(repositoryArtifact, generated, 'Official generated Router DTS equality')
     const runtimeSource = ts.createSourceFile(
       '<official-vue-router-runtime-routes>',
@@ -210,7 +214,7 @@ async function validateOfficialRouteDtsRegeneration(
         ]
       },
     )
-    const expectedRecords = composeRouteRegistry(selection).map(
+    const expectedRecords = composeRouteRegistry(selection, showcase).map(
       (record) => [record.sourcePath, record.name, record.pathPattern, false] as const,
     )
     for (const [, name] of expectedRecords) {
@@ -2265,6 +2269,7 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
       '__PAVP_COMPILED_RELEASE_SHA__',
       '__PAVP_COMPILED_BUILD_VERSION__',
       '__PAVP_ADMINISTRATION_MODULES__',
+      '__PAVP_ACCESS_SHOWCASE__',
     ]) ||
     objectPropertyExpression(defineRecord, '__VUE_I18N_FULL_INSTALL__')?.kind !==
       ts.SyntaxKind.FalseKeyword ||
@@ -3808,7 +3813,7 @@ async function validateAdministrationCompositionFailures(): Promise<void> {
     await writeFile(resolve(folder, 'undeclared.vue'), '<template><div /></template>')
     for (const [routesFolder, error] of [
       [[publicPages], /Missing:.*administration\.vue/u],
-      [[publicPages, folder], /Undeclared administration page:.*undeclared\.vue/u],
+      [[publicPages, folder], /Undeclared optional route source:.*undeclared\.vue/u],
     ] as const) {
       const context = officialVueRouterGenerator.createRoutesContext(
         officialVueRouterGenerator.resolveOptions({ ...admitted, dts: false, routesFolder }),
@@ -3824,10 +3829,28 @@ async function validateAdministrationCompositionFailures(): Promise<void> {
   }
 }
 
+for (const [profile, configure] of [
+  ['native', nativeShowcaseConfig],
+  ['casl', caslShowcaseConfig],
+] as const) {
+  const config = await configure({
+    command: 'build',
+    mode: 'production',
+    isSsrBuild: false,
+    isPreview: false,
+  })
+  assert.ok(config.define && config.build)
+  assert.equal(config.define['__PAVP_ACCESS_SHOWCASE__'], JSON.stringify(profile))
+  assert.equal(config.define['__PAVP_ADMINISTRATION_MODULES__'], JSON.stringify(['policies']))
+  assert.equal(config.build.outDir, `dist-access-showcase-${profile}`)
+}
 await validateAdministrationCompositionFailures()
 await validateOfficialRouteDtsRegeneration()
 await validateOfficialRouteDtsRegeneration(['roles'])
 await validateOfficialRouteDtsRegeneration(administrationModules)
+await validateOfficialRouteDtsRegeneration([], 'native')
+await validateOfficialRouteDtsRegeneration(['policies'], 'native')
+await validateOfficialRouteDtsRegeneration(['policies'], 'casl')
 await validateOfficialRouteDtsRegeneration()
 await validateVueRouterCompatibilityProbe()
 

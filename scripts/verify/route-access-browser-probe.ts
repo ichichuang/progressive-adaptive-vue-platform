@@ -191,7 +191,7 @@ export async function serveRouteAccessBrowserProbe(): Promise<void> {
                   'startRuntimeKernel(\n  App,',
                   'startRuntimeKernel(\n  probeApp(App),',
                 ),
-                '  retainedAppearanceSafetyRestorationAuthority,\n)',
+                '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)',
                 '  retainedAppearanceSafetyRestorationAuthority,\n  accessHost,\n)',
               )
             )

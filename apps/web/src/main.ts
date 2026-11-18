@@ -1,6 +1,7 @@
 import './app/styles/layers.css'
 import 'virtual:uno.css'
 import App from './App.vue'
+import createSelectedAccessHost from 'virtual:pavp-access-showcase'
 import { nextTick, shallowRef, type ShallowRef } from 'vue'
 import type { AppearanceSafetyRestorationAuthority } from './app/appearance/appearance-bootstrap'
 import { startRuntimeKernel, type RunningApplicationHandle } from './app/bootstrap/runtime-kernel'
@@ -43,6 +44,8 @@ if (runtimeKernelHotData !== undefined) {
   }
 }
 
+const selectedAccessHost = createSelectedAccessHost()
+
 const runningApplicationHandle = startRuntimeKernel(
   App,
   {
@@ -54,6 +57,7 @@ const runningApplicationHandle = startRuntimeKernel(
   },
   retainedConfigurationRetriesUsed,
   retainedAppearanceSafetyRestorationAuthority,
+  selectedAccessHost,
 )
 
 if (hotContext !== undefined) {

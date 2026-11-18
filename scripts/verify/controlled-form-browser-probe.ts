@@ -251,7 +251,7 @@ export async function serveControlledFormBrowserProbe(): Promise<void> {
         transform(source, id) {
           if (!id.endsWith('/src/main.ts')) return undefined
           const appStart = 'startRuntimeKernel(\n  App,'
-          const appEnd = '  retainedAppearanceSafetyRestorationAuthority,\n)'
+          const appEnd = '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)'
           if (source.split(appStart).length !== 2 || source.split(appEnd).length !== 2)
             throw new Error('The controlled form probe entry changed.')
           return (

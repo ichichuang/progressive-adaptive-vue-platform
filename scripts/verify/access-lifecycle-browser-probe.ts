@@ -151,7 +151,7 @@ export const LifecycleViews = { setup() {
     load: (id) => modules.get(id),
     transform(source, id) {
       if (id.endsWith('/src/main.ts')) {
-        const anchor = '  retainedAppearanceSafetyRestorationAuthority,\n)'
+        const anchor = '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)'
         return `import { lifecycleHost } from '${probe}'\n${insert(source, anchor, '  retainedAppearanceSafetyRestorationAuthority,\n  lifecycleHost,\n)')}`
       }
       if (id.endsWith('/src/App.vue')) {

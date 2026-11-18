@@ -156,7 +156,7 @@ export async function serveScopedOperationsBrowserProbe(): Promise<void> {
         transform(source, id) {
           if (!id.endsWith('/src/main.ts')) return undefined
           const appStart = 'startRuntimeKernel(\n  App,'
-          const appEnd = '  retainedAppearanceSafetyRestorationAuthority,\n)'
+          const appEnd = '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)'
           if (source.split(appStart).length !== 2 || source.split(appEnd).length !== 2)
             throw new Error('The scoped operations probe entry changed.')
           return (

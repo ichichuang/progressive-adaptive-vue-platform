@@ -1937,7 +1937,7 @@ export async function createAndReadyRouter(input: {
     if (record === undefined || !router.hasRoute(record.name)) return false
     try {
       const location =
-        'module' in record
+        'module' in record || 'showcase' in record
           ? router.resolve(record.pathPattern)
           : router.resolve({ name: record.name })
       return validateRouteInput(location).kind === 'valid' && isPublicRoute(location)

@@ -152,7 +152,7 @@ export async function serveGuardedChartBrowserProbe(): Promise<void> {
               '"\n' +
               replace(
                 source,
-                '  retainedAppearanceSafetyRestorationAuthority,\n)',
+                '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)',
                 '  retainedAppearanceSafetyRestorationAuthority,\n  accessHost,\n)',
               )
             )

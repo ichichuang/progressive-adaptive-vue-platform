@@ -143,7 +143,7 @@ export async function serveBusinessAccessProbe(): Promise<void> {
               `import { accessHost } from '${hostId}'\n` +
               replace(
                 source,
-                '  retainedAppearanceSafetyRestorationAuthority,\n)',
+                '  retainedAppearanceSafetyRestorationAuthority,\n  selectedAccessHost,\n)',
                 '  retainedAppearanceSafetyRestorationAuthority,\n  accessHost,\n)',
               )
             )

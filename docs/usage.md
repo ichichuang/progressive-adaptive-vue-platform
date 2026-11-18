@@ -15,6 +15,16 @@ pnpm dev
 
 工作台只展示已经实现的能力；源码实现、静态检查、实际界面验收和上线不是一回事。
 
+## 在 VS Code 中开发
+
+打开仓库根目录，按工作区推荐启用扩展。在 TypeScript 文件中执行「TypeScript: Select TypeScript Version」，选择工作区版本。Vue 模板类型提示由 Vue - Official 提供。手动保存 Vue 文件时，Prettier 使用项目格式配置，ESLint 执行可自动修复的规则。可在「输出」面板查看两者加载的路径。
+
+i18n Ally 读取中英文消息，在静态翻译键上执行「转到定义」可定位中文源文件。翻译文件位于 `apps/web/src/shared/i18n/messages/{zh-CN,en}/`，修改文案时直接编辑两种语言下同名的 JSON 文件，保留平铺键。UnoCSS 从根配置提供语义类提示，Stylelint 检查 CSS。
+
+通过「任务: 运行任务」选择「PAVP：开发」或「PAVP：校验」，分别在仓库根目录执行 `pnpm dev` 或 `pnpm verify`。若任务终端找不到 pnpm，先核对该终端的 mise 环境和 PATH。
+
+身份与访问控制的可选装配、演示场景和宿主接口见 [Identity and access integration](./access-integration.md)。
+
 ## 部署与运行时配置
 
 ### 构建时怎么配

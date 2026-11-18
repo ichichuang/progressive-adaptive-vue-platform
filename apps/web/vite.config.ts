@@ -30,6 +30,11 @@ import {
   type AdministrationModule,
 } from './src/app/administration/administration-routes'
 
+import {
+  showcaseRouteFolder,
+  type AccessShowcaseProfile,
+} from './src/app/access-showcase/showcase-routes'
+
 type JsonObject = Record<string, unknown>
 type VueRouterPluginOptions = NonNullable<Parameters<typeof VueRouter>[0]>
 type EditableTreeNode = Parameters<NonNullable<VueRouterPluginOptions['extendRoute']>>[0]
@@ -158,21 +163,30 @@ export const routerFileGenerationOptions = {
   beforeWriteFiles: verifyCanonicalFileRouteTree,
 } as const satisfies VueRouterPluginOptions
 
-export function administrationFileOptions(selection: readonly AdministrationModule[]) {
+export function administrationFileOptions(
+  selection: readonly AdministrationModule[],
+  showcase: AccessShowcaseProfile | null = null,
+) {
   const modules = resolveAdministrationSelection(selection)
-  const records = composeRouteRegistry(modules)
-  if (modules.length === 0) return { ...routerFileGenerationOptions, dts: false as const }
-  const profile = modules.join('-')
+  const records = composeRouteRegistry(modules, showcase)
+  if (modules.length === 0 && showcase === null)
+    return { ...routerFileGenerationOptions, dts: false as const }
+  const profile = [showcase && `showcase-${showcase}`, ...modules].filter(Boolean).join('-')
   return {
     ...routerFileGenerationOptions,
     routesFolder: [
       routerFileGenerationOptions.routesFolder,
-      {
-        src: administrationRouteFolder,
-        exclude: administrationPages
-          .filter(({ module }) => !modules.includes(module))
-          .map(({ file }) => `**/${file}`),
-      },
+      ...(showcase === null ? [] : [showcaseRouteFolder]),
+      ...(modules.length === 0
+        ? []
+        : [
+            {
+              src: administrationRouteFolder,
+              exclude: administrationPages
+                .filter(({ module }) => !modules.includes(module))
+                .map(({ file }) => `**/${file}`),
+            },
+          ]),
     ],
     dts: `node_modules/.pavp-route-types/${profile}/route-map.d.ts`,
     extendRoute(route: EditableTreeNode) {
@@ -182,7 +196,7 @@ export function administrationFileOptions(selection: readonly AdministrationModu
         ({ sourcePath }) => sourcePath === canonicalPageSourcePath(source),
       )
       if (!record)
-        throw new Error(`Undeclared administration page: ${canonicalPageSourcePath(source)}`)
+        throw new Error(`Undeclared optional route source: ${canonicalPageSourcePath(source)}`)
       route.name = record.name
       route.path = record.pathPattern
     },
@@ -451,9 +465,33 @@ function productionRuntimeConfigurationCarrier(): Plugin {
   }
 }
 
-export function createApplicationBuildConfig(selection: readonly AdministrationModule[] = []) {
+function accessShowcaseEntry(profile: AccessShowcaseProfile | null): Plugin {
+  const id = 'virtual:pavp-access-showcase'
+  const resolvedId = '\0' + id
+  return {
+    name: 'pavp-access-showcase-entry',
+    resolveId(source) {
+      if (source === id) return resolvedId
+    },
+    load(source) {
+      if (source !== resolvedId) return
+      if (profile === null) return 'export default () => undefined'
+      const session =
+        "import { startAccessShowcase } from '/src/app/access-showcase/showcase-session.ts'"
+      return profile === 'native'
+        ? session + "\nexport default () => startAccessShowcase('native')"
+        : session +
+            "\nimport { createShowcaseCasl } from '/src/app/access-showcase/showcase-casl.ts'\nexport default () => startAccessShowcase('casl', createShowcaseCasl)"
+    },
+  }
+}
+
+export function createApplicationBuildConfig(
+  selection: readonly AdministrationModule[] = [],
+  showcase: AccessShowcaseProfile | null = null,
+) {
   const administration = resolveAdministrationSelection(selection)
-  const fileOptions = administrationFileOptions(administration)
+  const fileOptions = administrationFileOptions(administration, showcase)
   return defineConfig(async ({ command, isPreview, mode }) => {
     assertCompiledEnvironment(mode)
 
@@ -507,10 +545,12 @@ export function createApplicationBuildConfig(selection: readonly AdministrationM
         __PAVP_COMPILED_RELEASE_SHA__: JSON.stringify(runtimeConfiguration.releaseSha),
         __PAVP_COMPILED_BUILD_VERSION__: JSON.stringify(runtimeConfiguration.buildVersion),
         __PAVP_ADMINISTRATION_MODULES__: JSON.stringify(administration),
+        __PAVP_ACCESS_SHOWCASE__: JSON.stringify(showcase),
       },
       plugins: [
         runtimeConfigurationArtifacts(runtimeConfiguration),
         productionRuntimeConfigurationCarrier(),
+        accessShowcaseEntry(showcase),
         VueRouter(fileOptions),
         vue(),
         UnoCSS(),
@@ -521,8 +561,8 @@ export function createApplicationBuildConfig(selection: readonly AdministrationM
         entries: [
           'index.html',
           `${routerFileGenerationOptions.routesFolder}/**/*.vue`,
-          ...composeRouteRegistry(administration)
-            .filter((record) => 'module' in record)
+          ...composeRouteRegistry(administration, showcase)
+            .filter(({ sourcePath }) => !sourcePath.startsWith('apps/web/src/pages/'))
             .map(({ sourcePath }) => sourcePath.replace(/^apps\/web\//u, '')),
         ],
       },
@@ -530,7 +570,12 @@ export function createApplicationBuildConfig(selection: readonly AdministrationM
         cssCodeSplit: true,
         emptyOutDir: true,
         manifest: true,
-        outDir: administration.length === 0 ? 'dist' : 'dist-administration',
+        outDir:
+          showcase === null
+            ? administration.length === 0
+              ? 'dist'
+              : 'dist-administration'
+            : `dist-access-showcase-${showcase}`,
         reportCompressedSize: true,
         rolldownOptions: {
           output: {
@@ -540,7 +585,7 @@ export function createApplicationBuildConfig(selection: readonly AdministrationM
                   name: 'initial-app',
                   // Consolidate only already-initial application, UI and motion owners.
                   // Keep shared resource loaders separate from the startup application.
-                  test: /(?:\/apps\/web\/src\/(?:app\/|App\.vue|main\.ts)|\/packages\/(?:ui|design-system)\/src\/|node_modules\/(?:motion-v|motion-dom|motion-utils)\/)/,
+                  test: /(?:virtual:pavp-access-showcase|\/apps\/web\/src\/(?:app\/|App\.vue|main\.ts)|\/packages\/(?:ui|design-system)\/src\/|node_modules\/(?:motion-v|motion-dom|motion-utils)\/)/,
                   tags: ['$initial' as const],
                   includeDependenciesRecursively: false,
                 },
