@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict'
-import type { UiMotionResult } from '@platform/ui'
 import {
   ProductPreferenceDefault,
   projectSettingsColorMotion,
@@ -203,6 +202,7 @@ const phases: {
   text: string | null
   finish: () => void
 }[] = []
+type SettingsRiftHandle = ReturnType<Parameters<typeof connectSettingsRift>[0]>
 const disconnect = connectSettingsRift((scene, _appearance, options) => {
   assert.equal(options.preset, 'theme-rift')
   const base = { preset: options.preset, phase: options.phase } as const
@@ -210,7 +210,7 @@ const disconnect = connectSettingsRift((scene, _appearance, options) => {
     /* assigned by the promise executor */
   }
   let cancel = finish
-  const finished = new Promise<UiMotionResult<'theme-rift'>>((resolve) => {
+  const finished = new Promise<Awaited<SettingsRiftHandle['finished']>>((resolve) => {
     finish = () => {
       resolve({ ...base, kind: 'completed', presentation: 'full' })
     }
