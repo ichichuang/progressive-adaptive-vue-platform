@@ -251,7 +251,7 @@ onScopeDispose(() => {
             <div
               v-for="row in example.rows"
               :key="row.key"
-              class="min-h-control rounded-control flex flex-wrap items-center justify-between bg-surface-page gap-content-gap px-button-inline"
+              class="rounded-control flex flex-wrap items-center justify-between bg-surface-page gap-content-gap min-h-target-enhanced px-button-inline"
             >
               <dt
                 class="text-body text-text-secondary"

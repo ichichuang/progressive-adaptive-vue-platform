@@ -17,7 +17,6 @@ const options = computed(() =>
 </script>
 <template>
   <TableDataCapabilities
-    :key="`${mode}-${String(debounce)}-${sorting}`"
     :title="title"
     :message="message"
     example="sorting"

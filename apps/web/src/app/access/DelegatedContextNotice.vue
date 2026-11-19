@@ -51,7 +51,7 @@ async function exit(): Promise<void> {
 <template>
   <div
     v-if="active"
-    class="gap-control py-control flex flex-wrap min-w-0 items-center justify-between bg-surface-panel px-page-inline text-caption text-text-primary"
+    class="flex flex-wrap min-w-0 items-center justify-between bg-surface-panel gap-content-gap p-panel-narrow px-page-inline text-caption text-text-primary"
   >
     <span
       class="min-w-0 break-all"

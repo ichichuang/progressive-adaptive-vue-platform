@@ -7,6 +7,7 @@ import { NInput } from 'naive-ui/es/input'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NSelect } from 'naive-ui/es/select'
 import { useTableShowcase } from './table-showcase'
+import { tableSampleCategoryOptions } from './table-sample-categories'
 import {
   tableSummaryExample,
   tableSummaryExampleDefaults as defaults,
@@ -23,7 +24,7 @@ const content = ref<TableSummaryExampleOptions['content']>(defaults.content)
 const target = ref(defaults.target)
 const scope = ref(defaults.scope)
 const operation = ref(defaults.operation)
-const customText = ref(t('tableExamples.summary.customText'))
+const customText = ref<string>()
 const customValue = ref(defaults.value)
 const category = ref('')
 const contentOptions = computed(() => [
@@ -63,7 +64,7 @@ const operationOptions = computed(() =>
 )
 const categoryOptions = computed(() => [
   { value: '', label: t('tableExamples.summary.categoryAll') },
-  ...['Design', 'Engineering', 'Research'].map((value) => ({ value, label: value })),
+  ...tableSampleCategoryOptions.map(({ value, label }) => ({ value, label: t(label) })),
 ])
 watch(content, (value) => {
   target.value = value === 'aggregate' ? 'both' : 'category'
@@ -94,7 +95,7 @@ watch(
         scope: scope.value,
         operation: operation.value,
         secondRow: props.secondRow,
-        text: customText.value,
+        text: customText.value ?? defaults.text,
         value: customValue.value,
         label: summaryLabel.value,
         averageLabel: averageLabel.value,
@@ -182,8 +183,9 @@ watch(category, (value) => {
         }}</span>
         <NInput
           v-if="content === 'text'"
-          v-model:value="customText"
+          :value="customText ?? t('tableExamples.summary.customText')"
           :input-props="{ 'aria-label': t('tableExamples.summary.customText') }"
+          @update:value="customText = $event"
         />
         <NInputNumber
           v-else

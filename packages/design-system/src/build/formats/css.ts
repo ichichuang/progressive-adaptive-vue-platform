@@ -185,6 +185,12 @@ export const canonicalLayerOrder =
   '@layer reset, tokens, base, components, app, utilities, vendor-overrides;'
 
 export function formatAppearanceBaseCss(): string {
+  // Project linear sRGB luminance to all three channels and keep alpha unchanged.
+  const luminance = '0.2126 0.7152 0.0722 0 0'
+  const matrix = [luminance, luminance, luminance, '0 0 0 1 0'].join(' ')
+  const filter = `<svg xmlns="http://www.w3.org/2000/svg"><filter id="monochrome" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="${matrix}"/></filter></svg>`
+  const monochromeUrl = `data:image/svg+xml,${encodeURIComponent(filter)}#monochrome`
+
   return `@layer base {
   html {
     background-color: var(--ui-color-surface-page);
@@ -204,6 +210,12 @@ export function formatAppearanceBaseCss(): string {
 
   html[data-color-mode='dark'] {
     color-scheme: dark;
+  }
+
+  @media (forced-colors: none) {
+    [data-pavp-monochrome] {
+      filter: url('${monochromeUrl}');
+    }
   }
 }`
 }

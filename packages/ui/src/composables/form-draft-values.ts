@@ -4,6 +4,7 @@ import {
   parseRichTextDocument,
 } from '../components/rich-text-document'
 import { toRaw, type DeepReadonly } from 'vue'
+import { UiConfigurationError } from '../components/configuration-inspection'
 import type {
   UiFormCondition,
   UiFormFlag,
@@ -200,7 +201,13 @@ export function createFormValues(
           Array.isArray(actual) &&
           actual.every((item) => typeof item === 'string' || typeof item === 'number') &&
           new Set(actual).size === actual.length)
-      if (!valid) throw new TypeError(`Incompatible value for form field ${node.name}.`)
+      if (!valid)
+        throw new UiConfigurationError(
+          `Incompatible value for form field ${node.name}.`,
+          null,
+          'fieldValue',
+          [path],
+        )
       result[node.name] =
         node.kind === 'rich-text'
           ? parseRichTextDocument(actual)

@@ -1,5 +1,6 @@
 export { default as UiScrollArea } from './components/UiScrollArea.vue'
 export { default as UiCopyAction } from './components/UiCopyAction.vue'
+export { default as UiNavigationLink } from './components/UiNavigationLink.vue'
 export type * from './components/scroll-contracts'
 export { default as UiWorkspaceTabs } from './components/UiWorkspaceTabs.vue'
 export { default as UiAdminShell } from './components/UiAdminShell.vue'
@@ -79,6 +80,7 @@ export {
 
 export { inspectUiFormSchema } from './components/form-schema'
 export { inspectUiTableSchema } from './components/table-schema'
+export { UiConfigurationError } from './components/configuration-inspection'
 export type {
   UiConfigurationHint,
   UiConfigurationInspection,

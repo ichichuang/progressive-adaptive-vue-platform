@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { ConsoleMessageKey } from '../../../../shared/i18n'
 import { formDraftSignature } from '../../../forms/form-draft-signature'
 import { invalidBuilderDateInput, parseBuilderNumberInput } from './builder-input-values'
 import {
@@ -9,7 +10,23 @@ import {
   type UiFormCondition,
 } from '@platform/ui'
 
-export class UnsupportedBuilderSchema extends TypeError {}
+export class BuilderSchemaError extends TypeError {
+  readonly messageKey: ConsoleMessageKey
+  readonly field: string
+  readonly status: 'unsupported' | 'invalid'
+
+  constructor(
+    message: string,
+    messageKey: ConsoleMessageKey,
+    field: string,
+    status: 'unsupported' | 'invalid' = 'unsupported',
+  ) {
+    super(message)
+    this.messageKey = messageKey
+    this.field = field
+    this.status = status
+  }
+}
 
 /** The core parser owns the schema. This checks only this visual editor's narrower capabilities. */
 export function parseBuilderSchema(value: unknown): UiFormSchema {
@@ -17,15 +34,17 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
   const entries: { node: UiFormNode; group: string; declaration: string }[] = []
   function inspect(nodes: readonly UiFormNode[], group = ''): void {
     for (const node of nodes) {
+      const declaration = group ? `${group}.${node.name}` : node.name
       if (
         !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(node.name) ||
         !node.label.trim() ||
         node.kind === 'custom'
       )
-        throw new UnsupportedBuilderSchema(
+        throw new BuilderSchemaError(
           'This schema requires controls not supported by the visual editor.',
+          'formBuilder.unsupportedControl',
+          declaration,
         )
-      const declaration = group ? `${group}.${node.name}` : node.name
       entries.push({ node, group, declaration })
       if (
         node.kind === 'select' ||
@@ -34,7 +53,11 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
         node.kind === 'checkbox-group'
       ) {
         if (!Array.isArray(node.options))
-          throw new UnsupportedBuilderSchema('Remote options require a registered source editor.')
+          throw new BuilderSchemaError(
+            'Remote options require a registered source editor.',
+            'formBuilder.unsupportedRemoteOptions',
+            declaration,
+          )
         const options = node.options
         const defaults = Array.isArray(node.defaultValue)
           ? node.defaultValue
@@ -50,7 +73,12 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
               ),
           )
         )
-          throw new TypeError('Selection defaults must match an enabled option.')
+          throw new BuilderSchemaError(
+            'Selection defaults must match an enabled option.',
+            'formBuilder.defaultOptionMissing',
+            declaration,
+            'invalid',
+          )
       }
       if (node.kind === 'group' || node.kind === 'repeat')
         inspect(node.fields, node.kind === 'repeat' ? `${declaration}.*` : declaration)
@@ -80,7 +108,11 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
           return
         }
         if (flag.operator === 'in')
-          throw new UnsupportedBuilderSchema('This condition requires a more capable editor.')
+          throw new BuilderSchemaError(
+            'This condition requires a more capable editor.',
+            'formBuilder.unsupportedCondition',
+            entry.declaration,
+          )
         const target = entries.find(
           (candidate) =>
             candidate !== entry &&
@@ -96,8 +128,10 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
           target.kind === 'repeat' ||
           target.kind === 'custom'
         )
-          throw new UnsupportedBuilderSchema(
+          throw new BuilderSchemaError(
             'This reference is not supported by the visual editor.',
+            'formBuilder.unsupportedReference',
+            flag.field,
           )
         if (flag.operator === 'eq' || flag.operator === 'neq') {
           const value = flag.value
@@ -123,8 +157,10 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
               typeof value !== 'string' &&
               typeof value !== 'number')
           )
-            throw new UnsupportedBuilderSchema(
+            throw new BuilderSchemaError(
               'This comparison cannot be edited without changing its type.',
+              'formBuilder.unsupportedComparison',
+              flag.field,
             )
         }
       }

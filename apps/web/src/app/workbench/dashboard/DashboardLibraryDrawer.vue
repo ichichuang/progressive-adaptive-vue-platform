@@ -193,7 +193,7 @@ function updateShow(show: boolean): void {
       <p
         v-if="rejected || !canAdd"
         role="status"
-        class="text-status-warning m-0 shrink-0 text-caption"
+        class="m-0 shrink-0 text-caption text-control-warning"
       >
         {{ t('dashboardBoard.full') }}
       </p>

@@ -29,6 +29,7 @@ import { NH2, NH3, NP, NText } from 'naive-ui/es/typography'
 import { UiStatusBadge } from '@platform/ui'
 import { useConsoleI18n } from '../shared/i18n'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 
 defineOptions({ name: 'ComponentDataPage' })
@@ -80,13 +81,10 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
     :message="message"
   >
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataStatusPeople') }}
-        </h2>
+      <WorkbenchSection :title="t('showcase.group.dataStatusPeople')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NTag · NBadge"
@@ -145,11 +143,8 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </NAvatarGroup>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataSummaries') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.dataSummaries')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen name="NStatistic">
             <NStatistic
@@ -205,11 +200,8 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </NDescriptions>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataCollections') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.dataCollections')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NDataTable"
@@ -273,11 +265,8 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </NList>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataTrends') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.dataTrends')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen name="NTimeline · NTimelineItem">
             <NTimeline>
@@ -306,11 +295,8 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </template>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataProgressLog') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.dataProgressLog')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NProgress"
@@ -343,11 +329,8 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </NButton>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataMedia') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.dataMedia')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NImage · NImageGroup · NImagePreview"
@@ -379,11 +362,8 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             <NQrCode value="https://github.com/ichichuang/progressive-adaptive-vue-platform" />
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.dataDates') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.dataDates')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen name="NTime · NText">
             <div>
@@ -418,7 +398,7 @@ const heatmap = Array.from({ length: 28 }, (_, index) => ({
             </NCalendar>
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

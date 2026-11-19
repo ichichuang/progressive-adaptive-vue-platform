@@ -1,21 +1,7 @@
 <script setup lang="ts">
-import {
-  type AnchorHTMLAttributes,
-  computed,
-  inject,
-  onActivated,
-  onDeactivated,
-  onScopeDispose,
-  ref,
-} from 'vue'
+import { type AnchorHTMLAttributes, computed } from 'vue'
 import { NCard } from 'naive-ui/es/card'
-import {
-  UiCopyAction,
-  UiG2Chart,
-  UiScrollArea,
-  type UiScrollController,
-  type UiG2ChartOptions,
-} from '@platform/ui'
+import { UiCopyAction, UiG2Chart, type UiG2ChartOptions } from '@platform/ui'
 import WorkbenchPage from '../WorkbenchPage.vue'
 import { chartExample, chartGroups } from './chart-examples'
 import { chartTourExample } from './chart-tour-example'
@@ -27,7 +13,6 @@ import {
   useApplicationLinkActivation,
   useApplicationNavigation,
 } from '../../router/application-navigation'
-import { routerScrollControllerKey } from '../../router/router-scroll-controller'
 
 defineProps<{ readonly title: string; readonly message: string }>()
 const { t } = useConsoleI18n()
@@ -109,36 +94,15 @@ const copyValue = computed(() =>
     'apps/web/src/app/workbench/charts/',
   ].join('\n\n'),
 )
-const active = ref(true)
-const register = inject(routerScrollControllerKey)
-if (!register) throw new Error('Chart overview requires the Router Scroll Controller port.')
-let unregister: (() => void) | undefined
-function connect(controller: UiScrollController | null): void {
-  unregister?.()
-  unregister = undefined
-  if (controller && active.value) unregister = register?.(controller)
-}
-onActivated(() => {
-  active.value = true
-})
-onDeactivated(() => {
-  active.value = false
-  connect(null)
-})
-onScopeDispose(() => {
-  connect(null)
-})
 </script>
 <template>
   <WorkbenchPage
-    contained
     :title="title"
     :message="message"
-    class="wb-form-page mx-auto w-full"
   >
     <template #actions>
       <UiCopyAction
-        variant="text"
+        variant="tertiary"
         :value="copyValue"
         :label="t('formShowcase.copyAI')"
         :copy-label="t('workbench.copy')"
@@ -146,66 +110,59 @@ onScopeDispose(() => {
         :failure-label="t('workbench.copyFailed')"
       />
     </template>
-    <UiScrollArea
-      owner-id="architecture-console-content"
-      :enabled="active"
-      class="flex-1 min-h-0"
-      @controller="connect"
+    <div
+      class="grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+      data-chart-overview="true"
     >
-      <div
-        class="grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
-        data-chart-overview="true"
+      <NCard
+        v-for="section in sections"
+        :key="section.id"
+        tag="a"
+        :bordered="false"
+        hoverable
+        class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
+        content-class="grid min-w-0 gap-content-gap"
+        v-bind="
+          {
+            href: navigation.resolveHref(section.destination),
+            onClick: (event: MouseEvent) => activate(event, section.destination),
+          } satisfies AnchorHTMLAttributes
+        "
       >
-        <NCard
-          v-for="section in sections"
-          :key="section.id"
-          tag="a"
-          :bordered="false"
-          hoverable
-          class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
-          content-class="grid min-w-0 gap-content-gap"
-          v-bind="
-            {
-              href: navigation.resolveHref(section.destination),
-              onClick: (event: MouseEvent) => activate(event, section.destination),
-            } satisfies AnchorHTMLAttributes
-          "
-        >
-          <div class="flex min-w-0 items-start justify-between gap-content-gap">
-            <div class="grid min-w-0 gap-component-unit">
-              <h2
-                class="font-title-weight m-0 text-subheading text-text-primary"
-                v-text="section.title"
-              />
-              <p
-                class="m-0 text-caption text-text-secondary"
-                v-text="t(section.summary)"
-              />
-            </div>
-            <span
-              class="shrink-0 text-control-primary"
-              aria-hidden="true"
-            >
-              ↗
-            </span>
-          </div>
-          <div class="wb-chart-preview rounded-control min-w-0 overflow-hidden bg-surface-page">
-            <UiG2Chart
-              :options="section.options"
-              :label="section.title"
+        <div class="flex min-w-0 items-start justify-between gap-content-gap">
+          <div class="grid min-w-0 gap-component-unit">
+            <h2
+              class="font-title-weight m-0 text-subheading text-text-primary"
+              v-text="section.title"
+            />
+            <p
+              class="m-0 text-caption text-text-secondary"
+              v-text="t(section.summary)"
             />
           </div>
           <span
-            class="inline-flex items-center justify-self-end gap-component-unit text-control-primary"
+            class="shrink-0 text-control-primary"
+            aria-hidden="true"
           >
-            {{ t('chartExamples.explore') }}
-            <span
-              class="i-lucide-arrow-up-right"
-              aria-hidden="true"
-            />
+            ↗
           </span>
-        </NCard>
-      </div>
-    </UiScrollArea>
+        </div>
+        <div class="wb-chart-preview rounded-control min-w-0 overflow-hidden bg-surface-page">
+          <UiG2Chart
+            :options="section.options"
+            :label="section.title"
+          />
+        </div>
+        <span
+          class="inline-flex items-center justify-self-end gap-component-unit text-control-primary"
+        >
+          {{ t('chartExamples.explore') }}
+          <span
+            class="i-lucide-arrow-up-right"
+            aria-hidden="true"
+          />
+        </span>
+      </NCard>
+    </div>
   </WorkbenchPage>
 </template>

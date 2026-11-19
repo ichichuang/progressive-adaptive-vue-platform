@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type ButtonHTMLAttributes, computed, ref, type HTMLAttributes } from 'vue'
+import { type ButtonHTMLAttributes, computed, ref, useId, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
@@ -10,6 +10,7 @@ import { useFormExampleUndo } from '../app/workbench/forms/use-form-example-undo
 
 defineOptions({ name: 'ComponentFormStepsPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
+const modeGroupName = useId()
 const demo = useFormShowcase()
 const { t } = demo
 const mode = ref<'edit' | 'detail'>('edit')
@@ -136,6 +137,7 @@ function reset(): void {
     <template #controls>
       <NRadioGroup
         v-model:value="mode"
+        :name="modeGroupName"
         v-bind="
           {
             role: 'radiogroup',

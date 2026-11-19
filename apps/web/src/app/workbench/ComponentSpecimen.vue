@@ -3,7 +3,6 @@ import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref, u
 import { UiCopyAction } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NCollapse, NCollapseItem } from 'naive-ui/es/collapse'
-import { NCard } from 'naive-ui/es/card'
 import { NTag } from 'naive-ui/es/tag'
 import { useConsoleI18n, type ConsoleMessageKey } from '../../shared/i18n'
 import { componentPurposeKeys } from './component-purpose-keys'
@@ -31,7 +30,7 @@ const props = withDefaults(
     modes: () => [],
   },
 )
-defineSlots<{ default: () => unknown; detail?: () => unknown }>()
+defineSlots<{ default: () => unknown; detail?: () => unknown; actions?: () => unknown }>()
 const { t } = useConsoleI18n()
 const modesId = useId()
 const names = computed(() => [
@@ -73,19 +72,15 @@ onDeactivated(() => {
 </script>
 
 <template>
-  <NCard
-    :bordered="false"
-    class="wb-specimen-card min-w-0"
-    :data-span="span"
-    :content-class="
-      span === 'full'
-        ? 'grid min-w-0 gap-content-gap'
-        : 'grid min-w-0 gap-content-gap layout-regular:grid-cols-3 layout-wide:grid-cols-3'
-    "
+  <article
+    class="rounded-control grid min-w-0 bg-surface-page gap-content-gap p-panel-narrow"
+    :class="{ 'layout-regular:grid-cols-3 layout-wide:grid-cols-3': span !== 'full' }"
   >
     <div class="wb-specimen-meta flex flex-col min-w-0 items-start gap-content-gap">
       <div class="flex flex-wrap w-full items-center justify-between gap-content-gap">
-        <h3 class="font-title-weight m-0 min-w-0 break-anywhere text-subheading text-text-primary">
+        <h3
+          class="leading-body font-title-weight m-0 min-w-0 break-anywhere text-body text-text-primary"
+        >
           {{ purpose ? t(purpose) : name }}
         </h3>
         <NTag
@@ -96,12 +91,6 @@ onDeactivated(() => {
           {{ t(pavp ? 'showcase.pavp' : 'showcase.naive') }}
         </NTag>
       </div>
-      <p
-        v-if="purpose"
-        class="m-0 text-caption text-text-secondary"
-      >
-        {{ name }}
-      </p>
       <div class="flex flex-wrap items-center gap-component-unit">
         <UiCopyAction
           v-for="item in names"
@@ -113,6 +102,7 @@ onDeactivated(() => {
           :success-label="t('workbench.copied')"
           :failure-label="t('workbench.copyFailed')"
         />
+        <slot name="actions" />
       </div>
     </div>
     <div
@@ -120,7 +110,7 @@ onDeactivated(() => {
       :class="{ 'layout-regular:col-span-2 layout-wide:col-span-2': span !== 'full' }"
     >
       <div
-        class="wb-motion-stage rounded-control flex flex-wrap min-w-0 bg-surface-page gap-content-gap"
+        class="wb-motion-stage rounded-control flex flex-wrap min-w-0 bg-surface-panel gap-content-gap"
         :class="{
           'items-start': topAligned,
           'items-center': !topAligned,
@@ -175,5 +165,5 @@ onDeactivated(() => {
         <slot name="detail" />
       </div>
     </div>
-  </NCard>
+  </article>
 </template>

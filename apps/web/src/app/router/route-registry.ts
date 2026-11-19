@@ -5,7 +5,12 @@ import type {
   ConsoleTranslate,
 } from '../../shared/i18n/message-schema'
 import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
-import type { RouteParamsSchemaId, RouteQuerySchemaId } from './route-schemas'
+import {
+  routeParamsSchema,
+  routeQuerySchema,
+  type RouteParamsSchemaId,
+  type RouteQuerySchemaId,
+} from './route-schemas'
 import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
 import type { AccessRequest } from '../access/access-contract'
 import {
@@ -73,6 +78,7 @@ export interface RouteRegistryRecord {
   readonly name: string
   readonly pathPattern: string
   readonly sourcePath: string
+  readonly isHome?: true
   readonly contentReadiness: 'route-dom' | 'workspace-content'
   readonly scrollRestoration: 'none' | 'build-static' | 'workspace-content'
   readonly messageScope: ConsoleMessageScope
@@ -265,7 +271,7 @@ function defineRoute(record: RouteRegistryRecord) {
 }
 
 function defineConsoleWorkspaceRoute<
-  const R extends Pick<RouteRegistryRecord, 'name' | 'pathPattern' | 'sourcePath'> & {
+  const R extends Pick<RouteRegistryRecord, 'name' | 'pathPattern' | 'sourcePath' | 'isHome'> & {
     readonly meta: Pick<ValidatedRouteMeta, 'telemetryName'>
   },
 >(record: R) {
@@ -382,6 +388,52 @@ function defineErrorRoute<const Category extends string, const Segment extends s
   } as const)
 }
 
+function defineErrorRouteTarget<const Code extends string, const Category extends string>(
+  code: Code,
+  category: Category,
+) {
+  return Object.freeze({ code, category, routeName: `error-${category}` as const })
+}
+
+const errorTargets = Object.freeze([
+  defineErrorRouteTarget('400', 'invalid-route-input'),
+  defineErrorRouteTarget('401', 'authentication-required'),
+  defineErrorRouteTarget('403', 'permission-denied'),
+  defineErrorRouteTarget('404', 'route-not-found'),
+  defineErrorRouteTarget('500', 'application-route-failure'),
+  defineErrorRouteTarget('offline', 'network-unavailable'),
+  defineErrorRouteTarget('maintenance', 'service-unavailable'),
+] as const)
+
+function defineStatusPreview<const Segment extends string, const Category extends string>(
+  segment: Segment,
+  category: Category,
+) {
+  return defineRoute({
+    name: `preview-status-${segment}`,
+    pathPattern: `/previews/status/${segment}`,
+    sourcePath: `apps/web/src/pages/preview-status-${segment}.vue`,
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
+    statusMessageKey:
+      segment === '404'
+        ? 'route-message.preview-status-404'
+        : (`route-message.error-${category}` as const),
+    meta: {
+      ...consoleRouteMeta,
+      titleKey: `route-title.error-${category}`,
+      breadcrumbKey: null,
+      telemetryName:
+        segment === '404' ? 'route.preview.status.not-found' : `route.preview.status.${segment}`,
+    },
+  } as const)
+}
+
 function defineLayoutPreview<const Segment extends string>(
   segment: Segment,
   layoutId: string,
@@ -432,6 +484,17 @@ const formWorkspaceRoutes = Object.freeze([
   defineFormWorkspaceRoute('builder'),
 ] as const)
 
+export const layoutPreviewRoutes = Object.freeze([
+  defineLayoutPreview('admin', 'route-layout.architecture-admin-console'),
+  defineLayoutPreview('admin-footer', 'route-layout.architecture-admin-console-footer'),
+  defineLayoutPreview('header', 'route-layout.header-content'),
+  defineLayoutPreview('header-footer', 'route-layout.header-content-footer'),
+  defineLayoutPreview('content-footer', 'route-layout.content-footer'),
+  defineLayoutPreview('content', 'route-layout.content-only'),
+  defineLayoutPreview('display', 'route-layout.content-only', 'none'),
+  defineLayoutPreview('fixed-display', 'route-layout.content-only', 'none'),
+] as const)
+
 export const publicRouteRegistry = Object.freeze([
   defineConsoleWorkspaceRoute({
     name: 'workbench-welcome',
@@ -445,6 +508,7 @@ export const publicRouteRegistry = Object.freeze([
     name: 'workbench-dashboard',
     pathPattern: '/dashboard',
     sourcePath: 'apps/web/src/pages/dashboard.vue',
+    isHome: true,
     meta: {
       telemetryName: 'route.workbench.dashboard',
     },
@@ -461,7 +525,6 @@ export const publicRouteRegistry = Object.freeze([
   defineWorkbenchRoute('colors'),
   defineWorkbenchRoute('sizes'),
   defineWorkbenchRoute('typography'),
-  defineWorkbenchRoute('interactions'),
   defineWorkbenchRoute('date-time'),
   defineWorkbenchRoute('motion'),
   defineConsoleWorkspaceRoute({
@@ -579,31 +642,26 @@ export const publicRouteRegistry = Object.freeze([
   defineErrorRoute('application-route-failure', '500'),
   defineErrorRoute('network-unavailable', 'offline'),
   defineErrorRoute('service-unavailable', 'maintenance'),
+  ...errorTargets.map(({ code, category }) => defineStatusPreview(code, category)),
   defineRoute({
-    name: 'preview-status-404',
+    name: 'preview-layouts',
+    pathPattern: '/previews/layout',
+    sourcePath: 'apps/web/src/pages/preview-layouts.vue',
     contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/previews/status/404',
-    sourcePath: 'apps/web/src/pages/preview-status-404.vue',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-route-not-found',
-      telemetryName: 'route.preview.status.not-found',
-      errorPolicy: 'application-boundary',
+      ...consoleRouteMeta,
+      titleKey: 'route-title.preview-layouts',
+      breadcrumbKey: null,
+      telemetryName: 'route.preview.layouts',
     }),
   }),
-  defineLayoutPreview('admin', 'route-layout.architecture-admin-console'),
-  defineLayoutPreview('admin-footer', 'route-layout.architecture-admin-console-footer'),
-  defineLayoutPreview('header', 'route-layout.header-content'),
-  defineLayoutPreview('header-footer', 'route-layout.header-content-footer'),
-  defineLayoutPreview('content-footer', 'route-layout.content-footer'),
-  defineLayoutPreview('content', 'route-layout.content-only'),
-  defineLayoutPreview('display', 'route-layout.content-only', 'none'),
-  defineLayoutPreview('fixed-display', 'route-layout.content-only', 'none'),
+  ...layoutPreviewRoutes,
   defineRoute({
     name: 'login',
     pathPattern: '/login',
@@ -777,6 +835,44 @@ const compiledShowcase =
   typeof __PAVP_ACCESS_SHOWCASE__ === 'undefined' ? null : __PAVP_ACCESS_SHOWCASE__
 export const routeRegistry = composeRouteRegistry(compiledAdministration, compiledShowcase)
 
+export function resolveHomeRoute<
+  const R extends Pick<RouteRegistryRecord, 'name' | 'pathPattern' | 'isHome'>,
+>(records: readonly R[]) {
+  const marked = records.filter(
+    (record): record is Extract<R, { readonly isHome: true }> => record.isHome === true,
+  )
+  if (marked.length > 1) {
+    throw new TypeError(
+      `Only one route may set isHome: ${marked.map(({ name }) => name).join(', ')}`,
+    )
+  }
+
+  const home =
+    marked[0] ??
+    records.find(
+      (record): record is Extract<R, { readonly pathPattern: '/' }> => record.pathPattern === '/',
+    )
+  if (home === undefined) throw new TypeError('Set isHome on a route or register the root route.')
+  return home
+}
+
+const homeRoute = resolveHomeRoute(publicRouteRegistry)
+
+function validateHomeRoute(record: RouteRegistryRecord): void {
+  if (
+    record.workspaceIdentityPolicyId !== 'workspace-identity.route-single' ||
+    !routeParamsSchema(record.paramsSchemaId).safeParse({}).success ||
+    !routeQuerySchema(record.querySchemaId).safeParse({}).success
+  ) {
+    throw new TypeError(
+      `The home route must be a workspace without required URL input: ${record.name}`,
+    )
+  }
+}
+
+validateHomeRoute(homeRoute)
+export const homeRouteName = homeRoute.name
+
 export type RouteName = (typeof routeRegistry)[number]['name']
 export function isDisplayLayoutPreview(name: string): boolean {
   return name === 'preview-layout-display' || name === 'preview-layout-fixed-display'
@@ -813,6 +909,7 @@ export const routeBreadcrumbRegistry = /* @__PURE__ */ getDefaultRouteMessages(
 export function getRouteMessageKey(
   record: (typeof routeRegistry)[number],
 ): ConsoleCommonMessageKey {
+  if ('statusMessageKey' in record) return record.statusMessageKey
   return record.messageScope === 'common'
     ? `route-message.${record.name}`
     : `route-message.${record.name}-summary`
@@ -829,26 +926,11 @@ export const telemetryNameRegistry = /* @__PURE__ */ Object.freeze(
   /* @__PURE__ */ routeRegistry.map((record) => record.meta.telemetryName),
 )
 
-function defineErrorRouteTarget<const Code extends string, const Category extends string>(
-  code: Code,
-  category: Category,
-) {
-  return Object.freeze({ code, category, routeName: `error-${category}` as const })
-}
-
-export const errorRouteRegistry = Object.freeze([
-  defineErrorRouteTarget('400', 'invalid-route-input'),
-  defineErrorRouteTarget('401', 'authentication-required'),
-  defineErrorRouteTarget('403', 'permission-denied'),
-  defineErrorRouteTarget('404', 'route-not-found'),
-  defineErrorRouteTarget('500', 'application-route-failure'),
-  defineErrorRouteTarget('offline', 'network-unavailable'),
-  defineErrorRouteTarget('maintenance', 'service-unavailable'),
-] as const satisfies readonly {
+export const errorRouteRegistry = errorTargets satisfies readonly {
   readonly code: string
   readonly category: string
   readonly routeName: RouteName
-}[])
+}[]
 
 export const scrollOwnerRegistry = Object.freeze([
   Object.freeze({
@@ -957,7 +1039,6 @@ type ConsoleNavigationName = Exclude<
 
 export interface ConsoleNavigationItem {
   readonly iconClass: string
-  readonly openIn?: 'new-page'
   readonly labelKey?: ConsoleCommonMessageKey
   readonly destination: {
     [Name in ConsoleNavigationName]: { readonly name: Name }
@@ -973,16 +1054,10 @@ export interface ConsoleNavigationGroup {
 function defineNavigationItem<
   const Name extends ConsoleNavigationItem['destination']['name'],
   const Icon extends string,
->(name: Name, iconClass: Icon) {
-  return Object.freeze({ iconClass, destination: Object.freeze({ name }) })
-}
-
-function definePreviewNavigationItem<
-  const Name extends ConsoleNavigationItem['destination']['name'],
->(name: Name, labelKey?: ConsoleCommonMessageKey) {
+>(name: Name, iconClass: Icon, labelKey?: ConsoleCommonMessageKey) {
   return Object.freeze({
-    ...defineNavigationItem(name, 'i-lucide-external-link'),
-    openIn: 'new-page' as const,
+    iconClass,
+    destination: Object.freeze({ name }),
     ...(labelKey === undefined ? {} : { labelKey }),
   })
 }
@@ -1009,7 +1084,6 @@ const publicConsoleNavigationRegistry = Object.freeze([
     id: 'capabilities',
     labelKey: 'navigation.capabilities',
     items: Object.freeze([
-      defineNavigationItem('workbench-interactions', 'i-lucide-sparkles'),
       defineNavigationItem('workbench-date-time', 'i-lucide-clock-3'),
       defineNavigationItem('workbench-motion', 'i-lucide-workflow'),
     ]),
@@ -1129,29 +1203,40 @@ const publicConsoleNavigationRegistry = Object.freeze([
         id: 'status-previews',
         labelKey: 'navigation.statusPreviews',
         items: Object.freeze([
-          definePreviewNavigationItem('error-invalid-route-input', 'navigation.preview400'),
-          definePreviewNavigationItem('error-authentication-required', 'navigation.preview401'),
-          definePreviewNavigationItem('error-permission-denied', 'navigation.preview403'),
-          definePreviewNavigationItem('preview-status-404', 'navigation.preview404'),
-          definePreviewNavigationItem('error-application-route-failure', 'navigation.preview500'),
-          definePreviewNavigationItem('error-network-unavailable'),
-          definePreviewNavigationItem('error-service-unavailable'),
+          defineNavigationItem(
+            'preview-status-400',
+            'i-lucide-file-warning',
+            'navigation.preview400',
+          ),
+          defineNavigationItem(
+            'preview-status-401',
+            'i-lucide-file-warning',
+            'navigation.preview401',
+          ),
+          defineNavigationItem(
+            'preview-status-403',
+            'i-lucide-file-warning',
+            'navigation.preview403',
+          ),
+          defineNavigationItem(
+            'preview-status-404',
+            'i-lucide-file-warning',
+            'navigation.preview404',
+          ),
+          defineNavigationItem(
+            'preview-status-500',
+            'i-lucide-file-warning',
+            'navigation.preview500',
+          ),
+          defineNavigationItem('preview-status-offline', 'i-lucide-file-warning'),
+          defineNavigationItem('preview-status-maintenance', 'i-lucide-file-warning'),
         ]),
       }),
-      Object.freeze({
-        id: 'layout-previews',
-        labelKey: 'navigation.layoutPreviews',
-        items: Object.freeze([
-          definePreviewNavigationItem('preview-layout-display'),
-          definePreviewNavigationItem('preview-layout-fixed-display'),
-          definePreviewNavigationItem('preview-layout-admin'),
-          definePreviewNavigationItem('preview-layout-admin-footer'),
-          definePreviewNavigationItem('preview-layout-header'),
-          definePreviewNavigationItem('preview-layout-header-footer'),
-          definePreviewNavigationItem('preview-layout-content-footer'),
-          definePreviewNavigationItem('preview-layout-content'),
-        ]),
-      }),
+      defineNavigationItem(
+        'preview-layouts',
+        'i-lucide-panels-top-left',
+        'navigation.layoutPreviews',
+      ),
     ]),
   }),
 ] as const satisfies readonly ConsoleNavigationGroup[])
@@ -1221,7 +1306,9 @@ export const consoleNavigationItems = Object.freeze(
   getConsoleNavigationItems(consoleNavigationRegistry),
 )
 export const consoleWorkspaceNavigationItems = Object.freeze(
-  consoleNavigationItems.filter((item) => item.openIn !== 'new-page'),
+  consoleNavigationItems.filter(
+    (item) => getRouteRecord(item.destination.name).workspaceIdentityPolicyId !== null,
+  ),
 )
 
 export const activeRedirectRegistry = /* @__PURE__ */ Object.freeze([] as const)

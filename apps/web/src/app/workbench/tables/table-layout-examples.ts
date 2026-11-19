@@ -1,5 +1,6 @@
 import type { UiTableColumn, UiTableSchema } from '@platform/ui'
 import { tableSummaryExample } from './table-summary-example'
+import { tableSampleCategoryOptions } from './table-sample-categories'
 
 export type TableLayoutExample = 'scroll' | 'widths' | 'responsive'
 export type TableLayoutViewport = 'full' | 'regular' | 'narrow'
@@ -28,7 +29,13 @@ export function tableLayoutSchema(example: TableLayoutExample): UiTableSchema {
       width: example === 'widths' ? 160 : 240,
       sortable: true,
     },
-    { key: 'category', title: 'tableShowcase.category', kind: 'tag', width: 180 },
+    {
+      key: 'category',
+      title: 'tableShowcase.category',
+      kind: 'tag',
+      width: 180,
+      options: tableSampleCategoryOptions,
+    },
     {
       key: 'description',
       title: 'tableShowcase.description',

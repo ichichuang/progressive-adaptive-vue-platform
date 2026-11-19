@@ -16,7 +16,6 @@ import { createRuntimeUpdateMonitor } from '../config/runtime-update-monitor'
 import { runtimeUpdateKey } from '../config/runtime-update-context'
 import type { CompiledBuildIdentity } from '../config/runtime-configuration'
 import { NButton } from 'naive-ui/es/button'
-import { NFlex } from 'naive-ui/es/flex'
 import { NIcon } from 'naive-ui/es/icon'
 import { NTooltip } from 'naive-ui/es/tooltip'
 import {
@@ -56,6 +55,7 @@ import {
   type AppearanceTransitionOrigin,
 } from '../appearance/appearance-transition'
 import {
+  homeRouteDestination,
   registeredRouteDestination,
   resolveRegisteredDestination,
   sameRouteAddress,
@@ -83,10 +83,9 @@ let routeActivation: { readonly origin: RouteMotionOrigin; readonly capturedAt: 
 let colorModeOrigin: AppearanceTransitionOrigin | undefined
 function captureRouteActivation(event: MouseEvent): void {
   const target = event.target
-  colorModeOrigin =
+  const colorModeTarget =
     target instanceof Element && target.closest('[data-pavp-color-mode-control]') !== null
-      ? readAppearanceTransitionOrigin(event)
-      : undefined
+  colorModeOrigin = colorModeTarget ? readAppearanceTransitionOrigin(event) : undefined
   const affordance =
     target instanceof Element
       ? target.closest(
@@ -112,7 +111,6 @@ function clearRouteActivation(): void {
 connectRouteMotionPlayer(useUiMotion(), () => {
   const activation = routeActivation
   routeActivation = undefined
-  // The shell title waits 500ms to distinguish click from double-click.
   return activation !== undefined && performance.now() - activation.capturedAt <= 1000
     ? activation.origin
     : 'center'
@@ -160,9 +158,7 @@ function projectNavigation(group: ConsoleNavigationGroup): UiAdminNavigationGrou
           routeName: item.destination.name,
           label: t(item.labelKey ?? getRouteRecord(item.destination.name).meta.titleKey),
           isCurrentDestination:
-            item.openIn !== 'new-page' &&
-            resolved !== undefined &&
-            sameRouteAddress(router.currentRoute.value, resolved),
+            resolved !== undefined && sameRouteAddress(router.currentRoute.value, resolved),
         },
       ]
     }),
@@ -323,7 +319,9 @@ const workspaceTabs = computed(() =>
       id: entry.identity,
       label,
       closeLabel: `${t('shell.closeActionLabel')} ${label}`,
-      closable: !(workspace.entries.length === 1 && entry.destination.name === 'workbench-welcome'),
+      closable: !(
+        workspace.entries.length === 1 && entry.destination.name === homeRouteDestination.name
+      ),
       refreshable: workspace.canDiscard(entry),
       hideOnExit: isLiveWorkspace(entry) && entry.controlled === true,
     }
@@ -332,11 +330,11 @@ const workspaceTabs = computed(() =>
 
 async function activateWorkspace(id: string): Promise<TypedNavigationResult | undefined> {
   const entry = workspace.entries.find((candidate) => candidate.identity === id)
-  if (entry !== undefined)
-    return workspaceNavigation.navigate(
-      entry.destination,
-      isLiveWorkspace(entry) ? { workspaceActivation: entry } : undefined,
-    )
+  if (entry === undefined) return
+  return workspaceNavigation.navigate(
+    entry.destination,
+    isLiveWorkspace(entry) ? { workspaceActivation: entry } : undefined,
+  )
 }
 
 let refreshTarget: WorkspaceIdentity | undefined
@@ -408,7 +406,7 @@ async function closeWorkspace(id: string): Promise<void> {
   const index = entries.findIndex((entry) => entry.identity === id)
   const entry = entries[index]
   if (entry === undefined || closing.has(entry.identity)) return
-  if (entries.length === 1 && entry.destination.name === 'workbench-welcome') return
+  if (entries.length === 1 && entry.destination.name === homeRouteDestination.name) return
   if (!workspace.canDiscard(entry) || refreshTarget === entry.identity) return
   const wasActive = entry.identity === workspace.activeIdentity
   const startingRoute = router.currentRoute.value
@@ -433,8 +431,7 @@ async function closeWorkspace(id: string): Promise<void> {
     const fallback = [...entries.slice(index + 1), ...entries.slice(0, index).reverse()].find(
       (candidate) => applicationNavigation.canShow(candidate.destination),
     )
-    const destination =
-      fallback?.destination ?? registeredRouteDestination({ name: 'workbench-welcome' })
+    const destination = fallback?.destination ?? homeRouteDestination
     const closingActivation =
       fallback === undefined
         ? null
@@ -443,12 +440,13 @@ async function closeWorkspace(id: string): Promise<void> {
             destination: fallback.identity,
           }
     closingTabActivation.value = closingActivation
-    const result = await workspaceNavigation.navigate(
-      destination,
-      fallback !== undefined && isLiveWorkspace(fallback)
-        ? { workspaceActivation: fallback }
-        : undefined,
-    )
+    const result =
+      fallback === undefined
+        ? await workspaceNavigation.navigateHome()
+        : await workspaceNavigation.navigate(
+            destination,
+            isLiveWorkspace(fallback) ? { workspaceActivation: fallback } : undefined,
+          )
     const active = workspace.active
     const resolved = resolveRegisteredDestination(router, destination)
     // A list mutation or independent navigation invalidates this destructive request.
@@ -549,7 +547,6 @@ function toggleColorMode(): void {
   colorModeOrigin = undefined
   playAppearanceTransition({
     kind: 'mode',
-    motion: appearance.snapshot.value.motion,
     origin,
     commit: () => {
       const current = explicitThemePreferenceSchema.safeParse(appearanceMutation.preference.value)
@@ -577,38 +574,29 @@ onScopeDispose(() => {
   unregisterPageScrollController?.()
 })
 
-// One successful settings departure owns positioning for Done, history and shell navigation.
-const navigationFocusRequest = ref(0)
-watch(
-  () => props.activeRouteName,
-  (to, from) => {
-    if (from === 'control-center' && to !== from) navigationFocusRequest.value += 1
-  },
-  { flush: 'post' },
-)
+function connectWorkspaceViewport(element: HTMLElement | null): void {
+  shellScroll('tabs', element)
+  if (element === null || element.clientWidth === 0) return
+  const tab = element.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+  const item = tab?.parentElement
+  if (item === undefined || item === null || item.getClientRects().length === 0) return
+  const bounds = element.getBoundingClientRect()
+  const target = item.getBoundingClientRect()
+  const left = bounds.left + element.clientLeft
+  const right = left + element.clientWidth
+  const delta =
+    target.left < left ? target.left - left : target.right > right ? target.right - right : 0
+  if (Math.abs(delta) >= 1) element.scrollBy({ left: delta, behavior: 'instant' })
+}
 
 async function navigateHome(): Promise<void> {
-  if (props.activeRouteName === 'workbench-welcome') {
-    navigationFocusRequest.value += 1
-    return
-  }
-  const fromSettings = props.activeRouteName === 'control-center'
-  const result = await applicationNavigation.navigate(
-    registeredRouteDestination({ name: 'workbench-welcome' }),
-  )
-  if (
-    result.kind !== 'allow' ||
-    result.presentation !== 'page' ||
-    !isRouterNavigationCurrent(router, result.navigationId)
-  )
-    return
-  if (!fromSettings) navigationFocusRequest.value += 1
+  if (props.activeRouteName === homeRouteDestination.name) return
+  await applicationNavigation.navigateHome()
 }
 
 async function prepareNavigationFocus(): Promise<boolean> {
   if (props.activeRouteName !== 'control-center') return true
   await settingsReturn.finish()
-  // The successful departure hook above positions once, after the new route renders.
   return false
 }
 
@@ -621,10 +609,6 @@ async function navigate(routeName: string): Promise<void> {
   const item = consoleNavigationItems.find((candidate) => candidate.destination.name === routeName)
   if (item === undefined) return
   const destination = registeredRouteDestination(item.destination)
-  if (item.openIn === 'new-page') {
-    await applicationNavigation.navigate(destination, { openIn: 'new-page' })
-    return
-  }
   await applicationNavigation.navigate(destination)
 }
 </script>
@@ -649,7 +633,7 @@ async function navigate(routeName: string): Promise<void> {
     >
       <div class="flex flex-wrap items-center justify-between gap-content-gap">
         <span class="text-text-secondary">{{ t('shell.releaseDescription') }}</span>
-        <div class="gap-control flex">
+        <div class="flex gap-content-gap">
           <NButton
             :disabled="releaseReloading"
             @click="releaseMonitor.dismiss"
@@ -688,7 +672,6 @@ async function navigate(routeName: string): Promise<void> {
     :class="{ 'p-0': isDisplayLayoutPreview(activeRouteName) }"
     :composition="composition"
     :prepare-navigation-focus="prepareNavigationFocus"
-    :navigation-focus-request="navigationFocusRequest"
     :content-layout="contentLayout"
     :active-route-name="activeRouteName"
     :navigation="navigation"
@@ -726,7 +709,7 @@ async function navigate(routeName: string): Promise<void> {
         :refresh-label="t('workspace.refreshLabel')"
         :close-label="t('shell.closeActionLabel')"
         panel-id="pavp-workspace-panel"
-        @viewport="shellScroll('tabs', $event)"
+        @viewport="connectWorkspaceViewport"
         @activate="activateWorkspace"
         @close="closeWorkspace"
         @refresh="refreshWorkspace"
@@ -780,19 +763,13 @@ async function navigate(routeName: string): Promise<void> {
     </template>
     <template #footer>
       <slot name="footer">
-        <NFlex
+        <div
           v-if="layoutPreview && composition?.endsWith('-footer')"
-          align="center"
-          justify="space-between"
-          class="min-w-0 text-caption"
+          class="flex min-w-0 items-center justify-between gap-content-gap text-caption"
         >
-          <NFlex :size="0">
-            {{ t('layoutPreview.footer') }}
-          </NFlex>
-          <NFlex :size="0">
-            {{ t('layoutPreview.workspace') }}
-          </NFlex>
-        </NFlex>
+          <span>{{ t('layoutPreview.footer') }}</span>
+          <span>{{ t('layoutPreview.workspace') }}</span>
+        </div>
       </slot>
     </template>
     <slot />

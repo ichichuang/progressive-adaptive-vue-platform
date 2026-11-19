@@ -11,6 +11,9 @@ import VueRouter from 'vue-router/vite'
 
 import { readDeploymentConfig, rootDeploymentBase } from './config'
 import { applicationConfig } from './src/app/config/app.config'
+import { consoleLocaleRegistry, localePreferenceSchema } from './src/shared/i18n/locale-contract'
+import englishCommon from './src/shared/i18n/messages/en/common.json'
+import chineseCommon from './src/shared/i18n/messages/zh-CN/common.json'
 import {
   defaultRuntimePresentation,
   compiledEnvironmentValues,
@@ -261,6 +264,31 @@ function readReleaseSha(): string {
 
 function runtimeConfigurationArtifacts(runtimeConfiguration: CoreRuntimeConfiguration): Plugin {
   const runtimeConfigurationJson = `${JSON.stringify(runtimeConfiguration, null, 2)}\n`
+  const fallback = (runtimeConfiguration.presentation ?? defaultRuntimePresentation).locale
+  const loadingMessages = {
+    'zh-CN': chineseCommon['shell.loading'],
+    en: englishCommon['shell.loading'],
+  }
+  const startupLocales = {
+    fallback,
+    storageKey: applicationConfig.localization.preferenceStorageKey,
+    choices: Object.fromEntries(
+      consoleLocaleRegistry.map(({ id, languageTag, direction }) => [
+        id,
+        {
+          lang: languageTag,
+          dir: direction,
+          preference: localePreferenceSchema.parse({
+            schemaVersion: localePreferenceSchema.shape.schemaVersion.value,
+            locale: id,
+          }),
+        },
+      ]),
+    ),
+  }
+  function escapeHtml(value: string): string {
+    return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('"', '&quot;')
+  }
 
   return {
     name: 'pavp-runtime-configuration-and-first-paint-artifacts',
@@ -413,6 +441,18 @@ function runtimeConfigurationArtifacts(runtimeConfiguration: CoreRuntimeConfigur
         }
 
         return html
+          .replace('<!-- startup-loading-message -->', () =>
+            consoleLocaleRegistry
+              .map(
+                ({ id, languageTag }) =>
+                  `<span lang="${languageTag}">${escapeHtml(loadingMessages[id])}</span>`,
+              )
+              .join(''),
+          )
+          .replace(
+            'data-startup-locales=""',
+            () => `data-startup-locales="${escapeHtml(JSON.stringify(startupLocales))}"`,
+          )
       },
     },
   }

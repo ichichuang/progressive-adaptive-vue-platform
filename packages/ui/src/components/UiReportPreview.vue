@@ -87,7 +87,7 @@ onScopeDispose(clear)
         />
       </UiScrollArea>
       <template #footer>
-        <div class="gap-control flex flex-wrap items-center justify-end">
+        <div class="flex flex-wrap items-center justify-end gap-content-gap">
           <span
             role="status"
             class="text-caption text-text-secondary"

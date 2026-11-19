@@ -2,6 +2,7 @@
 import {
   type ButtonHTMLAttributes,
   type AnchorHTMLAttributes,
+  type HTMLAttributes,
   computed,
   inject,
   nextTick,
@@ -12,6 +13,7 @@ import {
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import { NButtonGroup } from 'naive-ui/es/button-group'
 import { NImage } from 'naive-ui/es/image'
 import {
   uiMotionPresets,
@@ -292,16 +294,24 @@ onScopeDispose(() => {
             </NButton>
           </div>
         </UiScrollArea>
-        <NButton
-          v-for="preset in category === 'overview' ? [] : presets"
-          :key="preset"
-          :type="selected === preset ? 'primary' : 'default'"
-          :secondary="selected !== preset"
-          v-bind="{ 'aria-pressed': selected === preset } satisfies ButtonHTMLAttributes"
-          @click="choose(preset)"
+        <NButtonGroup
+          v-else
+          data-pavp-exclusive-selection
+          v-bind="
+            { class: 'min-w-0', 'aria-label': t('cinematic.presets') } satisfies HTMLAttributes
+          "
         >
-          {{ titleFor(preset) }}
-        </NButton>
+          <NButton
+            v-for="preset in presets"
+            :key="preset"
+            :type="selected === preset ? 'primary' : 'default'"
+            :secondary="selected !== preset"
+            v-bind="{ 'aria-pressed': selected === preset } satisfies ButtonHTMLAttributes"
+            @click="choose(preset)"
+          >
+            {{ titleFor(preset) }}
+          </NButton>
+        </NButtonGroup>
       </div>
       <UiScrollArea
         class="flex-1 min-h-0"
@@ -374,7 +384,7 @@ onScopeDispose(() => {
       </UiScrollArea>
       <footer class="wb-form-panel-header shrink-0 grid gap-component-unit">
         <span
-          class="min-h-control flex items-center text-caption text-text-secondary"
+          class="flex items-center min-h-target-enhanced text-caption text-text-secondary"
           role="status"
           aria-live="polite"
           v-text="

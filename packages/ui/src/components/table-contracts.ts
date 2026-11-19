@@ -1,5 +1,6 @@
 import type { UiDateTimeContext, UiDateTimeColumnFormat } from '../date-time/date-time'
 import type { Ref } from 'vue'
+import type { UiLocale } from './contracts'
 import type { useUiTableForm } from '../composables/use-ui-table-form'
 import type { UiDensity } from '@platform/design-system'
 import type {
@@ -385,6 +386,8 @@ export interface UiTableAccess {
 }
 export interface UiTableInput {
   readonly access?: UiTableAccess
+  /** Defaults to the nearest UiProvider locale when created during setup. */
+  readonly locale?: Readonly<Ref<UiLocale>>
   readonly sortComparators?: Readonly<Record<string, UiTableSortComparator>>
   readonly columnPreferenceStorage?: UiTableColumnPreferenceStorage
   readonly schema: UiTableSchema

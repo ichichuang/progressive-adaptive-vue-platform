@@ -123,13 +123,11 @@
   .error-scene__content[data-foreground-pending] .error-scene__copy h1,
   .error-scene__content[data-foreground-pending]:not([data-action-visible])
     .error-scene__action-arrival {
-    opacity: 0;
     transform: translateY(var(--ui-space-control-segment-gap));
   }
 
   .error-scene__content[data-foreground-pending] .error-scene__copy p {
-    opacity: 0;
-    transform: translateY(var(--ui-space-component-unit));
+    transform: translateY(var(--ui-space-control-segment-gap));
   }
 
   .error-scene__action {

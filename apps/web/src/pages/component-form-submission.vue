@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref } from 'vue'
+import { type HTMLAttributes, computed, onActivated, onDeactivated, ref } from 'vue'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
-import { NButton } from 'naive-ui/es/button'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
 import FormExampleActions from '../app/workbench/forms/FormExampleActions.vue'
 import { useFormShowcase } from '../app/workbench/forms/form-showcase'
@@ -122,8 +122,10 @@ const status = computed(() =>
     ? t('formCapabilities.submission.running')
     : (form.notice.value?.() ?? t('formCapabilities.submission.ready')),
 )
-function choose(value: (typeof scenarios)[number]): void {
-  if (form.phase.value === 'idle') scenario.value = value
+function choose(value: string | number | boolean): void {
+  if (form.phase.value !== 'idle') return
+  const selected = scenarios.find((option) => option === value)
+  if (selected !== undefined) scenario.value = selected
 }
 </script>
 
@@ -136,19 +138,27 @@ function choose(value: (typeof scenarios)[number]): void {
     submit-mode="submit"
   >
     <template #controls>
-      <NButton
-        v-for="option in scenarios"
-        :key="option"
-        class="min-h-target-enhanced min-w-target-enhanced"
-        secondary
-        :bordered="false"
-        :type="scenario === option ? 'primary' : 'default'"
-        v-bind="{ 'aria-pressed': scenario === option } satisfies ButtonHTMLAttributes"
+      <NRadioGroup
+        name="form-submission-scenario"
+        :value="scenario"
         :disabled="form.phase.value !== 'idle'"
-        @click="choose(option)"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('formCapabilities.submission.controls'),
+          } satisfies HTMLAttributes
+        "
+        @update:value="choose"
       >
-        {{ t(scenarioLabels[option]) }}
-      </NButton>
+        <NRadioButton
+          v-for="option in scenarios"
+          :key="option"
+          class="min-h-target-enhanced min-w-target-enhanced"
+          :value="option"
+        >
+          {{ t(scenarioLabels[option]) }}
+        </NRadioButton>
+      </NRadioGroup>
     </template>
     <p class="m-0 text-caption text-text-secondary">
       {{ t('formCapabilities.submission.try') }}

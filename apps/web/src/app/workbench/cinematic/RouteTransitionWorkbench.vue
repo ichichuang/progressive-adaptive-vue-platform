@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   computed,
   inject,
   onActivated,
@@ -10,6 +11,7 @@ import {
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import { NButtonGroup } from 'naive-ui/es/button-group'
 import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
 import { useConsoleI18n, type ConsoleMessageKey } from '../../../shared/i18n'
 import { useAppearanceReadBoundary } from '../../appearance/appearance-read-boundary'
@@ -178,21 +180,24 @@ async function navigate(event: MouseEvent): Promise<void> {
           v-for="group in presetGroups"
           :key="group.label"
           class="flex flex-wrap items-center gap-component-unit"
-          role="group"
-          :aria-label="t(group.label)"
         >
           <span class="text-caption text-text-secondary">{{ t(group.label) }}</span>
-          <NButton
-            v-for="preset in group.presets"
-            :key="preset"
-            :type="selected === preset ? 'primary' : 'default'"
-            :secondary="selected !== preset"
-            v-bind="{ 'aria-pressed': selected === preset } satisfies ButtonHTMLAttributes"
-            :disabled="busy"
-            @click="selected = preset"
+          <NButtonGroup
+            data-pavp-exclusive-selection
+            v-bind="{ class: 'min-w-0', 'aria-label': t(group.label) } satisfies HTMLAttributes"
           >
-            {{ t(copy[preset].title) }}
-          </NButton>
+            <NButton
+              v-for="preset in group.presets"
+              :key="preset"
+              :type="selected === preset ? 'primary' : 'default'"
+              :secondary="selected !== preset"
+              v-bind="{ 'aria-pressed': selected === preset } satisfies ButtonHTMLAttributes"
+              :disabled="busy"
+              @click="selected = preset"
+            >
+              {{ t(copy[preset].title) }}
+            </NButton>
+          </NButtonGroup>
         </div>
       </div>
       <UiScrollArea

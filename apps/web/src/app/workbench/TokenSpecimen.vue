@@ -38,7 +38,7 @@ const kind = computed(() => {
   return name.includes('block-size') ||
     name.includes('.block.') ||
     name.endsWith('.block') ||
-    name === 'interaction.control.height'
+    name.startsWith('interaction.control.height')
     ? 'block-size'
     : 'inline-size'
 })
@@ -55,7 +55,7 @@ const pairedBackground = computed(() => {
 </script>
 <template>
   <UiCopyAction
-    class="wb-token-card"
+    class="wb-token-card min-w-0 break-anywhere"
     :class="{
       'layout-regular:col-span-2 layout-wide:col-span-2':
         name.startsWith('typography.line-height.'),
@@ -73,8 +73,11 @@ const pairedBackground = computed(() => {
     }"
   >
     <span
-      class="wb-specimen-preview rounded-control grid min-w-0 place-items-center overflow-hidden isolate bg-surface-page"
-      :class="{ 'h-auto': name.startsWith('typography.') }"
+      class="wb-specimen-preview rounded-control grid min-w-0 place-items-center overflow-hidden isolate bg-surface-panel"
+      :class="{
+        'h-auto': name.startsWith('typography.'),
+        'border-solid border-border-default border-width-default': name === 'color.surface.page',
+      }"
       aria-hidden="true"
     >
       <span
@@ -95,10 +98,8 @@ const pairedBackground = computed(() => {
       </span>
       <span
         v-else-if="kind === 'radius'"
-        class="wb-radius-sample grid place-items-center text-control-primary text-title"
-      >
-        ↗
-      </span>
+        class="wb-radius-sample block bg-action-primary"
+      />
       <span
         v-else-if="kind === 'shadow'"
         class="wb-shadow-sample grid place-items-center bg-surface-panel"

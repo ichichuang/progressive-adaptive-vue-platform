@@ -17,6 +17,7 @@ import { NSelect } from 'naive-ui/es/select'
 import TableCapabilityWorkbench from './TableCapabilityWorkbench.vue'
 import { createLocalProductTable } from './local-product-table'
 import { useTableShowcase } from './table-showcase'
+import { useConsoleI18n } from '../../../shared/i18n'
 import {
   tableLayoutColumns,
   tableLayoutSchema,
@@ -31,6 +32,7 @@ const props = defineProps<{
 }>()
 const demo = useTableShowcase()
 const { t } = demo
+const { locale } = useConsoleI18n()
 const hintOpen = ref(false)
 onDeactivated(() => {
   hintOpen.value = false
@@ -56,7 +58,7 @@ const rows = computed(() =>
   })),
 )
 function createTable(schema: UiTableSchema) {
-  return useUiTable({ schema, rows: rows.value, translate: demo.translate })
+  return useUiTable({ schema, locale, rows: rows.value, translate: demo.translate })
 }
 const table = shallowRef(createTable(initialSchema))
 onScopeDispose(() => {

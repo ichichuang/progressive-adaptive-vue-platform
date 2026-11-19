@@ -10,7 +10,7 @@ function focalMask(code: ErrorSceneCode, font: CSSStyleDeclaration): ImageData {
   const context = mask.getContext('2d', { willReadFrequently: true })
   if (context === null) throw new Error('Error artwork Canvas 2D mask is unavailable.')
   context.scale(0.5, 0.5)
-  if (code === 'OFFLINE' || code === 'SERVICE' || code === 'ERROR') {
+  if (code === 'OFFLINE' || code === 'SERVICE') {
     context.lineCap = 'round'
     for (const { path, width } of errorSymbolStrokes[code]) {
       context.lineWidth = width

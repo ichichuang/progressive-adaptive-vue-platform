@@ -42,7 +42,30 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
     :theme-overrides="theme"
   >
     <template #label>
-      {{ config.label }} <span v-if="binding.required">({{ copy.required() }})</span>
+      <span class="inline-flex max-w-full min-w-0 items-baseline gap-component-unit">
+        <span class="min-w-0">
+          {{ config.label }}
+          <span
+            v-if="binding.required"
+            class="sr-only"
+          >
+            {{ copy.required() }}
+          </span>
+          <span
+            v-if="binding.required"
+            class="text-control-error"
+            aria-hidden="true"
+            v-text="'*'"
+          />
+        </span>
+        <span
+          v-if="binding.invalid && binding.errors[0]"
+          class="min-w-0 truncate text-caption text-control-error"
+          :title="binding.errors[0]()"
+          aria-hidden="true"
+          v-text="binding.errors[0]()"
+        />
+      </span>
     </template>
     <div class="pavp-form-field__content">
       <FormValidationFeedback

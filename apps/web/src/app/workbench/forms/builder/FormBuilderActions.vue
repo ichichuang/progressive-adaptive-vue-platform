@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type HTMLAttributes, computed, onDeactivated, onScopeDispose, ref } from 'vue'
+import { type HTMLAttributes, computed, onDeactivated, onScopeDispose, ref, shallowRef } from 'vue'
 
 import { NButton } from 'naive-ui/es/button'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
@@ -18,21 +18,25 @@ const props = defineProps<{
   readonly trialState: 'held' | 'pending' | null
 }>()
 const { t } = useConsoleI18n()
-const fileNotice = ref('')
+const fileIssue = shallowRef<() => string>()
+const fileNotice = computed(() => fileIssue.value?.() ?? '')
 const jsonOpen = ref(false)
 const jsonText = ref('')
-const jsonNotice = ref('')
+const jsonIssue = shallowRef<() => string>()
+const jsonNotice = computed(() => jsonIssue.value?.() ?? '')
 onDeactivated(() => {
   jsonOpen.value = false
 })
 function openJson(): void {
-  jsonNotice.value = ''
+  jsonIssue.value = undefined
   jsonText.value = props.builder.json.value
   jsonOpen.value = true
 }
 function applyJson(): void {
-  if (props.builder.importJson(jsonText.value)) jsonOpen.value = false
-  else jsonNotice.value = props.builder.notice.value
+  const applied = props.builder.importJson(jsonText.value, (message) => {
+    jsonIssue.value = message
+  })
+  if (applied) jsonOpen.value = false
 }
 const reading = ref(false)
 let active = true
@@ -75,23 +79,25 @@ async function importFile(event: Event): Promise<void> {
   target.value = ''
   if (!file || reading.value) return
   if (file.size > 1024 * 1024) {
-    fileNotice.value = t('formBuilder.importTooLarge')
+    fileIssue.value = () => t('formBuilder.importTooLarge')
     return
   }
   reading.value = true
-  fileNotice.value = ''
+  fileIssue.value = undefined
   const before = JSON.stringify(props.builder.snapshot())
   try {
     const raw = await file.text()
     if (!active) return
     // A slow file read must not replace changes made after the picker closed.
     if (before !== JSON.stringify(props.builder.snapshot())) {
-      fileNotice.value = t('formBuilder.importChanged')
+      fileIssue.value = () => t('formBuilder.importChanged')
       return
     }
-    if (!props.builder.importJson(raw)) fileNotice.value = props.builder.notice.value
+    props.builder.importJson(raw, (message) => {
+      fileIssue.value = message
+    })
   } catch {
-    if (active) fileNotice.value = t('formBuilder.importFailed')
+    if (active) fileIssue.value = () => t('formBuilder.importFailed')
   } finally {
     reading.value = false
   }

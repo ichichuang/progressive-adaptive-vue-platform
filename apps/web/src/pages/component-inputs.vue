@@ -17,6 +17,7 @@ import { NTimePicker } from 'naive-ui/es/time-picker'
 import { NUpload, NUploadDragger, NUploadFileList, NUploadTrigger } from 'naive-ui/es/upload'
 import { useConsoleI18n } from '../shared/i18n'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 import ConfiguredFormSpecimen from '../app/workbench/ConfiguredFormSpecimen.vue'
 import {
@@ -59,10 +60,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
     :title="title"
     :message="message"
   >
-    <div class="flex flex-wrap min-w-0 items-center justify-between gap-content-gap">
-      <p class="m-0 text-caption text-text-secondary">
-        {{ t('showcase.formNote') }}
-      </p>
+    <template #actions>
       <NButton
         tag="a"
         text
@@ -72,20 +70,21 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
       >
         {{ t('formShowcase.openCapabilities') }} ↗
       </NButton>
-    </div>
+    </template>
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <ConfiguredFormSpecimen
-        :key="formSource"
-        :source="formSource"
-        @source="formSource = $event"
-      />
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.inputsText') }}
-        </h2>
+      <WorkbenchSection
+        :title="t('configuredForm.title')"
+        :description="t('configuredForm.description')"
+      >
+        <ConfiguredFormSpecimen
+          :source="formSource"
+          @source="formSource = $event"
+        />
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.inputsText')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NInput"
@@ -170,11 +169,8 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
             />
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.inputsDateColor') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.inputsDateColor')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NDatePicker"
@@ -210,11 +206,8 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
             />
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.inputsFormFiles') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.inputsFormFiles')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NDynamicInput"
@@ -327,7 +320,7 @@ const mentions = componentOptions.map((value) => ({ label: value, value }))
             </template>
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

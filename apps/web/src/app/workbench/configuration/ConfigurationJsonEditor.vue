@@ -6,31 +6,41 @@ import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
 import { inspectUiFormSchema, inspectUiTableSchema } from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
+import { configurationDiagnosticText } from './configuration-diagnostic'
 const props = defineProps<{
   readonly value: string
   readonly kind: 'form' | 'table'
   readonly label: string
 }>()
 const emit = defineEmits<{ 'update:value': [value: string] }>()
-const { t } = useConsoleI18n()
+const { t, locale } = useConsoleI18n()
 const selected = ref<string | null>(null)
 const property = ref<string | null>(null)
 const state = computed(() => {
   try {
     const value: unknown = JSON.parse(props.value)
+    const inspection =
+      props.kind === 'form' ? inspectUiFormSchema(value) : inspectUiTableSchema(value)
     return {
       value,
-      ...(props.kind === 'form' ? inspectUiFormSchema(value) : inspectUiTableSchema(value)),
+      valid: inspection.valid,
+      hints: inspection.hints,
+      issue: inspection.diagnostic ?? inspection.issue,
     }
   } catch (error) {
     return {
       value: undefined,
       valid: false,
       hints: [],
-      issue: error instanceof Error ? error.message : String(error),
+      issue: error,
     }
   }
 })
+const status = computed(() =>
+  state.value.valid
+    ? t('configurationAssist.valid')
+    : configurationDiagnosticText(state.value.issue, t, locale.value),
+)
 const paths = computed(() =>
   state.value.hints.map((hint) => ({
     value: JSON.stringify(hint.path),
@@ -147,10 +157,10 @@ function update(choice?: string): void {
       <span
         class="flex-1 truncate text-caption"
         :class="state.valid ? 'text-text-secondary' : 'text-control-error'"
-        :title="state.issue ?? t('configurationAssist.valid')"
+        :title="status"
         role="status"
         aria-live="polite"
-        v-text="state.issue ?? t('configurationAssist.valid')"
+        v-text="status"
       />
     </div>
     <NInput

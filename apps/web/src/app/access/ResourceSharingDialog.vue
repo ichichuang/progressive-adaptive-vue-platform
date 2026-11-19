@@ -191,7 +191,7 @@ function copyLease() {
         </p>
         <div
           v-if="destination?.kind === 'host'"
-          class="gap-control flex flex-wrap items-center"
+          class="flex flex-wrap items-center gap-content-gap"
         >
           <NButton @click="revealed = !revealed">
             {{ t(revealed ? 'accessInteraction.hide' : 'accessInteraction.reveal') }}
@@ -213,7 +213,7 @@ function copyLease() {
           {{ destination.url }}
         </p>
       </template>
-      <div class="gap-control flex flex-wrap items-start justify-end">
+      <div class="flex flex-wrap items-start justify-end gap-content-gap">
         <NButton @click="show = false">
           {{ t('accessInteraction.close') }}
         </NButton>

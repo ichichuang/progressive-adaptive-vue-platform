@@ -4,7 +4,16 @@ import UiFormFields from './UiFormFields.vue'
 import { NButton } from 'naive-ui/es/button'
 import { NStep, NSteps } from 'naive-ui/es/steps'
 import type { UiFormProps, UiFormSlots } from './form-contracts'
-import { type ButtonHTMLAttributes, type HTMLAttributes, computed, inject, provide } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  computed,
+  inject,
+  onDeactivated,
+  provide,
+  ref,
+  watch,
+} from 'vue'
 import { uiDateTimeContext } from '../date-time/date-time-context'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 
@@ -31,6 +40,29 @@ const activeNodes = computed(() => {
   if (configured === undefined || index === null) return props.form.schema.fields
   const roots = new Set(configured[index]?.fields ?? [])
   return props.form.schema.fields.filter((node) => roots.has(node.name))
+})
+const revealingFields = ref(false)
+// Follow accepted projections. New controls render in the same update and remain interactive
+// while the existing field surface settles. Rapid updates continue an in-progress reveal.
+watch(
+  [() => props.form, () => props.form.schema, activeStepIndex, () => appearance.value.motion],
+  ([form, schema, step, motion], [previousForm, previousSchema, previousStep]) => {
+    if (motion === 'none') {
+      revealingFields.value = false
+    } else if (
+      slots.default === undefined &&
+      (form !== previousForm || schema !== previousSchema || step !== previousStep)
+    ) {
+      revealingFields.value = true
+    }
+  },
+)
+function settleFieldReveal(event: AnimationEvent): void {
+  if (event.target === event.currentTarget && event.animationName === 'pavp-form-content-enter')
+    revealingFields.value = false
+}
+onDeactivated(() => {
+  revealingFields.value = false
 })
 const isLastStep = computed(() => {
   const configured = steps.value
@@ -118,6 +150,13 @@ function goNext(): void {
           </NSteps>
         </div>
         <UiFormFields
+          :class="revealingFields ? 'pavp-form-content-entering' : ''"
+          v-bind="
+            {
+              onAnimationend: settleFieldReveal,
+              onAnimationcancel: settleFieldReveal,
+            } satisfies HTMLAttributes
+          "
           :form="form"
           :nodes="activeNodes"
           prefix=""
@@ -217,3 +256,21 @@ function goNext(): void {
     </template>
   </PavpNaiveForm>
 </template>
+
+<style>
+@layer components {
+  html[data-motion='full'] .pavp-form-content-entering {
+    animation: pavp-form-content-enter var(--ui-motion-duration) var(--ui-motion-easing);
+  }
+
+  html[data-motion='reduced'] .pavp-form-content-entering {
+    animation: pavp-form-content-enter calc(var(--ui-motion-duration) / 2) var(--ui-motion-easing);
+  }
+
+  @keyframes pavp-form-content-enter {
+    from {
+      opacity: 0.82;
+    }
+  }
+}
+</style>

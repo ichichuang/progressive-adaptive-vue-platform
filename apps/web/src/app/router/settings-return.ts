@@ -8,7 +8,6 @@ import {
 } from '../workspace/workspace.store'
 import { useWorkspaceNavigation } from './application-navigation'
 import {
-  registeredRouteDestination,
   resolveRegisteredDestination,
   routeDestination,
   sameRouteAddress,
@@ -79,7 +78,7 @@ export function provideSettingsReturn(): SettingsReturn {
       const result =
         target !== undefined && isLiveWorkspace(target) && source !== undefined
           ? navigation.navigate(source.destination, { workspaceActivation: target })
-          : navigation.navigate(registeredRouteDestination({ name: 'workbench-welcome' }))
+          : navigation.navigateHome()
       pending = result
       void result
         .finally(() => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useId, type ButtonHTMLAttributes, type HTMLAttributes } from 'vue'
-import { NButton } from 'naive-ui/es/button'
+import { useId, type HTMLAttributes } from 'vue'
 import { NFlex } from 'naive-ui/es/flex'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { NText } from 'naive-ui/es/typography'
 import { type UiDisplayRatio } from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
@@ -21,6 +21,10 @@ const ratios = [
   { width: 4, height: 3 },
   { width: 21, height: 9 },
 ] as const
+function chooseRatio(value: string | number | boolean): void {
+  const ratio = ratios.find((choice) => choice.width === value)
+  if (ratio !== undefined) emit('update:ratio', ratio)
+}
 </script>
 
 <template>
@@ -68,23 +72,23 @@ const ratios = [
           {{ t('displayPreview.title') }}
         </NText>
       </NFlex>
-      <NFlex
+      <NRadioGroup
         v-if="props.fixed"
-        align="center"
+        :name="`display-preview-ratio-${descriptionId}`"
+        :value="ratio?.width ?? null"
         size="small"
         class="min-w-0"
+        v-bind="{ role: 'radiogroup', 'aria-label': title } satisfies HTMLAttributes"
+        @update:value="chooseRatio"
       >
-        <NButton
+        <NRadioButton
           v-for="choice in ratios"
           :key="choice.width"
-          size="small"
-          :type="ratio?.width === choice.width ? 'primary' : 'default'"
-          v-bind="{ 'aria-pressed': ratio?.width === choice.width } satisfies ButtonHTMLAttributes"
-          @click="emit('update:ratio', choice)"
+          :value="choice.width"
         >
           {{ choice.width }}:{{ choice.height }}
-        </NButton>
-      </NFlex>
+        </NRadioButton>
+      </NRadioGroup>
     </NFlex>
     <NFlex
       :size="0"

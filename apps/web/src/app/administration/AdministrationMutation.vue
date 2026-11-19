@@ -3,7 +3,7 @@ import { UiForm, type UiFormCopy } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NModal } from 'naive-ui/es/modal'
 import { computed, onScopeDispose, shallowRef } from 'vue'
-import { useConsoleI18n } from '../../shared/i18n'
+import { useConsoleI18n, type ConsoleMessageKey } from '../../shared/i18n'
 import { useAccessBoundary } from '../access/access-boundary'
 import { GuardedOperationButton } from '../access/advanced-interactions'
 import {
@@ -24,6 +24,7 @@ const props = defineProps<{
   readonly target: ActionTarget
   readonly copy: UiFormCopy
   readonly label: string
+  readonly commandLabel: string
   readonly activeRevision: string | undefined
 }>()
 const emit = defineEmits<{ close: []; saved: [] }>()
@@ -34,7 +35,7 @@ const lifetime = new AbortController()
 onScopeDispose(() => {
   lifetime.abort()
 })
-const status = shallowRef('')
+const status = shallowRef<ConsoleMessageKey>()
 const pending = shallowRef(false)
 const uncertain = shallowRef(false)
 const conflict = shallowRef(false)
@@ -127,15 +128,13 @@ const form =
 function showOutcome(result: GuardedActionOutcome | undefined): void {
   conflict.value = result?.failure === 'revision-conflict'
   uncertain.value = result?.status === 'unknown'
-  status.value = t(
-    conflict.value
-      ? 'administration.revisionConflict'
-      : uncertain.value
-        ? 'accessInteraction.unknown'
-        : result?.status === 'denied' || result?.status === 'business-blocked'
-          ? 'accessInteraction.denied'
-          : 'administration.saveFailed',
-  )
+  status.value = conflict.value
+    ? 'administration.revisionConflict'
+    : uncertain.value
+      ? 'accessInteraction.unknown'
+      : result?.status === 'denied' || result?.status === 'business-blocked'
+        ? 'accessInteraction.denied'
+        : 'administration.saveFailed'
 }
 
 async function run(): Promise<void> {
@@ -159,7 +158,7 @@ async function run(): Promise<void> {
   <NModal
     :show="true"
     preset="card"
-    :title="command.label"
+    :title="commandLabel"
     class="w-full max-w-content"
     to="#pavp-overlay-root"
     @update:show="!$event && emit('close')"
@@ -188,13 +187,13 @@ async function run(): Promise<void> {
       :disabled="pending || uncertain || conflict"
       @activate="run"
     >
-      {{ command.label }}
+      {{ commandLabel }}
     </GuardedOperationButton>
     <p
       v-if="status"
       role="alert"
     >
-      {{ status }}
+      {{ t(status) }}
     </p>
     <template #footer>
       <NButton

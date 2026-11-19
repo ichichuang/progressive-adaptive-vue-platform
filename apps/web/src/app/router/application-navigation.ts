@@ -6,6 +6,7 @@ import { workspaceRetentionKey } from '../workspace/workspace-retention'
 import { z } from 'zod'
 
 import {
+  homeRouteDestination,
   resolveRegisteredDestination,
   routeDestination,
   routeHasPageInput,
@@ -151,13 +152,15 @@ export interface ApplicationNavigation {
     options: ApplicationNavigationOptions | NewBrowserPageOptions | TrackedNewBrowserPageOptions,
   ): Promise<TypedNavigationResult | BrowserPageOpenResult | TrackedBrowserPageResult>
   resolveHref(destination: RegisteredRouteDestination): string | undefined
+  navigateHome(options?: ApplicationNavigationOptions): Promise<TypedNavigationResult>
   readonly canShow: (destination: RegisteredRouteDestination) => boolean
 }
 
 const applicationNavigationKey: InjectionKey<ApplicationNavigation> =
   Symbol('Application Navigation')
-const workspaceNavigationKey: InjectionKey<Pick<RouteTransitionCoordinator, 'navigate'>> =
-  Symbol('Workspace Navigation')
+type WorkspaceNavigation = Pick<RouteTransitionCoordinator, 'navigate'> &
+  Pick<ApplicationNavigation, 'navigateHome'>
+const workspaceNavigationKey: InjectionKey<WorkspaceNavigation> = Symbol('Workspace Navigation')
 
 export function provideApplicationNavigation(
   router: Router,
@@ -641,8 +644,13 @@ export function provideApplicationNavigation(
     )
   }
 
+  function navigateHome(options?: ApplicationNavigationOptions): Promise<TypedNavigationResult> {
+    return navigate(homeRouteDestination, options)
+  }
+
   const navigation: ApplicationNavigation = Object.freeze({
     navigate,
+    navigateHome,
     canShow: useRouteNavigationVisibility(),
     resolveHref(destination: RegisteredRouteDestination) {
       return resolveRegisteredDestination(router, destination)?.href
@@ -652,6 +660,7 @@ export function provideApplicationNavigation(
   provide(
     workspaceNavigationKey,
     Object.freeze({
+      navigateHome,
       navigate(destination: RegisteredRouteDestination, options?: RouterNavigationOptions) {
         return coordinator.navigate(destination, options)
       },
@@ -670,7 +679,7 @@ export function useApplicationNavigation(): ApplicationNavigation {
   return navigation
 }
 
-export function useWorkspaceNavigation(): Pick<RouteTransitionCoordinator, 'navigate'> {
+export function useWorkspaceNavigation(): WorkspaceNavigation {
   const navigation = inject(workspaceNavigationKey)
   if (navigation === undefined) throw new Error('The Workspace Navigation context is unavailable.')
   return navigation
@@ -812,20 +821,13 @@ export function useApplicationLinkActivation(
     const href = anchor.getAttribute('href')
     if (href === null || href === '' || href !== navigation.resolveHref(destination)) return
     event.preventDefault()
-    return navigation.navigate(
-      destination,
+    const origin =
+      event.detail === 0 ? ('center' as const) : { clientX: event.clientX, clientY: event.clientY }
+    const currentPageOptions: ApplicationNavigationOptions =
       options !== undefined && 'transition' in options
-        ? {
-            visual: {
-              preset: options.transition,
-              origin:
-                event.detail === 0 ? 'center' : { clientX: event.clientX, clientY: event.clientY },
-            },
-          }
-        : {
-            origin:
-              event.detail === 0 ? 'center' : { clientX: event.clientX, clientY: event.clientY },
-          },
-    )
+        ? { visual: { preset: options.transition, origin } }
+        : { origin }
+    if (destination === homeRouteDestination) return navigation.navigateHome(currentPageOptions)
+    return navigation.navigate(destination, currentPageOptions)
   }
 }

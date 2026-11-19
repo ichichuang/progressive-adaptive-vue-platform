@@ -102,7 +102,7 @@ function connectScrollController(controller: UiScrollController | null): void {
   if (controller === null || !initialReveal) return
   initialReveal = false
   const button = props.activeId === null ? null : findTabButton(props.activeId)
-  if (button !== null) revealTab(button, 'instant', 'center')
+  if (button !== null) revealTab(button, 'instant')
 }
 const groupId = `pavp-workspace-${useId()}`
 const menuId = `${groupId}-menu`
@@ -110,6 +110,7 @@ const overflowButtonId = `${groupId}-overflow`
 const overflowAnchor = ref({ open: false, x: 0, y: 0 })
 let overflowCaller: HTMLElement | null = null
 const overflowing = ref(false)
+const clippedEdge = ref<'left' | 'right' | 'both'>()
 function closeOverflowMenu(): void {
   if (overflowAnchor.value.open) overflowAnchor.value = { ...overflowAnchor.value, open: false }
 }
@@ -396,7 +397,7 @@ function selectMenuAction(key: string | number): void {
   const id = String(key)
   restoreOverflowCaller()
   closeOverflowMenu()
-  if (props.items.some((item) => item.id === id)) emit('activate', id)
+  if (props.items.some((item) => item.id === id)) activateTab(id)
 }
 watch(
   contextItem,
@@ -426,12 +427,15 @@ const edgeSurfaceVariants = projectMotionPolicy('none').workspace.edgeSurfaceVar
 const tabSurfaceVariants = computed(() => policy.value.workspace.tabSurfaceVariants)
 const edgeGestures = projectMotionPolicy('none').workspace.edgeGestures
 const edgeMarkVariants = computed(() => policy.value.workspace.edgeMarkVariants)
-const indicator = ref<{ readonly x: number; readonly width: number } | null>(null)
-const indicatorAnimated = ref(false)
-let indicatorGeneration = 0
+const indicator = ref<{
+  readonly x: number
+  readonly width: number
+  readonly animated: boolean
+} | null>(null)
+let measuredIndicatorId: string | null = null
 let geometryObserver: ResizeObserver | undefined
 const indicatorTransition = computed(() => {
-  if (!indicatorAnimated.value || !full.value) return { duration: 0 }
+  if (indicator.value?.animated !== true || !full.value) return { duration: 0 }
   return transition.value.layout ?? { duration: transition.value.duration }
 })
 const interruption = createMotionInterruptionOwner(() => policy.value)
@@ -458,46 +462,44 @@ function measureIndicator(): { readonly x: number; readonly width: number } | nu
   const x = rtl ? itemBox.right - rootBox.right : itemBox.left - rootBox.left
   return { x, width: itemBox.width }
 }
-function syncIndicator(animated: boolean): void {
+function syncIndicator(): void {
   const next = measureIndicator()
-  const generation = ++indicatorGeneration
-  if (next === null && props.activeId !== null) return
+  const id = props.activeId
+  if (next === null && id !== null) return
+  const selectionChanged = measuredIndicatorId !== id
+  measuredIndicatorId = id
   if (next === null) {
-    indicatorAnimated.value = false
     indicator.value = null
     return
   }
   const current = indicator.value
-  const moved =
+  if (
     current !== null &&
-    (Math.abs(current.x - next.x) > 0.5 || Math.abs(current.width - next.width) > 0.5)
-  const slide = animated && moved && full.value
-  indicatorAnimated.value = slide
-  indicator.value = next
-  if (!slide) return
-  const layout = transition.value.layout
-  const windowMs =
-    layout !== undefined && 'visualDuration' in layout ? layout.visualDuration * 1000 + 40 : 200
-  window.setTimeout(() => {
-    if (generation !== indicatorGeneration) return
-    const settled = measureIndicator()
-    if (settled === null) return
-    indicatorAnimated.value = false
-    indicator.value = settled
-  }, windowMs)
+    Math.abs(current.x - next.x) <= 0.5 &&
+    Math.abs(current.width - next.width) <= 0.5
+  )
+    return
+  indicator.value = { ...next, animated: current !== null && selectionChanged && full.value }
 }
 function tabScrollport(): HTMLElement | undefined {
-  return viewport.value?.querySelector<HTMLElement>('.pavp-scroll-area__viewport') ?? viewport.value
+  const root = viewport.value
+  return root?.querySelector<HTMLElement>('.pavp-scroll-area__viewport') ?? root ?? undefined
 }
 function measureOverflow(): void {
   const port = tabScrollport()
-  overflowing.value = port !== undefined && port.scrollWidth - port.clientWidth > 1
+  const maximum = port === undefined ? 0 : Math.max(0, port.scrollWidth - port.clientWidth)
+  overflowing.value = maximum > 1
+  if (!overflowing.value || port === undefined || strip.value === undefined) {
+    clippedEdge.value = undefined
+    return
+  }
+  const rtl = getComputedStyle(port).direction === 'rtl'
+  const offset = Math.min(maximum, Math.max(0, rtl ? -port.scrollLeft : port.scrollLeft))
+  const left = rtl ? offset < maximum - 1 : offset > 1
+  const right = rtl ? offset > 1 : offset < maximum - 1
+  clippedEdge.value = left && right ? 'both' : left ? 'left' : right ? 'right' : undefined
 }
-function revealTab(
-  button: HTMLElement,
-  behavior: 'smooth' | 'instant' = 'smooth',
-  placement: 'center' | 'contain' = 'contain',
-): void {
+function revealTab(button: HTMLElement, behavior: 'smooth' | 'instant' = 'smooth'): void {
   const owner = tabScrollport()
   const item = button.closest<HTMLElement>('.pavp-workspace-tabs__item')
   if (owner === undefined || item === null || strip.value?.contains(item) !== true) return
@@ -505,21 +507,125 @@ function revealTab(
   const target = item.getBoundingClientRect()
   const rtl = getComputedStyle(owner).direction === 'rtl'
   let delta = 0
-  if (placement === 'center' && target.width <= bounds.width)
-    delta = target.left + target.width / 2 - (bounds.left + bounds.width / 2)
-  else if (target.width > bounds.width)
+  if (target.width > bounds.width)
     delta = rtl ? target.right - bounds.right : target.left - bounds.left
   else if (target.left < bounds.left) delta = target.left - bounds.left
   else if (target.right > bounds.right) delta = target.right - bounds.right
   if (Math.abs(delta) >= 1) scrollController?.scrollBy({ left: delta, behavior })
 }
+function revealTabNeighbors(id: string): void {
+  const owner = tabScrollport()
+  const index = props.items.findIndex((item) => item.id === id)
+  const button = findTabButton(id)
+  const item = button?.closest<HTMLElement>('.pavp-workspace-tabs__item')
+  if (owner !== undefined && index >= 0 && item !== undefined && item !== null) {
+    const bounds = owner.getBoundingClientRect()
+    const left = bounds.left + owner.clientLeft
+    const right = left + owner.clientWidth
+    const target = item.getBoundingClientRect()
+    const neighbors = [props.items[index - 1], props.items[index + 1]]
+      .map((neighbor) =>
+        neighbor === undefined
+          ? undefined
+          : findTabButton(neighbor.id)
+              ?.closest<HTMLElement>('.pavp-workspace-tabs__item')
+              ?.getBoundingClientRect(),
+      )
+      .filter((neighbor): neighbor is DOMRect => neighbor !== undefined)
+    let start = Math.min(target.left, ...neighbors.map((neighbor) => neighbor.left))
+    let end = Math.max(target.right, ...neighbors.map((neighbor) => neighbor.right))
+    if (end - start > owner.clientWidth) {
+      const towardRight = (target.left + target.right) / 2 >= (left + right) / 2
+      const neighbor = neighbors.find((candidate) =>
+        towardRight ? candidate.left >= target.right : candidate.right <= target.left,
+      )
+      start = Math.min(target.left, neighbor?.left ?? target.left)
+      end = Math.max(target.right, neighbor?.right ?? target.right)
+      if (end - start > owner.clientWidth) {
+        start = target.left
+        end = target.right
+      }
+    }
+    const delta = start < left ? start - left : end > right ? end - right : 0
+    if (Math.abs(delta) >= 1) scrollController?.scrollBy({ left: delta, behavior: 'smooth' })
+  }
+}
+let revealFrame: number | undefined
+let pendingRevealId: string | undefined
+let interruptedRevealId: string | undefined
+let revealGeneration = 0
+let viewportRevealFrame: number | undefined
+let viewportRevealInterrupted = false
+let observedViewportWidth: number | undefined
+function cancelTabReveal(): void {
+  revealGeneration += 1
+  if (viewportRevealFrame !== undefined) viewportRevealInterrupted = true
+  if (pendingRevealId !== undefined) interruptedRevealId = pendingRevealId
+  pendingRevealId = undefined
+  if (revealFrame !== undefined) {
+    cancelAnimationFrame(revealFrame)
+    revealFrame = undefined
+  }
+}
+function scheduleTabReveal(id: string): void {
+  if (revealFrame !== undefined) cancelAnimationFrame(revealFrame)
+  revealFrame = requestAnimationFrame(() => {
+    revealFrame = requestAnimationFrame(() => {
+      revealFrame = undefined
+      if (props.activeId === id) revealTabNeighbors(id)
+    })
+  })
+}
+function activateTab(id: string): void {
+  cancelTabReveal()
+  interruptedRevealId = undefined
+  const current = id === props.activeId
+  pendingRevealId = current ? undefined : id
+  emit('activate', id)
+  if (current) scheduleTabReveal(id)
+}
+function scheduleViewportReveal(): void {
+  if (viewportRevealFrame !== undefined) return
+  viewportRevealInterrupted = false
+  let previousWidth = -1
+  let previousOffset = Number.NaN
+  let stableFrames = 0
+  const check = (): void => {
+    const port = tabScrollport()
+    if (port === undefined || port.clientWidth < 1) {
+      viewportRevealFrame = undefined
+      return
+    }
+    const width = port.clientWidth
+    const offset = port.scrollLeft
+    stableFrames = width === previousWidth && offset === previousOffset ? stableFrames + 1 : 0
+    previousWidth = width
+    previousOffset = offset
+    if (stableFrames < 4) {
+      viewportRevealFrame = requestAnimationFrame(check)
+      return
+    }
+    viewportRevealFrame = undefined
+    if (viewportRevealInterrupted || props.activeId === null) return
+    const button = findTabButton(props.activeId)
+    if (button !== null) revealTab(button)
+  }
+  viewportRevealFrame = requestAnimationFrame(check)
+}
 function observeGeometry(): void {
   geometryObserver ??= new ResizeObserver(() => {
-    syncIndicator(false)
+    const port = tabScrollport()
+    const width = port?.clientWidth
+    if (
+      width !== undefined &&
+      width > 0 &&
+      observedViewportWidth !== undefined &&
+      width < observedViewportWidth
+    )
+      scheduleViewportReveal()
+    if (width !== undefined && width > 0) observedViewportWidth = width
+    syncIndicator()
     measureOverflow()
-    const id = props.activeId
-    const button = id === null ? null : findTabButton(id)
-    if (button !== null) revealTab(button, 'instant', 'contain')
   })
   geometryObserver.disconnect()
   const port = tabScrollport()
@@ -532,16 +638,18 @@ function observeGeometry(): void {
 }
 function setStrip(value: unknown): void {
   interruption.bind('strip', value)
-  strip.value =
+  const nextStrip =
     value !== null &&
     typeof value === 'object' &&
     '$el' in value &&
     value.$el instanceof HTMLElement
       ? value.$el
       : undefined
+  if (strip.value === nextStrip) return
+  strip.value = nextStrip
   void nextTick(() => {
     observeGeometry()
-    syncIndicator(false)
+    syncIndicator()
     measureOverflow()
   })
 }
@@ -565,12 +673,14 @@ onMounted(() => {
   void startAfterStableMount()
   void nextTick(() => {
     observeGeometry()
-    syncIndicator(false)
+    syncIndicator()
     measureOverflow()
   })
 })
 onBeforeUnmount(() => {
   geometryObserver?.disconnect()
+  cancelTabReveal()
+  if (viewportRevealFrame !== undefined) cancelAnimationFrame(viewportRevealFrame)
   interruption.dispose(projectMotionPolicy('none'))
   dispose()
 })
@@ -585,6 +695,7 @@ function focusTab(id: string): void {
 function handleTabKeydown(id: string, event: KeyboardEvent): void {
   if (event.defaultPrevented || isComposingKey(event)) return
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+  cancelTabReveal()
   const index = props.items.findIndex((item) => item.id === id)
   if (index < 0) return
   let target: UiWorkspaceTab | undefined
@@ -596,7 +707,7 @@ function handleTabKeydown(id: string, event: KeyboardEvent): void {
   else if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault()
     event.stopPropagation()
-    emit('activate', id)
+    activateTab(id)
     return
   } else return
   event.preventDefault()
@@ -638,20 +749,27 @@ watch(
   async () => {
     await nextTick()
     observeGeometry()
-    syncIndicator(false)
+    syncIndicator()
     measureOverflow()
   },
 )
 watch(
   () => props.activeId,
-  async (id) => {
+  async (id, previousId) => {
+    const generation = revealGeneration
     await nextTick()
     if (id !== props.activeId) return
-    syncIndicator(true)
-    const button = id === null ? null : findTabButton(id)
-    if (button !== null) revealTab(button, props.motion === 'full' ? 'smooth' : 'instant', 'center')
+    syncIndicator()
+    if (generation !== revealGeneration) return
+    const reveal =
+      id !== null && id !== interruptedRevealId && (id === pendingRevealId || previousId !== null)
+    pendingRevealId = undefined
+    interruptedRevealId = undefined
+    if (reveal) {
+      await nextTick()
+      if (id === props.activeId && generation === revealGeneration) scheduleTabReveal(id)
+    }
   },
-  // The controller supplies the initial default before shell restoration. Later activation centers it.
 )
 </script>
 
@@ -687,7 +805,7 @@ watch(
               :aria-label="previousLabel"
               :disabled="previousTab === undefined"
               native-focus-behavior
-              @click="previousTab !== undefined && emit('activate', previousTab.id)"
+              @click="previousTab !== undefined && activateTab(previousTab.id)"
             >
               <m.span
                 class="pavp-workspace-tabs-edge__surface"
@@ -711,6 +829,10 @@ watch(
             <div
               ref="viewport"
               class="pavp-workspace-tabs-scroller"
+              :data-clipped-edge="clippedEdge"
+              @pointerdown.capture="cancelTabReveal"
+              @scroll.capture.passive="measureOverflow"
+              @wheel.capture.passive="cancelTabReveal"
             >
               <UiScrollArea
                 owner-id="workspace-tabs"
@@ -783,7 +905,7 @@ watch(
                         :tabindex="item.id === tabStopId ? 0 : -1"
                         @focus="rovingId = item.id"
                         @keydown="handleTabKeydown(item.id, $event)"
-                        @click="emit('activate', item.id)"
+                        @click="activateTab(item.id)"
                       >
                         <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
                       </NButton>
@@ -855,7 +977,7 @@ watch(
               :aria-label="nextLabel"
               :disabled="nextTab === undefined"
               native-focus-behavior
-              @click="nextTab !== undefined && emit('activate', nextTab.id)"
+              @click="nextTab !== undefined && activateTab(nextTab.id)"
             >
               <m.span
                 class="pavp-workspace-tabs-edge__surface"
@@ -927,6 +1049,23 @@ watch(
     container-type: inline-size;
     flex: 1 1 auto;
     min-inline-size: 0;
+  }
+  @media (forced-colors: none) {
+    .pavp-workspace-tabs-scroller[data-clipped-edge='left']:not(:has(:focus-visible)) {
+      mask-image: linear-gradient(to right, transparent, currentColor var(--ui-space-page-inline));
+    }
+    .pavp-workspace-tabs-scroller[data-clipped-edge='right']:not(:has(:focus-visible)) {
+      mask-image: linear-gradient(to left, transparent, currentColor var(--ui-space-page-inline));
+    }
+    .pavp-workspace-tabs-scroller[data-clipped-edge='both']:not(:has(:focus-visible)) {
+      mask-image: linear-gradient(
+        to right,
+        transparent,
+        currentColor var(--ui-space-page-inline),
+        currentColor calc(100% - var(--ui-space-page-inline)),
+        transparent
+      );
+    }
   }
   .pavp-workspace-tabs-edge {
     position: relative;

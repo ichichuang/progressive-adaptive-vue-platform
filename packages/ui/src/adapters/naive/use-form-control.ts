@@ -93,16 +93,7 @@ export function useFormControl<I>(props: {
   const validationProps = computed(() => ({
     status: props.binding.invalid ? ('error' as const) : ('success' as const),
   }))
-  // Native placeholders never replace entered text, including vendor edit buffers.
-  const placeholder = computed(() => {
-    const value = props.binding.value
-    const empty = value === null || value === '' || (Array.isArray(value) && value.length === 0)
-    const reason = props.binding.invalid && empty ? props.binding.errors[0]?.() : undefined
-    // Detailed/multiple errors remain available in the accessible summary.
-    return reason !== undefined && reason.length <= 48 && !reason.includes('\n')
-      ? reason
-      : props.form.text(config.value.placeholder ?? '')
-  })
+  const placeholder = computed(() => props.form.text(config.value.placeholder ?? ''))
   const numberHints = computed(() =>
     config.value.kind === 'number'
       ? {

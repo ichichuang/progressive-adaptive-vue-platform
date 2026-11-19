@@ -1,6 +1,7 @@
 import type { UiTableSchema } from '@platform/ui'
 import { tableShowcaseSchema } from './table-showcase'
 import { tableSummaryExample } from './table-summary-example'
+import { tableSampleCategoryOptions, tableSampleCategoryTags } from './table-sample-categories'
 
 export type TableExample =
   | 'basics'
@@ -112,11 +113,7 @@ export function tableExampleSchema(example: TableExample): UiTableSchema {
               ...(column.key === 'category'
                 ? {
                     kind: 'tag' as const,
-                    options: [
-                      { value: 'Design', label: 'Design', tone: 'primary' as const },
-                      { value: 'Engineering', label: 'Engineering', tone: 'success' as const },
-                      { value: 'Research', label: 'Research', tone: 'info' as const },
-                    ],
+                    options: tableSampleCategoryTags,
                   }
                 : {}),
             }))
@@ -155,11 +152,7 @@ export function tableExampleSchema(example: TableExample): UiTableSchema {
                   kind: 'select' as const,
                   name: 'category',
                   label: 'tableShowcase.category',
-                  options: [
-                    { value: 'Design', label: 'Design' },
-                    { value: 'Engineering', label: 'Engineering' },
-                    { value: 'Research', label: 'Research' },
-                  ],
+                  options: tableSampleCategoryOptions,
                 },
               ],
             },

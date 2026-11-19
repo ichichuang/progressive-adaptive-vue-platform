@@ -356,7 +356,7 @@ const navigationIconClasses = [
   'i-lucide-route',
   'i-lucide-database',
   'i-lucide-list-tree',
-  'i-lucide-external-link',
+  'i-lucide-file-warning',
   'i-lucide-link',
   'i-lucide-component',
   'i-lucide-panels-top-left',
@@ -407,7 +407,6 @@ function readRootFontSize(): number {
 }
 
 const shell = ref<HTMLElement>()
-let homeClickTimer: ReturnType<typeof setTimeout> | undefined
 const fullscreenActive = ref(false)
 const fullscreenAvailable = ref(false)
 const fullscreenPending = ref(false)
@@ -421,27 +420,6 @@ const fullscreenLabel = computed(() =>
         ? props.copy.exitFullscreenLabel
         : props.copy.fullscreenLabel,
 )
-function cancelHomeClick(): void {
-  if (homeClickTimer !== undefined) clearTimeout(homeClickTimer)
-  homeClickTimer = undefined
-}
-function handleIdentityClick(event: MouseEvent): void {
-  cancelHomeClick()
-  if (event.detail === 0) {
-    emit('navigate-home')
-    return
-  }
-  if (event.detail > 1) return
-  // Keep the double-click discrimination window independent of animation preferences.
-  homeClickTimer = setTimeout(() => {
-    homeClickTimer = undefined
-    emit('navigate-home')
-  }, 500)
-}
-function handleIdentityDoubleClick(): void {
-  cancelHomeClick()
-  void handleNavigationAction('focus')
-}
 function synchronizeFullscreen(): void {
   fullscreenAvailable.value = document.fullscreenEnabled
   fullscreenActive.value = document.fullscreenElement !== null
@@ -498,7 +476,7 @@ const shellLayoutThemeOverrides = Object.freeze({ color: 'transparent' }) satisf
   GlobalThemeOverrides['Layout']
 >
 const sidebarThemeOverrides = Object.freeze({
-  siderColor: 'var(--pavp-region-background, var(--ui-color-surface-panel))',
+  siderColor: 'var(--pavp-region-background, var(--ui-material-chrome-background))',
 }) satisfies NonNullable<GlobalThemeOverrides['Layout']>
 const navigationMenuThemeOverrides = Object.freeze({ color: 'transparent' }) satisfies NonNullable<
   GlobalThemeOverrides['Menu']
@@ -670,11 +648,9 @@ function renderNavigationMenuIcon(option: MenuOption): VNodeChild {
   return typeof option.icon === 'function' ? option.icon() : null
 }
 
-function navigationLabelTruncated(option: MenuOption): boolean {
-  const label = navigationNodes(persistentNavigation.value)
-    .find((node) => node.dataset['pavpNavigationKey'] === String(option.key))
-    ?.querySelector<HTMLElement>('[data-pavp-navigation-label]')
-  return label !== undefined && label !== null && label.scrollWidth > label.clientWidth
+function navigationLabelTruncated(node: HTMLElement): boolean {
+  const label = node.querySelector<HTMLElement>('[data-pavp-navigation-label]')
+  return label !== null && label.scrollWidth > label.clientWidth
 }
 
 function isPersistentNavigationSelectionLensOwner(option: MenuOption): boolean {
@@ -824,8 +800,11 @@ const persistentNavigationNodeProps = ((
     onKeydown: (event: KeyboardEvent) => {
       handlePersistentNavigationKeydown(event, option)
     },
-    onFocusin: () => {
-      focusedNavigationLabelKey.value = navigationLabelTruncated(option) ? option.key : undefined
+    onFocusin: (event: FocusEvent) => {
+      focusedNavigationLabelKey.value =
+        event.currentTarget instanceof HTMLElement && navigationLabelTruncated(event.currentTarget)
+          ? option.key
+          : undefined
     },
     onFocusout: () => {
       focusedNavigationLabelKey.value = undefined
@@ -1050,7 +1029,13 @@ function renderNavigationMenuLabel(option: MenuOption): VNodeChild {
     {
       to: `#${sidebarOverlayId}`,
       placement: 'right',
-      getDisabled: () => !navigationLabelTruncated(option),
+      getDisabled: () => {
+        // Naive checks every tooltip on render. Only its active trigger needs a layout measurement.
+        const node = persistentNavigation.value?.querySelector<HTMLElement>(
+          `[data-pavp-navigation-key="${CSS.escape(String(option.key))}"]:is(:hover, :focus-within)`,
+        )
+        return node != null && !navigationLabelTruncated(node)
+      },
       show:
         focusedNavigationLabelKey.value === false
           ? false
@@ -1289,7 +1274,6 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-  cancelHomeClick()
   document.removeEventListener('fullscreenchange', synchronizeFullscreen)
   drawerFocusGeneration += 1
   documentScrollGeneration += 1
@@ -1349,8 +1333,7 @@ watch(
           text
           attr-type="button"
           class="pavp-admin-shell__identity min-w-0"
-          @click="handleIdentityClick"
-          @dblclick="handleIdentityDoubleClick"
+          @click="emit('navigate-home')"
         >
           <span class="inline-flex max-w-full min-w-0 items-baseline gap-content-gap">
             <NImage
@@ -2073,7 +2056,7 @@ watch(
       max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
     border-radius: var(--ui-radius-panel);
     color: var(--pavp-region-foreground, var(--ui-color-text-primary));
-    background: var(--pavp-region-background, transparent);
+    background: var(--pavp-region-background, var(--ui-material-chrome-background));
   }
 
   .pavp-admin-shell__identity {
@@ -2110,7 +2093,7 @@ watch(
     flex: 0 0 auto;
     block-size: 100%;
     overflow: hidden;
-    background: var(--pavp-region-background, var(--ui-color-surface-panel));
+    background: var(--pavp-region-background, var(--ui-material-chrome-background));
     border-radius: var(--ui-radius-panel);
     box-shadow: var(--ui-admin-shadow-chrome);
   }
@@ -2121,7 +2104,7 @@ watch(
     padding-inline: max(var(--ui-space-content-gap), var(--pavp-safe-area-left))
       max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
     border-radius: var(--ui-radius-panel);
-    background: var(--pavp-region-background, var(--ui-color-surface-panel));
+    background: var(--pavp-region-background, var(--ui-material-chrome-background));
     color: var(--pavp-region-foreground, var(--ui-color-text-primary));
   }
 
@@ -2218,10 +2201,9 @@ watch(
   .pavp-admin-shell__content-inner {
     gap: var(--ui-space-section-block);
     inline-size: 100%;
-    padding-block: var(--ui-space-page-inline)
-      max(var(--ui-space-page-inline), var(--pavp-safe-area-bottom));
-    padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
-      max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
+    padding-block-end: var(--pavp-safe-area-bottom);
+    padding-left: var(--pavp-safe-area-left);
+    padding-right: var(--pavp-safe-area-right);
   }
 
   .pavp-admin-shell__content-inner[data-contained='true'] {
@@ -2230,7 +2212,7 @@ watch(
   }
 
   .pavp-admin-shell[data-header='false'] .pavp-admin-shell__content-inner {
-    padding-block-start: max(var(--ui-space-section-block), var(--pavp-safe-area-top));
+    padding-block-start: var(--pavp-safe-area-top);
   }
 
   .pavp-admin-shell__drawer-navigation {
@@ -2275,19 +2257,8 @@ watch(
     gap: calc(var(--ui-space-content-gap) / 2);
   }
 
-  @container pavp-admin-content (width < 50em) {
-    .pavp-admin-shell__content-inner:not([data-content-flush]) {
-      padding-inline: max(var(--ui-space-content-gap), var(--pavp-safe-area-left))
-        max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
-      padding-block: var(--ui-space-content-gap)
-        max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
-    }
-  }
-
   @media (height < 36rem) {
     .pavp-admin-shell__content-inner:not([data-content-flush]) {
-      padding-block: var(--ui-space-content-gap)
-        max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
       gap: var(--ui-space-content-gap);
     }
   }

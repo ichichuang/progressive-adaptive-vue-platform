@@ -1125,172 +1125,55 @@ const noUnapprovedVisualLiterals = {
       return true
     }
 
-    function settingsRevealLayer(element, className) {
+    function segmentedSelectionLayer(element) {
+      if (filename !== 'packages/ui/src/adapters/motion/segmented-selection-motion.ts') return false
       const creation = resolveLocalExpression(element)
       if (
         creation?.type !== 'CallExpression' ||
         creation.callee.type !== 'MemberExpression' ||
-        !sinks.global(creation.callee.object, 'document') ||
         sinks.name(creation.callee.property, creation.callee.computed) !== 'createElement' ||
-        staticNodeValue(creation.arguments[0]) !== 'div'
+        creation.callee.object.type !== 'MemberExpression' ||
+        sinks.name(creation.callee.object.property, creation.callee.object.computed) !==
+          'ownerDocument' ||
+        !sinks.dom(creation.callee.object.object) ||
+        staticNodeValue(creation.arguments[0]) !== 'span'
       )
         return false
       return sinks.variable(sinks.bare(element))?.references.some(({ identifier }) => {
-        const list = identifier.parent
-        const member = list?.parent
+        const member = identifier.parent
+        const assignment = member?.parent
         return (
-          list?.type === 'MemberExpression' &&
-          list.object === identifier &&
-          sinks.name(list.property, list.computed) === 'classList' &&
           member?.type === 'MemberExpression' &&
-          member.object === list &&
-          sinks.name(member.property, member.computed) === 'add' &&
-          member.parent?.type === 'CallExpression' &&
-          staticNodeValue(member.parent.arguments[0]) === className
+          member.object === identifier &&
+          sinks.name(member.property, member.computed) === 'className' &&
+          assignment?.type === 'AssignmentExpression' &&
+          assignment.left === member &&
+          staticNodeValue(assignment.right) === 'pavp-segmented-selection'
         )
       })
     }
 
-    function settingsRevealRootPaint(expression) {
-      const read = resolveLocalExpression(expression)
-      if (read?.type !== 'CallExpression' || !sinks.global(read.callee, 'getComputedStyle'))
-        return false
-      const root = read.arguments[0]
-      return (
-        read.arguments.length === 1 &&
-        root?.type === 'MemberExpression' &&
-        sinks.global(root.object, 'document') &&
-        sinks.name(root.property, root.computed) === 'documentElement'
-      )
-    }
-
-    function settingsRevealPaintWrite(sink, style, property, value) {
+    function segmentedLabelInk(element, keyframes) {
+      if (filename !== 'packages/ui/src/adapters/motion/segmented-selection-motion.ts') return false
+      const query = resolveLocalExpression(element)
+      const frames = resolveLocalExpression(keyframes)
+      const selector = query?.type === 'CallExpression' ? query.arguments[0] : undefined
       if (
-        style?.type !== 'MemberExpression' ||
-        sinks.name(style.property, style.computed) !== 'style' ||
-        !settingsRevealLayer(style.object, 'pavp-appearance-settings-old')
+        query?.type !== 'CallExpression' ||
+        query.callee.type !== 'MemberExpression' ||
+        sinks.name(query.callee.property, query.callee.computed) !== 'querySelector' ||
+        selector?.type !== 'TemplateLiteral' ||
+        selector.quasis.map(({ value }) => value.raw).join('|') !== ':scope > |' ||
+        frames?.type !== 'ObjectExpression' ||
+        frames.properties.length !== 2
       )
         return false
-      if (staticNodeValue(property) === 'color-scheme')
-        return (
-          value?.type === 'MemberExpression' &&
-          sinks.name(value.property, value.computed) === 'colorScheme' &&
-          settingsRevealRootPaint(value.object) &&
-          claimStyleSink('settings-reveal:color-scheme')
-        )
-
-      const convertsLength =
-        value?.type === 'CallExpression' &&
-        value.callee.type === 'Identifier' &&
-        value.arguments.length === 2 &&
-        sinks.variable(value.callee)?.defs[0]?.node.type === 'FunctionDeclaration'
-      const read = convertsLength ? value.arguments[0] : value
-      if (
-        read?.type !== 'CallExpression' ||
-        read.callee.type !== 'MemberExpression' ||
-        sinks.name(read.callee.property, read.callee.computed) !== 'getPropertyValue' ||
-        !settingsRevealRootPaint(read.callee.object) ||
-        property?.type !== 'Identifier' ||
-        sinks.variable(property) !== sinks.variable(read.arguments[0])
+      const properties = frames.properties.map((property) =>
+        property.type === 'Property'
+          ? getStaticPropertyName(property.key, property.computed)
+          : null,
       )
-        return false
-      if (convertsLength) {
-        const scale = resolveLocalExpression(value.arguments[1])
-        const measure = scale?.type === 'CallExpression' ? scale.arguments[0] : undefined
-        if (
-          scale?.type !== 'CallExpression' ||
-          scale.callee.type !== 'MemberExpression' ||
-          !sinks.global(scale.callee.object, 'Number') ||
-          sinks.name(scale.callee.property, scale.callee.computed) !== 'parseFloat' ||
-          measure?.type !== 'MemberExpression' ||
-          sinks.name(measure.property, measure.computed) !== 'fontSize' ||
-          !settingsRevealRootPaint(measure.object)
-        )
-          return false
-      }
-      const roles = convertsLength
-        ? '^--ui-(?:control-|font-size-|icon-size-|layout-|space-|workbench-specimen-|radius-(?:control|panel|small)$)'
-        : '^--ui-(?:color|admin|material)-'
-      for (let parent = sink.parent; parent; parent = parent.parent) {
-        if (
-          parent.type !== 'IfStatement' ||
-          parent.consequent.range[0] > sink.range[0] ||
-          parent.consequent.range[1] < sink.range[1]
-        )
-          continue
-        const filter = parent.test
-        if (
-          filter.type === 'CallExpression' &&
-          filter.callee.type === 'MemberExpression' &&
-          sinks.name(filter.callee.property, filter.callee.computed) === 'test' &&
-          resolveLocalExpression(filter.callee.object)?.regex?.pattern === roles &&
-          sinks.variable(property) === sinks.variable(filter.arguments[0])
-        )
-          return claimStyleSink(`settings-reveal:${roles}`)
-      }
-      return false
-    }
-
-    function settingsRevealMaterialWrite(style, property, value) {
-      if (
-        !['-webkit-backdrop-filter', 'backdrop-filter', 'box-shadow'].includes(property) ||
-        style?.type !== 'MemberExpression' ||
-        sinks.name(style.property, style.computed) !== 'style' ||
-        value?.type !== 'CallExpression' ||
-        value.callee.type !== 'MemberExpression' ||
-        sinks.name(value.callee.property, value.callee.computed) !== 'getPropertyValue' ||
-        staticNodeValue(value.arguments[0]) !== property
-      )
-        return false
-
-      const paint = resolveLocalExpression(value.callee.object)
-      if (
-        paint?.type !== 'CallExpression' ||
-        !sinks.global(paint.callee, 'getComputedStyle') ||
-        paint.arguments.length !== 1
-      )
-        return false
-      const source = resolveLocalExpression(paint.arguments[0])
-      const replica = resolveLocalExpression(style.object)
-      if (
-        ![source, replica].every(
-          (query) =>
-            query?.type === 'CallExpression' &&
-            query.callee.type === 'MemberExpression' &&
-            sinks.name(query.callee.property, query.callee.computed) === 'querySelector',
-        )
-      )
-        return false
-
-      const selector = sinks.variable(source.arguments[0])
-      const iteration = selector?.defs[0]?.node.parent?.parent
-      if (sinks.variable(replica.arguments[0]) !== selector || iteration?.type !== 'ForOfStatement')
-        return false
-      const regions = resolveLocalExpression(iteration.right)
-      const knownRegions = new Set([
-        '.pavp-admin-shell__header',
-        '.pavp-admin-shell__sidebar',
-        '.pavp-admin-shell__navigation-action[aria-current="page"]',
-      ])
-      if (
-        regions?.type !== 'ArrayExpression' ||
-        regions.elements.length === 0 ||
-        !regions.elements.every((region) => knownRegions.has(staticNodeValue(region)))
-      )
-        return false
-
-      const original = sinks.variable(source.callee.object)
-      const copy = resolveLocalExpression(replica.callee.object)
-      return (
-        original !== undefined &&
-        copy?.type === 'CallExpression' &&
-        copy.callee.type === 'MemberExpression' &&
-        sinks.name(copy.callee.property, copy.callee.computed) === 'cloneNode' &&
-        copy.arguments[0]?.type === 'Literal' &&
-        copy.arguments[0].value === true &&
-        sinks.variable(copy.callee.object) === original &&
-        claimStyleSink(`settings-reveal:material:${property}`)
-      )
+      return properties.includes('backgroundPosition') && properties.includes('backgroundSize')
     }
 
     function measuredSettingsIndicator(expression) {
@@ -2453,22 +2336,10 @@ const noUnapprovedVisualLiterals = {
           )
             colorStylePreviewFunctions.add(sinks.variable(node.id))
         }
-        const modePreview = filename === 'apps/web/src/app/workbench/SettingsModePreview.vue'
-        const pairs = modePreview
-          ? {
-              '--pavp-mode-preview-page': 'surfacePage',
-              '--pavp-mode-preview-panel': 'surfacePanel',
-              '--pavp-mode-preview-action': 'actionPrimary',
-              '--pavp-mode-preview-control': 'controlPrimary',
-            }
-          : {
-              '--pavp-settings-theme-color': 'actionPrimary',
-              '--pavp-settings-theme-accent-a': 'accentA',
-              '--pavp-settings-theme-accent-b': 'accentB',
-            }
+        const pairs = { '--pavp-settings-theme-color': 'actionPrimary' }
         const fields = returned?.type === 'ObjectExpression' ? returned.properties : []
         if (
-          (filename === 'apps/web/src/pages/control-center.vue' || modePreview) &&
+          filename === 'apps/web/src/pages/control-center.vue' &&
           node.id !== null &&
           returns.length === 1 &&
           fields.length === Object.keys(pairs).length &&
@@ -2557,6 +2428,37 @@ const noUnapprovedVisualLiterals = {
 
         if (!isStyleDeclaration(node.left.object)) {
           return
+        }
+
+        // A passive picker can mirror the live entrance's computed pose, one read per property.
+        if (
+          filename === 'apps/web/src/app/appearance/appearance-scene.ts' &&
+          ['opacity', 'transform'].includes(propertyName) &&
+          node.right.type === 'MemberExpression' &&
+          getStaticPropertyName(node.right.property, node.right.computed) === propertyName
+        ) {
+          const source = resolveLocalExpression(node.right.object)
+          if (
+            source?.type === 'CallExpression' &&
+            source.callee.type === 'Identifier' &&
+            source.callee.name === 'getComputedStyle' &&
+            claimStyleSink(`appearance-picker:${propertyName}`)
+          )
+            return
+        }
+
+        // Only the decorative segmented indicator accepts measured size and position.
+        if (
+          node.left.object.type === 'MemberExpression' &&
+          segmentedSelectionLayer(node.left.object.object) &&
+          node.right.type === 'TemplateLiteral'
+        ) {
+          const parts = node.right.quasis.map(({ value }) => value.raw)
+          if (
+            (['width', 'height'].includes(propertyName) && parts.join('|') === '|px') ||
+            (propertyName === 'transform' && parts.join('|') === 'translate(|px, |px)')
+          )
+            return
         }
 
         // Display-stage contain geometry owns only measured descendant dimensions.
@@ -2784,37 +2686,48 @@ const noUnapprovedVisualLiterals = {
             if (!styleMapReaders.includes(method)) reportStyleOwner(node)
             return
           }
+          // The passive document can replay the host's parsed stylesheet rules verbatim.
+          if (filename === 'apps/web/src/app/appearance/appearance-scene.ts') {
+            if (
+              sinks.documentObject(object) &&
+              method === 'createElement' &&
+              staticNodeValue(arguments_[0]) === 'style' &&
+              claimStyleSink('appearance-stylesheet')
+            )
+              return
+            const rule = arguments_[0]
+            if (
+              sinks.styleElement(object) &&
+              method === 'append' &&
+              arguments_.length === 1 &&
+              rule?.type === 'MemberExpression' &&
+              sinks.name(rule.property, rule.computed) === 'cssText' &&
+              sinks.typed(rule.object, /^CSSRule$/u) &&
+              claimStyleSink('appearance-stylesheet-rule')
+            )
+              return
+          }
           if (sinks.dom(object) && method === 'animate') {
-            if (filename === 'apps/web/src/app/appearance/appearance-transition.ts') {
+            if (segmentedLabelInk(object, arguments_[0])) return
+            if (segmentedSelectionLayer(object)) {
               const frames = singleStyleProperty(arguments_[0])
-              const options = resolveLocalExpression(arguments_[1])
               if (
                 frames !== undefined &&
-                getStaticPropertyName(frames.key, frames.computed) === 'clipPath' &&
-                ['pavp-appearance-settings-old', 'pavp-appearance-rift-edge'].some(
-                  (layer) =>
-                    settingsRevealLayer(object, layer) &&
-                    claimStyleSink(`settings-reveal:${layer}`),
-                )
+                getStaticPropertyName(frames.key, frames.computed) === 'transform'
               )
                 return
+            }
+            if (filename === 'apps/web/src/app/appearance/appearance-transition.ts') {
+              const frames = singleStyleProperty(arguments_[0])
               if (
                 frames !== undefined &&
                 getStaticPropertyName(frames.key, frames.computed) === 'clipPath' &&
-                options?.type === 'ObjectExpression' &&
-                options.properties.some(
-                  (property) =>
-                    property.type === 'Property' &&
-                    getStaticPropertyName(property.key, property.computed) === 'pseudoElement' &&
-                    property.value.type === 'Literal' &&
-                    [
-                      '::view-transition-new(root)',
-                      '::view-transition-new(pavp-rift-edge)',
-                    ].includes(String(property.value.value)),
-                )
-              ) {
+                ((sinks.typed(object, /^HTMLIFrameElement$/u) &&
+                  claimStyleSink('appearance-reveal')) ||
+                  (sinks.typed(object, /^HTMLSpanElement$/u) &&
+                    claimStyleSink('appearance-palette-edge')))
+              )
                 return
-              }
             }
             if (
               [
@@ -2960,15 +2873,6 @@ const noUnapprovedVisualLiterals = {
 
         const [property, value, priority] = arguments_
         const propertyName = staticNodeValue(sinks.unwrap(property))
-
-        if (
-          filename === 'apps/web/src/app/appearance/appearance-transition.ts' &&
-          method === 'setProperty' &&
-          priority === undefined &&
-          (settingsRevealPaintWrite(node, object, property, value) ||
-            settingsRevealMaterialWrite(object, propertyName, value))
-        )
-          return
 
         if (
           filename === 'apps/web/src/app/appearance/appearance.store.ts' &&

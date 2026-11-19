@@ -36,10 +36,12 @@ const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
   'packages/ui/src/adapters/motion/motion-feature-runtime.ts',
   'packages/ui/src/adapters/motion/motion-policy.ts',
+  'packages/ui/src/adapters/motion/segmented-selection-motion.ts',
   'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
   'packages/ui/src/adapters/motion/ScrollViewport.vue',
   'packages/ui/src/adapters/motion/FormValidationFeedback.vue',
   'packages/ui/src/adapters/motion/TableSortIcon.vue',
+  'packages/ui/src/adapters/motion/table-row-motion.ts',
   'packages/ui/src/adapters/motion/ThemePickerSurface.vue',
 ] as const
 const forbiddenMotionPublicApi =
@@ -2061,6 +2063,7 @@ function dismiss(event?: MouseEvent): void {
             'UiG2Chart',
             'UiChartTimeRange',
             'UiCopyAction',
+            'UiNavigationLink',
             'UiForm',
             'UiFormField',
             'UiRadioCardGroup',

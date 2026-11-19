@@ -718,7 +718,7 @@ const announcement = computed(() => {
             tabindex="0"
             :data-dashboard-tone="tone(id)"
           >
-            <header class="min-h-control flex shrink-0 items-center gap-component-unit">
+            <header class="flex shrink-0 items-center gap-component-unit min-h-target-enhanced">
               <div class="shrink-0 relative">
                 <NButton
                   type="primary"

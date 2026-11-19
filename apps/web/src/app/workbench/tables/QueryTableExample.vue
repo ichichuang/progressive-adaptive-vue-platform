@@ -2,9 +2,10 @@
 import { computed } from 'vue'
 import { UiForm, useUiTableQuery, type UiTableController } from '@platform/ui'
 import { useTableShowcase } from './table-showcase'
+import { tableSampleCategoryText } from './table-sample-categories'
 const props = defineProps<{ readonly table: UiTableController }>()
 const demo = useTableShowcase()
-const { t } = demo
+const { t, formatLabelValue } = demo
 const query = useUiTableQuery(props.table, {
   ...demo.copy,
   submit: () => t('tableShowcase.search'),
@@ -13,10 +14,18 @@ const query = useUiTableQuery(props.table, {
 const applied = computed(() =>
   Object.entries(props.table.query.value.filters)
     .filter(([, value]) => value !== '' && value !== null)
-    .map(
-      ([key, value]) =>
-        `${demo.translate(key === 'title' ? 'tableShowcase.title' : 'tableShowcase.category')}: ${typeof value === 'string' ? value : JSON.stringify(value)}`,
-    )
+    .map(([key, value]) => {
+      const label = demo.translate(
+        key === 'title' ? 'tableShowcase.title' : 'tableShowcase.category',
+      )
+      const text =
+        key === 'category' && typeof value === 'string'
+          ? tableSampleCategoryText(value, t)
+          : typeof value === 'string'
+            ? value
+            : JSON.stringify(value)
+      return formatLabelValue(label, text)
+    })
     .join(' · '),
 )
 </script>
@@ -32,11 +41,15 @@ const applied = computed(() =>
       aria-live="polite"
     >
       {{
-        query.hasUnsavedChanges.value
-          ? t('tableExamples.pendingFilters')
-          : t('tableExamples.appliedFilters')
+        formatLabelValue(
+          t(
+            query.hasUnsavedChanges.value
+              ? 'tableExamples.pendingFilters'
+              : 'tableExamples.appliedFilters',
+          ),
+          applied || t('tableExamples.allRecords'),
+        )
       }}
-      {{ applied || t('tableExamples.allRecords') }}
     </p>
   </div>
 </template>

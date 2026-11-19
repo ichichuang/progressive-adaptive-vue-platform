@@ -41,7 +41,7 @@ onScopeDispose(() => {
     </header>
     <div
       v-if="scrollOwnedByChild"
-      class="gap-control flex flex-1 flex-col min-h-0 min-w-0 px-page-inline"
+      class="flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap px-page-inline"
     >
       <slot />
     </div>
@@ -56,7 +56,9 @@ onScopeDispose(() => {
         <slot />
       </div>
     </UiScrollArea>
-    <footer class="gap-control flex shrink-0 flex-wrap items-center p-panel-narrow px-page-inline">
+    <footer
+      class="flex shrink-0 flex-wrap items-center gap-content-gap p-panel-narrow px-page-inline"
+    >
       <NButton @click="() => void navigation.navigate({ name: 'access-showcase' })">
         {{ t('route-title.access-showcase') }}
       </NButton>

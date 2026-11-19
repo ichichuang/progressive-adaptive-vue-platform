@@ -58,6 +58,14 @@ their architecture-admitted boundaries.
 ## Task Discipline
 
 - Complete one bounded task at a time.
+- Carry the authorized task through delivery and required verification. Before ending the turn,
+  check each requested outcome and take any remaining authorized step that can advance the task.
+  Make routine decisions and recover from failures within scope. Follow the Git Authorization
+  Boundary and pause when a Mandatory Stop Condition applies or progress requires an Owner
+  decision or authorization.
+- Resolve unclear private implementation details with the narrowest reasonable, reversible
+  assumption that lets the work proceed. State assumptions and decisions that affect the result in
+  the final report.
 - Automatic roadmap continuation and unrequested scope expansion are prohibited.
 - Do not start the next package merely because the current task is complete.
 - Do not perform unrequested refactors, dependency changes, cleanup, modernization, security
@@ -69,6 +77,16 @@ their architecture-admitted boundaries.
   package. It must not freeze private variable names, helper names, loops, parser decomposition,
   containers, closures, or private algorithms unless architecture makes them normative.
 - Preserve unrelated behavior and all user changes.
+
+## User-Facing Communication
+
+- Lead with the result, decision, or key finding. Use active voice and terms from the user and
+  source materials. Group related details, retain technical specificity where it adds precision,
+  and give the reader enough context to follow the reasoning.
+- Write the final report as the reader's first view of the work. Include the task context,
+  outcome, verification, and any open items so the report stands on its own. Write user-facing
+  material anew for its intended audience. Translate shorthand from internal reasoning, tools,
+  subagents, and automations into terms the reader recognizes.
 
 ## Evidence Before Decisions
 

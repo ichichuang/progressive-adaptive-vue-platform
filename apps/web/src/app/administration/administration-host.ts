@@ -1,4 +1,4 @@
-import type { UiTablePage, UiTableQuery, UiTableReadonlyRecord } from '@platform/ui'
+import type { UiLocale, UiTablePage, UiTableQuery, UiTableReadonlyRecord } from '@platform/ui'
 import type {
   AccessBoundary,
   AccessContextSnapshot,
@@ -73,6 +73,8 @@ export interface AdministrationModuleHost {
   readonly read: Parameters<typeof createScopedApiRead<UiTablePage>>[1]
   readonly recordRead: string
   readonly completeness: 'complete' | 'partial'
+  /** Optional presentation of the host's own labels, without changing record or command values. */
+  displayText?(value: string, locale: UiLocale): string
   readonly projection: NonNullable<Parameters<typeof useGuardedTable>[0]['fields']>
   readonly query: (
     value: UiTableQuery,

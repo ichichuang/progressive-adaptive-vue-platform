@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFormExampleUndo } from '../app/workbench/forms/use-form-example-undo'
-import { type ButtonHTMLAttributes, ref } from 'vue'
+import { type HTMLAttributes, ref, useId } from 'vue'
 import {
   UiForm,
   useUiForm,
@@ -8,7 +8,7 @@ import {
   type UiFormOption,
   type UiFormPagedOptionSource,
 } from '@platform/ui'
-import { NButton } from 'naive-ui/es/button'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import FormExampleActions from '../app/workbench/forms/FormExampleActions.vue'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
 import { useFormShowcase } from '../app/workbench/forms/form-showcase'
@@ -18,6 +18,7 @@ defineProps<{ readonly title: string; readonly message: string }>()
 const demo = useFormShowcase()
 const { t } = demo
 const mode = ref<'edit' | 'detail'>('detail')
+const modeGroupName = useId()
 // These local data functions exercise the public source contract without a service.
 function localChoiceSource(items: readonly UiFormOption[]): UiFormPagedOptionSource<object> {
   return {
@@ -114,27 +115,23 @@ const history = useFormExampleUndo(() => form)
     :mode="mode"
   >
     <template #controls>
-      <NButton
-        class="min-h-target-enhanced min-w-target-enhanced"
-        secondary
-        :bordered="false"
-        :type="mode === 'detail' ? 'primary' : 'default'"
-        v-bind="{ 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes"
-        :disabled="form.hasPendingInput.value"
-        @click="mode = 'detail'"
+      <NRadioGroup
+        v-model:value="mode"
+        :name="modeGroupName"
+        v-bind="
+          { role: 'radiogroup', 'aria-label': t('formShowcase.viewMode') } satisfies HTMLAttributes
+        "
       >
-        {{ t('configuredForm.detail') }}
-      </NButton>
-      <NButton
-        class="min-h-target-enhanced min-w-target-enhanced"
-        secondary
-        :bordered="false"
-        :type="mode === 'edit' ? 'primary' : 'default'"
-        v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
-        @click="mode = 'edit'"
-      >
-        {{ t('configuredForm.edit') }}
-      </NButton>
+        <NRadioButton
+          value="detail"
+          :disabled="form.hasPendingInput.value"
+        >
+          {{ t('configuredForm.detail') }}
+        </NRadioButton>
+        <NRadioButton value="edit">
+          {{ t('configuredForm.edit') }}
+        </NRadioButton>
+      </NRadioGroup>
     </template>
     <template #insight>
       <div

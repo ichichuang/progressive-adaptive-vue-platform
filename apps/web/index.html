@@ -37,9 +37,141 @@
       data-theme-registry-storage-key="pavp:web:custom-theme-registry"
       vite-ignore
     ></script>
+    <script data-startup-locales="">
+      {
+        const script = document.currentScript
+        const { storageKey, choices, fallback } = JSON.parse(script.dataset.startupLocales)
+        let choice = choices[fallback]
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey))
+          const candidate = saved && choices[saved.locale]
+          if (
+            candidate?.preference &&
+            Object.keys(saved).length === Object.keys(candidate.preference).length &&
+            Object.entries(candidate.preference).every(([key, value]) => saved[key] === value)
+          ) {
+            choice = candidate
+          }
+        } catch {
+          // Storage can be unavailable before the application starts.
+        }
+        document.documentElement.lang = choice.lang
+        document.documentElement.dir = choice.dir
+      }
+    </script>
+    <style>
+      @layer app {
+        /* The document can render this surface while the application module is still loading. */
+        #app:not(:empty) + .pavp-startup {
+          display: none;
+        }
+
+        .pavp-startup {
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          box-sizing: border-box;
+          overflow: auto;
+          padding: var(--ui-space-panel-padding);
+          background:
+            radial-gradient(
+              ellipse at 50% 44%,
+              color-mix(in srgb, var(--ui-color-action-primary) 12%, transparent),
+              transparent 60%
+            ),
+            var(--ui-color-surface-page);
+          font-family: system-ui, sans-serif;
+          text-align: center;
+        }
+
+        .pavp-startup__content {
+          display: grid;
+          gap: var(--ui-space-content-gap);
+          inline-size: min(100%, calc(var(--ui-control-height) * 5));
+        }
+
+        .pavp-startup__name {
+          margin: 0;
+          font-size: calc(var(--ui-font-size-metric) * 1.75);
+          font-weight: 700;
+          letter-spacing: -0.06em;
+          line-height: var(--ui-font-line-height-compact);
+        }
+
+        .pavp-startup__status {
+          margin: 0;
+          color: var(--ui-color-text-secondary);
+          font-size: var(--ui-font-size-control-medium);
+        }
+
+        html:lang(en) .pavp-startup__status [lang='zh-CN'],
+        html:lang(zh-CN) .pavp-startup__status [lang='en'] {
+          display: none;
+        }
+
+        .pavp-startup .pavp-loading-meter {
+          margin-block-start: var(--ui-space-component-unit);
+          border-radius: var(--ui-radius-control);
+          background: var(--ui-color-border-default);
+        }
+
+        .pavp-loading-meter {
+          overflow: hidden;
+          block-size: var(--ui-indicator-rail-thin);
+        }
+
+        .pavp-loading-meter::before {
+          display: block;
+          inline-size: 35%;
+          block-size: 100%;
+          margin-inline: auto;
+          border-radius: var(--ui-radius-control);
+          background: var(--ui-color-action-primary);
+          content: '';
+        }
+
+        @media (forced-colors: active) {
+          .pavp-loading-meter {
+            forced-color-adjust: none;
+          }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+          html[data-motion='full'] .pavp-loading-meter::before {
+            animation: pavp-loading-sweep 1.2s ease-in-out infinite alternate;
+          }
+        }
+
+        @keyframes pavp-loading-sweep {
+          from {
+            transform: translateX(-92%);
+          }
+
+          to {
+            transform: translateX(92%);
+          }
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
+    <main class="pavp-startup">
+      <div class="pavp-startup__content">
+        <h1 class="pavp-startup__name">PAVP</h1>
+        <p
+          class="pavp-startup__status"
+          role="status"
+        >
+          <!-- startup-loading-message -->
+        </p>
+        <span
+          class="pavp-loading-meter"
+          aria-hidden="true"
+        ></span>
+      </div>
+    </main>
     <script
       type="module"
       src="/src/main.ts"

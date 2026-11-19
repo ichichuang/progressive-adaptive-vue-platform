@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  type ButtonHTMLAttributes,
+  type HTMLAttributes,
   computed,
   effectScope,
   onActivated,
@@ -10,6 +10,7 @@ import {
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiCopyAction, useUiForm, type UiFormValue } from '@platform/ui'
 import { useFormShowcase } from '../form-showcase'
 import FormBuilderConfiguration from './FormBuilderConfiguration.vue'
@@ -24,8 +25,13 @@ import { useDraftSession } from '../../../forms/use-draft-session'
 import { applicationConfig } from '../../../config/app.config'
 import { useWorkspaceUnsavedChanges } from '../../../workspace/use-workspace-unsaved-changes'
 
-const { t, copy } = useFormShowcase()
-const builder = useFormBuilder(t)
+const { t, copy, locale } = useFormShowcase()
+const builder = useFormBuilder(t, locale)
+const counts = [1, 2] as const
+function chooseColumns(value: string | number | boolean): void {
+  const count = counts.find((option) => option === value)
+  if (count !== undefined && !builder.pending.value) builder.columns(count)
+}
 const draftStorage = useFormDraftStorage()
 const initialTrial = shallowRef<Record<string, UiFormValue>>()
 const trial = shallowRef<BuilderTrialState | null>(null)
@@ -146,26 +152,27 @@ onDeactivated(() => {
             :session="session"
             :trial-state="trialState"
           />
-          <div
-            class="flex gap-component-unit layout-narrow:hidden"
-            role="group"
-            :aria-label="t('formBuilder.columns')"
-          >
-            <NButton
-              v-for="count in [1, 2] as const"
-              :key="count"
-              tertiary
-              :type="builder.schema.value.columns === count ? 'primary' : 'default'"
+          <div class="layout-narrow:hidden">
+            <NRadioGroup
+              name="form-builder-columns-desktop"
+              :value="builder.schema.value.columns ?? null"
+              :disabled="builder.pending.value"
               v-bind="
                 {
-                  'aria-pressed': builder.schema.value.columns === count,
-                } satisfies ButtonHTMLAttributes
+                  role: 'radiogroup',
+                  'aria-label': t('formBuilder.columns'),
+                } satisfies HTMLAttributes
               "
-              :disabled="builder.pending.value"
-              @click="builder.columns(count)"
+              @update:value="chooseColumns"
             >
-              {{ t(count === 1 ? 'formBuilder.oneColumn' : 'formBuilder.twoColumns') }}
-            </NButton>
+              <NRadioButton
+                v-for="count in counts"
+                :key="count"
+                :value="count"
+              >
+                {{ t(count === 1 ? 'formBuilder.oneColumn' : 'formBuilder.twoColumns') }}
+              </NRadioButton>
+            </NRadioGroup>
           </div>
           <UiCopyAction
             :key="builder.pending.value ? 'pending' : 'accepted'"
@@ -216,28 +223,29 @@ onDeactivated(() => {
         body-content-class="flex h-full min-h-0 min-w-0 flex-col"
       >
         <template #header>
-          <div
-            class="flex min-w-0 items-center gap-component-unit"
-            role="group"
-            :aria-label="t('formBuilder.columns')"
-          >
+          <div class="flex flex-wrap min-w-0 items-center gap-component-unit">
             <span class="sr-only">{{ t('formBuilder.configure') }}</span>
-            <NButton
-              v-for="count in [1, 2] as const"
-              :key="count"
+            <NRadioGroup
+              name="form-builder-columns-drawer"
               size="small"
-              tertiary
-              :type="builder.schema.value.columns === count ? 'primary' : 'default'"
+              :value="builder.schema.value.columns ?? null"
+              :disabled="builder.pending.value"
               v-bind="
                 {
-                  'aria-pressed': builder.schema.value.columns === count,
-                } satisfies ButtonHTMLAttributes
+                  role: 'radiogroup',
+                  'aria-label': t('formBuilder.columns'),
+                } satisfies HTMLAttributes
               "
-              :disabled="builder.pending.value"
-              @click="builder.columns(count)"
+              @update:value="chooseColumns"
             >
-              {{ t(count === 1 ? 'formBuilder.oneColumn' : 'formBuilder.twoColumns') }}
-            </NButton>
+              <NRadioButton
+                v-for="count in counts"
+                :key="count"
+                :value="count"
+              >
+                {{ t(count === 1 ? 'formBuilder.oneColumn' : 'formBuilder.twoColumns') }}
+              </NRadioButton>
+            </NRadioGroup>
             <NButton
               size="small"
               secondary

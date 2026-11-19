@@ -10,6 +10,7 @@ defineProps<{
   readonly message: string
   readonly copyValue: string
   readonly scrollControls?: boolean
+  readonly contentKey?: string
 }>()
 defineSlots<{ default: () => unknown; controls?: () => unknown; footer?: () => unknown }>()
 const { t } = useTableShowcase()
@@ -79,9 +80,17 @@ onScopeDispose(() => {
         class="flex-1 min-h-0"
         @controller="connect"
       >
-        <div class="wb-form-panel-header flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap">
-          <slot />
-        </div>
+        <Transition
+          name="wb-table-content"
+          mode="out-in"
+        >
+          <div
+            :key="contentKey"
+            class="wb-form-panel-header flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap"
+          >
+            <slot />
+          </div>
+        </Transition>
       </UiScrollArea>
       <footer
         v-if="$slots['footer']"

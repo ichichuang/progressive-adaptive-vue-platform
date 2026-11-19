@@ -16,6 +16,7 @@ import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NTag } from 'naive-ui/es/tag'
+import { NSelect } from 'naive-ui/es/select'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
 import WorkbenchPage from '../WorkbenchPage.vue'
@@ -48,7 +49,7 @@ const available = computed<readonly Scenario[]>(() =>
 )
 const scenario = ref<Scenario>(available.value[0] ?? 'json')
 const scenarioChoiceId = useId()
-function selectScenario(value: string | number | boolean): void {
+function selectScenario(value: unknown): void {
   const selected = available.value.find((candidate) => candidate === value)
   if (selected !== undefined) scenario.value = selected
 }
@@ -59,6 +60,10 @@ const productId = ref<number | null>(1)
 const search = ref('phone')
 const city = ref('Shanghai')
 const panel = ref('request')
+const panelChanged = ref(false)
+watch(panel, () => {
+  panelChanged.value = true
+})
 const active = ref(true)
 const pending = ref(false)
 const elapsed = ref(0)
@@ -216,14 +221,20 @@ const invalidRequest = computed(
         productId.value > 10000)),
 )
 const sendDisabled = computed(() => pending.value || invalidRequest.value)
+const primaryLabels = computed(() => ({
+  send: t('apiShowcase.send'),
+  test: t('apiShowcase.test'),
+  retry: t('apiShowcase.retry'),
+}))
 const primaryLabel = computed(() =>
-  t(
-    outcome.value?.result.status === 'failure'
-      ? 'apiShowcase.retry'
-      : remote.value
-        ? 'apiShowcase.send'
-        : 'apiShowcase.test',
-  ),
+  outcome.value?.result.status === 'failure'
+    ? primaryLabels.value.retry
+    : remote.value
+      ? primaryLabels.value.send
+      : primaryLabels.value.test,
+)
+const recoveryAvailable = computed(
+  () => !pending.value && props.capability === 'errors' && scenario.value !== 'recovery',
 )
 const statusText = computed(
   () =>
@@ -298,8 +309,9 @@ onScopeDispose(() => {
       :data-panel="panel"
     >
       <section
-        class="wb-table-stage rounded-panel flex flex-col col-span-2 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
+        class="api-request-panel wb-table-stage rounded-panel flex flex-col col-span-2 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
         :aria-label="t('apiShowcase.request')"
+        :data-panel-entering="panelChanged && panel === 'request' ? '' : undefined"
         :class="panel === 'result' ? 'layout-narrow:hidden' : ''"
       >
         <header class="wb-form-panel-header shrink-0">
@@ -322,7 +334,16 @@ onScopeDispose(() => {
                 class="text-caption text-text-secondary"
                 v-text="t('apiShowcase.scenarioLabel')"
               />
+              <NSelect
+                v-if="capability === 'basics'"
+                filterable
+                :value="scenario"
+                :options="options"
+                :input-props="{ 'aria-label': t('apiShowcase.scenarioLabel') }"
+                @update:value="selectScenario"
+              />
               <NRadioGroup
+                v-else
                 :value="scenario"
                 :name="`api-scenario-${scenarioChoiceId}`"
                 :options="options"
@@ -424,8 +445,9 @@ onScopeDispose(() => {
         </UiScrollArea>
       </section>
       <section
-        class="wb-table-stage rounded-panel flex flex-col col-span-3 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
+        class="api-request-panel wb-table-stage rounded-panel flex flex-col col-span-3 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
         :aria-label="t('apiShowcase.result')"
+        :data-panel-entering="panelChanged && panel === 'result' ? '' : undefined"
         :class="panel === 'request' ? 'layout-narrow:hidden' : ''"
       >
         <header class="wb-form-panel-header shrink-0">
@@ -460,22 +482,37 @@ onScopeDispose(() => {
         class="min-h-target-enhanced"
         :disabled="sendDisabled"
       >
-        {{ primaryLabel }}
+        <span class="grid">
+          <span
+            v-for="(label, key) in primaryLabels"
+            :key="key"
+            class="col-start-1 row-start-1 invisible"
+            aria-hidden="true"
+          >
+            {{ label }}
+          </span>
+          <span class="col-start-1 row-start-1">{{ primaryLabel }}</span>
+        </span>
       </NButton>
-      <NButton
-        v-if="pending"
-        class="min-h-target-enhanced"
-        @click="cancel"
-      >
-        {{ t('apiShowcase.cancel') }}
-      </NButton>
-      <NButton
-        v-else-if="capability === 'errors' && scenario !== 'recovery'"
-        class="min-h-target-enhanced"
-        @click="recover"
-      >
-        {{ t('apiShowcase.recover') }}
-      </NButton>
+      <div class="grid">
+        <NButton
+          class="col-start-1 row-start-1 min-h-target-enhanced"
+          :class="{ invisible: !pending }"
+          :disabled="!pending"
+          @click="cancel"
+        >
+          {{ t('apiShowcase.cancel') }}
+        </NButton>
+        <NButton
+          v-if="capability === 'errors'"
+          class="col-start-1 row-start-1 min-h-target-enhanced"
+          :class="{ invisible: !recoveryAvailable }"
+          :disabled="!recoveryAvailable"
+          @click="recover"
+        >
+          {{ t('apiShowcase.recover') }}
+        </NButton>
+      </div>
       <NButton
         quaternary
         class="min-h-target-enhanced"
@@ -485,7 +522,7 @@ onScopeDispose(() => {
         {{ t('apiShowcase.reset') }}
       </NButton>
       <p
-        class="m-0 min-w-0 text-caption text-text-secondary"
+        class="m-0 min-w-0 text-caption text-text-secondary layout-narrow:basis-full"
         role="status"
         aria-live="polite"
         v-text="statusText"
@@ -493,3 +530,21 @@ onScopeDispose(() => {
     </footer>
   </WorkbenchPage>
 </template>
+
+<style>
+@layer components {
+  html[data-motion='full'] [data-layout-profile='narrow'] .api-request-panel[data-panel-entering] {
+    animation: api-request-panel-enter var(--ui-motion-duration) var(--ui-motion-easing);
+  }
+  html[data-motion='reduced']
+    [data-layout-profile='narrow']
+    .api-request-panel[data-panel-entering] {
+    animation: api-request-panel-enter calc(var(--ui-motion-duration) / 2) var(--ui-motion-easing);
+  }
+  @keyframes api-request-panel-enter {
+    from {
+      opacity: 0;
+    }
+  }
+}
+</style>

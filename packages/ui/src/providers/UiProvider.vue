@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { UiDateTimeContext } from '../date-time/date-time'
 import { uiDateTimeContext } from '../date-time/date-time-context'
+import { uiLocaleKey } from './ui-locale'
 import { projectRegionAppearance, tokens, type UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiLocale } from '../components/contracts'
 import type { GlobalThemeOverrides } from 'naive-ui'
@@ -9,7 +10,7 @@ import enUS from 'naive-ui/es/locales/common/enUS'
 import dateZhCN from 'naive-ui/es/locales/date/zhCN'
 import dateEnUS from 'naive-ui/es/locales/date/enUS'
 import { NConfigProvider } from 'naive-ui/es/config-provider'
-import { computed, onBeforeUnmount, onMounted, provide, ref, toRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, ref, toRef, watch } from 'vue'
 
 import {
   pavpNaiveAppearanceKey,
@@ -18,6 +19,7 @@ import {
   pavpForcedColorsKey,
 } from '../adapters/naive/pavp-naive-runtime-context'
 import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
+import { attachSegmentedSelectionMotion } from '../adapters/motion/segmented-selection-motion'
 import { loadScrollEnhancement } from '../adapters/scroll/scroll-enhancement-loader'
 
 defineOptions({ name: 'UiProvider' })
@@ -28,6 +30,10 @@ const props = defineProps<{
   readonly locale: UiLocale
 }>()
 
+provide(
+  uiLocaleKey,
+  toRef(() => props.locale),
+)
 provide(
   uiDateTimeContext,
   computed(() => props.dateTime),
@@ -48,6 +54,7 @@ onBeforeUnmount(() => {
   forcedColorsMedia.removeEventListener('change', synchronizeForcedColors)
 })
 const controlMetric = ref<HTMLElement | null>(null)
+const overlayRoot = ref<HTMLElement | null>(null)
 const smallMetric = ref<HTMLElement | null>(null)
 const largeMetric = ref<HTMLElement | null>(null)
 const breakpointMetric = ref<HTMLElement | null>(null)
@@ -148,6 +155,38 @@ const appearance = toRef(() => props.appearance)
 
 provide(pavpNaiveAppearanceKey, appearance)
 provide(pavpRootAppearanceKey, appearance)
+watch(
+  [() => appearance.value.motion === 'full' && !forcedColors.value, controlMetric, overlayRoot],
+  ([enabled, metric, overlay], _, onCleanup) => {
+    if (!enabled || typeof Element.prototype.animate !== 'function') return
+    const scopes = [metric?.parentElement, overlay].filter((element) => element != null)
+    if (scopes.length > 0) {
+      onCleanup(
+        attachSegmentedSelectionMotion(scopes, [
+          {
+            group: '.n-radio-group--button-group:not([data-ui-radio-card-group])',
+            option: '.n-radio-button',
+            checkedOption: '.n-radio-button--checked:not(.n-radio-button--disabled)',
+            label: '.n-radio__label',
+          },
+          {
+            group: '.n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)',
+            option: '.n-button[aria-pressed]',
+            checkedOption: '.n-button[aria-pressed="true"]:not(:disabled)',
+            label: '.n-button__content',
+          },
+          {
+            group: '.n-tabs--segment-type .n-tabs-rail',
+            option: '.n-tabs-tab-wrapper > .n-tabs-tab[data-name]',
+            checkedOption: '.n-tabs-tab-wrapper > .n-tabs-tab--active:not(.n-tabs-tab--disabled)',
+            label: '.n-tabs-tab__label',
+          },
+        ]),
+      )
+    }
+  },
+  { immediate: true, flush: 'post' },
+)
 provide(
   'pavp.scroll',
   (host: HTMLElement, viewport: HTMLElement, content: HTMLElement, xScrollable: boolean) => {
@@ -180,16 +219,15 @@ onMounted(() => {
     previousDensity = density
     previousFontScale = fontScale
     const transition = root.getAttribute('data-ui-size-transition')
-    if (
-      transition !== 'instant' &&
-      (root.getAttribute('data-motion') !== 'full' || transition === null)
-    ) {
+    const hintChanged = records.some((record) => record.attributeName === 'data-ui-size-transition')
+    const interrupted =
+      transition !== null && transition !== 'instant' && root.getAttribute('data-motion') !== 'full'
+    if (!changed && !hintChanged && !interrupted) return
+    if (transition === null || interrupted) {
       finishSizeTransition()
       updateMetrics()
       return
     }
-    if (!changed && !records.some((record) => record.attributeName === 'data-ui-size-transition'))
-      return
 
     // The appearance transaction armed transitions before changing size.
     // This observer owns cleanup only, without deferring the committed preference.
@@ -321,6 +359,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     id="pavp-overlay-root"
+    ref="overlayRoot"
     :data-pavp-color-scope="contentRegion !== null ? '' : undefined"
     :data-color-mode="contentRegion?.appearance.colorMode"
     :data-material="contentRegion?.appearance.material"
@@ -386,6 +425,12 @@ onBeforeUnmount(() => {
 }
 
 @layer vendor-overrides {
+  /* Standalone segments keep their radius regardless of the decorative sibling. */
+  .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+    > .n-button[aria-pressed] {
+    border-radius: var(--ui-radius-control) !important;
+  }
+
   .n-cascader-menu {
     max-width: calc(100vw - 2 * var(--ui-space-page-inline));
   }
@@ -466,7 +511,7 @@ onBeforeUnmount(() => {
       .n-descriptions-table-header,
       .n-descriptions-table-content,
       .n-descriptions-table-content__content,
-      .n-descriptions__label,
+      .n-descriptions-table-content__label,
       .n-radio-group__splitor,
       .n-radio__dot,
       .n-radio-button,
@@ -493,16 +538,6 @@ onBeforeUnmount(() => {
     border-color: var(--ui-color-border-default);
     border-style: solid;
     border-width: var(--ui-admin-border-width);
-  }
-
-  .pavp-switch :not(:is(.n-switch__rail, .n-switch__button)) {
-    transition-duration: var(--ui-motion-duration);
-  }
-  .pavp-switch * {
-    transition-timing-function: var(--ui-motion-easing);
-  }
-  html:not([data-motion='full']) .pavp-switch :not(:is(.n-switch__rail, .n-switch__button)) {
-    transition: none;
   }
 
   .pavp-workspace-context-menu {
@@ -565,7 +600,7 @@ html[data-motion]
     .n-descriptions-table-header,
     .n-descriptions-table-content,
     .n-descriptions-table-content__content,
-    .n-descriptions__label,
+    .n-descriptions-table-content__label,
     .n-radio-group__splitor,
     .n-radio__dot,
     .n-radio-button,
@@ -610,7 +645,7 @@ html[data-motion='reduced']
     .n-descriptions-table-header,
     .n-descriptions-table-content,
     .n-descriptions-table-content__content,
-    .n-descriptions__label,
+    .n-descriptions-table-content__label,
     .n-radio-group__splitor,
     .n-radio__dot,
     .n-radio-button,
@@ -652,7 +687,7 @@ html[data-motion='none']
     .n-descriptions-table-header,
     .n-descriptions-table-content,
     .n-descriptions-table-content__content,
-    .n-descriptions__label,
+    .n-descriptions-table-content__label,
     .n-radio-group__splitor,
     .n-radio__dot,
     .n-radio__label,
@@ -737,7 +772,7 @@ html[data-motion='full'] .n-base-select-menu .n-base-select-option::before,
 html[data-motion='full'] .n-base-select-menu .n-base-select-option__check,
 html[data-motion='full'] .n-date-panel,
 html[data-motion='full'] .n-date-panel-date,
-html[data-motion='full'] .n-date-panel-calendar__title,
+html[data-motion='full'] .n-date-panel-month__text,
 html[data-motion='full'] .n-date-panel-month {
   transition-duration: var(--ui-motion-duration) !important;
   transition-timing-function: var(--ui-motion-easing) !important;
@@ -777,7 +812,7 @@ html[data-motion='reduced'] .n-base-select-menu .n-base-select-option::before,
 html[data-motion='reduced'] .n-base-select-menu .n-base-select-option__check,
 html[data-motion='reduced'] .n-date-panel,
 html[data-motion='reduced'] .n-date-panel-date,
-html[data-motion='reduced'] .n-date-panel-calendar__title,
+html[data-motion='reduced'] .n-date-panel-month__text,
 html[data-motion='reduced'] .n-date-panel-month {
   transition-duration: calc(var(--ui-motion-duration) / 2) !important;
   transition-timing-function: var(--ui-motion-easing) !important;
@@ -804,7 +839,7 @@ html[data-motion='reduced'] .n-base-select-menu .n-base-select-option::before,
 html[data-motion='reduced'] .n-base-select-menu .n-base-select-option__check,
 html[data-motion='reduced'] .n-date-panel,
 html[data-motion='reduced'] .n-date-panel-date,
-html[data-motion='reduced'] .n-date-panel-calendar__title,
+html[data-motion='reduced'] .n-date-panel-month__text,
 html[data-motion='reduced'] .n-date-panel-month {
   transition-duration: calc(var(--ui-motion-duration) / 2) !important;
   transition-property: background-color, color, opacity !important;
@@ -992,14 +1027,19 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
   transform: none !important;
 }
 
-.pavp-switch :is(.n-switch__rail, .n-switch__button) {
+html[data-motion='full']
+  .n-switch
+  :is(.n-switch__checked, .n-switch__unchecked, .n-switch__button-icon, .n-base-loading) {
   transition-duration: var(--ui-motion-duration);
+  transition-timing-function: var(--ui-motion-easing);
 }
-html:not([data-motion='full']) .pavp-switch :is(.n-switch__rail, .n-switch__button) {
+html:is([data-motion='reduced'], [data-motion='none'])
+  .n-switch
+  :is(.n-switch__checked, .n-switch__unchecked, .n-switch__button-icon, .n-base-loading) {
   transition: none;
 }
 @media (forced-colors: active) {
-  .pavp-switch[role='switch'] .n-switch__rail {
+  .n-switch[role='switch'] :is(.n-switch__rail, .n-switch__button) {
     outline: var(--ui-admin-border-width) solid ButtonText;
   }
 }
@@ -1079,13 +1119,42 @@ html:not([data-motion='full'])
     .n-button__state-border,
     .n-checkbox-box__border,
     .n-radio__dot,
-    .n-radio-button,
-    .n-radio-button__state-border,
     .n-switch__rail,
     .n-input__state-border,
     .n-base-selection__state-border
   ) {
   transition: none !important;
+}
+
+html[data-motion='reduced'] :is(.n-radio-button, .n-radio-button__state-border) {
+  transition-duration: calc(var(--ui-motion-duration) / 2) !important;
+}
+
+html[data-motion='none'] :is(.n-radio-button, .n-radio-button__state-border) {
+  transition: none !important;
+}
+
+html[data-motion='reduced']:not([data-pavp-settings-appearance])
+  :is(
+    .n-button[aria-pressed],
+    .n-button[aria-pressed] > .n-button__border,
+    .n-button[aria-pressed] > .n-button__state-border
+  ) {
+  transition-property: background-color, color, border-color, outline-color, opacity !important;
+  transition-duration: calc(var(--ui-motion-duration) / 2) !important;
+  transition-timing-function: var(--ui-motion-easing) !important;
+}
+
+.n-radio-group--button-group > :where(.n-radio-button:not([data-ui-radio-card-option])) {
+  min-height: var(--n-height);
+}
+
+.n-radio-group--button-group
+  > :where(.n-radio-button:not([data-ui-radio-card-option])):is(
+    [data-settings-control],
+    .min-h-target-enhanced
+  ) {
+  min-height: max(var(--n-height), var(--ui-layout-target-enhanced-minimum-block-size));
 }
 
 html[data-motion='full'] [data-settings-control],
@@ -1146,6 +1215,12 @@ html[data-pavp-settings-appearance~='sidebar'] .pavp-admin-shell__sidebar.n-layo
     outline-color: Highlight;
   }
 
+  .n-radio-button[data-ui-radio-card-option][data-selected='true']:has(
+      .n-radio-input:focus-visible
+    ) {
+    outline-color: currentColor;
+  }
+
   .n-input--focus > .n-input__state-border,
   .n-base-selection:is(.n-base-selection--focus, .n-base-selection--active)
     > .n-base-selection__state-border {
@@ -1183,7 +1258,7 @@ html[data-motion='full'][data-ui-size-transition='density']
     .n-radio-button,
     .n-tag,
     .n-card-header,
-    .n-card__content,
+    .n-card-content,
     .n-card__footer,
     .n-card__action,
     .n-dialog,
@@ -1206,5 +1281,340 @@ html[data-motion='full'][data-ui-size-transition='density']
     color, border-color, outline-color, box-shadow, opacity !important;
   transition-duration: var(--ui-motion-duration) !important;
   transition-timing-function: var(--ui-motion-easing) !important;
+}
+
+/* A shared track for Naive single-choice segments and grouped toggle buttons. */
+.n-radio-group.n-radio-group--button-group:not([data-ui-radio-card-group]),
+.n-button-group:not(.n-button-group--vertical):has(> .n-button[aria-pressed]):not(
+    :has(> .n-button:not([aria-pressed]))
+  ) {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-self: start;
+  block-size: auto;
+  max-inline-size: 100%;
+  gap: var(--ui-space-component-unit);
+  padding: var(--ui-space-component-unit);
+  border-width: var(--ui-admin-border-width);
+  border-style: solid;
+  border-color: var(--ui-color-border-default);
+  border-radius: var(--ui-radius-control);
+  background-color: var(--ui-color-surface-page);
+}
+
+.n-button-group:not(.n-button-group--vertical):has(> .n-button[aria-pressed]):not(
+    :has(> .n-button:not([aria-pressed]))
+  ) {
+  gap: 0;
+}
+
+.n-radio-group.n-radio-group--button-group:not([data-ui-radio-card-group]) > .n-radio-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding-block: var(--ui-space-component-unit);
+  padding-inline: var(--ui-space-button-inline);
+  border: 0;
+  border-radius: var(--ui-radius-control);
+  line-height: var(--ui-font-line-height-body);
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.n-radio-group.n-radio-group--button-group:not([data-ui-radio-card-group])
+  > .n-radio-group__splitor {
+  display: none;
+}
+
+.n-button-group[data-pavp-exclusive-selection] > .n-button > .n-button__border {
+  border-color: transparent;
+}
+
+.pavp-segmented-selection {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: calc(var(--ui-z-base) - 1);
+  border-radius: var(--ui-radius-control);
+  pointer-events: none;
+  transform-origin: left top;
+}
+
+/* The hover paint sits below the moving selection and the native hit targets. */
+:is(
+  .n-radio-group--button-group:not([data-ui-radio-card-group]),
+  .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical),
+  .n-tabs--segment-type .n-tabs-rail
+) {
+  position: relative;
+  isolation: isolate;
+}
+
+:is(
+  .n-radio-group--button-group:not([data-ui-radio-card-group])
+    > .n-radio-button:not(.n-radio-button--disabled),
+  .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+    > .n-button[aria-pressed]:not(:disabled),
+  .n-tabs--segment-type .n-tabs-rail .n-tabs-tab:not(.n-tabs-tab--disabled)
+) {
+  position: relative;
+  transition-property: opacity, outline-color !important;
+}
+
+:is(
+  .n-radio-group--button-group:not([data-ui-radio-card-group]) > .n-radio-button,
+  .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+    > .n-button[aria-pressed],
+  .n-tabs--segment-type .n-tabs-rail .n-tabs-tab
+)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--ui-z-base) - 2);
+  border-radius: var(--ui-radius-control);
+  background-color: var(--ui-color-control-primary);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ui-motion-duration) var(--ui-motion-easing);
+}
+
+@media (hover: hover) and (forced-colors: none) {
+  :is(
+      .n-radio-group--button-group:not([data-ui-radio-card-group])
+        > .n-radio-button:not(.n-radio-button--checked, .n-radio-button--disabled),
+      .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+        > .n-button[aria-pressed='false']:not(:disabled),
+      .n-tabs--segment-type .n-tabs-rail .n-tabs-tab:not(.n-tabs-tab--active, .n-tabs-tab--disabled)
+    ):hover::before {
+    opacity: 0.16;
+  }
+}
+
+@media (forced-colors: none) {
+  :is(
+    .n-radio-group--button-group:not([data-ui-radio-card-group])
+      > .n-radio-button:not(.n-radio-button--disabled),
+    .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+      > .n-button[aria-pressed]:not(:disabled),
+    .n-tabs--segment-type .n-tabs-rail .n-tabs-tab:not(.n-tabs-tab--disabled)
+  ) {
+    background-color: transparent;
+    color: var(--ui-color-text-primary);
+  }
+
+  :is(
+      .n-radio-group--button-group:not([data-ui-radio-card-group])
+        > .n-radio-button:not(.n-radio-button--disabled),
+      .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+        > .n-button[aria-pressed]:not(:disabled),
+      .n-tabs--segment-type .n-tabs-rail .n-tabs-tab:not(.n-tabs-tab--disabled)
+    ):active::before {
+    opacity: 0.24;
+  }
+
+  .pavp-segmented-selection,
+  .n-tabs--segment-type .n-tabs-rail > .n-tabs-capsule,
+  :is(
+    .n-radio-group--button-group:not([data-ui-radio-card-group], [data-pavp-segmented-selection])
+      > .n-radio-button--checked:not(.n-radio-button--disabled),
+    .n-button-group[data-pavp-exclusive-selection]:not(
+        .n-button-group--vertical,
+        [data-pavp-segmented-selection]
+      )
+      > .n-button[aria-pressed='true']:not(:disabled)
+  ) {
+    background-color: var(--ui-color-action-primary);
+    box-shadow: var(--ui-admin-shadow-control-hover);
+  }
+
+  /* Inert appearance snapshots retain attributes but have no animated mask. */
+  [data-pavp-segmented-selection='moving']:not(:where([inert], [inert] *))
+    [data-pavp-segmented-label-ink] {
+    background-color: var(--ui-color-text-primary);
+    background-image: linear-gradient(
+      var(--ui-color-text-on-action),
+      var(--ui-color-text-on-action)
+    );
+    background-repeat: no-repeat;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  :is(
+    .n-radio-group--button-group:not([data-ui-radio-card-group])
+      > .n-radio-button--checked:not(.n-radio-button--disabled),
+    .n-button-group[data-pavp-exclusive-selection]:not(.n-button-group--vertical)
+      > .n-button[aria-pressed='true']:not(:disabled),
+    .n-tabs--segment-type .n-tabs-rail .n-tabs-tab--active:not(.n-tabs-tab--disabled)
+  ) {
+    color: var(--ui-color-text-on-action);
+  }
+
+  .n-tabs-rail[data-pavp-segmented-selection] > .n-tabs-capsule {
+    visibility: hidden;
+  }
+
+  .n-tabs--segment-type .n-tabs-rail > .n-tabs-capsule {
+    z-index: calc(var(--ui-z-base) - 1);
+  }
+}
+
+html[data-motion='reduced']
+  :is(
+    .n-radio-group--button-group:not([data-ui-radio-card-group]) > .n-radio-button,
+    .n-button-group[data-pavp-exclusive-selection] > .n-button[aria-pressed],
+    .n-tabs--segment-type .n-tabs-rail .n-tabs-tab
+  )::before {
+  transition-duration: calc(var(--ui-motion-duration) / 2);
+}
+
+html[data-motion='none']
+  :is(
+    .n-radio-group--button-group:not([data-ui-radio-card-group]) > .n-radio-button,
+    .n-button-group[data-pavp-exclusive-selection] > .n-button[aria-pressed],
+    .n-tabs--segment-type .n-tabs-rail .n-tabs-tab
+  )::before {
+  transition: none;
+}
+
+html[data-motion]
+  [data-motion='none']
+  :is(
+    .n-radio-button[data-settings-control],
+    .n-radio-button[data-settings-control] > :is(.n-radio__label, .n-radio-button__state-border),
+    .n-button[aria-pressed][data-settings-control],
+    .n-button[aria-pressed][data-settings-control]
+      > :is(.n-button__border, .n-button__state-border, .n-base-wave)
+  ),
+html[data-motion] [data-motion='none'] [data-settings-control]::before {
+  animation: none !important;
+  transition: none !important;
+}
+
+.n-radio-group.n-radio-group--button-group:not([data-ui-radio-card-group])
+  > .n-radio-button
+  > .n-radio-button__state-border {
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: none;
+}
+
+.n-tabs--segment-type .n-tabs-rail .n-tabs-tab:focus-visible {
+  outline: var(--ui-admin-focus-width) solid currentColor;
+  outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+}
+
+@media (forced-colors: active) {
+  .n-radio-group.n-radio-group--button-group:not([data-ui-radio-card-group])
+    > .n-radio-button--checked,
+  .n-button-group[data-pavp-exclusive-selection] > .n-button[aria-pressed='true'] {
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+
+  .n-radio-group.n-radio-group--button-group:not([data-ui-radio-card-group])
+    > .n-radio-button--checked:has(.n-radio-input:focus-visible),
+  .n-button-group[data-pavp-exclusive-selection] > .n-button[aria-pressed='true']:focus-visible,
+  .n-tabs--segment-type .n-tabs-rail .n-tabs-tab--active:focus-visible {
+    outline-color: HighlightText;
+  }
+
+  @media (hover: hover) {
+    :is(
+        .n-radio-group--button-group:not([data-ui-radio-card-group])
+          > .n-radio-button:not(.n-radio-button--checked, .n-radio-button--disabled),
+        .n-button-group[data-pavp-exclusive-selection]
+          > .n-button[aria-pressed='false']:not(:disabled),
+        .n-tabs--segment-type
+          .n-tabs-rail
+          .n-tabs-tab:not(.n-tabs-tab--active, .n-tabs-tab--disabled)
+      ):hover:not(:focus-visible, :has(:focus-visible)) {
+      outline: var(--ui-border-width) solid ButtonText;
+      outline-offset: calc(-1 * var(--ui-border-width));
+    }
+  }
+}
+
+/* Keep the native segment indicator and its resize/initialization guard. */
+.n-tabs--segment-type .n-tabs-rail {
+  box-sizing: border-box;
+  padding: var(--ui-space-component-unit);
+  border-width: var(--ui-admin-border-width);
+  border-style: solid;
+  border-color: var(--ui-color-border-default);
+}
+
+html[data-motion='full']
+  .n-tabs--segment-type
+  .n-tabs-rail:not(.transition-disabled)
+  > .n-tabs-capsule {
+  transition: background-color var(--ui-motion-duration) var(--ui-motion-easing);
+}
+
+html[data-motion='full'] .n-tabs--segment-type :is(.n-tabs-rail, .n-tabs-tab) {
+  transition-duration: var(--ui-motion-duration);
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+html[data-motion='reduced'] .n-tabs--segment-type :is(.n-tabs-rail, .n-tabs-tab),
+html[data-motion='reduced']
+  .n-tabs--segment-type
+  .n-tabs-rail:not(.transition-disabled)
+  > .n-tabs-capsule {
+  transition-property: color, background-color;
+  transition-duration: calc(var(--ui-motion-duration) / 2);
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+html[data-motion='none'] .n-tabs--segment-type :is(.n-tabs-rail, .n-tabs-tab, .n-tabs-capsule) {
+  transition: none;
+}
+
+html[data-motion='full'] .n-tabs--segment-type :is(.n-tabs-pane-wrapper, .n-tab-pane) {
+  transition-duration: var(--ui-motion-duration);
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+html[data-motion='reduced'] .n-tabs--segment-type .n-tab-pane {
+  transition-property: color, background-color, opacity;
+  transition-duration: calc(var(--ui-motion-duration) / 2);
+  transition-timing-function: var(--ui-motion-easing);
+  transform: none;
+}
+
+html:not([data-motion='full']) .n-tabs--segment-type .n-tabs-pane-wrapper,
+html[data-motion='none'] .n-tabs--segment-type .n-tab-pane {
+  transition: none;
+}
+
+html[data-motion='none'] .n-tabs--segment-type .n-tab-pane {
+  transform: none;
+  opacity: 1;
+}
+
+html[data-motion='none']
+  .n-tabs--segment-type
+  .n-tab-pane:is(.next-transition-leave-active, .prev-transition-leave-active) {
+  opacity: 0;
+}
+
+@media (forced-colors: active) {
+  html[data-motion] .n-tabs--segment-type .n-tabs-capsule {
+    background-color: Highlight;
+    forced-color-adjust: none;
+    transition: none !important;
+  }
+
+  html[data-motion] .n-tabs--segment-type .n-tabs-rail .n-tabs-tab--active {
+    color: HighlightText;
+    forced-color-adjust: none;
+    transition: none !important;
+  }
 }
 </style>

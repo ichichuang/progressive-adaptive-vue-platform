@@ -274,7 +274,7 @@ function updateShow(show: boolean): void {
           >
             <span
               :class="maximized ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
-              class="size-icon"
+              class="size-icon-medium"
               aria-hidden="true"
             />
           </NButton>

@@ -99,7 +99,7 @@ const reason = computed(() => {
 </script>
 
 <template>
-  <div class="gap-control grid min-w-0">
+  <div class="grid min-w-0 gap-component-unit">
     <NButton
       :type="type ?? 'default'"
       :disabled="disabled || !actionable"

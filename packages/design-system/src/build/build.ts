@@ -2500,6 +2500,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
               Record<(typeof colorStyleIds)[number], readonly string[]>
             > = {
               unified: [],
+              monochrome: [],
               'dark-navigation': ['sidebar'],
               'brand-sidebar': ['sidebar'],
               'brand-header': ['header'],
@@ -3285,6 +3286,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     'data-material',
     'data-density',
     'data-motion',
+    'data-pavp-monochrome',
   ])
   const safetyAttributes = {
     'data-color-mode': 'light',
@@ -3391,6 +3393,37 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     rawPreference: JSON.stringify(builtInPreference),
   })
 
+  const safetyExecution = {
+    attributes: safetyAttributes,
+    customProperties: safetyCustomProperties,
+    hasRestorationOperation: true,
+    networkRequests: 0,
+    requestedStorageKey: 'runtime-supplied-preference-key',
+    storageWrites: 0,
+  }
+  for (const prefersDark of [false, true]) {
+    const missingPreference = executeAppearanceInit(appearanceInit, { prefersDark })
+    assertInvariantEqual(
+      missingPreference,
+      {
+        ...safetyExecution,
+        attributes: {
+          ...safetyAttributes,
+          'data-color-mode': resolveColorMode({
+            prefersDark,
+            storedColorMode: ProductPreferenceDefault.colorMode,
+          }),
+        },
+      },
+      'First Paint must resolve the default color mode when no preference is saved',
+    )
+  }
+  assertInvariantEqual(
+    executeAppearanceInit(appearanceInit, { prefersDark: true, invokeRestorationOperation: true }),
+    safetyExecution,
+    'Startup failure must still restore the safety frame after a default dark first paint',
+  )
+
   for (const colorStyle of colorStyleIds) {
     const preference = {
       ...builtInPreference,
@@ -3401,8 +3434,13 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         prefersDark: true,
         rawPreference: JSON.stringify(preference),
       }),
-      builtInExecution,
-      'curated style must preserve the root first paint until region scopes mount',
+      colorStyle === 'monochrome'
+        ? {
+            ...builtInExecution,
+            attributes: { ...builtInExecution.attributes, 'data-pavp-monochrome': '' },
+          }
+        : builtInExecution,
+      'Only the document-wide monochrome style must affect the root first paint',
     )
   }
   for (const colorStyle of [null, 'unknown', { mode: 'custom' }]) {
@@ -3419,7 +3457,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         prefersDark: true,
         rawPreference: JSON.stringify(invalid),
       }),
-      executeAppearanceInit(appearanceInit, { prefersDark: true, rawPreference: null }),
+      safetyExecution,
       'first-paint style validation must reject invalid IDs without migration',
     )
   }
@@ -3453,7 +3491,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     Object.keys(builtInExecution.attributes).every((attribute) =>
       canonicalAttributes.has(attribute),
     ),
-    'appearance-init.js must set only the seven Appearance-owned attributes',
+    'appearance-init.js must set only Appearance-owned attributes',
   )
 
   for (const fontScale of fontScaleValues) {
@@ -3921,13 +3959,16 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   const atomicFailure = executeAppearanceInit(appearanceInit, {
     fontScaleWriteFailure: true,
-    rawPreference: JSON.stringify(builtInPreference),
+    rawPreference: JSON.stringify({
+      ...builtInPreference,
+      appearance: { ...builtInPreference.appearance, colorStyle: 'monochrome' },
+    }),
   })
 
   assertInvariantEqual(
     atomicFailure.attributes,
     safetyAttributes,
-    'appearance-init.js must restore all seven attributes after a partial application failure',
+    'appearance-init.js must restore the safety attributes after a partial application failure',
   )
   assertInvariantEqual(
     atomicFailure.customProperties,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type ButtonHTMLAttributes, ref, type HTMLAttributes } from 'vue'
-import { NButton } from 'naive-ui/es/button'
+import { type ButtonHTMLAttributes, computed, ref, type HTMLAttributes } from 'vue'
+import { NButton, type ButtonSize, type ButtonType } from 'naive-ui/es/button'
 import { NButtonGroup } from 'naive-ui/es/button-group'
 import { NFloatButton } from 'naive-ui/es/float-button'
 import { NFloatButtonGroup } from 'naive-ui/es/float-button-group'
@@ -8,14 +8,84 @@ import { NIcon } from 'naive-ui/es/icon'
 import { NIconWrapper } from 'naive-ui/es/icon-wrapper'
 import { NGradientText } from 'naive-ui/es/gradient-text'
 import { tokens } from '@platform/design-system'
-import { UiCopyAction } from '@platform/ui'
-import { useConsoleI18n } from '../shared/i18n'
+import { UiCopyAction, UiNavigationLink } from '@platform/ui'
+import { useConsoleI18n, type ConsoleMessageKey } from '../shared/i18n'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
+import {
+  useApplicationLinkActivation,
+  useApplicationNavigation,
+} from '../app/router/application-navigation'
+import { registeredRouteDestination } from '../app/router/route-input'
 
 defineOptions({ name: 'ComponentActionsPage' })
 defineProps<{ readonly title: string; readonly breadcrumb?: string; readonly message: string }>()
 const { t } = useConsoleI18n()
+const navigation = useApplicationNavigation()
+const activate = useApplicationLinkActivation()
+const dashboard = registeredRouteDestination({ name: 'workbench-dashboard' })
+const dashboardHref = computed(() =>
+  navigation.canShow(dashboard) ? navigation.resolveHref(dashboard) : undefined,
+)
+const linkTypes = [
+  'default',
+  'tertiary',
+  'primary',
+  'info',
+  'success',
+  'warning',
+  'error',
+] as const satisfies readonly ButtonType[]
+const linkSizes = ['tiny', 'small', 'medium', 'large'] as const satisfies readonly ButtonSize[]
+type LinkAppearance = Pick<
+  InstanceType<typeof UiNavigationLink>['$props'],
+  | 'type'
+  | 'size'
+  | 'secondary'
+  | 'tertiary'
+  | 'quaternary'
+  | 'ghost'
+  | 'dashed'
+  | 'text'
+  | 'round'
+  | 'bordered'
+  | 'strong'
+  | 'block'
+>
+const navigationLinkSamples: readonly {
+  readonly title: ConsoleMessageKey
+  readonly samples: readonly { readonly caption: string; readonly appearance: LinkAppearance }[]
+}[] = [
+  {
+    title: 'showcase.navigationLink.colors',
+    samples: linkTypes.map((type) => ({ caption: `type="${type}"`, appearance: { type } })),
+  },
+  {
+    title: 'showcase.navigationLink.variants',
+    samples: [
+      { caption: 'secondary', appearance: { secondary: true } },
+      { caption: 'tertiary', appearance: { tertiary: true } },
+      { caption: 'quaternary', appearance: { quaternary: true } },
+      { caption: 'ghost', appearance: { ghost: true } },
+      { caption: 'dashed', appearance: { type: 'default', dashed: true } },
+      { caption: 'text', appearance: { text: true } },
+    ],
+  },
+  {
+    title: 'showcase.navigationLink.sizes',
+    samples: linkSizes.map((size) => ({ caption: `size="${size}"`, appearance: { size } })),
+  },
+  {
+    title: 'showcase.navigationLink.shapeAndLayout',
+    samples: [
+      { caption: 'round', appearance: { round: true } },
+      { caption: ':bordered="false"', appearance: { type: 'default', bordered: false } },
+      { caption: 'strong', appearance: { strong: true } },
+      { caption: 'block', appearance: { block: true } },
+    ],
+  },
+]
 const clicks = ref(0)
 const floatClicks = ref(0)
 const groupSelection = ref('first')
@@ -27,14 +97,57 @@ const groupSelection = ref('first')
     :message="message"
   >
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.actionsButtons') }}
-        </h2>
+      <WorkbenchSection :title="t('showcase.group.actionsButtons')">
         <div class="grid min-w-0 items-start gap-content-gap">
+          <ComponentSpecimen
+            v-if="dashboardHref"
+            name="UiNavigationLink"
+            span="full"
+            pavp
+          >
+            <div class="grid min-w-0 w-full gap-content-gap">
+              <section
+                v-for="group in navigationLinkSamples"
+                :key="group.title"
+                class="grid min-w-0 gap-content-gap"
+              >
+                <h4 class="font-title-weight m-0 text-body text-text-primary">
+                  {{ t(group.title) }}
+                </h4>
+                <div class="flex flex-wrap min-w-0 items-end gap-content-gap">
+                  <div
+                    v-for="sample in group.samples"
+                    :key="sample.caption"
+                    class="flex flex-col min-w-0 gap-component-unit"
+                    :class="{ 'w-full': sample.appearance.block === true }"
+                  >
+                    <code class="text-caption text-text-secondary">{{ sample.caption }}</code>
+                    <UiNavigationLink
+                      :href="dashboardHref"
+                      :label="t('route-title.workbench-dashboard')"
+                      :hover-label="t('welcomeArt.enterHover')"
+                      :type="sample.appearance.type"
+                      :size="sample.appearance.size"
+                      :secondary="sample.appearance.secondary"
+                      :tertiary="sample.appearance.tertiary"
+                      :quaternary="sample.appearance.quaternary"
+                      :ghost="sample.appearance.ghost"
+                      :dashed="sample.appearance.dashed"
+                      :text="sample.appearance.text"
+                      :round="sample.appearance.round"
+                      :bordered="sample.appearance.bordered"
+                      :strong="sample.appearance.strong"
+                      :block="sample.appearance.block"
+                      @click="activate($event, dashboard)"
+                    />
+                  </div>
+                </div>
+              </section>
+            </div>
+          </ComponentSpecimen>
           <ComponentSpecimen
             name="UiCopyAction"
             pavp
@@ -144,7 +257,16 @@ const groupSelection = ref('first')
             span="medium"
             :modes="['small']"
           >
-            <NButtonGroup size="small">
+            <NButtonGroup
+              size="small"
+              v-bind="
+                {
+                  class: 'min-w-0',
+                  'aria-label': t('showcase.group.actionsButtons'),
+                } satisfies HTMLAttributes
+              "
+              data-pavp-exclusive-selection
+            >
               <NButton
                 :type="groupSelection === 'first' ? 'primary' : 'default'"
                 v-bind="
@@ -205,11 +327,8 @@ const groupSelection = ref('first')
             </template>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.actionsVisual') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.actionsVisual')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen name="NIcon · NIconWrapper · Lucide">
             <NIcon size="small">
@@ -244,7 +363,7 @@ const groupSelection = ref('first')
             </NGradientText>
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

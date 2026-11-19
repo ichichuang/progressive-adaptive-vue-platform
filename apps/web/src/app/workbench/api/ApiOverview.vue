@@ -39,11 +39,10 @@ const copy = computed(() =>
   <WorkbenchPage
     :title="title"
     :message="message"
-    class="wb-form-page mx-auto w-full"
   >
     <template #actions>
       <UiCopyAction
-        variant="text"
+        variant="tertiary"
         :value="copy"
         :label="t('formShowcase.copyAI')"
         :copy-label="t('workbench.copy')"

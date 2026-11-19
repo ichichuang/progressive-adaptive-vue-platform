@@ -490,8 +490,9 @@ onScopeDispose(() => {
           {{ t('apiShowcase.advanced.run') }}
         </NButton>
         <NButton
-          v-if="pending"
           class="min-h-target-enhanced"
+          :class="{ invisible: !pending }"
+          :disabled="!pending"
           @click="cancel"
         >
           {{ t('apiShowcase.cancel') }}

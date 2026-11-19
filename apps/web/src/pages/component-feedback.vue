@@ -19,6 +19,7 @@ import { NSpin } from 'naive-ui/es/spin'
 import { NTooltip } from 'naive-ui/es/tooltip'
 import { useConsoleI18n } from '../shared/i18n'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 import FeedbackProviderSpecimens from '../app/workbench/FeedbackProviderSpecimens.vue'
 
@@ -42,13 +43,10 @@ onDeactivated(() => {
     :message="message"
   >
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.feedbackGlobal') }}
-        </h2>
+      <WorkbenchSection :title="t('showcase.group.feedbackGlobal')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <NMessageProvider
             to="#pavp-overlay-root"
@@ -66,11 +64,8 @@ onDeactivated(() => {
             </NNotificationProvider>
           </NMessageProvider>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.feedbackStates') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.feedbackStates')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NAlert"
@@ -128,11 +123,8 @@ onDeactivated(() => {
             />
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.feedbackOverlays') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.feedbackOverlays')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NTooltip"
@@ -222,7 +214,7 @@ onDeactivated(() => {
             </NDrawer>
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

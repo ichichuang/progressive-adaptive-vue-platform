@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { UiTable, type UiTableReadonlyRecord } from '@platform/ui'
+import { UiTable, type UiTableColumn, type UiTableReadonlyRecord } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
 import { NSelect } from 'naive-ui/es/select'
 import { computed, onScopeDispose, shallowRef, watch, type ButtonHTMLAttributes } from 'vue'
-import { useConsoleI18n } from '../../shared/i18n'
+import { useConsoleI18n, type ConsoleMessageKey } from '../../shared/i18n'
 import { useAccessBoundary } from '../access/access-boundary'
 import { AccessRequestDialog, ResourceSharingDialog } from '../access/advanced-interactions'
 import { useGuardedTable } from '../tables/use-guarded-table'
@@ -21,7 +21,7 @@ const props = defineProps<{
 }>()
 const { host } = props
 const access = useAccessBoundary()
-const { t } = useConsoleI18n()
+const { t, locale } = useConsoleI18n()
 const { tableCopy, copy } = useTableShowcase()
 const selected = shallowRef<UiTableReadonlyRecord>()
 const requested = shallowRef<AdministrationCommand>()
@@ -33,7 +33,7 @@ const sharingOpen = shallowRef(false)
 const reviewOpen = shallowRef(false)
 const matrixExpanded = shallowRef(true)
 const subject = shallowRef<string | null>(null)
-const simulated = shallowRef('')
+const simulated = shallowRef<ConsoleMessageKey>()
 const simulationPending = shallowRef(false)
 let simulationAttempt: AbortController | undefined
 
@@ -54,6 +54,33 @@ const selectedDetails = computed(() => {
 })
 const differences = computed(() => parsePolicyDifferences(selected.value?.['differences']) ?? [])
 
+function hostText(value: string): string {
+  return host.displayText?.(value, locale.value) ?? value
+}
+
+function selectedText(field: string): string {
+  const value = selected.value?.[field]
+  return typeof value === 'string' ? hostText(value) : ''
+}
+
+const columns: (UiTableColumn & { readonly title: ConsoleMessageKey })[] = [
+  { key: 'label', title: 'administration.subject', width: 190, fixed: 'left' },
+  ...(props.module === 'roles'
+    ? ([
+        { key: 'capability', title: 'administration.capability', width: 200 },
+        { key: 'directEffect', title: 'administration.directRule', width: 130 },
+        { key: 'effective', title: 'administration.effectiveResult', width: 160 },
+      ] as const)
+    : []),
+  { key: 'status', title: 'administration.state', width: 170 },
+  { key: 'source', title: 'administration.source', width: 180 },
+  { key: 'detail', title: 'administration.detail', width: 240 },
+  ...(props.module === 'audit'
+    ? ([{ key: 'occurredAt', title: 'administration.occurredAt', width: 200 }] as const)
+    : []),
+  { key: 'model', title: 'administration.model', width: 140 },
+]
+
 const guarded = useGuardedTable({
   access,
   domain: host.domain,
@@ -66,29 +93,17 @@ const guarded = useGuardedTable({
       ? { id: row['id'], revision: row['revision'] }
       : undefined,
   fields: host.projection,
+  translate(value) {
+    const column = columns.find(({ title }) => title === value)
+    return column ? t(column.title) : value
+  },
   data: { kind: 'remote', read: host.read, query: host.query },
   ...(host.export ? { output: { csv: host.export } } : {}),
   schema: {
     id: `administration-${props.module}`,
     rowKey: 'id',
     source: { kind: 'remote', request: { api: 'administration-host', method: 'GET' } },
-    columns: [
-      { key: 'label', title: t('administration.subject'), width: 190, fixed: 'left' },
-      ...(props.module === 'roles'
-        ? [
-            { key: 'capability', title: t('administration.capability'), width: 200 },
-            { key: 'directEffect', title: t('administration.directRule'), width: 130 },
-            { key: 'effective', title: t('administration.effectiveResult'), width: 160 },
-          ]
-        : []),
-      { key: 'status', title: t('administration.state'), width: 170 },
-      { key: 'source', title: t('administration.source'), width: 180 },
-      { key: 'detail', title: t('administration.detail'), width: 240 },
-      ...(props.module === 'audit'
-        ? [{ key: 'occurredAt', title: t('administration.occurredAt'), width: 200 }]
-        : []),
-      { key: 'model', title: t('administration.model'), width: 140 },
-    ],
+    columns,
     keywordSearch: { parameter: 'keyword', fields: ['label', 'status'] },
     pagination: { pageSize: 10, pageSizes: [10, 20, 50] },
     ...(host.export
@@ -141,7 +156,7 @@ onScopeDispose(() => {
 function clearSimulation(): void {
   simulationAttempt?.abort()
   simulationAttempt = undefined
-  simulated.value = ''
+  simulated.value = undefined
   simulationPending.value = false
 }
 
@@ -174,10 +189,10 @@ async function simulate(): Promise<void> {
   if (simulationAttempt === attempt && !attempt.signal.aborted) {
     simulated.value =
       result.status === 'allow'
-        ? t('administration.simulationAllow')
+        ? 'administration.simulationAllow'
         : result.status === 'deny'
-          ? t('administration.simulationDeny')
-          : t('accessInteraction.unavailable')
+          ? 'administration.simulationDeny'
+          : 'accessInteraction.unavailable'
     simulationPending.value = false
   }
 }
@@ -223,6 +238,12 @@ function updateReview(open: boolean): void {
     :table="table"
     :copy="tableCopy"
   >
+    <template
+      v-if="host.displayText"
+      #cell="{ text }"
+    >
+      <span v-text="hostText(text)" />
+    </template>
     <template #rowActions="{ row }">
       <NButton
         v-if="guarded.target(row)"
@@ -247,17 +268,17 @@ function updateReview(open: boolean): void {
         v-if="selected && target"
         class="grid min-w-0 gap-content-gap"
       >
-        <strong>{{ selected['label'] }}</strong>
-        <p>{{ selected['status'] }}</p>
-        <p>{{ selected['source'] }}</p>
-        <p>{{ selected['detail'] }}</p>
+        <strong>{{ selectedText('label') }}</strong>
+        <p>{{ selectedText('status') }}</p>
+        <p>{{ selectedText('source') }}</p>
+        <p>{{ selectedText('detail') }}</p>
         <p
           v-if="selected['scopeLabel']"
-          v-text="selected['scopeLabel']"
+          v-text="selectedText('scopeLabel')"
         />
         <dl
           v-if="selectedDetails.length"
-          class="gap-control grid min-w-0 break-words"
+          class="grid min-w-0 break-words gap-component-unit"
         >
           <template
             v-for="entry in selectedDetails"
@@ -272,7 +293,7 @@ function updateReview(open: boolean): void {
         </dl>
         <dl
           v-if="module === 'policies'"
-          class="gap-control grid min-w-0 break-words"
+          class="grid min-w-0 break-words gap-component-unit"
         >
           <dt>{{ t('administration.activeRevision') }}</dt>
           <dd
@@ -282,17 +303,17 @@ function updateReview(open: boolean): void {
           <dt>{{ t('administration.confirmedPolicy') }}</dt>
           <dd
             class="m-0"
-            v-text="selected['baselineSummary']"
+            v-text="selectedText('baselineSummary')"
           />
           <dt>{{ t('administration.draftPolicy') }}</dt>
           <dd
             class="m-0"
-            v-text="selected['draftSummary']"
+            v-text="selectedText('draftSummary')"
           />
         </dl>
         <ul
           v-if="differences.length"
-          class="gap-control grid min-w-0 break-words px-page-inline"
+          class="grid min-w-0 break-words gap-component-unit px-page-inline"
         >
           <li
             v-for="difference in differences"
@@ -309,13 +330,13 @@ function updateReview(open: boolean): void {
             />
           </li>
         </ul>
-        <div class="gap-control flex flex-wrap">
+        <div class="flex flex-wrap gap-content-gap">
           <NButton
             v-for="command in commands"
             :key="command.kind"
             @click="requested = command"
           >
-            {{ command.label }}
+            {{ hostText(command.label) }}
           </NButton>
           <NButton
             v-if="sharing"
@@ -347,7 +368,7 @@ function updateReview(open: boolean): void {
             v-if="simulated"
             role="status"
           >
-            {{ simulated }}
+            {{ t(simulated) }}
           </p>
         </template>
       </div>
@@ -359,7 +380,8 @@ function updateReview(open: boolean): void {
     :host="host"
     :target="target"
     :active-revision="activeRevision"
-    :label="typeof selected?.['label'] === 'string' ? selected['label'] : ''"
+    :label="selectedText('label')"
+    :command-label="hostText(requested.label)"
     :copy="copy"
     @close="requested = undefined"
     @saved="refreshed"

@@ -138,6 +138,7 @@ async function removeSelected(id: string): Promise<void> {
           v-if="table.schema.selection === 'multiple' || table.schema.selection === 'single'"
         >
           <span
+            v-if="table.schema.maxSelection === undefined"
             class="text-caption text-text-secondary"
             v-text="`${t('tableExamples.selected')} ${String(table.selectedKeys.value.length)}`"
           />

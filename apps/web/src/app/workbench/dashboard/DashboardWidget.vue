@@ -170,7 +170,9 @@ function series(value: string | number | boolean): void {
         :value="panel.config.series"
         size="small"
         :name="`${panel.id}-series`"
-        v-bind="{ 'aria-label': t('dashboardBoard.series') } satisfies HTMLAttributes"
+        v-bind="
+          { role: 'radiogroup', 'aria-label': t('dashboardBoard.series') } satisfies HTMLAttributes
+        "
         @update:value="series"
       >
         <NRadioButton
@@ -321,7 +323,7 @@ function series(value: string | number | boolean): void {
     >
       <span class="flex min-w-0 items-center gap-content-gap">
         <span
-          class="text-action-primary i-lucide-link-2 shrink-0"
+          class="i-lucide-link-2 shrink-0 text-control-primary"
           aria-hidden="true"
         />
         <span class="flex-1 min-w-0 text-body">{{ routeCard.description }}</span>

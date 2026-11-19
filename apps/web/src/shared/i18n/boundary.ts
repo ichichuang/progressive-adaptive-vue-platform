@@ -43,12 +43,18 @@ export type ConsoleLocaleNotice =
   | 'message-load-failed'
   | 'commit-failed'
 
+/** Presents a prepared locale change around its guarded, synchronous commit. */
+export type ConsoleLocalePresentation = (commit: () => boolean) => void | Promise<void>
+
 export interface ConsoleI18nBoundary {
   readonly locale: Readonly<Ref<ConsoleLocale>>
   readonly pendingLocale: Readonly<Ref<ConsoleLocale | null>>
   readonly notice: Readonly<Ref<ConsoleLocaleNotice>>
   readonly t: ConsoleTranslate
-  switchLocale(candidate: unknown): Promise<ConsoleLocaleSwitchResult>
+  switchLocale(
+    candidate: unknown,
+    present?: ConsoleLocalePresentation,
+  ): Promise<ConsoleLocaleSwitchResult>
   prepareScope(
     scope: ConsoleMessageScope,
   ): Promise<{ readonly status: 'ready' | 'failed' | 'cancelled' }>

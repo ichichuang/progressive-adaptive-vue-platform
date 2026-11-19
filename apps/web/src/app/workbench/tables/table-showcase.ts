@@ -2,6 +2,7 @@ import type { UiTableCopy, UiTableEditorCopy, UiTableSchema } from '@platform/ui
 import type { ConsoleMessageKey } from '../../../shared/i18n'
 import { useFormShowcase } from '../forms/form-showcase'
 import { publicProductTableRequests } from './public-product-table'
+import { tableSampleCategoryOptions } from './table-sample-categories'
 
 export function tableShowcaseSchema(
   remote: boolean,
@@ -23,6 +24,7 @@ export function tableShowcaseSchema(
         key: 'category',
         title: 'tableShowcase.category',
         kind: 'tag',
+        ...(!remote ? { options: tableSampleCategoryOptions } : {}),
         width: 160,
         sortable: !remote,
       },
@@ -110,6 +112,7 @@ const translatedSchemaLabels = [
   'tableShowcase.id',
   'tableShowcase.title',
   'tableShowcase.category',
+  ...tableSampleCategoryOptions.map(({ label }) => label),
   'tableShowcase.price',
   'tableShowcase.stock',
   'tableShowcase.description',
@@ -188,6 +191,8 @@ export function useTableShowcase() {
   }
   return {
     ...demo,
+    formatLabelValue: (label: string, value: string) =>
+      `${label}${t('tableShowcase.labelSeparator')}${value}`,
     translate: (value: string) => {
       const key = translatedSchemaLabels.find((candidate) => candidate === value)
       return key === undefined ? value : t(key)

@@ -13,6 +13,7 @@ import {
 } from 'vue'
 
 import { NButton } from 'naive-ui/es/button'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import {
   UiForm,
   UiScrollArea,
@@ -25,6 +26,7 @@ import {
 import { formDraftSignature } from '../../../forms/form-draft-signature'
 import { routerScrollControllerKey } from '../../../router/router-scroll-controller'
 import { useFormShowcase, useFormExampleCheck } from '../form-showcase'
+import { formatConfigurationList } from '../../configuration/configuration-diagnostic'
 import { useFormExampleUndo } from '../use-form-example-undo'
 import { builderEntries, builderKinds, type BuilderKind } from './use-form-builder'
 import { builderAttachments } from './builder-attachments'
@@ -51,13 +53,15 @@ function dropField(event: DragEvent): void {
   const kind = event.dataTransfer?.getData('application/x-pavp-form-field')
   if (!props.pending && kind && Object.hasOwn(builderKinds, kind)) emit('add', kind as BuilderKind)
 }
-const { t, copy } = useFormShowcase()
+const { t, copy, locale } = useFormShowcase()
 const hasAttachments = computed(() =>
   builderEntries(props.schema).some(({ node }) => node.kind === 'attachment'),
 )
 const resetFields = ref<readonly string[]>([])
 const resetNotice = computed(() =>
-  resetFields.value.length ? `${t('formBuilder.valuesReset')} ${resetFields.value.join('、')}` : '',
+  resetFields.value.length
+    ? `${t('formBuilder.valuesReset')} ${formatConfigurationList(resetFields.value, locale.value)}`
+    : '',
 )
 const attachmentBlobs = new Map<string, Blob>()
 const dynamic = useUiDynamicForm({
@@ -192,8 +196,9 @@ const issues = computed(() =>
 function locate(path: string | null): void {
   if (mode.value === 'edit' && path !== null) form.value.focusField(path)
 }
-function toggleMode(): void {
-  if (!form.value.hasPendingInput.value) mode.value = mode.value === 'edit' ? 'detail' : 'edit'
+function chooseMode(value: string | number | boolean): void {
+  if (!form.value.hasPendingInput.value && (value === 'edit' || value === 'detail'))
+    mode.value = value
 }
 const register = inject(routerScrollControllerKey)
 if (!register) throw new Error('The form builder requires the Router Scroll Controller port.')
@@ -232,19 +237,26 @@ onScopeDispose(() => {
         <h2 class="font-title-weight m-0 mr-auto text-body text-text-primary layout-narrow:hidden">
           {{ t('formBuilder.preview') }}
         </h2>
-        <NButton
-          tertiary
+        <NRadioGroup
+          name="form-builder-preview-mode"
+          :value="mode"
+          :disabled="form.hasPendingInput.value"
           v-bind="
             {
-              'aria-pressed': mode === 'detail',
+              role: 'radiogroup',
+              'aria-label': t('formBuilder.preview'),
               title: previewHint || undefined,
-            } satisfies ButtonHTMLAttributes
+            } satisfies HTMLAttributes
           "
-          :disabled="form.hasPendingInput.value"
-          @click="toggleMode"
+          @update:value="chooseMode"
         >
-          {{ t(mode === 'edit' ? 'formBuilder.view' : 'formBuilder.edit') }}
-        </NButton>
+          <NRadioButton value="edit">
+            {{ t('formBuilder.edit') }}
+          </NRadioButton>
+          <NRadioButton value="detail">
+            {{ t('formBuilder.view') }}
+          </NRadioButton>
+        </NRadioGroup>
       </header>
       <UiScrollArea
         class="flex-1 min-h-0 min-w-0"

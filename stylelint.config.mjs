@@ -365,7 +365,20 @@ const displayPreviewVisualAuthorityRules = {
 const providerVisualAuthorityRules = {
   ...visualAuthorityRules,
   color: colorAuthorityRules(textColorVariables),
-  'background-color': colorAuthorityRules([...backgroundColorVariables, ...adminColorVariables]),
+  'background-color': colorAuthorityRules(
+    [...backgroundColorVariables, ...adminColorVariables],
+    ownedStylePatterns('packages/ui/src/providers/UiProvider.vue', 'background-color'),
+  ),
+  'z-index': [
+    disallowOutsideAuthorities(
+      zIndexVariables,
+      ['auto'],
+      [
+        zeroNumberPattern,
+        ...ownedStylePatterns('packages/ui/src/providers/UiProvider.vue', 'z-index'),
+      ],
+    ),
+  ],
 }
 
 const routeTransitionFullDurationPattern = `${cssCalcFunction}\\(${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}\\+${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}/${cssTrivia}2${cssTrivia}\\)`

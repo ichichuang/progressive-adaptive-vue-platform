@@ -5,38 +5,44 @@
     }
   }
 
-  .pavp-appearance-settings-frame {
+  #pavp-appearance-surface {
     position: fixed;
     inset: 0;
-    z-index: var(--ui-z-base);
-    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: clip;
+    border: 0;
+    background: transparent;
     pointer-events: none;
   }
 
-  .pavp-appearance-settings-frame--rift {
-    background: var(--ui-color-surface-page);
+  #pavp-appearance-surface::backdrop {
+    background: transparent;
+    pointer-events: none;
   }
 
-  .pavp-appearance-settings-old {
+  .pavp-appearance-scene {
     position: absolute;
     inset: 0;
-    background: var(--ui-color-surface-page);
-    font-size: var(--ui-font-size-body);
+    width: 100%;
+    height: 100%;
+    border: 0;
+    pointer-events: none;
+  }
+
+  .pavp-appearance-page {
+    position: fixed;
+    inset: 0;
   }
 
   .pavp-appearance-rift-edge {
-    display: none;
-  }
-
-  .pavp-appearance-settings-frame > .pavp-appearance-rift-edge {
-    clip-path: inset(50%);
-  }
-
-  .pavp-appearance-settings-frame > .pavp-appearance-rift-edge,
-  html:active-view-transition-type(pavp-appearance-rift) .pavp-appearance-rift-edge {
-    display: block;
-    position: fixed;
+    position: absolute;
     inset: 0;
+    clip-path: inset(50%);
     pointer-events: none;
     background: linear-gradient(
       150deg,
@@ -46,67 +52,9 @@
     );
   }
 
-  html:active-view-transition-type(pavp-appearance-rift) .pavp-appearance-rift-edge {
-    view-transition-name: pavp-rift-edge;
-  }
-
-  html:active-view-transition-type(pavp-appearance-rift)::view-transition-group(pavp-rift-edge) {
-    animation: none;
-    z-index: var(--ui-z-base);
-  }
-
-  html:active-view-transition-type(pavp-appearance-rift)::view-transition-old(pavp-rift-edge) {
-    display: none;
-  }
-
-  html:active-view-transition-type(pavp-appearance-rift)::view-transition-new(pavp-rift-edge) {
-    animation: none;
-    clip-path: inset(50%);
-    mix-blend-mode: normal;
-  }
-
-  html:active-view-transition-type(pavp-appearance)
-    [data-scroll-owner='architecture-console-content'] {
-    view-transition-name: none;
-  }
-
-  html:active-view-transition-type(pavp-appearance)::view-transition {
-    pointer-events: none;
-  }
-
-  html:active-view-transition-type(pavp-appearance)::view-transition-group(root) {
-    animation: none;
-  }
-
-  html:active-view-transition-type(pavp-appearance)::view-transition-old(root),
-  html:active-view-transition-type(pavp-appearance)::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
-  }
-
-  /* Paint the still-open palette independently of the page's reveal mask. */
-  html:active-view-transition-type(pavp-appearance) .pavp-admin-shell__theme-picker-popover {
-    view-transition-name: pavp-appearance-picker;
-  }
-
-  html:active-view-transition-type(pavp-appearance)::view-transition-group(pavp-appearance-picker) {
-    animation: none;
-    z-index: var(--ui-z-overlay);
-  }
-
-  html:active-view-transition-type(pavp-appearance)::view-transition-old(pavp-appearance-picker) {
-    display: none;
-  }
-
-  html:active-view-transition-type(pavp-appearance)::view-transition-new(pavp-appearance-picker) {
-    animation: none;
-    mix-blend-mode: normal;
-  }
-
   @media (forced-colors: active) {
-    html:active-view-transition-type(pavp-appearance)::view-transition,
-    .pavp-appearance-settings-frame {
-      display: none;
+    #pavp-appearance-surface {
+      visibility: hidden;
     }
   }
 }

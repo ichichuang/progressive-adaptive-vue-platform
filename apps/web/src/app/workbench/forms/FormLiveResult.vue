@@ -16,6 +16,7 @@ const props = defineProps<{
   readonly checked?: 'valid' | 'invalid' | 'cancelled' | null
 }>()
 defineSlots<{ status?: () => unknown; insight?: () => unknown; guide?: () => unknown }>()
+const emit = defineEmits<{ locate: [] }>()
 const active = ref(true)
 onActivated(() => {
   active.value = true
@@ -141,6 +142,9 @@ const issues = computed(() =>
   })),
 )
 let locateRequest = 0
+function isCurrentLocation(request: number, form: UiFormController<I>): boolean {
+  return request === locateRequest && active.value && props.form === form
+}
 async function locate(path: string | null): Promise<void> {
   if (props.mode !== 'edit' || path === null) return
   const request = ++locateRequest
@@ -149,10 +153,11 @@ async function locate(path: string | null): Promise<void> {
   if (step !== null && step !== form.activeStepIndex.value) {
     if ((await form.setActiveStep(step, { relax: true })) !== 'applied') return
   }
+  if (!isCurrentLocation(request, form)) return
+  emit('locate')
   await nextTick()
   await nextTick()
-  if (request === locateRequest && active.value && props.form === form && canLocate(path))
-    form.focusField(path)
+  if (isCurrentLocation(request, form) && canLocate(path)) form.focusField(path)
 }
 </script>
 

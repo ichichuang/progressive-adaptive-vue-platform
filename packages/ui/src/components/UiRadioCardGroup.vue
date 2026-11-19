@@ -111,18 +111,7 @@ const radioCardStyle = computed(() => ({
           :option="option"
           :selected="option.value === displayedChoice"
         >
-          <span class="text-center flex min-w-0 items-center justify-center gap-content-gap">
-            <span
-              class="i-lucide-check shrink-0"
-              :class="{ invisible: option.value !== displayedChoice }"
-              aria-hidden="true"
-            />
-            <span>{{ option.label }}</span>
-            <span
-              class="i-lucide-check shrink-0 invisible"
-              aria-hidden="true"
-            />
-          </span>
+          <span class="text-center">{{ option.label }}</span>
         </slot>
       </div>
     </NRadioButton>
@@ -242,6 +231,7 @@ const radioCardStyle = computed(() => ({
     > .pavp-radio-card-group__option[data-ui-radio-card-option][data-selected='true'] {
     background: Highlight;
     color: HighlightText;
+    forced-color-adjust: none;
   }
 
   .pavp-radio-card-group[data-ui-radio-card-group][data-disabled='false']

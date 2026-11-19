@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type HTMLAttributes } from 'vue'
+import { ref, useId, type HTMLAttributes } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -11,6 +11,7 @@ import { createFormRichTextExample } from '../app/workbench/forms/form-rich-text
 
 defineOptions({ name: 'ComponentFormRichTextPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
+const modeGroupName = useId()
 const demo = useFormShowcase()
 const { t } = demo
 const example = createFormRichTextExample(t)
@@ -38,6 +39,7 @@ const draft = useFormExampleDraft(form, ['title', 'body', 'note'])
     <template #controls>
       <NRadioGroup
         v-model:value="mode"
+        :name="modeGroupName"
         :disabled="form.hasPendingInput.value"
         v-bind="
           {

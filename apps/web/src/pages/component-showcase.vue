@@ -2,6 +2,7 @@
 import { type AnchorHTMLAttributes, computed, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
+import { NEmpty } from 'naive-ui/es/empty'
 import { NInput } from 'naive-ui/es/input'
 import { UiCopyAction, UiStatusBadge } from '@platform/ui'
 import { useConsoleI18n } from '../shared/i18n'
@@ -15,6 +16,7 @@ import {
 } from '../app/router/route-input'
 import { consoleNavigationRegistry, getRouteRecord } from '../app/router/route-registry'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 import { discoverCapabilities } from '../app/workbench/capability-discovery'
 import { componentPurposeKeys } from '../app/workbench/component-purpose-keys'
@@ -63,7 +65,7 @@ const hints = {
 const componentNames = {
   'component-showcase': livePavpNames,
   'component-actions':
-    'UiCopyAction NButton NButtonGroup NIcon NIconWrapper NFloatButton NFloatButtonGroup NGradientText Lucide',
+    'UiNavigationLink UiCopyAction NButton NButtonGroup NIcon NIconWrapper NFloatButton NFloatButtonGroup NGradientText Lucide',
   'component-inputs':
     'NInput NInputGroup NInputGroupLabel NInputNumber NInputOtp NAutoComplete NMention NDatePicker NTimePicker NColorPicker NDynamicInput NDynamicTags NUpload NUploadDragger NForm NFormItem',
   'component-selection':
@@ -147,49 +149,35 @@ const categories = computed(() =>
     :title="title"
     :message="message"
   >
-    <section
-      class="grid grid-cols-1 items-stretch gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
-      :aria-label="t('showcase.discover')"
+    <div
+      class="grid grid-cols-1 min-w-0 items-stretch gap-field-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
     >
-      <NCard
-        :bordered="false"
-        class="wb-overview-card col-span-full min-w-0 shadow-panel"
-        content-class="grid min-w-0 content-center gap-content-gap"
+      <WorkbenchSection
+        class="col-span-full"
+        :title="t('showcase.discover')"
       >
-        <h2 class="font-title-weight m-0 text-subheading">
-          {{ t('showcase.discover') }}
-        </h2>
         <NInput
           v-model:value="search"
           clearable
           :placeholder="t('showcase.search')"
           :input-props="{ 'aria-label': t('showcase.search') }"
         />
-      </NCard>
-      <div
+      </WorkbenchSection>
+      <WorkbenchSection
         v-if="capabilities.length > 0"
-        class="grid col-span-full min-w-0 gap-content-gap"
+        class="col-span-full"
+        :title="t('showcase.intent.title')"
+        :description="t('showcase.intent.hint')"
       >
-        <div>
-          <h2 class="font-title-weight m-0 text-subheading">
-            {{ t('showcase.intent.title') }}
-          </h2>
-          <p class="mt-control-gap m-0 text-caption text-text-secondary">
-            {{ t('showcase.intent.hint') }}
-          </p>
-        </div>
         <div
           class="grid min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
         >
-          <NCard
+          <article
             v-for="capability in capabilities"
             :key="capability.destination.name"
-            :bordered="false"
-            hoverable
-            class="wb-overview-card min-w-0 shadow-panel"
-            content-class="flex min-w-0 flex-col gap-content-gap"
+            class="rounded-control flex flex-col min-w-0 bg-surface-page gap-content-gap p-panel-narrow"
           >
-            <h3 class="font-title-weight m-0 text-subheading">
+            <h3 class="leading-body font-title-weight m-0 text-body">
               {{ capability.title }}
             </h3>
             <p class="m-0 text-text-secondary">
@@ -218,9 +206,9 @@ const categories = computed(() =>
                 :failure-label="t('workbench.copyFailed')"
               />
             </div>
-          </NCard>
+          </article>
         </div>
-      </div>
+      </WorkbenchSection>
       <NCard
         v-for="category in categories"
         :key="category.destination.name"
@@ -302,47 +290,45 @@ const categories = computed(() =>
           categories.length === 0 && capabilities.length === 0 && !showLivePavp && !showLiveNaive
         "
         :bordered="false"
-        class="col-span-full min-w-0"
+        class="col-span-full min-w-0 shadow-panel"
       >
-        <p class="m-0 text-text-secondary">
-          {{ t('showcase.emptySearch') }}
-        </p>
+        <div role="status">
+          <NEmpty :description="t('showcase.emptySearch')" />
+        </div>
       </NCard>
-      <h2
+      <WorkbenchSection
         v-if="showLivePavp || showLiveNaive"
-        class="sr-only"
-      >
-        {{ t('showcase.group.live') }}
-      </h2>
-      <ComponentSpecimen
-        v-if="showLivePavp"
         class="col-span-full"
-        :name="livePavpNames"
-        pavp
-        span="wide"
+        :title="t('showcase.group.live')"
       >
-        <p class="m-0 text-text-secondary">
-          {{ t('showcase.providerNote') }}
-        </p>
-        <UiStatusBadge
-          :label="t('showcase.live')"
-          tone="active"
-        />
-      </ComponentSpecimen>
-      <ComponentSpecimen
-        v-if="showLiveNaive"
-        class="col-span-full"
-        :name="liveNaiveNames"
-        span="wide"
-      >
-        <p class="m-0 text-text-secondary">
-          {{ t('showcase.providerNote') }}
-        </p>
-        <UiStatusBadge
-          :label="t('showcase.live')"
-          tone="active"
-        />
-      </ComponentSpecimen>
-    </section>
+        <ComponentSpecimen
+          v-if="showLivePavp"
+          :name="livePavpNames"
+          pavp
+          span="wide"
+        >
+          <p class="m-0 text-text-secondary">
+            {{ t('showcase.providerNote') }}
+          </p>
+          <UiStatusBadge
+            :label="t('showcase.live')"
+            tone="active"
+          />
+        </ComponentSpecimen>
+        <ComponentSpecimen
+          v-if="showLiveNaive"
+          :name="liveNaiveNames"
+          span="wide"
+        >
+          <p class="m-0 text-text-secondary">
+            {{ t('showcase.providerNote') }}
+          </p>
+          <UiStatusBadge
+            :label="t('showcase.live')"
+            tone="active"
+          />
+        </ComponentSpecimen>
+      </WorkbenchSection>
+    </div>
   </WorkbenchPage>
 </template>

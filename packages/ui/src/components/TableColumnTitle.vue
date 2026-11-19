@@ -127,7 +127,7 @@ onDeactivated(cancel)
 <template>
   <span
     class="flex min-w-0 items-center relative gap-component-unit"
-    :class="dropPlacement ? 'text-primary' : ''"
+    :class="dropPlacement ? 'text-control-primary' : ''"
     v-bind="{ 'data-table-column-owner': owner, 'data-table-column-key': column.key }"
   >
     <NButton
@@ -135,7 +135,7 @@ onDeactivated(cancel)
       text
       size="small"
       class="shrink-0 touch-none"
-      :class="dragging ? 'cursor-grabbing text-primary' : 'cursor-grab'"
+      :class="dragging ? 'cursor-grabbing' : 'cursor-grab'"
       v-bind="
         {
           onPointerdown: (event: PointerEvent) => {
@@ -152,6 +152,7 @@ onDeactivated(cancel)
     >
       <span
         class="i-lucide-grip-vertical size-icon-small"
+        :class="dragging ? 'text-control-primary' : ''"
         aria-hidden="true"
       />
     </NButton>
@@ -171,7 +172,6 @@ onDeactivated(cancel)
       text
       size="small"
       class="shrink-0 cursor-col-resize touch-none"
-      :class="resizing ? 'text-primary' : ''"
       v-bind="
         {
           onPointerdown: (event: PointerEvent) => {
@@ -188,6 +188,7 @@ onDeactivated(cancel)
     >
       <span
         class="i-lucide-move-horizontal size-icon-small"
+        :class="resizing ? 'text-control-primary' : ''"
         aria-hidden="true"
       />
     </NButton>

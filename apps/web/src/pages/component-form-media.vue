@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, ref, type HTMLAttributes } from 'vue'
+import { computed, onScopeDispose, ref, useId, type HTMLAttributes } from 'vue'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -10,6 +10,7 @@ import { createFormMediaExample } from '../app/workbench/forms/form-media-exampl
 
 defineOptions({ name: 'ComponentFormMediaPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
+const modeGroupName = useId()
 const demo = useFormShowcase()
 const { t } = demo
 const example = createFormMediaExample(() => t('formCapabilities.media.useSample'))
@@ -43,6 +44,7 @@ onScopeDispose(example.dispose)
     <template #controls>
       <NRadioGroup
         v-model:value="mode"
+        :name="modeGroupName"
         :disabled="form.hasPendingInput.value"
         v-bind="
           {

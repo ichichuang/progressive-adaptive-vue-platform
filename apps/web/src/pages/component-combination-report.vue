@@ -7,6 +7,7 @@ import {
   onMounted,
   onScopeDispose,
   ref,
+  useId,
   watch,
   type HTMLAttributes,
 } from 'vue'
@@ -38,6 +39,7 @@ import { useTableShowcase } from '../app/workbench/tables/table-showcase'
 import { reportExampleForm, reportExampleTable } from '../app/workbench/reports/report-example'
 defineOptions({ name: 'ComponentCombinationReportPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
+const scopeGroupName = useId()
 const demo = useTableShowcase()
 const { t } = demo
 function translate(value: string): string {
@@ -269,6 +271,7 @@ onScopeDispose(() => {
       >
         <NRadioGroup
           v-model:value="scope"
+          :name="scopeGroupName"
           v-bind="
             { role: 'radiogroup', 'aria-label': t('reportExample.scope') } satisfies HTMLAttributes
           "

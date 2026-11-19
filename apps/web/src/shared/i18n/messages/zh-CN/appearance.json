@@ -8,8 +8,6 @@
   "settings.choose-theme": "主题色",
   "settings.color-mode": "颜色模式",
   "settings.system": "跟随系统",
-  "settings.current-light": "当前为浅色",
-  "settings.current-dark": "当前为深色",
   "settings.light": "浅色",
   "settings.dark": "深色",
   "settings.contrast": "对比度",
@@ -37,6 +35,8 @@
   "settings.motion-full": "完整",
   "settings.motion-reduced": "减少",
   "settings.motion-none": "关闭",
+  "settings.option.off": "关闭",
+  "settings.option.on": "开启",
   "settings.navigation-collapsed": "收起侧栏",
   "settings.navigation-accordion": "手风琴导航",
   "settings.scroll-restoration": "恢复阅读位置",
@@ -52,13 +52,12 @@
   "settings.feedback.language-failed": "无法切换语言，仍然使用之前的语言。",
   "settings.feedback.return-failed": "暂时无法返回工作空间，请再次点击返回。",
   "settings.styles.title": "界面风格",
-  "settings.styles.change": "更改风格",
-  "settings.styles.close": "关闭风格选择",
   "settings.styles.unified": "通透统一",
   "settings.styles.dark-navigation": "深色导航",
   "settings.styles.brand-sidebar": "品牌侧栏",
   "settings.styles.brand-header": "品牌顶栏",
   "settings.styles.dark-frame": "深色框架",
   "settings.styles.brand-frame": "品牌双区",
-  "settings.styles.soft-frame": "柔彩框架"
+  "settings.styles.soft-frame": "柔彩框架",
+  "settings.styles.monochrome": "黑白模式"
 }

@@ -1,4 +1,6 @@
 import { shallowRef } from 'vue'
+import { tableSampleCategoryOptions } from './table-sample-categories'
+import type { ConsoleMessageKey } from '../../../shared/i18n'
 import type {
   UiTableRecord,
   UiTableResolvedRequest,
@@ -29,7 +31,8 @@ export function tableCapabilityRows(count: number): UiTableRecord[] {
   return Array.from({ length: count }, (_, index) => ({
     id: index + 1,
     title: `PAVP ${String(index + 1).padStart(4, '0')}`,
-    category: ['Design', 'Engineering', 'Research'][index % 3] ?? 'Design',
+    category:
+      tableSampleCategoryOptions[index % tableSampleCategoryOptions.length]?.value ?? 'Design',
     price: (index * 17) % 300,
     stock: (index * 7) % 90,
   }))
@@ -43,8 +46,20 @@ export function tableFilterSampleRows(count: number, note: string): UiTableRecor
   }))
 }
 
+/** Keep the original readable record values while resolving their display labels in the active locale. */
+export function tableSampleNotes(translate: (key: ConsoleMessageKey) => string) {
+  const option = (label: ConsoleMessageKey) => ({ value: translate(label), label })
+  return {
+    long: option('tableCapabilities.data.longSample'),
+    offset: option('tableCapabilities.data.offsetSample'),
+    missing: option('tableCapabilities.data.nullSample'),
+    available: option('tableCapabilities.data.noteSample'),
+  }
+}
+
 export function tableDataCapabilitySchema(
   example: TableDataCapability,
+  notes: ReturnType<typeof tableSampleNotes>,
   mode: 'submit' | 'change' = 'submit',
   debounce = 250,
   sorting: TableSortExample = 'single',
@@ -98,7 +113,7 @@ export function tableDataCapabilitySchema(
           kind: 'select' as const,
           name: 'category',
           label: 'tableShowcase.category',
-          options: ['Design', 'Engineering', 'Research'].map((value) => ({ value, label: value })),
+          options: tableSampleCategoryOptions,
         },
       ],
     },
@@ -113,6 +128,7 @@ export function tableDataCapabilitySchema(
       key: 'category',
       title: 'tableShowcase.category',
       kind: 'tag' as const,
+      options: tableSampleCategoryOptions,
       width: 160,
       sortable: true,
     },
@@ -200,9 +216,20 @@ export function tableDataCapabilitySchema(
               width: 120,
             },
             { key: 'date', title: 'tableCapabilities.data.date', kind: 'date', width: 240 },
-            { key: 'category', title: 'tableCapabilities.data.tag', kind: 'tag', width: 140 },
+            {
+              key: 'category',
+              title: 'tableCapabilities.data.tag',
+              kind: 'tag',
+              width: 140,
+              options: tableSampleCategoryOptions,
+            },
             { key: 'profile.name', title: 'tableCapabilities.data.nested', width: 180 },
-            { key: 'note', title: 'tableCapabilities.data.longContent', width: 300 },
+            {
+              key: 'note',
+              title: 'tableCapabilities.data.longContent',
+              width: 300,
+              options: [notes.long, notes.offset, notes.missing],
+            },
           ]
         : example === 'sorting'
           ? [
@@ -217,6 +244,7 @@ export function tableDataCapabilitySchema(
                 key: 'note',
                 title: 'tableCapabilities.data.note',
                 emptyText: 'tableCapabilities.data.empty',
+                options: [notes.available],
                 width: 160,
               },
             ]

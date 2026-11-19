@@ -1,10 +1,19 @@
 <script setup lang="ts" generic="I">
-import { type ButtonHTMLAttributes, computed, onBeforeUnmount, watch, ref } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  ref,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { EditorContent, useEditor } from '@tiptap/vue-3'
 import { normalizeRichTextDocument as documentValue } from './rich-text-value'
 import StarterKit from '@tiptap/starter-kit'
 import { NPopover } from 'naive-ui/es/popover'
 import { NInput } from 'naive-ui/es/input'
+import { NTooltip } from 'naive-ui/es/tooltip'
 import UiScrollArea from '../../components/UiScrollArea.vue'
 import { NButton } from 'naive-ui/es/button'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
@@ -26,12 +35,34 @@ const config = computed(() => props.form.fields.find((field) => field.name === p
 const tools = computed(() =>
   config.value?.kind === 'rich-text' ? (config.value.tools ?? richTextTools) : [],
 )
+const hasBlockTools = computed(() =>
+  tools.value.some(
+    (tool) =>
+      tool === 'heading' ||
+      tool === 'bullet-list' ||
+      tool === 'ordered-list' ||
+      tool === 'blockquote',
+  ),
+)
+const toolIcons: Readonly<Record<UiRichTextTool, string>> = {
+  bold: 'i-lucide-bold',
+  italic: 'i-lucide-italic',
+  strike: 'i-lucide-strikethrough',
+  heading: 'i-lucide-heading-2',
+  'bullet-list': 'i-lucide-list',
+  'ordered-list': 'i-lucide-list-ordered',
+  blockquote: 'i-lucide-text-quote',
+  link: 'i-lucide-link-2',
+  undo: 'i-lucide-undo-2',
+  redo: 'i-lucide-redo-2',
+}
 function preserveEditorSelection(event: MouseEvent): void {
   event.preventDefault()
 }
 const linkUrl = ref('')
 const linkOpen = ref(false)
 const linkInvalid = ref(false)
+const linkTrigger = useTemplateRef<InstanceType<typeof NButton>>('linkTrigger')
 const revision = ref(0)
 let generation = 0
 let publishing = false
@@ -187,6 +218,26 @@ function applyLink(): void {
   linkOpen.value = false
   linkInvalid.value = false
 }
+async function closeLink(): Promise<void> {
+  linkOpen.value = false
+  await nextTick()
+  const target: unknown = linkTrigger.value?.$el
+  if (target instanceof HTMLElement) target.focus({ preventScroll: true })
+}
+function closeLinkOnEscape(event: KeyboardEvent): void {
+  if (event.key !== 'Escape') return
+  event.preventDefault()
+  event.stopPropagation()
+  void closeLink()
+}
+function handleLinkInputKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Enter') {
+    event.preventDefault()
+    applyLink()
+    return
+  }
+  closeLinkOnEscape(event)
+}
 function active(tool: UiRichTextTool): boolean {
   void revision.value
   const name =
@@ -238,43 +289,83 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <div
-    class="pavp-rich-text rounded-control grid min-w-0 bg-surface-panel gap-component-unit p-panel-narrow text-body text-text-primary"
+    class="pavp-rich-text rounded-control border-solid grid min-w-0 bg-surface-panel border-border-default border-width-default gap-component-unit p-panel-narrow text-body text-text-primary"
+    :data-compact="!hasBlockTools"
   >
     <div
       v-if="!readonly && !binding.readonly"
-      class="flex flex-wrap gap-component-unit"
+      class="flex min-w-0 items-center overflow-x-auto overflow-y-hidden gap-component-unit"
+      role="group"
+      :aria-labelledby="binding.labelId"
     >
-      <NButton
+      <NTooltip
         v-for="tool in tools.filter((item) => item !== 'link')"
         :key="tool"
-        size="small"
-        :quaternary="!active(tool)"
-        :type="active(tool) ? 'primary' : 'default'"
-        v-bind="
-          {
-            'aria-pressed': active(tool),
-            onMousedown: preserveEditorSelection,
-          } satisfies ButtonHTMLAttributes
-        "
-        :disabled="binding.disabled"
-        @click="act(tool)"
+        :show-arrow="false"
       >
+        <template #trigger>
+          <NButton
+            class="shrink-0 min-h-target-enhanced min-w-target-enhanced"
+            size="small"
+            :secondary="active(tool)"
+            :quaternary="!active(tool)"
+            :type="active(tool) ? 'primary' : 'default'"
+            :bordered="false"
+            v-bind="
+              {
+                'aria-label': form.copy.richText?.[tool]() ?? tool,
+                'aria-pressed': tool === 'undo' || tool === 'redo' ? undefined : active(tool),
+                onMousedown: preserveEditorSelection,
+              } satisfies ButtonHTMLAttributes
+            "
+            :disabled="binding.disabled"
+            @click="act(tool)"
+          >
+            <span
+              :class="toolIcons[tool]"
+              class="size-icon-medium"
+              aria-hidden="true"
+            />
+          </NButton>
+        </template>
         {{ form.copy.richText?.[tool]() ?? tool }}
-      </NButton>
+      </NTooltip>
       <NPopover
         v-if="tools.includes('link')"
         v-model:show="linkOpen"
         trigger="click"
       >
         <template #trigger>
-          <NButton
-            size="small"
-            quaternary
-            :disabled="binding.disabled"
-            v-bind="{ onMousedown: preserveEditorSelection } satisfies ButtonHTMLAttributes"
+          <NTooltip
+            :show-arrow="false"
+            :disabled="linkOpen"
           >
-            {{ form.copy.richText?.link() }}
-          </NButton>
+            <template #trigger>
+              <NButton
+                ref="linkTrigger"
+                class="shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                size="small"
+                :secondary="active('link')"
+                :quaternary="!active('link')"
+                :type="active('link') ? 'primary' : 'default'"
+                :bordered="false"
+                :disabled="binding.disabled"
+                v-bind="
+                  {
+                    'aria-label': form.copy.richText?.link() ?? 'link',
+                    onMousedown: preserveEditorSelection,
+                  } satisfies ButtonHTMLAttributes
+                "
+              >
+                <span
+                  :class="toolIcons.link"
+                  class="size-icon-medium"
+                  aria-hidden="true"
+                />
+              </NButton>
+            </template>
+            {{ form.copy.richText?.link() ?? 'link' }}
+          </NTooltip>
         </template>
         <div class="grid gap-component-unit">
           <NInput
@@ -283,7 +374,7 @@ onBeforeUnmount(() => {
             :placeholder="form.copy.richTextLinkLabel?.() ?? ''"
             :status="linkInvalid ? 'error' : 'success'"
             @update:value="linkInvalid = false"
-            @keydown.enter.prevent="applyLink"
+            @keydown="handleLinkInputKeydown"
           />
           <span
             v-if="linkInvalid"
@@ -292,6 +383,7 @@ onBeforeUnmount(() => {
           />
           <NButton
             type="primary"
+            v-bind="{ onKeydown: closeLinkOnEscape } satisfies ButtonHTMLAttributes"
             @click="applyLink"
           >
             {{ form.copy.richTextLinkApply?.() }}
@@ -299,7 +391,7 @@ onBeforeUnmount(() => {
         </div>
       </NPopover>
     </div>
-    <div class="pavp-rich-text__viewport">
+    <div class="pavp-rich-text__viewport rounded-control bg-surface-page">
       <UiScrollArea
         :owner-id="`${binding.controlId}-rich-text`"
         contained
@@ -324,6 +416,22 @@ onBeforeUnmount(() => {
     min-height: calc(var(--ui-layout-target-enhanced-minimum-block-size) * 5);
     outline: none;
     padding: var(--ui-space-component-unit);
+    white-space: pre-wrap;
+  }
+  .pavp-rich-text[data-compact='true'] .pavp-rich-text__viewport {
+    height: calc(var(--ui-layout-target-enhanced-minimum-block-size) * 3);
+  }
+  .pavp-rich-text[data-compact='true'] .tiptap {
+    min-height: calc(var(--ui-layout-target-enhanced-minimum-block-size) * 2);
+  }
+  .pavp-rich-text .tiptap:focus-visible {
+    outline: var(--ui-admin-border-focus);
+    outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+  }
+  @media (forced-colors: active) {
+    .pavp-rich-text .tiptap:focus-visible {
+      outline-color: Highlight;
+    }
   }
   .pavp-rich-text .tiptap p {
     margin-block: var(--ui-space-component-unit);

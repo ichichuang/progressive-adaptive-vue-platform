@@ -13,12 +13,18 @@ import { useTableShowcase } from './table-showcase'
 const props = defineProps<{ readonly title: string; readonly message: string }>()
 const { t } = useTableShowcase()
 const mode = ref<'single' | 'multiple'>('multiple')
-const schema = computed<UiTableSchema>(() => ({
-  csvExport: { fileName: 'products.csv', scopes: ['page', 'selected'] },
-  ...tableExampleSchema('selection'),
-  selection: mode.value,
-  ...(mode.value === 'single' ? { batchActions: [] } : {}),
-}))
+const schema = computed<UiTableSchema>(() => {
+  const next = {
+    csvExport: { fileName: 'products.csv', scopes: ['page', 'selected'] },
+    ...tableExampleSchema('selection'),
+    selection: mode.value,
+  } satisfies UiTableSchema
+  if (mode.value === 'single') {
+    delete next.maxSelection
+    next.batchActions = []
+  }
+  return next
+})
 const copyValue = computed(() =>
   [
     t('tableExamples.aiRequest'),
@@ -35,13 +41,19 @@ const copyValue = computed(() =>
     :title="title"
     :message="message"
     :copy-value="copyValue"
+    :content-key="mode"
   >
     <template #controls>
       <div class="flex min-w-0 items-center gap-component-unit">
         <NRadioGroup
           v-model:value="mode"
           name="table-selection-mode"
-          v-bind="{ 'aria-label': t('tableCapabilities.selection.mode') } satisfies HTMLAttributes"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('tableCapabilities.selection.mode'),
+            } satisfies HTMLAttributes
+          "
         >
           <NRadioButton value="single">
             {{ t('tableCapabilities.selection.single') }}
@@ -77,9 +89,6 @@ const copyValue = computed(() =>
         </NPopover>
       </div>
     </template>
-    <TableDataExample
-      :key="mode"
-      :schema="schema"
-    />
+    <TableDataExample :schema="schema" />
   </TableCapabilityWorkbench>
 </template>

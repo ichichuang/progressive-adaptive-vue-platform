@@ -41,7 +41,7 @@ const copyValue = computed(() =>
 
 <template>
   <article
-    class="wb-form-panel-header rounded-panel grid min-w-0 content-start bg-surface-panel gap-content-gap"
+    class="rounded-control grid min-w-0 content-start bg-surface-page gap-content-gap p-panel-narrow"
     :aria-labelledby="headingId"
     v-bind="{ 'data-table-style': specimen.id }"
   >

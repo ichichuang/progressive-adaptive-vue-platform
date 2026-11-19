@@ -12,6 +12,7 @@ import type { RouteNamedMap } from 'vue-router/auto-routes'
 import type { RouterErrorId } from './router-error-registry'
 import {
   getRouteRecord,
+  homeRouteName,
   routeRegistry,
   type RouteName,
   type RouteRegistryRecord,
@@ -109,6 +110,8 @@ export function registeredRouteDestination<const D extends RegisteredRouteDestin
 ): D {
   return Object.freeze(destination)
 }
+
+export const homeRouteDestination = registeredRouteDestination({ name: homeRouteName })
 
 export function validateRouteInput(location: RouteLocationNormalized): RouteInputValidationResult {
   const record = routeRegistry.find((candidate) => candidate.name === location.name)

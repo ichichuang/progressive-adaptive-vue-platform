@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, withKeys, type HTMLAttributes } from 'vue'
+import { computed, nextTick, ref, useId, withKeys, type HTMLAttributes } from 'vue'
 import { NBreadcrumb, NBreadcrumbItem } from 'naive-ui/es/breadcrumb'
 import { NButton } from 'naive-ui/es/button'
 import { NDropdown } from 'naive-ui/es/dropdown'
@@ -10,11 +10,85 @@ import { NStep, NSteps } from 'naive-ui/es/steps'
 import { NTab, NTabPane, NTabs } from 'naive-ui/es/tabs'
 import { useConsoleI18n } from '../shared/i18n'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 
 defineOptions({ name: 'ComponentNavigationPage' })
 defineProps<{ readonly title: string; readonly breadcrumb?: string; readonly message: string }>()
 const { t } = useConsoleI18n()
+
+type SegmentChoice = 'first' | 'second' | 'third'
+const segmentChoiceLabels = {
+  first: 'showcase.first',
+  second: 'showcase.second',
+  third: 'showcase.third',
+} as const
+
+function segmentChoices(options: readonly [SegmentChoice, ...SegmentChoice[]], hasPanels = false) {
+  const current = ref<SegmentChoice>(options[0])
+  const id = useId()
+  const optionId = (option: SegmentChoice) => `${id}-option-${option}`
+  const panelId = (option: SegmentChoice) => `${id}-panel-${option}`
+  function select(value: string | number): void {
+    const option = options.find((choice) => choice === value)
+    if (option !== undefined) current.value = option
+  }
+  function keydown(event: KeyboardEvent, option: SegmentChoice): void {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      return
+    const host = event.currentTarget
+    if (!(host instanceof HTMLElement)) return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      select(option)
+      return
+    }
+    let nextIndex: number
+    switch (event.key) {
+      case 'Home':
+        nextIndex = 0
+        break
+      case 'End':
+        nextIndex = options.length - 1
+        break
+      case 'ArrowLeft':
+      case 'ArrowRight': {
+        const rtl = getComputedStyle(host).direction === 'rtl'
+        const forward = (event.key === 'ArrowRight') !== rtl
+        nextIndex = (options.indexOf(option) + (forward ? 1 : options.length - 1)) % options.length
+        break
+      }
+      default:
+        return
+    }
+    const next = options[nextIndex]
+    if (next === undefined) return
+    event.preventDefault()
+    select(next)
+    void nextTick(() => {
+      if (current.value === next) {
+        host.ownerDocument.getElementById(optionId(next))?.focus({ preventScroll: true })
+      }
+    })
+  }
+  function attributes(option: SegmentChoice): HTMLAttributes {
+    const selected = current.value === option
+    return {
+      id: optionId(option),
+      role: 'button',
+      tabindex: selected ? 0 : -1,
+      'aria-pressed': selected,
+      'aria-controls': selected && hasPanels ? panelId(option) : undefined,
+      onKeydown: (event: KeyboardEvent) => {
+        keydown(event, option)
+      },
+    }
+  }
+  return { options, current, select, attributes, optionId, panelId, keydown }
+}
+
+const paneChoices = segmentChoices(['first', 'second', 'third'], true)
+const tabChoices = segmentChoices(['first', 'second'])
 const page = ref(1)
 const pageCount = 3
 function confirmPage(event: KeyboardEvent): void {
@@ -41,13 +115,10 @@ const dropdownLabel = computed(
     :message="message"
   >
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.navigationPaths') }}
-        </h2>
+      <WorkbenchSection :title="t('showcase.group.navigationPaths')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen name="NBreadcrumb · NBreadcrumbItem">
             <NBreadcrumb>
@@ -88,11 +159,8 @@ const dropdownLabel = computed(
             />
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.navigationViews') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.navigationViews')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NTabs · NTabPane"
@@ -100,47 +168,73 @@ const dropdownLabel = computed(
           >
             <NTabs
               type="segment"
-              default-value="first"
+              :value="paneChoices.current.value"
+              animated
+              v-bind="
+                {
+                  class: 'min-w-0',
+                  role: 'group',
+                  'aria-label': t('showcase.group.navigationViews') + ' · NTabPane',
+                } satisfies HTMLAttributes
+              "
+              @update:value="paneChoices.select"
             >
               <NTabPane
-                name="first"
-                :tab="t('showcase.first')"
+                v-for="choice in paneChoices.options"
+                :key="choice"
+                :name="choice"
+                :tab="t(segmentChoiceLabels[choice])"
+                :tab-props="paneChoices.attributes(choice)"
+                v-bind="
+                  {
+                    class: 'min-w-0',
+                    id: paneChoices.panelId(choice),
+                    role: 'region',
+                    'aria-labelledby': paneChoices.optionId(choice),
+                  } satisfies HTMLAttributes
+                "
               >
-                {{ t('showcase.first') }}
-              </NTabPane>
-              <NTabPane
-                name="second"
-                :tab="t('showcase.second')"
-              >
-                {{ t('showcase.second') }}
-              </NTabPane>
-              <NTabPane
-                name="third"
-                :tab="t('showcase.third')"
-              >
-                {{ t('showcase.third') }}
+                {{ t(segmentChoiceLabels[choice]) }}
               </NTabPane>
             </NTabs>
           </ComponentSpecimen>
           <ComponentSpecimen name="NTab">
             <NTabs
               type="segment"
-              default-value="first"
+              :value="tabChoices.current.value"
+              v-bind="
+                {
+                  class: 'min-w-0',
+                  role: 'group',
+                  'aria-label': t('showcase.group.navigationViews') + ' · NTab',
+                } satisfies HTMLAttributes
+              "
+              @update:value="tabChoices.select"
             >
-              <NTab name="first">
-                {{ t('showcase.first') }}
-              </NTab>
-              <NTab name="second">
-                {{ t('showcase.second') }}
+              <NTab
+                v-for="choice in tabChoices.options"
+                :key="choice"
+                :name="choice"
+                v-bind="
+                  {
+                    class: 'min-w-0',
+                    id: tabChoices.optionId(choice),
+                    role: 'button',
+                    tabindex: tabChoices.current.value === choice ? 0 : -1,
+                    'aria-pressed': tabChoices.current.value === choice,
+                    onKeydown: (event) => {
+                      tabChoices.keydown(event, choice)
+                    },
+                  } satisfies HTMLAttributes
+                "
+              >
+                {{ t(segmentChoiceLabels[choice]) }}
               </NTab>
             </NTabs>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.navigationSteps') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.navigationSteps')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NPagination"
@@ -187,7 +281,7 @@ const dropdownLabel = computed(
             </NButton>
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

@@ -88,7 +88,6 @@ const allProductRoutes = Object.freeze([
   'workbench-colors',
   'workbench-sizes',
   'workbench-typography',
-  'workbench-interactions',
   'workbench-date-time',
   'workbench-motion',
   'component-showcase',
@@ -132,8 +131,20 @@ const displayPreviewRoutes = Object.freeze([
   'preview-layout-fixed-display',
 ] as const)
 
-const contentRoutes = Object.freeze([
+const workspaceRoutes = Object.freeze([
   ...allProductRoutes,
+  'preview-layouts',
+  'preview-status-400',
+  'preview-status-401',
+  'preview-status-403',
+  'preview-status-404',
+  'preview-status-500',
+  'preview-status-offline',
+  'preview-status-maintenance',
+] as const)
+
+const contentRoutes = Object.freeze([
+  ...workspaceRoutes,
   ...layoutPreviewRoutes,
   ...displayPreviewRoutes,
   'control-center',
@@ -153,6 +164,7 @@ const formExampleRoutes = Object.freeze([
 
 export const componentExampleConsumers: Readonly<Record<string, readonly string[]>> = Object.freeze(
   {
+    UiNavigationLink: Object.freeze(['component-actions', 'workbench-welcome']),
     UiChartTimeRange: Object.freeze([
       'component-chart-linked',
       'component-selection',
@@ -195,7 +207,6 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'workbench-colors',
       'workbench-sizes',
       'workbench-typography',
-      'workbench-interactions',
       'workbench-date-time',
       'workbench-motion',
       'component-showcase',
@@ -226,17 +237,39 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
     UiScrollArea: contentRoutes,
     UiForm: Object.freeze([...formExampleRoutes, 'workbench-date-time']),
     UiFormField: Object.freeze([...formExampleRoutes, 'workbench-date-time']),
-    UiWorkspaceTabs: allProductRoutes,
+    UiWorkspaceTabs: workspaceRoutes,
     UiAdminShell: contentRoutes,
     UiPageHeader: Object.freeze([]),
     UiProvider: contentRoutes,
     UiRadioCardGroup: Object.freeze([
-      'workbench-interactions',
       'control-center',
       'component-selection',
       'component-form-controls',
     ]),
-    UiSection: Object.freeze(['workbench-interactions', 'workbench-date-time', 'component-layout']),
+    UiSection: Object.freeze([
+      'workbench-colors',
+      'workbench-sizes',
+      'workbench-typography',
+      'workbench-date-time',
+      'component-showcase',
+      'component-actions',
+      'component-inputs',
+      'component-selection',
+      'component-navigation',
+      'component-data',
+      'component-feedback',
+      'component-layout',
+      'component-form-overview',
+      'component-table-overview',
+      'component-table-appearance',
+      'preview-layouts',
+      'preview-layout-admin',
+      'preview-layout-admin-footer',
+      'preview-layout-header',
+      'preview-layout-header-footer',
+      'preview-layout-content-footer',
+      'preview-layout-content',
+    ]),
     UiDisplayStage: Object.freeze(['component-chart-stage', 'preview-layout-fixed-display']),
     UiDashboardGrid: Object.freeze(['workbench-dashboard', 'component-chart-stage']),
     UiStatusBadge: Object.freeze(['component-showcase', 'component-data']),

@@ -3,9 +3,9 @@ import { useConsoleI18n } from '../../../shared/i18n'
 
 const { t } = useConsoleI18n()
 const swatches = [
-  { label: 'workbench.primary', role: 'primary', mark: '01' },
-  { label: 'workbench.tokenSubgroup.accentA', role: 'accent-a', mark: '02' },
-  { label: 'workbench.tokenSubgroup.accentB', role: 'accent-b', mark: '03' },
+  { label: 'workbench.primary', role: 'primary' },
+  { label: 'workbench.tokenSubgroup.accentA', role: 'accent-a' },
+  { label: 'workbench.tokenSubgroup.accentB', role: 'accent-b' },
 ] as const
 </script>
 
@@ -14,7 +14,7 @@ const swatches = [
     <li
       v-for="swatch in swatches"
       :key="swatch.label"
-      class="rounded-control flex flex-col min-w-0 justify-between gap-component-unit min-h-target-enhanced p-panel-narrow"
+      class="wb-palette-swatch rounded-control flex min-w-0 items-center min-h-target-enhanced layout-narrow:text-center layout-narrow:justify-center layout-regular:p-panel-narrow layout-wide:p-panel-narrow"
       :class="{
         'bg-action-primary text-text-on-action': swatch.role === 'primary',
         'bg-expression-accent-a-solid-background text-expression-accent-a-solid-foreground':
@@ -24,12 +24,7 @@ const swatches = [
       }"
     >
       <span
-        class="tabular-nums text-caption"
-        aria-hidden="true"
-        v-text="swatch.mark"
-      />
-      <span
-        class="break-words text-caption"
+        class="leading-body font-title-weight min-w-0 break-words text-caption"
         v-text="t(swatch.label)"
       />
     </li>

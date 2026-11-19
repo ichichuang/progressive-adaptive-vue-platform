@@ -33,6 +33,7 @@ import { UiScrollArea, UiSection, type UiScrollController } from '@platform/ui'
 import { useConsoleI18n } from '../shared/i18n'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 
 defineOptions({ name: 'ComponentLayoutPage' })
@@ -113,13 +114,10 @@ const carouselItems = computed(() => [
     :message="message"
   >
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.layoutStructure') }}
-        </h2>
+      <WorkbenchSection :title="t('showcase.group.layoutStructure')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NCard"
@@ -213,11 +211,8 @@ const carouselItems = computed(() => [
             </UiSection>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.layoutContent') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.layoutContent')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NCollapse · NCollapseItem"
@@ -304,11 +299,8 @@ const carouselItems = computed(() => [
             <span v-else>{{ t('showcase.description') }} · PAVP · Naive UI</span>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.layoutScroll') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.layoutScroll')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NAffix · NAnchor · NAnchorLink · NBackTop"
@@ -479,7 +471,7 @@ const carouselItems = computed(() => [
             </template>
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

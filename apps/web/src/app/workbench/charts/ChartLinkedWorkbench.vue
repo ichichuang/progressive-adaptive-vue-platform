@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   computed,
   inject,
   onActivated,
@@ -9,6 +10,7 @@ import {
   ref,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import { NButtonGroup } from 'naive-ui/es/button-group'
 import {
   UiChartTimeRange,
   UiCopyAction,
@@ -245,9 +247,7 @@ onScopeDispose(() => {
               {{ t('chartExamples.retry') }}
             </NButton>
           </div>
-          <div
-            class="grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-3 layout-wide:grid-cols-3"
-          >
+          <div class="wb-linked-chart-grid grid min-w-0 gap-content-gap">
             <section
               class="rounded-panel min-w-0 bg-surface-page p-page-inline"
               :aria-label="t('chartLinked.trend')"
@@ -279,7 +279,15 @@ onScopeDispose(() => {
                 @end="tracking = false"
               />
               <div class="flex flex-wrap items-center justify-between gap-component-unit">
-                <div class="flex gap-component-unit">
+                <NButtonGroup
+                  data-pavp-exclusive-selection
+                  v-bind="
+                    {
+                      class: 'min-w-0',
+                      'aria-label': t('chartExamples.timeRange'),
+                    } satisfies HTMLAttributes
+                  "
+                >
                   <NButton
                     size="small"
                     :secondary="range[0] === 48"
@@ -304,7 +312,7 @@ onScopeDispose(() => {
                   >
                     {{ t('chartLinked.fullRange') }}
                   </NButton>
-                </div>
+                </NButtonGroup>
               </div>
             </section>
             <section

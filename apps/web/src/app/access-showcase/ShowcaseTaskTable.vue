@@ -83,7 +83,7 @@ async function batch(mode: 'all' | 'partial') {
         <span v-else>{{ value ?? '—' }}</span>
       </template>
     </UiTable>
-    <div class="gap-control flex flex-wrap">
+    <div class="flex flex-wrap gap-content-gap">
       <NButton @click="() => void batch('all')">
         {{ say('Complete selected together', '同时完成选中项') }}
       </NButton>

@@ -311,16 +311,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     declarations: [
       ['gap', 'var(--ui-space-section-block)', false],
       ['inline-size', '100%', false],
-      [
-        'padding-block',
-        'var(--ui-space-section-block)\n    max(var(--ui-space-section-block), var(--pavp-safe-area-bottom))',
-        false,
-      ],
-      [
-        'padding-inline',
-        'max(var(--ui-space-page-inline), var(--pavp-safe-area-left))\n    max(var(--ui-space-page-inline), var(--pavp-safe-area-right))',
-        false,
-      ],
     ],
   },
   {

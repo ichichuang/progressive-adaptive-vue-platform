@@ -182,7 +182,7 @@ export const formCapabilities = {
 >
 export type FormCapability = keyof typeof formCapabilities
 export function useFormShowcase() {
-  const { t } = useConsoleI18n()
+  const { t, locale } = useConsoleI18n()
   const copy: UiFormCopy = {
     submit: () => t('configuredForm.submit'),
     reset: () => t('configuredForm.reset'),
@@ -252,6 +252,7 @@ export function useFormShowcase() {
   }
   return {
     t,
+    locale,
     copy,
     translate: (key: string) => (key === '' ? '' : t(key as ConsoleMessageKey)),
   }

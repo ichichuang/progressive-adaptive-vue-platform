@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import {
   type HTMLAttributes,
-  type ButtonHTMLAttributes,
   computed,
   inject,
+  nextTick,
   onActivated,
   onDeactivated,
   onScopeDispose,
   ref,
   shallowRef,
+  useId,
+  useTemplateRef,
 } from 'vue'
 
 import {
@@ -23,6 +25,7 @@ import {
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
 import ConfigurationJsonEditor from '../configuration/ConfigurationJsonEditor.vue'
+import { configurationDiagnosticText } from '../configuration/configuration-diagnostic'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import WorkbenchPage from '../WorkbenchPage.vue'
@@ -50,7 +53,7 @@ defineSlots<{
   }) => unknown
   controls?: () => unknown
 }>()
-const { t } = useTableShowcase()
+const { t, locale } = useTableShowcase()
 const schema = shallowRef(tableExampleSchema(props.example))
 const currentConfiguration = shallowRef<Pick<UiTableSchema, 'columns' | 'summary'>>({
   columns: schema.value.columns,
@@ -73,6 +76,9 @@ const height = computed<UiTableHeight | undefined>(() =>
     : schema.value.height,
 )
 const configurationEditing = ref(props.example === 'configuration')
+const configurationModeName = `table-configuration-mode-${useId()}`
+const configurationModeGroup =
+  useTemplateRef<InstanceType<typeof NRadioGroup>>('configurationModeGroup')
 const fill = computed(() => height.value?.mode === 'fill')
 const heightHint = computed(() =>
   t(
@@ -90,7 +96,8 @@ function updateFixedHeight(value: number | null): void {
 const schemaText = ref(JSON.stringify(schema.value, null, 2))
 const appliedText = ref(schemaText.value)
 const revision = ref(0)
-const error = ref('')
+const applyIssue = shallowRef<() => string>()
+const error = computed(() => applyIssue.value?.() ?? '')
 const active = ref(true)
 const register = inject(routerScrollControllerKey)
 if (!register) throw new Error('The table showcase requires the Router Scroll Controller port.')
@@ -150,8 +157,10 @@ function apply(): void {
       next.query ||
       next.editor ||
       next.batchActions?.length
-    )
-      throw new TypeError(t('tableExamples.configBoundary'))
+    ) {
+      applyIssue.value = () => t('tableExamples.configBoundary')
+      return
+    }
     schema.value = next
     summaryRenderer.value = false
     currentConfiguration.value = {
@@ -160,15 +169,21 @@ function apply(): void {
     }
     appliedText.value = schemaText.value
     revision.value++
-    error.value = ''
+    applyIssue.value = undefined
     configurationEditing.value = false
+    void nextTick(() => {
+      const group: unknown = configurationModeGroup.value?.$el
+      if (group instanceof HTMLElement) {
+        group.querySelector<HTMLInputElement>('input:checked')?.focus({ preventScroll: true })
+      }
+    })
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : String(cause)
+    applyIssue.value = () => configurationDiagnosticText(cause, t, locale.value)
   }
 }
 function discard(): void {
   schemaText.value = appliedText.value
-  error.value = ''
+  applyIssue.value = undefined
 }
 </script>
 <template>
@@ -211,7 +226,12 @@ function discard(): void {
             <NRadioGroup
               v-model:value="heightMode"
               name="table-height"
-              v-bind="{ 'aria-label': t('tableExamples.height.label') } satisfies HTMLAttributes"
+              v-bind="
+                {
+                  role: 'radiogroup',
+                  'aria-label': t('tableExamples.height.label'),
+                } satisfies HTMLAttributes
+              "
             >
               <NRadioButton value="auto">
                 {{ t('tableExamples.height.auto') }}
@@ -247,26 +267,26 @@ function discard(): void {
       </div>
       <div
         v-if="example === 'configuration'"
-        class="wb-form-panel-header flex shrink-0 flex-wrap gap-component-unit"
-        role="group"
-        :aria-label="t('tableShowcase.configuration')"
+        class="wb-form-panel-header shrink-0 min-w-0"
       >
-        <NButton
-          secondary
-          :type="configurationEditing ? 'primary' : 'default'"
-          v-bind="{ 'aria-pressed': configurationEditing === true } satisfies ButtonHTMLAttributes"
-          @click="configurationEditing = true"
+        <NRadioGroup
+          ref="configurationModeGroup"
+          v-model:value="configurationEditing"
+          :name="configurationModeName"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('tableShowcase.configuration'),
+            } satisfies HTMLAttributes
+          "
         >
-          {{ t('tableExamples.editConfiguration') }}
-        </NButton>
-        <NButton
-          secondary
-          :type="configurationEditing ? 'default' : 'primary'"
-          v-bind="{ 'aria-pressed': !configurationEditing } satisfies ButtonHTMLAttributes"
-          @click="configurationEditing = false"
-        >
-          {{ t('tableExamples.previewTable') }}
-        </NButton>
+          <NRadioButton :value="true">
+            {{ t('tableExamples.editConfiguration') }}
+          </NRadioButton>
+          <NRadioButton :value="false">
+            {{ t('tableExamples.previewTable') }}
+          </NRadioButton>
+        </NRadioGroup>
       </div>
       <UiScrollArea
         owner-id="architecture-console-content"
@@ -275,76 +295,86 @@ function discard(): void {
         class="flex-1 min-h-0"
         @controller="connect"
       >
-        <section
-          v-if="example === 'configuration' && configurationEditing"
-          class="flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap px-page-inline"
-          :aria-label="t('tableShowcase.configuration')"
+        <Transition
+          name="wb-table-content"
+          leave-active-class="hidden"
         >
-          <div class="flex shrink-0 min-w-0 items-start gap-content-gap">
-            <NPopover
-              trigger="click"
-              scrollable
-              to="#pavp-overlay-root"
-            >
-              <template #trigger>
-                <NButton secondary>
-                  {{ t('tableExamples.configuration.notes') }}
-                </NButton>
-              </template>
-              <p class="m-0 text-caption text-text-secondary">
-                {{ t('tableExamples.configBoundary') }}
-              </p>
-            </NPopover>
-            <UiCopyAction
-              class="shrink-0"
-              variant="text"
-              :value="schemaText"
-              :label="t('tableShowcase.configuration')"
-              :copy-label="t('workbench.copy')"
-              :success-label="t('workbench.copied')"
-              :failure-label="t('workbench.copyFailed')"
-            />
-          </div>
-          <ConfigurationJsonEditor
-            v-model:value="schemaText"
-            kind="table"
-            :label="t('tableShowcase.configuration')"
-          />
-          <div
-            v-if="error"
-            class="wb-feedback shrink-0 min-h-0 min-w-0"
+          <section
+            v-if="example === 'configuration' && configurationEditing"
+            class="flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap px-page-inline"
+            :aria-label="t('tableShowcase.configuration')"
           >
-            <UiScrollArea
-              owner-id="table-configuration-error"
-              :enabled="active"
-            >
-              <p
-                role="alert"
-                class="m-0 break-words text-caption text-control-error"
+            <div class="flex shrink-0 min-w-0 items-start gap-content-gap">
+              <NPopover
+                trigger="click"
+                scrollable
+                to="#pavp-overlay-root"
               >
-                {{ error }}
-              </p>
-            </UiScrollArea>
-          </div>
-        </section>
-        <div
-          v-show="!configurationEditing"
-          class="wb-form-panel-header min-w-0 gap-content-gap"
-          :class="fill ? 'flex flex-1 flex-col min-h-0' : 'grid'"
+                <template #trigger>
+                  <NButton secondary>
+                    {{ t('tableExamples.configuration.notes') }}
+                  </NButton>
+                </template>
+                <p class="m-0 text-caption text-text-secondary">
+                  {{ t('tableExamples.configBoundary') }}
+                </p>
+              </NPopover>
+              <UiCopyAction
+                class="shrink-0"
+                variant="text"
+                :value="schemaText"
+                :label="t('tableShowcase.configuration')"
+                :copy-label="t('workbench.copy')"
+                :success-label="t('workbench.copied')"
+                :failure-label="t('workbench.copyFailed')"
+              />
+            </div>
+            <ConfigurationJsonEditor
+              v-model:value="schemaText"
+              kind="table"
+              :label="t('tableShowcase.configuration')"
+            />
+            <div
+              v-if="error"
+              class="wb-feedback shrink-0 min-h-0 min-w-0"
+            >
+              <UiScrollArea
+                owner-id="table-configuration-error"
+                :enabled="active"
+              >
+                <p
+                  role="alert"
+                  class="m-0 break-words text-caption text-control-error"
+                >
+                  {{ error }}
+                </p>
+              </UiScrollArea>
+            </div>
+          </section>
+        </Transition>
+        <Transition
+          name="wb-table-content"
+          leave-active-class="hidden"
         >
           <div
-            :key="revision"
-            class="min-w-0"
-            :class="fill ? 'flex flex-1 flex-col min-h-0' : ''"
+            v-show="!configurationEditing"
+            class="wb-form-panel-header min-w-0 gap-content-gap"
+            :class="fill ? 'flex flex-1 flex-col min-h-0' : 'grid'"
           >
-            <slot
-              :schema="schema"
-              :height="height"
-              :update-configuration="updateConfiguration"
-              :update-summary-renderer="updateSummaryRenderer"
-            />
+            <div
+              :key="revision"
+              class="min-w-0"
+              :class="fill ? 'flex flex-1 flex-col min-h-0' : ''"
+            >
+              <slot
+                :schema="schema"
+                :height="height"
+                :update-configuration="updateConfiguration"
+                :update-summary-renderer="updateSummaryRenderer"
+              />
+            </div>
           </div>
-        </div>
+        </Transition>
       </UiScrollArea>
       <footer
         v-if="example === 'configuration' && configurationEditing"

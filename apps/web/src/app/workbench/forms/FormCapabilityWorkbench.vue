@@ -1,5 +1,15 @@
 <script setup lang="ts" generic="I">
-import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
+import {
+  type HTMLAttributes,
+  computed,
+  inject,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  useId,
+} from 'vue'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import {
   UiCopyAction,
   UiScrollArea,
@@ -58,6 +68,8 @@ const copyValue = computed(() =>
   ].join('\n\n'),
 )
 const active = ref(true)
+const pane = ref<'form' | 'result'>('form')
+const paneGroup = useId()
 const registerScrollController = inject(routerScrollControllerKey)
 if (registerScrollController === undefined)
   throw new Error('The form showcase requires the Router Scroll Controller port.')
@@ -108,6 +120,25 @@ const headings = {
     class="wb-form-page mx-auto w-full"
   >
     <template #actions>
+      <div class="shrink-0 layout-regular:hidden layout-wide:hidden">
+        <NRadioGroup
+          v-model:value="pane"
+          :name="paneGroup"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('formShowcase.workspaceView'),
+            } satisfies HTMLAttributes
+          "
+        >
+          <NRadioButton value="form">
+            {{ t('formShowcase.workspaceForm') }}
+          </NRadioButton>
+          <NRadioButton value="result">
+            {{ t('formShowcase.liveResult') }}
+          </NRadioButton>
+        </NRadioGroup>
+      </div>
       <UiCopyAction
         class="shrink-0"
         variant="text"
@@ -119,11 +150,12 @@ const headings = {
       />
     </template>
     <div
-      class="wb-form-stage flex-1 grid min-h-0 min-w-0 gap-content-gap layout-narrow:grid-rows-4"
+      class="wb-form-stage wb-form-capability-stage flex-1 grid min-h-0 min-w-0 gap-content-gap"
       v-bind="{ 'data-capability': capability }"
     >
       <section
-        class="wb-form-canvas rounded-panel flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:row-span-3"
+        class="wb-form-canvas wb-form-capability-pane rounded-panel flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+        :class="{ 'layout-narrow:hidden': pane !== 'form' }"
         :aria-label="t(headings[capability])"
         @input.capture="clearCheck"
         @submit.capture.stop.prevent="submit"
@@ -143,11 +175,11 @@ const headings = {
               "
             >
               <h3
-                :class="
-                  capability === 'steps'
-                    ? 'sr-only'
-                    : 'font-title-weight m-0 text-body text-text-primary'
-                "
+                class="font-title-weight m-0 text-body text-text-primary"
+                :class="{
+                  'sr-only': capability === 'steps',
+                  'layout-narrow:sr-only': $slots['controls'],
+                }"
                 v-text="t(headings[capability])"
               />
               <div
@@ -182,27 +214,14 @@ const headings = {
             </div>
           </UiScrollArea>
         </div>
-        <footer
-          v-if="$slots['actions'] && mode !== 'detail'"
-          class="wb-form-panel-header shrink-0 min-w-0 bg-surface-panel"
-        >
-          <div class="wb-form-controls min-w-0">
-            <UiScrollArea
-              :owner-id="`${form.formId}-actions`"
-              :enabled="active"
-              x-scrollable
-            >
-              <div class="flex min-w-full w-max whitespace-nowrap items-center gap-content-gap">
-                <slot name="actions" />
-              </div>
-            </UiScrollArea>
-          </div>
-        </footer>
       </section>
       <FormLiveResult
+        class="wb-form-capability-pane layout-regular:row-span-2 layout-wide:row-span-2 layout-regular:col-start-2 layout-regular:row-start-1 layout-wide:col-start-2 layout-wide:row-start-1"
+        :class="{ 'layout-narrow:hidden': pane !== 'result' }"
         :form="form"
         :mode="mode ?? 'edit'"
         :checked="checked"
+        @locate="pane = 'form'"
       >
         <template
           v-if="$slots['status']"
@@ -217,6 +236,22 @@ const headings = {
           <slot name="insight" />
         </template>
       </FormLiveResult>
+      <footer
+        v-if="$slots['actions'] && mode !== 'detail'"
+        class="wb-form-panel-header rounded-panel shrink-0 col-start-1 row-start-2 min-w-0 bg-surface-panel"
+      >
+        <div class="wb-form-controls min-w-0">
+          <UiScrollArea
+            :owner-id="`${form.formId}-actions`"
+            :enabled="active"
+            x-scrollable
+          >
+            <div class="flex min-w-full w-max whitespace-nowrap items-center gap-content-gap">
+              <slot name="actions" />
+            </div>
+          </UiScrollArea>
+        </div>
+      </footer>
     </div>
   </WorkbenchPage>
 </template>

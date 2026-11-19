@@ -97,7 +97,7 @@ export default typescriptEslint.config(
       parserOptions: {
         extraFileExtensions: ['.vue'],
         project: [
-          './tsconfig.node.json',
+          './tsconfig.json',
           './apps/web/tsconfig.json',
           './packages/design-system/tsconfig.json',
           './packages/ui/tsconfig.json',

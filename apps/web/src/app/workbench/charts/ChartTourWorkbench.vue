@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import {
-  type ButtonHTMLAttributes,
+  type HTMLAttributes,
   computed,
   inject,
   onActivated,
   onDeactivated,
   onScopeDispose,
   ref,
+  useId,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import {
   UiCopyAction,
   UiG2Chart,
@@ -25,7 +27,13 @@ import { chartTourConfiguration, chartTourExample, chartTourRows } from './chart
 defineProps<{ readonly title: string; readonly message: string }>()
 const { t } = useConsoleI18n()
 const active = ref(true)
-const kind = ref<'bar' | 'line' | 'donut'>('bar')
+const kinds = ['bar', 'line', 'donut'] as const
+const kind = ref<(typeof kinds)[number]>('bar')
+const kindGroupName = `chart-tour-kind-${useId()}`
+function chooseKind(value: string | number | boolean): void {
+  const selected = kinds.find((candidate) => candidate === value)
+  if (selected !== undefined) kind.value = selected
+}
 const chart = ref<UiG2ChartHandle | null>(null)
 const revision = ref(0)
 const state = ref<UiChartTourState>({ status: 'stopped', targetId: null, reason: null })
@@ -111,18 +119,25 @@ onScopeDispose(() => unregister?.())
       <header
         class="wb-form-panel-header flex shrink-0 flex-wrap items-center justify-between gap-content-gap"
       >
-        <div class="flex flex-wrap gap-component-unit">
-          <NButton
-            v-for="mode in ['bar', 'line', 'donut'] as const"
+        <NRadioGroup
+          :name="kindGroupName"
+          :value="kind"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('chartExamples.kind'),
+            } satisfies HTMLAttributes
+          "
+          @update:value="chooseKind"
+        >
+          <NRadioButton
+            v-for="mode in kinds"
             :key="mode"
-            :type="kind === mode ? 'primary' : 'default'"
-            secondary
-            v-bind="{ 'aria-pressed': kind === mode } satisfies ButtonHTMLAttributes"
-            @click="kind = mode"
+            :value="mode"
           >
             {{ t(modeKeys[mode]) }}
-          </NButton>
-        </div>
+          </NRadioButton>
+        </NRadioGroup>
         <span class="text-caption text-text-secondary">{{ t('chartTour.sample') }}</span>
       </header>
       <UiScrollArea

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import RouteNotFoundView from '../app/errors/RouteNotFoundView.vue'
+import ErrorPresentation from '../app/errors/ErrorPresentation.vue'
 
-defineOptions({ name: 'RouteNotFoundPreviewPage' })
-defineProps<{
-  readonly title: string
-  readonly message: string
-}>()
+defineOptions({ name: 'StatusPreview404Page' })
+defineProps<{ readonly title: string; readonly message: string }>()
 </script>
 
 <template>
-  <RouteNotFoundView
+  <ErrorPresentation
+    code="404"
     :title="title"
     :message="message"
+    focus-target="architecture-console-page-heading"
+    contained
   />
 </template>

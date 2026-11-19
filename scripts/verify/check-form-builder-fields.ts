@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict'
 import { resolve } from 'node:path'
 import { createServer } from 'vite'
+import { ref } from 'vue'
 import type { ConsoleTranslate } from '../../apps/web/src/shared/i18n'
+import english from '../../apps/web/src/shared/i18n/messages/en/console.json'
+import chinese from '../../apps/web/src/shared/i18n/messages/zh-CN/console.json'
 import type { previewValues as ProjectPreview } from '../../apps/web/src/app/workbench/forms/builder/form-preview-values'
 import type { UiFormNode } from '../../packages/ui/src/components/form-contracts'
 import type { useFormBuilder as CreateBuilder } from '../../apps/web/src/app/workbench/forms/builder/use-form-builder'
@@ -21,7 +24,7 @@ export async function verifyFormBuilderFields(): Promise<void> {
         },
         load(id) {
           if (id !== '\0builder-public-ui-exports') return undefined
-          return `export { parseUiFormSchema } from ${JSON.stringify(resolve('packages/ui/src/components/form-schema.ts'))}; export { richTextTools } from ${JSON.stringify(resolve('packages/ui/src/components/rich-text-document.ts'))};`
+          return `export { parseUiFormSchema } from ${JSON.stringify(resolve('packages/ui/src/components/form-schema.ts'))}; export { richTextTools } from ${JSON.stringify(resolve('packages/ui/src/components/rich-text-document.ts'))}; export { UiConfigurationError } from ${JSON.stringify(resolve('packages/ui/src/components/configuration-inspection.ts'))};`
         },
       },
     ],
@@ -31,7 +34,13 @@ export async function verifyFormBuilderFields(): Promise<void> {
       '/apps/web/src/app/workbench/forms/builder/use-form-builder.ts',
     )
     const create = module['useFormBuilder'] as typeof CreateBuilder
-    const builder = create(((key: string) => key) as ConsoleTranslate)
+    const locale = ref<'zh-CN' | 'en'>('zh-CN')
+    const catalogs: Record<typeof locale.value, Readonly<Record<string, string>>> = {
+      'zh-CN': chinese,
+      en: english,
+    }
+    const translate: ConsoleTranslate = (...[key]) => catalogs[locale.value][key] ?? key
+    const builder = create(translate, locale)
     for (const kind of ['mask', 'slider', 'rating', 'attachment', 'rich-text'] as const)
       builder.add(kind)
     assert.deepEqual(
@@ -52,7 +61,7 @@ export async function verifyFormBuilderFields(): Promise<void> {
     })
     assert.equal(builder.pending.value, false)
     const exported = JSON.stringify(builder.schema.value)
-    const restored = create(((key: string) => key) as ConsoleTranslate)
+    const restored = create(translate, locale)
     assert.equal(restored.restoreDraft(builder.snapshot()), true)
     assert.equal(JSON.stringify(restored.schema.value), exported)
     assert.equal(restored.importJson(exported), true)
@@ -77,6 +86,60 @@ export async function verifyFormBuilderFields(): Promise<void> {
       ),
       false,
     )
+    const before = restored.json.value
+    let importFeedback: (() => string) | undefined
+    assert.equal(
+      restored.importJson('{', (message) => {
+        importFeedback = message
+      }),
+      false,
+    )
+    assert.ok(importFeedback?.().includes(chinese['formBuilder.importInvalid']))
+    locale.value = 'en'
+    assert.ok(restored.notice.value.includes(english['formBuilder.importInvalid']))
+    assert.equal(importFeedback?.(), restored.notice.value)
+    assert.equal(restored.json.value, before)
+    assert.equal(
+      restored.importJson(
+        JSON.stringify({ fields: [{ kind: 'text', name: 'item', label: 'Item', extra: true }] }),
+      ),
+      false,
+    )
+    assert.ok(restored.notice.value.includes('$["fields"][0]["extra"]'))
+    locale.value = 'zh-CN'
+    assert.ok(restored.notice.value.includes(chinese['configurationAssist.unknownProperty']))
+    assert.equal(
+      restored.importJson(
+        JSON.stringify({
+          fields: [{ kind: 'number', name: 'quantity', label: 'Quantity', defaultValue: 'many' }],
+        }),
+      ),
+      false,
+    )
+    assert.ok(restored.notice.value.includes(chinese['configurationAssist.fieldValue']))
+    assert.ok(restored.notice.value.includes('quantity'))
+    const condition = { field: 'source', operator: 'not-empty' }
+    assert.equal(
+      restored.importJson(
+        JSON.stringify({
+          fields: [
+            { kind: 'text', name: 'source', label: 'Source' },
+            { kind: 'text', name: 'first', label: 'Alpha', hidden: condition },
+            { kind: 'text', name: 'second', label: 'Beta', disabled: condition },
+          ],
+        }),
+      ),
+      true,
+    )
+    restored.remove()
+    assert.ok(restored.notice.value.includes('Alpha、Beta'))
+    locale.value = 'en'
+    assert.ok(restored.notice.value.includes('Alpha, Beta'))
+    const source = restored.draft.value
+    assert.ok(source)
+    restored.edit({ ...source, name: 'changed' })
+    assert.ok(restored.notice.value.includes('Alpha, Beta'))
+    assert.equal(restored.schema.value.fields[0]?.name, 'source')
     console.log(
       'Visual form builder special fields: creation, live editing, JSON roundtrip, draft snapshots and invalid ranges passed.',
     )

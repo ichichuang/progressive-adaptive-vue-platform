@@ -10,7 +10,6 @@ defineProps<{ readonly title: string; readonly message: string }>()
 </script>
 <template>
   <TableDataCapabilities
-    :key="String(continuous)"
     :continuous="continuous"
     :title="title"
     :message="message"

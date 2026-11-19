@@ -1,22 +1,39 @@
 <script setup lang="ts">
-import type { ButtonHTMLAttributes } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  computed,
+  effectScope,
+  getCurrentInstance,
+  nextTick,
+  onScopeDispose,
+  shallowRef,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import { useFormExampleUndo } from './use-form-example-undo'
 import { NPopconfirm } from 'naive-ui/es/popconfirm'
 import { UiForm, parseUiFormSchema, useUiForm, type UiFormSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
+import { NButtonGroup } from 'naive-ui/es/button-group'
 import FormExampleActions from './FormExampleActions.vue'
 import FormCapabilityWorkbench from './FormCapabilityWorkbench.vue'
 import { useFormShowcase } from './form-showcase'
 import { useFormExampleDraft } from './use-form-example-draft'
 
+type FormSource = 'code' | 'json'
 const props = defineProps<{
   readonly title: string
   readonly message: string
-  readonly source: 'code' | 'json'
+  readonly source: FormSource
 }>()
-const emit = defineEmits<{ source: [value: 'code' | 'json'] }>()
+const emit = defineEmits<{ source: [value: FormSource] }>()
 const demo = useFormShowcase()
 const { t } = demo
+const instance = getCurrentInstance()
+if (instance === null) throw new TypeError('The form example requires the application context.')
+const application = instance.appContext.app
+const sourceGroup = useTemplateRef<InstanceType<typeof NButtonGroup>>('sourceGroup')
 const configuration = {
   columns: 2,
   fields: [
@@ -123,41 +140,43 @@ const configuration = {
     },
   ],
 } satisfies UiFormSchema
-const schema =
-  props.source === 'json'
-    ? parseUiFormSchema(JSON.parse(JSON.stringify(configuration)) as unknown)
-    : configuration
-const form = useUiForm({
-  ...demo,
-  // Demonstrates file selection only. No request or claim of server persistence.
-  attachments: {
-    'local-selection': (file) =>
-      Promise.resolve({
-        id: crypto.randomUUID(),
-        name: file.name,
-        size: file.size,
-      }),
-  },
-  formId: 'form-basic-controls',
-  schema,
-  initial: {
-    draftId: 'basic-controls',
-    values: {
-      name: '',
-      capacity: null as number | null,
-      category: null as string | null,
-      tags: [] as string[],
-      startDate: null as string | null,
-      audience: null as string | null,
-      interests: [] as string[],
-      period: null as [string, string] | null,
-      startTime: null as string | null,
-      enabled: true,
-      notes: '',
+function createForm(source: FormSource) {
+  const schema =
+    source === 'json'
+      ? parseUiFormSchema(JSON.parse(JSON.stringify(configuration)) as unknown)
+      : configuration
+  return useUiForm({
+    ...demo,
+    // Demonstrates file selection only. No request or claim of server persistence.
+    attachments: {
+      'local-selection': (file) =>
+        Promise.resolve({
+          id: crypto.randomUUID(),
+          name: file.name,
+          size: file.size,
+        }),
     },
-  },
-})
-const draft = useFormExampleDraft(form, [
+    formId: 'form-basic-controls',
+    schema,
+    initial: {
+      draftId: 'basic-controls',
+      values: {
+        name: '',
+        capacity: null as number | null,
+        category: null as string | null,
+        tags: [] as string[],
+        startDate: null as string | null,
+        audience: null as string | null,
+        interests: [] as string[],
+        period: null as [string, string] | null,
+        startTime: null as string | null,
+        enabled: true,
+        notes: '',
+      },
+    },
+  })
+}
+const draftFields = [
   'name',
   'capacity',
   'category',
@@ -173,11 +192,62 @@ const draft = useFormExampleDraft(form, [
   'rating',
   'attachments',
   'notes',
-])
-function switchSource(value: 'code' | 'json'): void {
-  if (!draft.hasUnsavedChanges()) emit('source', value)
+]
+function createSession(source: FormSource) {
+  const scope = effectScope(true)
+  try {
+    const session = application.runWithContext(() =>
+      scope.run(() => {
+        const form = createForm(source)
+        return { form, draft: useFormExampleDraft(form, draftFields) }
+      }),
+    )
+    if (!session) throw new TypeError('The form example scope is unavailable.')
+    return {
+      ...session,
+      dispose: () => {
+        scope.stop()
+      },
+    }
+  } catch (error) {
+    scope.stop()
+    throw error
+  }
 }
-const history = useFormExampleUndo(() => form)
+const session = shallowRef(createSession(props.source))
+const form = computed(() => session.value.form)
+const draftStatus = computed(() => session.value.draft.statusText.value)
+const history = useFormExampleUndo(() => form.value)
+watch(
+  () => props.source,
+  (source) => {
+    // End the old persistence session before recovering the same draft in the new form.
+    session.value.dispose()
+    session.value = createSession(source)
+  },
+)
+onScopeDispose(() => {
+  session.value.dispose()
+})
+function hasUnsavedChanges(): boolean {
+  return session.value.draft.hasUnsavedChanges()
+}
+function switchSource(value: FormSource): void {
+  if (props.source !== value && !hasUnsavedChanges()) emit('source', value)
+}
+function restoreSourceFocus(value: FormSource): void {
+  void nextTick(() => {
+    const root: unknown = sourceGroup.value?.$el
+    if (root instanceof HTMLElement)
+      root.querySelector<HTMLButtonElement>(`button[data-form-source="${value}"]`)?.focus({
+        preventScroll: true,
+      })
+  })
+}
+function confirmSource(value: FormSource): void {
+  emit('source', value)
+  restoreSourceFocus(value)
+}
 </script>
 <template>
   <FormCapabilityWorkbench
@@ -185,37 +255,50 @@ const history = useFormExampleUndo(() => form)
     :message="message"
     capability="basics"
     :form="form"
-    :has-unsaved-changes="draft.hasUnsavedChanges"
-    :draft-status="draft.statusText.value"
+    :has-unsaved-changes="hasUnsavedChanges"
+    :draft-status="draftStatus"
   >
     <template #controls>
-      <NPopconfirm
-        v-for="kind in ['code', 'json'] as const"
-        :key="kind"
-        class="wb-form-draft-popover"
-        scrollable
-        to="#pavp-overlay-root"
-        :disabled="source === kind || !draft.hasUnsavedChanges()"
-        :positive-text="
-          t(kind === 'code' ? 'configuredForm.sourceCode' : 'configuredForm.sourceJson')
+      <NButtonGroup
+        ref="sourceGroup"
+        data-pavp-exclusive-selection
+        v-bind="
+          {
+            class: 'min-w-0',
+            'aria-label': t('formShowcase.configurationSource'),
+          } satisfies HTMLAttributes
         "
-        :negative-text="t('formBuilder.cancel')"
-        @positive-click="emit('source', kind)"
       >
-        <template #trigger>
-          <NButton
-            class="min-h-target-enhanced min-w-target-enhanced"
-            secondary
-            :bordered="false"
-            :type="source === kind ? 'primary' : 'default'"
-            v-bind="{ 'aria-pressed': source === kind } satisfies ButtonHTMLAttributes"
-            @click="switchSource(kind)"
-          >
-            {{ t(kind === 'code' ? 'configuredForm.sourceCode' : 'configuredForm.sourceJson') }}
-          </NButton>
-        </template>
-        {{ t('formDraft.sourceSwitchConfirm') }}
-      </NPopconfirm>
+        <NPopconfirm
+          v-for="kind in ['code', 'json'] as const"
+          :key="kind"
+          class="wb-form-draft-popover"
+          scrollable
+          to="#pavp-overlay-root"
+          :disabled="source === kind || !hasUnsavedChanges()"
+          :positive-text="
+            t(kind === 'code' ? 'configuredForm.sourceCode' : 'configuredForm.sourceJson')
+          "
+          :negative-text="t('formBuilder.cancel')"
+          @positive-click="confirmSource(kind)"
+          @negative-click="restoreSourceFocus(kind)"
+        >
+          <template #trigger>
+            <NButton
+              class="min-h-target-enhanced min-w-target-enhanced"
+              secondary
+              :bordered="false"
+              :type="source === kind ? 'primary' : 'default'"
+              :data-form-source="kind"
+              v-bind="{ 'aria-pressed': source === kind } satisfies ButtonHTMLAttributes"
+              @click="switchSource(kind)"
+            >
+              {{ t(kind === 'code' ? 'configuredForm.sourceCode' : 'configuredForm.sourceJson') }}
+            </NButton>
+          </template>
+          {{ t('formDraft.sourceSwitchConfirm') }}
+        </NPopconfirm>
+      </NButtonGroup>
     </template>
     <UiForm
       class="grid gap-content-gap"

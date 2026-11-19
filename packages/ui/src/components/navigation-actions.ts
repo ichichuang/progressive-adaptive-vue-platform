@@ -5,7 +5,6 @@ import { findScrollTargetOwner } from './scroll-target-owner'
 const requests = new WeakMap<HTMLElement, symbol>()
 let stateUpdates: Promise<void> = Promise.resolve()
 
-/** Explicit navigation recovery only; normal route changes retain their scroll policy. */
 async function centerActiveNavigation(
   state: {
     readonly activeRouteName: string
@@ -26,6 +25,7 @@ async function centerActiveNavigation(
   requests.set(root, request)
   const tab = root.querySelector<HTMLElement>('.pavp-workspace-tabs__item[data-active="true"]')
   if (tab !== null) centerTarget(tab, 'horizontal')
+  if (root.dataset['layoutProfile'] !== 'wide') return
   const navigation = root.querySelector<HTMLElement>('.pavp-admin-shell__persistent-navigation')
   if (navigation === null) return
   const routeName = state.activeRouteName
@@ -107,9 +107,7 @@ export function runNavigationAction(
   const available = (): boolean =>
     root?.isConnected === true && root.dataset['layoutProfile'] === 'wide'
   if (action === 'focus') {
-    return stateUpdates.then(() => {
-      if (available()) return centerActiveNavigation(props, root, emit)
-    })
+    return stateUpdates.then(() => centerActiveNavigation(props, root, emit))
   }
   // Multiple cold-import clicks must observe each preceding controlled update.
   const update = stateUpdates.then(() => {

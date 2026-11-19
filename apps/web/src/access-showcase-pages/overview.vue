@@ -140,7 +140,7 @@ function setScope(value: Organization) {
           />
         </div>
       </div>
-      <div class="gap-control flex flex-wrap">
+      <div class="flex flex-wrap gap-content-gap">
         <NButton
           v-if="canLaunch"
           type="primary"

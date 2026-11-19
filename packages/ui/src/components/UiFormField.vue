@@ -72,129 +72,147 @@ const displayValues = computed(() =>
     :class="config.span === 2 ? 'col-span-full' : ''"
     class="min-w-0"
   >
-    <div
-      v-if="detail"
-      class="grid min-w-0 gap-component-unit"
+    <Transition
+      name="pavp-form-field-mode"
+      mode="out-in"
     >
       <div
-        :id="binding.labelId"
-        class="text-caption text-text-secondary"
+        v-if="detail"
+        class="grid min-w-0 gap-component-unit"
       >
-        {{ form.text(config.label) }}
-      </div>
-      <div
-        :aria-labelledby="binding.labelId"
-        class="min-w-0 whitespace-pre-wrap break-words text-body text-text-primary"
-      >
-        <PavpNaiveFormChoice
-          v-if="choice"
-          readonly
-          :form="form"
-          :binding="detailBinding"
-          :label="form.text(config.label)"
+        <div
+          :id="binding.labelId"
+          class="text-caption text-text-secondary"
         >
-          <template #default="{ statusText }">
-            <slot
-              v-if="slots.detail"
-              name="detail"
-              v-bind="detailBinding"
-            />
-            <div
-              v-else
-              class="pavp-form-choice-detail"
-            >
-              <UiScrollArea
-                :owner-id="`${binding.controlId}-choice-values`"
-                x-scrollable
-                contained
-              >
-                <div
-                  class="pavp-form-choice-detail__values flex w-max whitespace-nowrap items-center gap-component-unit"
-                >
-                  <span
-                    v-if="displayValues.length === 0"
-                    class="text-text-secondary"
-                  >
-                    {{ statusText || form.copy.empty() }}
-                  </span>
-                  <NTag
-                    v-for="(value, index) in displayValues"
-                    :key="index"
-                    :bordered="false"
-                    size="small"
-                  >
-                    {{ value }}
-                  </NTag>
-                </div>
-              </UiScrollArea>
-            </div>
-          </template>
-        </PavpNaiveFormChoice>
-        <PavpNaiveFormAttachment
-          v-else-if="config.kind === 'attachment' && !slots.detail"
-          readonly
-          :form="form"
-          :binding="detailBinding"
-          :config="config"
-        />
-        <slot
-          v-else
-          name="detail"
-          v-bind="detailBinding"
+          {{ form.text(config.label) }}
+        </div>
+        <div
+          :aria-labelledby="binding.labelId"
+          class="min-w-0 whitespace-pre-wrap break-words text-body text-text-primary"
         >
-          <PavpRichTextContent
-            v-if="config.kind === 'rich-text'"
-            :document="parseRichTextDocument(detailBinding.value)"
-          />
-          <span
-            v-else-if="displayValues.length === 0"
-            class="text-text-secondary"
-            v-text="form.copy.empty()"
-          />
-          <NTag
-            v-else-if="config.kind === 'switch'"
-            :bordered="false"
-            size="small"
+          <PavpNaiveFormChoice
+            v-if="choice"
+            readonly
+            :form="form"
+            :binding="detailBinding"
+            :label="form.text(config.label)"
           >
-            {{ displayValues[0] }}
-          </NTag>
-          <span v-else>{{ displayValues.join(', ') }}</span>
-        </slot>
+            <template #default="{ statusText }">
+              <slot
+                v-if="slots.detail"
+                name="detail"
+                v-bind="detailBinding"
+              />
+              <div
+                v-else
+                class="pavp-form-choice-detail"
+              >
+                <UiScrollArea
+                  :owner-id="`${binding.controlId}-choice-values`"
+                  x-scrollable
+                  contained
+                >
+                  <div
+                    class="pavp-form-choice-detail__values flex w-max whitespace-nowrap items-center gap-component-unit"
+                  >
+                    <span
+                      v-if="displayValues.length === 0"
+                      class="text-text-secondary"
+                    >
+                      {{ statusText || form.copy.empty() }}
+                    </span>
+                    <NTag
+                      v-for="(value, index) in displayValues"
+                      :key="index"
+                      :bordered="false"
+                      size="small"
+                    >
+                      {{ value }}
+                    </NTag>
+                  </div>
+                </UiScrollArea>
+              </div>
+            </template>
+          </PavpNaiveFormChoice>
+          <PavpNaiveFormAttachment
+            v-else-if="config.kind === 'attachment' && !slots.detail"
+            readonly
+            :form="form"
+            :binding="detailBinding"
+            :config="config"
+          />
+          <slot
+            v-else
+            name="detail"
+            v-bind="detailBinding"
+          >
+            <PavpRichTextContent
+              v-if="config.kind === 'rich-text'"
+              :document="parseRichTextDocument(detailBinding.value)"
+            />
+            <span
+              v-else-if="displayValues.length === 0"
+              class="text-text-secondary"
+              v-text="form.copy.empty()"
+            />
+            <NTag
+              v-else-if="config.kind === 'switch'"
+              :bordered="false"
+              size="small"
+            >
+              {{ displayValues[0] }}
+            </NTag>
+            <span v-else>{{ displayValues.join(', ') }}</span>
+          </slot>
+        </div>
+        <p
+          v-if="config.description"
+          class="m-0 text-caption text-text-secondary"
+        >
+          {{ form.text(config.description) }}
+        </p>
       </div>
-      <p
-        v-if="config.description"
-        class="m-0 text-caption text-text-secondary"
-      >
-        {{ form.text(config.description) }}
-      </p>
-    </div>
-    <PavpNaiveFormField
-      v-else
-      :key="controlScopeKey"
-      :binding="binding"
-      :feedback-revision="feedbackRevision"
-      :config="{
-        ...config,
-        label: form.text(config.label),
-        ...(config.description === undefined ? {} : { description: form.text(config.description) }),
-      }"
-      :copy="form.copy"
-    >
-      <slot
-        v-if="config.kind === 'custom'"
-        v-bind="binding"
-      />
-      <PavpNaiveFormControl
-        v-else
-        :form="form"
-        :binding="binding"
-      />
-    </PavpNaiveFormField>
+      <div v-else>
+        <PavpNaiveFormField
+          :key="controlScopeKey"
+          :binding="binding"
+          :feedback-revision="feedbackRevision"
+          :config="{
+            ...config,
+            label: form.text(config.label),
+            ...(config.description === undefined
+              ? {}
+              : { description: form.text(config.description) }),
+          }"
+          :copy="form.copy"
+        >
+          <slot
+            v-if="config.kind === 'custom'"
+            v-bind="binding"
+          />
+          <PavpNaiveFormControl
+            v-else
+            :form="form"
+            :binding="binding"
+          />
+        </PavpNaiveFormField>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <style>
 @layer components {
+  html[data-motion='full'] .pavp-form-field-mode-enter-active {
+    transition: opacity var(--ui-motion-duration) var(--ui-motion-easing);
+  }
+  html[data-motion='reduced'] .pavp-form-field-mode-enter-active {
+    transition: opacity calc(var(--ui-motion-duration) / 2) var(--ui-motion-easing);
+  }
+  html[data-motion='full'] .pavp-form-field-mode-enter-from,
+  html[data-motion='reduced'] .pavp-form-field-mode-enter-from {
+    opacity: 0;
+  }
   .pavp-form-choice-detail,
   .pavp-form-choice-detail__values {
     block-size: var(--ui-layout-target-enhanced-minimum-block-size);

@@ -387,7 +387,13 @@ async function sharedLocalePreferenceProbes(source: string, root: string): Promi
           failures.push(
             'A valid remote no-op must clear stale synchronization feedback without saving.',
           )
-        const saved = await boundary.switchLocale('zh-CN')
+        const saved = await boundary.switchLocale('zh-CN', async (commit) => {
+          await nextTask()
+          if (boundary.locale.value !== 'en' || boundary.pendingLocale.value !== 'zh-CN')
+            failures.push('Presentation must receive a prepared locale that is still pending.')
+          if (!commit() || commit())
+            failures.push('A deferred locale commit must succeed exactly once.')
+        })
         if (
           saved.status !== 'applied' ||
           saved.persistence !== 'saved' ||
@@ -405,7 +411,9 @@ async function sharedLocalePreferenceProbes(source: string, root: string): Promi
             'Invalid preference copy must also describe retaining the valid Chinese locale.',
           )
         failWrite = true
-        const failed = await boundary.switchLocale('en')
+        const failed = await boundary.switchLocale('en', () => {
+          throw new Error('Visual presentation unavailable.')
+        })
         if (
           failed.status !== 'applied' ||
           failed.persistence !== 'failed' ||

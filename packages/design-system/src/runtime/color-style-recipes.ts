@@ -24,11 +24,14 @@ function plane(
   })
 }
 
-/** Curated compositions reuse the active brand's validated palette, never arbitrary colors. */
+const unified = Object.freeze({ light: plane('light'), dark: plane('dark') })
+
+/** Curated compositions reuse the active brand's validated palette. */
 export const colorStyleRecipes: Readonly<
   Record<ColorStyle, Readonly<Record<EffectiveColorMode, StylePlane>>>
 > = Object.freeze({
-  unified: Object.freeze({ light: plane('light'), dark: plane('dark') }),
+  unified,
+  monochrome: unified,
   'dark-navigation': Object.freeze({
     light: plane('light', { sidebar: { colorMode: 'dark', surface: 'sunken' } }),
     dark: plane('dark', { sidebar: { colorMode: 'dark', surface: 'sunken' } }),

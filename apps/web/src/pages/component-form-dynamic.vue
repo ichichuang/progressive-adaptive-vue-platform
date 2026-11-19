@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, type HTMLAttributes } from 'vue'
+import { computed, ref, useId, type HTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiDynamicForm } from '@platform/ui'
@@ -17,6 +17,7 @@ import {
 
 defineOptions({ name: 'ComponentFormDynamicPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
+const modeGroupName = useId()
 const demo = useFormShowcase()
 const { t } = demo
 const port = useFormDraftStorage().create({
@@ -144,6 +145,7 @@ async function selectPreset(value: string | number | boolean): Promise<void> {
   >
     <template #controls>
       <NRadioGroup
+        :name="modeGroupName"
         :value="preset"
         :disabled="busy"
         v-bind="

@@ -166,7 +166,7 @@ async function selectRange(value: readonly [number, number]) {
         @update:value="selectBlock"
       />
     </div>
-    <div class="gap-control flex flex-wrap">
+    <div class="flex flex-wrap gap-content-gap">
       <GuardedOperationButton
         :selection="selection"
         @activate="run"

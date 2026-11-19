@@ -612,13 +612,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    'workbench-interactions': RouteRecordInfo<
-      'workbench-interactions',
-      '/interactions',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     'login': RouteRecordInfo<
       'login',
       '/login',
@@ -629,6 +622,13 @@ declare module 'vue-router/auto-routes' {
     'workbench-motion': RouteRecordInfo<
       'workbench-motion',
       '/motion',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-layouts': RouteRecordInfo<
+      'preview-layouts',
+      '/previews/layout',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -689,9 +689,51 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'preview-status-400': RouteRecordInfo<
+      'preview-status-400',
+      '/previews/status/400',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-status-401': RouteRecordInfo<
+      'preview-status-401',
+      '/previews/status/401',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-status-403': RouteRecordInfo<
+      'preview-status-403',
+      '/previews/status/403',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'preview-status-404': RouteRecordInfo<
       'preview-status-404',
       '/previews/status/404',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-status-500': RouteRecordInfo<
+      'preview-status-500',
+      '/previews/status/500',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-status-maintenance': RouteRecordInfo<
+      'preview-status-maintenance',
+      '/previews/status/maintenance',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'preview-status-offline': RouteRecordInfo<
+      'preview-status-offline',
+      '/previews/status/offline',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -1450,14 +1492,6 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/interactions.vue': {
-      routes:
-        | 'workbench-interactions'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
     'src/pages/login.vue': {
       routes:
         | 'login'
@@ -1469,6 +1503,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/motion.vue': {
       routes:
         | 'workbench-motion'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-layouts.vue': {
+      routes:
+        | 'preview-layouts'
       views:
         | never
       pathParamNames:
@@ -1538,9 +1580,57 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/preview-status-400.vue': {
+      routes:
+        | 'preview-status-400'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-status-401.vue': {
+      routes:
+        | 'preview-status-401'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-status-403.vue': {
+      routes:
+        | 'preview-status-403'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/preview-status-404.vue': {
       routes:
         | 'preview-status-404'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-status-500.vue': {
+      routes:
+        | 'preview-status-500'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-status-maintenance.vue': {
+      routes:
+        | 'preview-status-maintenance'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/preview-status-offline.vue': {
+      routes:
+        | 'preview-status-offline'
       views:
         | never
       pathParamNames:

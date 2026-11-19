@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFormExampleUndo } from '../app/workbench/forms/use-form-example-undo'
-import { type ButtonHTMLAttributes, computed, ref } from 'vue'
+import { type HTMLAttributes, computed, ref, useId } from 'vue'
 import {
   UiForm,
   useUiForm,
@@ -9,6 +9,7 @@ import {
   type UiFormSchema,
 } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { NSwitch } from 'naive-ui/es/switch'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
 import FormExampleActions from '../app/workbench/forms/FormExampleActions.vue'
@@ -19,6 +20,7 @@ defineProps<{ readonly title: string; readonly message: string }>()
 const demo = useFormShowcase()
 const { t } = demo
 const mode = ref<'edit' | 'detail'>('edit')
+const modeGroupName = useId()
 const readerAvailable = ref(true)
 const catalog: readonly UiFormOption[] = [
   { value: 'design', label: 'formOptions.design' },
@@ -113,19 +115,23 @@ const history = useFormExampleUndo(() => form)
     :mode="mode"
   >
     <template #controls>
-      <NButton
-        v-for="view in ['edit', 'detail'] as const"
-        :key="view"
-        class="min-h-target-enhanced min-w-target-enhanced"
-        secondary
-        :bordered="false"
-        :type="mode === view ? 'primary' : 'default'"
-        v-bind="{ 'aria-pressed': mode === view } satisfies ButtonHTMLAttributes"
-        :disabled="view === 'detail' && form.hasPendingInput.value"
-        @click="mode = view"
+      <NRadioGroup
+        v-model:value="mode"
+        :name="modeGroupName"
+        v-bind="
+          { role: 'radiogroup', 'aria-label': t('formShowcase.viewMode') } satisfies HTMLAttributes
+        "
       >
-        {{ t(view === 'edit' ? 'configuredForm.edit' : 'configuredForm.detail') }}
-      </NButton>
+        <NRadioButton value="edit">
+          {{ t('configuredForm.edit') }}
+        </NRadioButton>
+        <NRadioButton
+          value="detail"
+          :disabled="form.hasPendingInput.value"
+        >
+          {{ t('configuredForm.detail') }}
+        </NRadioButton>
+      </NRadioGroup>
     </template>
     <template #status>
       <div

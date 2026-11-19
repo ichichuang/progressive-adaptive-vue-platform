@@ -8,7 +8,11 @@ import type { ValidatedRouteInput } from '../../router/route-input'
 import { useApplicationNavigation } from '../../router/application-navigation'
 import { useTableQueryLink } from '../../tables/use-table-query-link'
 import { tableQuerySharingCodec } from '../../tables/table-query-sharing-example'
-import { tableDataCapabilitySchema, tableFilterSampleRows } from './table-data-capabilities'
+import {
+  tableDataCapabilitySchema,
+  tableFilterSampleRows,
+  tableSampleNotes,
+} from './table-data-capabilities'
 import { useTableShowcase } from './table-showcase'
 import TableCapabilityWorkbench from './TableCapabilityWorkbench.vue'
 const props = defineProps<{
@@ -19,13 +23,14 @@ const props = defineProps<{
 const demo = useTableShowcase()
 const { t } = demo
 const navigation = useApplicationNavigation()
+const notes = tableSampleNotes(t)
 const schema = {
-  ...tableDataCapabilitySchema('sorting', 'submit', 250, 'multiple'),
+  ...tableDataCapabilitySchema('sorting', notes, 'submit', 250, 'multiple'),
   id: 'table-query-link',
 }
 const table = useUiTable({
   schema,
-  rows: tableFilterSampleRows(60, t('tableCapabilities.data.noteSample')),
+  rows: tableFilterSampleRows(60, notes.available.value),
   translate: (value) =>
     value.startsWith('tableCapabilities.data.')
       ? t(value as ConsoleMessageKey)

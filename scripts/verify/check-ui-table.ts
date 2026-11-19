@@ -22,11 +22,19 @@ import { verifyFormBuilderFields } from './check-form-builder-fields'
 import { resolveTableColumnDisplay } from '../../packages/ui/src/components/table-column-display'
 import { verifyFormSpecialFields } from './check-form-fields'
 import { tableQuerySharingCodec } from '../../apps/web/src/app/tables/table-query-sharing-example'
+import {
+  tableDataCapabilitySchema,
+  tableFilterSampleRows,
+  tableSampleNotes,
+} from '../../apps/web/src/app/workbench/tables/table-data-capabilities'
+import enTableMessages from '../../apps/web/src/shared/i18n/messages/en/console.json'
+import zhTableMessages from '../../apps/web/src/shared/i18n/messages/zh-CN/console.json'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import ts from 'typescript'
-import { effectScope, h, nextTick } from 'vue'
+import { createApp, effectScope, h, nextTick, shallowRef } from 'vue'
+import { uiLocaleKey } from '../../packages/ui/src/providers/ui-locale'
 import { generatedThemeRegistry } from '../../packages/design-system/src/generated/theme-registry'
 import { ProductPreferenceDefault } from '../../packages/design-system/src/runtime/appearance-defaults'
 import {
@@ -2035,6 +2043,112 @@ async function verifyFormSteps(): Promise<void> {
   assert.equal(race.activeStepIndex.value, 0, 'A stale validation must not advance a reset record')
   race.dispose()
 }
+async function verifyTableLocale(): Promise<void> {
+  const locale = shallowRef<'en' | 'zh-CN'>('en')
+  const translate = (key: string) => {
+    const messages: Readonly<Record<string, string>> =
+      locale.value === 'en' ? enTableMessages : zhTableMessages
+    return messages[key] ?? key
+  }
+  const notes = tableSampleNotes(translate)
+  const schema = tableDataCapabilitySchema('sorting', notes)
+  const table = useUiTable({
+    schema,
+    locale,
+    rows: tableFilterSampleRows(6, notes.available.value),
+    translate,
+  })
+  const form = useUiTableQuery(table, formCopy)
+  const column = table.schema.columns.find(({ key }) => key === 'category')
+  assert.ok(column)
+  const categoryText = () => {
+    const value = table.rows.value[0]?.['category']
+    assert.ok(typeof value === 'string')
+    return resolveTableColumnDisplay(column, value, String, translate).text
+  }
+  form.setValue('category', 'Design')
+  assert.equal(await form.submit(), 'success')
+  const filter = table.query.value.filters
+  const categoryOption = form.field('category').options.find(({ value }) => value === 'Design')
+  assert.ok(categoryOption)
+  assert.equal(categoryText(), 'Design')
+  locale.value = 'zh-CN'
+  const noteColumn = table.schema.columns.find(({ key }) => key === 'note')
+  assert.ok(noteColumn)
+  assert.equal(
+    resolveTableColumnDisplay(noteColumn, notes.available.value, String, translate).text,
+    zhTableMessages['tableCapabilities.data.noteSample'],
+  )
+  const rendering = tableDataCapabilitySchema('rendering', notes).columns.find(
+    ({ key }) => key === 'note',
+  )
+  assert.ok(rendering)
+  for (const option of [notes.long, notes.offset, notes.missing]) {
+    assert.equal(
+      resolveTableColumnDisplay(rendering, option.value, String, translate).text,
+      translate(option.label),
+    )
+    assert.notEqual(option.value, translate(option.label))
+  }
+  assert.equal(categoryText(), '设计')
+  assert.equal(form.text(categoryOption.label), '设计')
+  assert.equal(form.getValue('category'), 'Design')
+  assert.equal(table.query.value.filters, filter)
+  assert.equal(table.total.value, 2)
+  assert.equal(
+    resolveTableColumnDisplay(column, 'Custom category', String, translate).text,
+    'Custom category',
+  )
+  await table.search({ keyword: '设计' })
+  assert.deepEqual(
+    table.rows.value.map((row) => row['category']),
+    ['Design', 'Design'],
+  )
+  locale.value = 'en'
+  await nextTick()
+  assert.equal(table.query.value.filters['keyword'], '设计')
+  assert.equal(table.total.value, 0)
+  form.dispose()
+  table.dispose()
+
+  const names = ['阿', '八', '中', '陈']
+  const collated = (language: string) =>
+    [...names].sort((left, right) => left.localeCompare(right, language))
+  locale.value = 'zh-CN'
+  const app = createApp({})
+  app.provide(uiLocaleKey, locale)
+  const local = app.runWithContext(() =>
+    useUiTable({
+      schema: {
+        id: 'localized-sort',
+        rowKey: 'id',
+        source: { kind: 'local' },
+        selection: 'multiple',
+        columns: [{ key: 'name', title: 'Name', sortable: true }],
+        pagination: { mode: 'load-more', pageSize: 2 },
+      },
+      rows: names.map((name) => ({ id: name, name })),
+    }),
+  )
+  await local.setSort({ key: 'name', order: 'ascend' })
+  await local.loadMore()
+  local.setSelection(['八'])
+  const query = local.query.value
+  assert.deepEqual(
+    local.rows.value.map((row) => row['name']),
+    collated('zh-CN'),
+  )
+  locale.value = 'en'
+  await nextTick()
+  assert.deepEqual(
+    local.rows.value.map((row) => row['name']),
+    collated('en'),
+  )
+  assert.deepEqual(local.selectedKeys.value, ['八'])
+  assert.equal(local.query.value, query)
+  local.dispose()
+}
+
 async function verifyMultipleSorting(): Promise<void> {
   const records = [
     { id: 1, category: 'low', amount: 2 },
@@ -2139,7 +2253,9 @@ async function verifyMultipleSorting(): Promise<void> {
   )
   single.dispose()
   let received: UiTableResolvedRequest | undefined
+  const remoteLocale = shallowRef<'en' | 'zh-CN'>('en')
   const remote = useUiTable({
+    locale: remoteLocale,
     schema: {
       ...config,
       columns: config.columns.map(({ key, title }) => ({ key, title, sortable: true })),
@@ -2166,6 +2282,10 @@ async function verifyMultipleSorting(): Promise<void> {
   assert.ok(received)
   assert.deepEqual(received.body['sorting'], remote.query.value.sorts)
   assert.equal(received.body['primary'], 'category')
+  const lastRequest = received
+  remoteLocale.value = 'zh-CN'
+  await nextTick()
+  assert.equal(received, lastRequest, 'A locale switch must not send a remote table request.')
   assert.deepEqual(
     remote.rows.value,
     records,
@@ -2617,6 +2737,7 @@ await verifyInlineEditing()
 await verifyCsvExport()
 verifyColumnGroups()
 await verifyMultipleSorting()
+await verifyTableLocale()
 await verifyCommonFormFields()
 await verifyTableLocalFilters()
 await verifyFormLocalOperations()

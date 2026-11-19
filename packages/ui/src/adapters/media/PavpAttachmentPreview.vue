@@ -163,7 +163,7 @@ defineExpose({ open, close })
         />
       </UiScrollArea>
       <template #footer>
-        <div class="gap-control flex flex-wrap items-center justify-end">
+        <div class="flex flex-wrap items-center justify-end gap-content-gap">
           <template v-if="pdf">
             <NButton
               :disabled="page <= 1"

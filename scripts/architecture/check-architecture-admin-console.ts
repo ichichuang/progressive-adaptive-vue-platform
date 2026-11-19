@@ -91,7 +91,11 @@ import {
   validateRouteTransitionSourceGovernance,
 } from './check-router'
 import { validateUiPublicComponents } from './check-ui-public-components'
-import { styleDeclarationKey, type StyleDeclarationIdentity } from './style-ownership'
+import {
+  styleDeclarationKey,
+  styleDeclarationResponsibility,
+  type StyleDeclarationIdentity,
+} from './style-ownership'
 
 type JsonObject = Record<string, unknown>
 
@@ -337,7 +341,7 @@ const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 11
 const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 24
 const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 17
 const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
-const expectedNavigationReworkSourceInvariantCount = 56
+const expectedNavigationReworkSourceInvariantCount = 57
 const expectedNavigationReworkSourceNegativeProbeCount = 23
 const expectedNavigationBundleProbeCount = 3
 const expectedRuntime003SourceNegativeProbeCount = 12
@@ -358,7 +362,6 @@ const expectedNavigationIconClasses = [
   'i-lucide-palette',
   'i-lucide-ruler',
   'i-lucide-type',
-  'i-lucide-sparkles',
   'i-lucide-clock-3',
   'i-lucide-workflow',
   'i-lucide-workflow',
@@ -439,6 +442,8 @@ const expectedNavigationIconClasses = [
   'i-lucide-panels-top-left',
   'i-lucide-panels-top-left',
   'i-lucide-panels-top-left',
+  ...Array<string>(7).fill('i-lucide-file-warning'),
+  'i-lucide-panels-top-left',
 ] as const
 const styledFrameworkPackages = [
   'ant-design-vue',
@@ -481,7 +486,6 @@ const productRouteContract = [
   ['workbench-colors', '/colors', 'apps/web/src/pages/colors.vue', '语义配色'],
   ['workbench-sizes', '/sizes', 'apps/web/src/pages/sizes.vue', '尺寸与空间'],
   ['workbench-typography', '/typography', 'apps/web/src/pages/typography.vue', '字体排印'],
-  ['workbench-interactions', '/interactions', 'apps/web/src/pages/interactions.vue', '交互与状态'],
   ['workbench-date-time', '/date-time', 'apps/web/src/pages/date-time.vue', '日期与时间'],
   ['workbench-motion', '/motion', 'apps/web/src/pages/motion.vue', '动画与动效'],
   ['component-showcase', '/components', 'apps/web/src/pages/component-showcase.vue', '组件总览'],
@@ -8213,10 +8217,17 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
       ].includes(violation),
     ) ||
     ![
-      ['.pavp-admin-shell__header', 'var(--pavp-region-background, transparent)'],
+      [
+        '.pavp-admin-shell__header',
+        'var(--pavp-region-background, var(--ui-material-chrome-background))',
+      ],
       [
         '.pavp-admin-shell__sidebar',
-        'var(--pavp-region-background, var(--ui-color-surface-panel))',
+        'var(--pavp-region-background, var(--ui-material-chrome-background))',
+      ],
+      [
+        '.pavp-admin-shell__footer',
+        'var(--pavp-region-background, var(--ui-material-chrome-background))',
       ],
       [
         '.pavp-admin-shell__drawer-navigation',
@@ -8270,7 +8281,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     '.wb-settings-dock.n-button',
     ".wb-settings-dock.n-button[data-collapsed='false']",
     '.wb-overview-card.n-card',
-    '.wb-link:not(.n-button):focus-visible, .wb-done:not(.n-button):focus-visible, .wb-section-link:not(.n-button):focus-visible',
+    '.wb-link:not(.n-button):focus-visible, .wb-section-link:not(.n-button):focus-visible',
     "[data-layout-profile='regular'] .wb-section-link.n-button, [data-layout-profile='wide'] .wb-section-link.n-button",
   ])
   const ordinaryPageSource = snapshot.pageVisualSource.replace(
@@ -10591,22 +10602,22 @@ function runArchitectureAdminConsoleNegativeProbes(
       },
     ],
     [
-      'floating-header-region-background-missing',
+      'floating-header-material-background-missing',
       'MATERIAL_BRANCH_INCOMPLETE',
       {
         shellSource: baseline.shellSource.replace(
+          'background: var(--pavp-region-background, var(--ui-material-chrome-background));',
           'background: var(--pavp-region-background, transparent);',
-          'background: transparent;',
         ),
       },
     ],
     [
-      'floating-sidebar-region-background-missing',
+      'floating-sidebar-material-background-missing',
       'MATERIAL_BRANCH_INCOMPLETE',
       {
         shellSource: baseline.shellSource.replace(
-          'background: var(--pavp-region-background, var(--ui-color-surface-panel));',
-          'background: transparent;',
+          /(\.pavp-admin-shell__sidebar \{[^}]*background: )var\(--pavp-region-background, var\(--ui-material-chrome-background\)\);/u,
+          '$1var(--pavp-region-background, var(--ui-color-surface-panel));',
         ),
       },
     ],
@@ -11011,15 +11022,9 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     hasStaticTemplateClass(headerCollapseControl, 'pavp-admin-shell__header-action') &&
     hasStaticTemplateClass(headerCollapseControl, 'min-h-target-enhanced') &&
     hasStaticTemplateClass(headerCollapseControl, 'min-w-target-enhanced')
-  // Only the identity click discriminator and fullscreen state listener are allowed;
-  // neither may become a second responsive-navigation measurement owner.
-  const identityClickTimer = `homeClickTimer = setTimeout(() => {
-    homeClickTimer = undefined
-    emit('navigate-home')
-  }, 500)`
+  // The fullscreen listener must not become a responsive-navigation measurement owner.
   const fullscreenListener = "document.addEventListener('fullscreenchange', synchronizeFullscreen)"
   const responsiveLifecycleSource = shellSource
-    .replace(identityClickTimer, '')
     .replace(fullscreenListener, '')
     .replace("window.matchMedia('(hover: none)')", '')
     .replace("window.addEventListener('resize', closeThemePickerForViewport)", '')
@@ -11116,15 +11121,19 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     ['NAV_SINGLE_RESIZE_OBSERVER', occurrences(shellSource, 'new ResizeObserver(') === 1],
     [
+      'NAV_IDENTITY_SINGLE_CLICK',
+      shellSource.includes(`@click="emit('navigate-home')"`) &&
+        !shellSource.includes('@dblclick="handleIdentityDoubleClick"'),
+    ],
+    [
       'NAV_RESPONSIVE_LIFECYCLE',
       !/\b(?:MutationObserver|matchMedia|setTimeout|setInterval|requestAnimationFrame)\s*\(/u.test(
         responsiveLifecycleSource,
       ) &&
         !/\b(?:window|document)\.addEventListener\s*\(/u.test(responsiveLifecycleSource) &&
         shellSource.includes(
-          "onBeforeUnmount(() => {\n  cancelHomeClick()\n  document.removeEventListener('fullscreenchange', synchronizeFullscreen)",
-        ) &&
-        shellSource.includes('clearTimeout(homeClickTimer)'),
+          "onBeforeUnmount(() => {\n  document.removeEventListener('fullscreenchange', synchronizeFullscreen)",
+        ),
     ],
     [
       'NAV_FONT_SCALE_INVALIDATION',
@@ -14264,6 +14273,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     'UiG2Chart',
     'UiChartTimeRange',
     'UiCopyAction',
+    'UiNavigationLink',
     'UiScrollArea',
     'UiAdminShell',
     'UiPageHeader',
@@ -15505,11 +15515,11 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
 
   if (
     runtimeCount(routeRegistry) !==
-      productRouteContract.length + errorRouteRegistry.length + 9 + 1 ||
+      productRouteContract.length + errorRouteRegistry.length + 16 + 1 ||
     runtimeCount(productRoutes) !== productRouteContract.length ||
-    routeRegistry.filter((record) => record.name.startsWith('preview-')).length !== 9 ||
+    routeRegistry.filter((record) => record.name.startsWith('preview-')).length !== 16 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 89 ||
+    Object.keys(breadcrumbRegistry).length !== 88 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
@@ -15775,8 +15785,8 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
           !specifier.includes('/workbench/') &&
           !factImports.has(specifier) &&
           !(
-            path === 'apps/web/src/pages/preview-status-404.vue' &&
-            specifier === '../app/errors/RouteNotFoundView.vue'
+            path.startsWith('apps/web/src/pages/preview-status-') &&
+            specifier === '../app/errors/ErrorPresentation.vue'
           ) &&
           !(
             path === 'apps/web/src/pages/control-center.vue' &&
@@ -15969,11 +15979,11 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
   }
 }
 
-function providerMotionImportanceValid(source: string): boolean {
+function providerImportanceValid(source: string): boolean {
   const parsed = vueSfcCompiler.parse(source, { filename: 'UiProvider.vue' })
   if (parsed.errors.length > 0) return false
   let valid = true
-  for (const style of parsed.descriptor.styles) {
+  for (const [block, style] of parsed.descriptor.styles.entries()) {
     const compiled = vueSfcCompiler.compileStyle({
       filename: 'UiProvider.vue',
       id: 'data-v-provider',
@@ -15983,12 +15993,37 @@ function providerMotionImportanceValid(source: string): boolean {
     if (compiled.errors.length > 0 || compiled.rawResult === undefined) return false
     compiled.rawResult.root.walkDecls((declaration) => {
       if (
-        declaration.important &&
-        !/^(?:animation|animation-duration|opacity|transform|transition|transition-duration|transition-property|transition-timing-function)$/u.test(
+        !declaration.important ||
+        /^(?:animation|animation-duration|opacity|transform|transition|transition-duration|transition-property|transition-timing-function)$/u.test(
           declaration.prop,
         )
       )
+        return
+      const rule = declaration.parent
+      const layer = rule?.parent
+      if (
+        declaration.prop !== 'border-radius' ||
+        rule?.type !== 'rule' ||
+        !('selector' in rule) ||
+        typeof rule.selector !== 'string' ||
+        layer?.type !== 'atrule' ||
+        !('name' in layer) ||
+        layer.name !== 'layer' ||
+        !('params' in layer) ||
+        typeof layer.params !== 'string' ||
+        layer.parent?.type !== 'root' ||
+        styleDeclarationResponsibility({
+          path: 'packages/ui/src/providers/UiProvider.vue',
+          block,
+          context: [`@layer ${layer.params}`],
+          selector: rule.selector,
+          property: declaration.prop,
+          value: declaration.value,
+          important: true,
+        }) !== 'VENDOR_ADAPTER_OWNER'
+      ) {
         valid = false
+      }
     })
   }
   return valid
@@ -16042,14 +16077,18 @@ async function validateNaiveOverrides(): Promise<string[]> {
     violations.push(
       'Theme projection accepted an incorrect hover formula under a valid private name.',
     )
-  if (!providerMotionImportanceValid(providerSource.replaceAll(/\n\s*/gu, ' ')))
-    violations.push('Provider motion importance must not depend on line breaks.')
+  if (!providerImportanceValid(providerSource.replaceAll(/\n\s*/gu, ' ')))
+    violations.push('Provider importance checks must not depend on line breaks.')
   if (
-    providerMotionImportanceValid(
-      `${providerSource}<style>.probe { color: red !important; }</style>`,
+    providerImportanceValid(`${providerSource}<style>.probe { color: red !important; }</style>`) ||
+    providerImportanceValid(
+      providerSource.replace(
+        /:not\(\.n-button-group--vertical\)\s*>\s*\.n-button\[aria-pressed\]/u,
+        ':not(.n-button-group--vertical) > .probe',
+      ),
     )
   )
-    violations.push('Provider motion importance accepted an unrelated important property.')
+    violations.push('Provider importance checks accepted an unauthorized declaration.')
 
   if (overrides === undefined) {
     return ['The PAVP-to-Naive theme override object is unavailable.']
@@ -16128,7 +16167,7 @@ async function validateNaiveOverrides(): Promise<string[]> {
   }
 
   if (
-    !providerMotionImportanceValid(providerSource) ||
+    !providerImportanceValid(providerSource) ||
     !providerSource.includes("html[data-motion='reduced']") ||
     !providerSource.includes("html[data-motion='none']") ||
     !providerSource.includes(
@@ -16236,7 +16275,7 @@ function validateInspectorProjections(): string[] {
     runtimeCount(routerRecords) !== routeRegistry.length ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
     runtimeCount(storageRecords) !== 13 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 18 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 19 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, []) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
@@ -16341,36 +16380,28 @@ function validateInspectorProjections(): string[] {
   )
   const previewItems = previewGroup === undefined ? [] : getConsoleNavigationItems([previewGroup])
   const expectedPreviewNames = [
-    'error-invalid-route-input',
-    'error-authentication-required',
-    'error-permission-denied',
+    'preview-status-400',
+    'preview-status-401',
+    'preview-status-403',
     'preview-status-404',
-    'error-application-route-failure',
-    'error-network-unavailable',
-    'error-service-unavailable',
-    'preview-layout-display',
-    'preview-layout-fixed-display',
-    'preview-layout-admin',
-    'preview-layout-admin-footer',
-    'preview-layout-header',
-    'preview-layout-header-footer',
-    'preview-layout-content-footer',
-    'preview-layout-content',
+    'preview-status-500',
+    'preview-status-offline',
+    'preview-status-maintenance',
+    'preview-layouts',
   ]
   if (
     !isDeepStrictEqual(
       previewItems.map((item) => item.destination.name),
       expectedPreviewNames,
     ) ||
-    previewItems.some(
-      (item) => item.openIn !== 'new-page' || item.iconClass !== 'i-lucide-external-link',
+    previewGroup?.items.some(
+      (item) => 'id' in item && runtimeString(item.id) === 'layout-previews',
     ) ||
-    consoleNavigationItems.length !==
-      consoleWorkspaceNavigationItems.length + expectedPreviewNames.length ||
-    consoleWorkspaceNavigationItems.some((item) => item.openIn !== undefined)
+    consoleNavigationItems.some((item) => 'openIn' in item) ||
+    previewItems.some((item) => !consoleWorkspaceNavigationItems.includes(item))
   )
     violations.push(
-      'Architecture previews must retain fifteen new-page actions, isolated from the workspace transition axis.',
+      'Architecture previews must use ordinary sidebar navigation and participate in workspace navigation.',
     )
 
   const navigationProjection = consoleNavigationRegistry
@@ -16386,7 +16417,7 @@ function validateInspectorProjections(): string[] {
     !isDeepStrictEqual(navigationProjection, [
       ['工作台', ['欢迎', '仪表盘']],
       ['设计令牌', ['语义配色', '尺寸与空间', '字体排印']],
-      ['交互能力', ['交互与状态', '日期与时间', '动画与动效']],
+      ['交互能力', ['日期与时间', '动画与动效']],
       [
         'API 请求',
         [

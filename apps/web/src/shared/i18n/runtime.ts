@@ -7,6 +7,7 @@ import {
   type ConsoleI18nHandle,
   type ConsoleI18nInput,
   type ConsoleLocaleNotice,
+  type ConsoleLocalePresentation,
   type ConsoleLocaleSwitchResult,
 } from './boundary'
 import { getDefaultConsoleMessage } from './default-messages'
@@ -200,6 +201,7 @@ export function createConsoleI18nRuntime(
   function switchLocale(
     candidate: unknown,
     persistPreference?: true,
+    present?: ConsoleLocalePresentation,
   ): Promise<ConsoleLocaleSwitchResult>
   function switchLocale(
     candidate: unknown,
@@ -208,6 +210,7 @@ export function createConsoleI18nRuntime(
   function switchLocale(
     candidate: unknown,
     persistPreference = true,
+    present?: ConsoleLocalePresentation,
   ): Promise<ConsoleLocaleSwitchResult | LocaleSynchronizationResult> {
     const parsed = consoleLocaleSchema.safeParse(candidate)
     if (isDisposed())
@@ -253,68 +256,77 @@ export function createConsoleI18nRuntime(
     const completion = (async (): Promise<
       ConsoleLocaleSwitchResult | LocaleSynchronizationResult
     > => {
-      let committing = false
+      const commitState: {
+        started: boolean
+        result?: ConsoleLocaleSwitchResult | LocaleSynchronizationResult
+      } = { started: false }
+      const cancelledResult = () =>
+        ({
+          status: 'cancelled',
+          locale: target,
+          reason: isDisposed() ? 'disposed' : 'superseded',
+        }) as const
       try {
-        let batch: ConsoleMessageScope[]
-        do {
-          batch = [...scopes]
-          if (!(await prepareResources(target, batch, () => ownsRequest(operation)))) {
-            return {
-              status: 'cancelled',
-              locale: target,
-              reason: isDisposed() ? 'disposed' : 'superseded',
+        while (ownsRequest(operation)) {
+          const batch = [...scopes]
+          if (!(await prepareResources(target, batch, () => ownsRequest(operation)))) break
+          if (!ownsRequest(operation)) break
+          if (batch.length !== scopes.size) continue
+          if (!persistPreference && storedLocale() !== target) {
+            synchronizePreference()
+            break
+          }
+          const commit = (): boolean => {
+            if (commitState.started || !ownsRequest(operation) || batch.length !== scopes.size)
+              return false
+            commitState.started = true
+            try {
+              registerResources(target, batch)
+              commitPresentation(target)
+            } catch {
+              return false
+            }
+            request.value = { ...operation, phase: 'committed' }
+            if (persistPreference) {
+              let persistence: 'saved' | 'failed' = 'failed'
+              try {
+                persistence = input.preference.write(target).status
+              } catch {
+                /* A port failure must not undo the applied presentation. */
+              }
+              notice.value = persistence === 'saved' ? 'applied' : 'not-saved'
+              commitState.result = { status: 'applied', locale: target, persistence }
+            } else {
+              notice.value = 'none'
+              commitState.result = { status: 'applied', locale: target }
+            }
+            return true
+          }
+          if (present !== undefined) {
+            try {
+              await present(commit)
+            } catch {
+              // A presentation failure cannot prevent the prepared change from applying.
             }
           }
-        } while (batch.length !== scopes.size)
-        if (!ownsRequest(operation))
-          return {
-            status: 'cancelled',
-            locale: target,
-            reason: isDisposed() ? 'disposed' : 'superseded',
-          }
-        if (!persistPreference && storedLocale() !== target) {
-          synchronizePreference()
-          return { status: 'cancelled', locale: target, reason: 'superseded' }
+          if (!commitState.started) commit()
+          if (!ownsRequest(operation)) break
+          if (!commitState.started) continue
+          const result = commitState.result
+          if (result === undefined) throw new Error('The console locale commit failed.')
+          await nextTick()
+          if (!ownsRequest(operation)) break
+          request.value = null
+          return result
         }
-        committing = true
-        registerResources(target, batch)
-        commitPresentation(target)
-        request.value = { ...operation, phase: 'committed' }
-        let result: ConsoleLocaleSwitchResult | LocaleSynchronizationResult
-        if (persistPreference) {
-          let persistence: 'saved' | 'failed' = 'failed'
-          try {
-            persistence = input.preference.write(target).status
-          } catch {
-            /* A port failure must not undo the applied presentation. */
-          }
-          notice.value = persistence === 'saved' ? 'applied' : 'not-saved'
-          result = { status: 'applied', locale: target, persistence }
-        } else {
-          notice.value = 'none'
-          result = { status: 'applied', locale: target }
-        }
-        await nextTick()
-        if (!ownsRequest(operation))
-          return {
-            status: 'cancelled',
-            locale: target,
-            reason: isDisposed() ? 'disposed' : 'superseded',
-          }
-        request.value = null
-        return result
+        return cancelledResult()
       } catch {
-        if (!ownsRequest(operation))
-          return {
-            status: 'cancelled',
-            locale: target,
-            reason: isDisposed() ? 'disposed' : 'superseded',
-          }
+        if (!ownsRequest(operation)) return cancelledResult()
         if (!persistPreference && storedLocale() !== target) {
           synchronizePreference()
           return { status: 'cancelled', locale: target, reason: 'superseded' }
         }
-        const reason = committing ? 'commit-failed' : 'message-load-failed'
+        const reason = commitState.started ? 'commit-failed' : 'message-load-failed'
         request.value = null
         notice.value = reason
         return { status: 'failed', locale: composer.locale.value, reason }
@@ -353,7 +365,8 @@ export function createConsoleI18nRuntime(
     ),
     notice: readonly(notice),
     t,
-    switchLocale,
+    switchLocale: (candidate: unknown, present?: ConsoleLocalePresentation) =>
+      switchLocale(candidate, true, present),
     prepareScope,
   })
 

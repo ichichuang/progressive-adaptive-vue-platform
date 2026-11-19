@@ -14,6 +14,7 @@ import { NTreeSelect } from 'naive-ui/es/tree-select'
 import { UiChartTimeRange, UiRadioCardGroup } from '@platform/ui'
 import { useConsoleI18n } from '../shared/i18n'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
 
 defineOptions({ name: 'ComponentSelectionPage' })
@@ -109,13 +110,10 @@ const popSelectionLabel = computed(
     :message="message"
   >
     <section
-      class="wb-page grid min-w-0"
+      class="grid min-w-0 gap-field-gap"
       :aria-label="title"
     >
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.selectionChoices') }}
-        </h2>
+      <WorkbenchSection :title="t('showcase.group.selectionChoices')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NSwitch"
@@ -196,11 +194,8 @@ const popSelectionLabel = computed(
             </NCheckbox>
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.selectionRating') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.selectionRating')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NSlider"
@@ -285,11 +280,8 @@ const popSelectionLabel = computed(
             />
           </ComponentSpecimen>
         </div>
-      </section>
-      <section class="grid min-w-0 gap-content-gap">
-        <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-          {{ t('showcase.group.selectionPickers') }}
-        </h2>
+      </WorkbenchSection>
+      <WorkbenchSection :title="t('showcase.group.selectionPickers')">
         <div class="grid min-w-0 items-start gap-content-gap">
           <ComponentSpecimen
             name="NSelect"
@@ -354,7 +346,7 @@ const popSelectionLabel = computed(
             />
           </ComponentSpecimen>
         </div>
-      </section>
+      </WorkbenchSection>
     </section>
   </WorkbenchPage>
 </template>

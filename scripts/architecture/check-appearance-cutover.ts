@@ -1083,9 +1083,10 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
       'data-material',
       'data-density',
       'data-motion',
+      'data-pavp-monochrome',
     ])
   ) {
-    violations.push('appearance.store.ts: DOM capture must equal seven Appearance attributes.')
+    violations.push('appearance.store.ts: DOM capture must cover the owned Appearance attributes.')
   }
 
   const deletion = actionMethods.get('deleteCustomTheme')
@@ -2158,13 +2159,19 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
           colorStyle: 'unified',
         },
       })
+      const monochromePreference = explicitThemePreferenceSchema.parse({
+        ...unifiedPreference,
+        appearance: { ...unifiedPreference.appearance, colorStyle: 'monochrome' },
+      })
       const originalRegionalWrite = storage.storage.setItem.bind(storage.storage)
       storage.storage.setItem = () => {
         throw new Error('Regional persistence rollback probe.')
       }
       try {
         if (
-          store.changeAppearancePreference(unifiedPreference, environment).status !== 'rejected' ||
+          store.changeAppearancePreference(monochromePreference, environment).status !==
+            'rejected' ||
+          attributes.has('data-pavp-monochrome') ||
           !isDeepStrictEqual(store.preference, regionalPreference) ||
           !isDeepStrictEqual(
             store.readEffectiveAppearance(environment)?.colorStyle,
@@ -2179,10 +2186,14 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
         storage.storage.setItem = originalRegionalWrite
       }
       if (
+        store.changeAppearancePreference(monochromePreference, environment).status !==
+          'committed' ||
+        !attributes.has('data-pavp-monochrome') ||
         store.changeAppearancePreference(unifiedPreference, environment).status !== 'committed' ||
+        attributes.has('data-pavp-monochrome') ||
         !isDeepStrictEqual(store.preference?.appearance.colorStyle, 'unified')
       )
-        failures.push('Switching to unified mode must restore the unified recipe.')
+        failures.push('Switching between monochrome and unified must add and remove the effect.')
       store.$reset()
       storage.values.delete(preferenceKey)
       store.restoreAppearance(environment)

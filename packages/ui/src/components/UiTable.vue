@@ -37,6 +37,7 @@ import TableKeywordSearch from './TableKeywordSearch.vue'
 import TableInlineActions from './TableInlineActions.vue'
 import UiFormField from './UiFormField.vue'
 import TableSortIcon from '../adapters/motion/TableSortIcon.vue'
+import { useTableRowMotion } from '../adapters/motion/table-row-motion'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { createPavpNaiveTableThemeProjection } from '../adapters/naive/pavp-naive-table-theme'
 import { observePavpNaiveTableColumns } from '../adapters/naive/pavp-naive-table-layout'
@@ -95,8 +96,9 @@ const hasToolbar = computed(
     props.table.schema.source.kind === 'remote' ||
     props.table.schema.tree?.childrenRequest !== undefined,
 )
-const providerAppearance = inject(pavpNaiveAppearanceKey)
-if (providerAppearance === undefined) throw new TypeError('UiTable requires UiProvider.')
+const injectedAppearance = inject(pavpNaiveAppearanceKey)
+if (injectedAppearance === undefined) throw new TypeError('UiTable requires UiProvider.')
+const providerAppearance = injectedAppearance
 
 interface TableRow {
   readonly key: UiTableKey
@@ -536,6 +538,43 @@ const columns = computed<DataTableColumns<TableRow>>(() => {
 // The main table remains the sole column-width authority. The summary uses the same
 // native table/fixed-column renderer, but lives outside its vertical data viewport.
 const mainElement = ref<HTMLElement>()
+const rowMotion = useTableRowMotion()
+watch(
+  [() => props.table, () => props.table.query.value.sorts],
+  ([table, sorts], [previousTable, previousSorts], onCleanup) => {
+    const surface = mainElement.value
+    if (
+      !surface?.isConnected ||
+      table !== previousTable ||
+      table.schema.source.kind !== 'local' ||
+      tree.value !== undefined ||
+      props.virtualScroll ||
+      providerAppearance.value.motion !== 'full' ||
+      (sorts.length === previousSorts.length &&
+        sorts.every(
+          (sort, index) =>
+            sort.key === previousSorts[index]?.key && sort.order === previousSorts[index].order,
+        ))
+    )
+      return
+    const before = rowMotion.capture(surface)
+    if (before === undefined) return
+    let current = true
+    onCleanup(() => {
+      current = false
+    })
+    void nextTick(() => {
+      if (current && surface.isConnected && providerAppearance.value.motion === 'full')
+        rowMotion.play(surface, before)
+    })
+  },
+)
+watch(
+  () => providerAppearance.value.motion,
+  (motion) => {
+    if (motion !== 'full') rowMotion.stop()
+  },
+)
 const mainTable = ref<DataTableInst>()
 const summaryTable = ref<DataTableInst>()
 const measuredWidths = ref<readonly number[]>([])
@@ -726,7 +765,7 @@ const treeTableBindings = computed(() => {
     ...(tree.value.childrenRequest ? { onLoad: loadTreeChildren } : {}),
   }
 })
-function sort(value: DataTableSortState | DataTableSortState[] | null): void {
+async function sort(value: DataTableSortState | DataTableSortState[] | null): Promise<void> {
   if (props.inlineEditing?.session.open.value) return
   const states = (Array.isArray(value) ? value : value ? [value] : []).flatMap((next) =>
     next.order && typeof next.columnKey === 'string'
@@ -738,7 +777,7 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
     const next = states.find((state) => state.key === sort.key)
     return next ? [next] : []
   })
-  void props.table.setSorts([
+  await props.table.setSorts([
     ...existing,
     ...states.filter((state) => !existing.some((sort) => sort.key === state.key)),
   ])
@@ -778,11 +817,22 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
           class="shrink-0 h-auto"
         >
           <div
-            class="flex shrink-0 flex-wrap min-w-0 items-center gap-content-gap layout-narrow:flex-nowrap layout-narrow:w-max"
+            class="flex shrink-0 flex-wrap min-w-0 items-center gap-content-gap layout-narrow:flex-nowrap layout-narrow:w-max layout-narrow:gap-component-unit"
           >
-            <div
-              class="flex flex-1 flex-wrap min-w-0 items-center gap-content-gap layout-narrow:flex-nowrap"
+            <span
+              v-if="table.schema.maxSelection !== undefined"
+              class="whitespace-nowrap text-caption"
+              :class="selectionRejected ? 'text-control-error' : 'text-text-secondary'"
+              role="status"
             >
+              {{ selectionLimitLabel }}
+            </span>
+            <TableCsvActions
+              v-if="table.schema.csvExport"
+              :table="table"
+              :copy="copy"
+            />
+            <div class="flex flex-1 flex-wrap min-w-0 items-center gap-content-gap">
               <TableKeywordSearch
                 v-if="keywordAvailable"
                 :table="table"
@@ -813,14 +863,6 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
             >
               {{ copy.retry() }}
             </NButton>
-            <span
-              v-if="table.schema.maxSelection !== undefined"
-              class="text-caption"
-              :class="selectionRejected ? 'text-control-error' : 'text-text-secondary'"
-              role="status"
-            >
-              {{ selectionLimitLabel }}
-            </span>
             <NButton
               v-if="table.schema.maximizable"
               quaternary
@@ -842,11 +884,6 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
                 aria-hidden="true"
               />
             </NButton>
-            <TableCsvActions
-              v-if="table.schema.csvExport"
-              :table="table"
-              :copy="copy"
-            />
             <TableColumnSettings
               v-if="table.schema.columnSettings"
               :table="table"

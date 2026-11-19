@@ -72,6 +72,8 @@ export function applyAppearance(
   target.setAttribute('data-material', appearance.material)
   target.setAttribute('data-density', appearance.density)
   target.setAttribute('data-motion', appearance.motion)
+  if (appearance.colorStyle === 'monochrome') target.setAttribute('data-pavp-monochrome', '')
+  else target.removeAttribute('data-pavp-monochrome')
   target.style.setProperty('--ui-font-scale', String(appearance.fontScale))
   target.style.setProperty('--ui-radius-control', `${String(radius.control)}px`)
   target.style.setProperty('--ui-radius-panel', `${String(radius.panel)}px`)

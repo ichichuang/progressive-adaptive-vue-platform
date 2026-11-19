@@ -38,7 +38,9 @@ const tick = useLiveChartClock(playing, interval)
 const stream = computed(() => liveChartExample('stream', tick.value, t))
 const ranking = computed(() => liveChartExample('ranking', tick.value, t))
 const compactStage = computed(
-  () => availableSize.value.width < 720 || availableSize.value.height < 320,
+  () =>
+    availableSize.value.width < 720 ||
+    availableSize.value.height < (props.stageSize === undefined ? 384 : 320),
 )
 const streamOptions = computed(() =>
   compactStage.value
@@ -342,7 +344,8 @@ onScopeDispose(() => {
         </NFlex>
         <NImage
           class="rounded-control flex-1 min-h-0 min-w-0 overflow-hidden"
-          :img-props="{ class: 'h-full w-full object-cover' }"
+          :img-props="{ class: 'h-full w-full' }"
+          :object-fit="stageSize === undefined ? 'cover' : 'fill'"
           :src="productionCampus"
           :alt="t('displayPreview.sceneIllustration')"
           preview-disabled
@@ -507,6 +510,11 @@ onScopeDispose(() => {
 .operations-board-fixed {
   font-size: clamp(0.4rem, min(1.8cqi, 3.5cqb), var(--ui-font-size-body));
 }
+.operations-board:not(.operations-board-fixed) {
+  grid-template-rows:
+    minmax(min-content, 1.35fr) repeat(2, minmax(0, 1.1fr))
+    repeat(2, minmax(0, 1.2fr)) minmax(0, 1.25fr);
+}
 .operations-ranking {
   grid-area: ranking;
 }
@@ -559,6 +567,10 @@ onScopeDispose(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.operations-board:not(.operations-board-fixed) .operations-metric > * {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
 .operations-meter {
   gap: 0.4em !important;
 }
@@ -569,10 +581,9 @@ onScopeDispose(() => {
   .operations-board:not(.operations-board-fixed) {
     grid-template-areas: 'summary summary' 'stream stream' 'ranking tour' 'channels status' 'visual visual';
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(
-        0,
-        0.7fr
-      );
+    grid-template-rows:
+      minmax(min-content, 1fr) repeat(2, minmax(0, 1.5fr))
+      minmax(min-content, 1.2fr) minmax(0, 0.7fr);
     font-size: var(--ui-font-size-caption);
   }
 }
@@ -600,7 +611,12 @@ onScopeDispose(() => {
 @container (width >= 48rem) and (height < 24rem) {
   .operations-board:not(.operations-board-fixed) {
     grid-template-areas: 'summary summary summary' 'ranking stream tour' 'channels visual status';
-    grid-template-rows: minmax(0, 1.2fr) minmax(0, 1.5fr) minmax(0, 1.3fr);
+    grid-template-rows: minmax(min-content, 1.2fr) repeat(2, minmax(0, 1.5fr));
+  }
+  .operations-board:not(.operations-board-fixed) .operations-meter {
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: center;
   }
 }
 </style>

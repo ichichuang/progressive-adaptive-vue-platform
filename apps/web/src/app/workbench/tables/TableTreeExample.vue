@@ -206,36 +206,41 @@ onScopeDispose(() => {
     :title="title"
     :message="message"
     :copy-value="copyValue"
+    :content-key="mode"
   >
+    <template #controls>
+      <div class="flex flex-wrap min-w-0 items-center gap-content-gap">
+        <NRadioGroup
+          v-model:value="mode"
+          name="table-tree-mode"
+          v-bind="
+            {
+              role: 'radiogroup',
+              'aria-label': t('tableCapabilities.tree.mode'),
+            } satisfies HTMLAttributes
+          "
+        >
+          <NRadioButton value="static">
+            {{ t('tableCapabilities.tree.static') }}
+          </NRadioButton>
+          <NRadioButton value="lazy">
+            {{ t('tableCapabilities.tree.lazy') }}
+          </NRadioButton>
+        </NRadioGroup>
+        <span
+          class="tabular-nums text-caption text-text-secondary"
+          role="status"
+        >
+          {{ t('tableCapabilities.tree.selected') }}: {{ selectedCount }}
+        </span>
+      </div>
+    </template>
     <UiTable
       v-if="tableHost"
-      :key="mode"
       :table="tableHost.table"
       :copy="tableCopy"
       :height="{ mode: 'fill' }"
     >
-      <template #actions>
-        <div class="flex min-w-0 items-center gap-content-gap">
-          <NRadioGroup
-            v-model:value="mode"
-            name="table-tree-mode"
-            v-bind="{ 'aria-label': t('tableCapabilities.tree.mode') } satisfies HTMLAttributes"
-          >
-            <NRadioButton value="static">
-              {{ t('tableCapabilities.tree.static') }}
-            </NRadioButton>
-            <NRadioButton value="lazy">
-              {{ t('tableCapabilities.tree.lazy') }}
-            </NRadioButton>
-          </NRadioGroup>
-          <span
-            class="tabular-nums text-caption text-text-secondary"
-            role="status"
-          >
-            {{ t('tableCapabilities.tree.selected') }}: {{ selectedCount }}
-          </span>
-        </div>
-      </template>
       <template #cell="{ row, column, text }">
         <NTag
           v-if="column.key === 'kind'"

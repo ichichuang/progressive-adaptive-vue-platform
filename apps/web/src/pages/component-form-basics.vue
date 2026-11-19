@@ -7,7 +7,6 @@ const source = ref<'code' | 'json'>('code')
 </script>
 <template>
   <FormBasicControls
-    :key="source"
     :title="title"
     :message="message"
     :source="source"

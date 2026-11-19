@@ -1,3 +1,4 @@
+import type { UiLocale } from '@platform/ui'
 import type { AccessProvider, AccessRequest } from '../access/access-contract'
 import { createNativeGrantProvider } from '../access/native-grants'
 import type {
@@ -15,6 +16,25 @@ import type { ShowcaseWorld } from './showcase-world'
 const module = 'policies'
 const domain = administrationAccessDomain
 const policyId = 'showcase-policy'
+const policyCopy = {
+  subject: { en: 'Signal project access policy', 'zh-CN': '信号项目访问策略' },
+  saved: { en: 'Saved for review', 'zh-CN': '已保存，待审核' },
+  confirmed: { en: 'Confirmed', 'zh-CN': '已确认' },
+  source: { en: 'Local showcase', 'zh-CN': '本地演示' },
+  detail: { en: 'Simulated policy management', 'zh-CN': '模拟策略管理' },
+  model: { en: 'native', 'zh-CN': '原生' },
+  scope: { en: organizations[0].en, 'zh-CN': organizations[0].zh },
+  baseline: { en: 'Confirmed project navigation grants.', 'zh-CN': '已确认项目导航权限。' },
+  proposed: {
+    en: 'Proposed project navigation change awaiting confirmation.',
+    'zh-CN': '项目导航权限的变更草案待确认。',
+  },
+  noProposal: { en: 'No saved proposal.', 'zh-CN': '尚无已保存的草案。' },
+  save: { en: 'Save policy for review', 'zh-CN': '保存策略以供审核' },
+  publish: { en: 'Confirm effective policy', 'zh-CN': '确认策略生效' },
+} satisfies Record<string, Record<UiLocale, string>>
+const policyLabels = new Map(Object.values(policyCopy).map((copy) => [copy.en, copy]))
+
 function request(kind: 'collection' | 'type', resource: string, action: string): AccessRequest {
   return { kind, domain, resource, action }
 }
@@ -85,25 +105,23 @@ export function createShowcaseAdministration(world: ShowcaseWorld) {
     return {
       id: policyId,
       revision: state.adminRevision,
-      label: 'Signal project access policy',
-      status: state.policyDraft ? 'Saved for review' : 'Confirmed',
-      source: 'Local showcase',
-      detail: 'Simulated policy management',
+      label: policyCopy.subject.en,
+      status: state.policyDraft ? policyCopy.saved.en : policyCopy.confirmed.en,
+      source: policyCopy.source.en,
+      detail: policyCopy.detail.en,
       model: 'native',
       editable: true,
-      scopeLabel: organizations[0].en,
+      scopeLabel: policyCopy.scope.en,
       activeRevision: state.policyRevision,
       draftState: state.policyDraft ? ('saved' as const) : ('unsaved' as const),
-      baselineSummary: 'Confirmed project navigation grants.',
-      draftSummary: state.policyDraft
-        ? 'Proposed project navigation change awaiting confirmation.'
-        : 'No saved proposal.',
+      baselineSummary: policyCopy.baseline.en,
+      draftSummary: state.policyDraft ? policyCopy.proposed.en : policyCopy.noProposal.en,
     }
   }
-  function command(kind: 'save' | 'publish', label: string): AdministrationCommand {
+  function command(kind: 'save' | 'publish'): AdministrationCommand {
     return {
       kind,
-      label,
+      label: policyCopy[kind].en,
       grantable: () => state.grantable,
       action: world.guardedCommand<unknown>(
         () => showcaseRequirement(record(kind)),
@@ -142,6 +160,7 @@ export function createShowcaseAdministration(world: ShowcaseWorld) {
     scope: globalShowcaseScope,
     recordRead: 'read',
     completeness: 'partial',
+    displayText: (value, locale) => policyLabels.get(value)?.[locale] ?? value,
     read: localShowcaseRead(
       world,
       'showcase-policy-list',
@@ -150,7 +169,11 @@ export function createShowcaseAdministration(world: ShowcaseWorld) {
       (_context, query) => {
         const row = policyRow()
         const keyword = typeof query['keyword'] === 'string' ? query['keyword'].toLowerCase() : ''
-        const rows = row.label.toLowerCase().includes(keyword) ? [row] : []
+        const matches = [
+          policyCopy.subject,
+          state.policyDraft ? policyCopy.saved : policyCopy.confirmed,
+        ].some((label) => Object.values(label).some((text) => text.toLowerCase().includes(keyword)))
+        const rows = matches ? [row] : []
         return { rows: Number(query['offset']) > 0 ? [] : rows, total: rows.length }
       },
     ),
@@ -170,10 +193,7 @@ export function createShowcaseAdministration(world: ShowcaseWorld) {
         ]),
       ),
     },
-    commands: [
-      command('save', 'Save policy for review'),
-      command('publish', 'Confirm effective policy'),
-    ],
+    commands: [command('save'), command('publish')],
     simulation: {
       requirement: showcaseRequirement(record('read')),
       subjects: members,

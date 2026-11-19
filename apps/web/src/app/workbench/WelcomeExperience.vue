@@ -1,15 +1,22 @@
 <script setup lang="ts">
-import { useUiMotion, type UiMotionHandle, type UiMotionPreset } from '@platform/ui'
+import {
+  UiNavigationLink,
+  useUiMotion,
+  type UiMotionHandle,
+  type UiMotionPreset,
+} from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import {
   type AnchorHTMLAttributes,
-  type ButtonHTMLAttributes,
+  type HTMLAttributes,
   computed,
   onActivated,
   onDeactivated,
   onMounted,
   onScopeDispose,
   ref,
+  useId,
   watch,
 } from 'vue'
 import { LazyMotion, MotionConfig, domMax, m } from 'motion-v'
@@ -30,9 +37,11 @@ const navigation = useApplicationNavigation()
 const activate = useApplicationLinkActivation()
 const enterWorkbench = useApplicationLinkActivation()
 const active = ref(true)
+const chartEntranceReady = ref(false)
 const motion = useUiMotion()
 const page = ref<HTMLElement | null>(null)
 const selectedExpression = ref<'a' | 'b'>('a')
+const expressionGroupName = useId()
 const waveVisible = ref(false)
 let waveGroup: HTMLElement | null = null
 // Page-owned score; route completion is a lifecycle signal, never a guessed delay.
@@ -66,6 +75,7 @@ let ready = false
 function releaseHeld(): void {
   for (const target of held) target.classList.remove('opacity-0')
   held.clear()
+  chartEntranceReady.value = true
 }
 function suspendEntrances(): void {
   arrival += 1
@@ -113,6 +123,7 @@ function isVisible(target: HTMLElement): boolean {
 function showGroup(target: HTMLElement): void {
   target.classList.remove('opacity-0')
   held.delete(target)
+  if (target.matches('.wb-home-preview')) chartEntranceReady.value = true
 }
 function revealFocusedGroup(event: FocusEvent): void {
   if (!(event.target instanceof Node)) return
@@ -158,9 +169,17 @@ function playInitialEntrances(owner: number): void {
 }
 async function beginArrival(): Promise<void> {
   stopEntrances()
-  if (!active.value || typeof IntersectionObserver === 'undefined') return
+  if (!active.value) return
+  chartEntranceReady.value = false
+  if (typeof IntersectionObserver === 'undefined') {
+    chartEntranceReady.value = true
+    return
+  }
   viewport = page.value?.closest<HTMLElement>('.wb-home-viewport') ?? null
-  if (!viewport) return
+  if (!viewport) {
+    chartEntranceReady.value = true
+    return
+  }
   waveGroup = page.value?.querySelector<HTMLElement>('.wb-home-feature:nth-child(3)') ?? null
   const owner = arrival
   for (const [selector, preset, durationMs] of entrances) {
@@ -266,6 +285,9 @@ const full = computed(() => active.value && appearance.snapshot.value.motion ===
 const instant = computed(() => appearance.snapshot.value.motion === 'none')
 const transition = computed(() => ({ duration: instant.value ? 0 : full.value ? 0.75 : 0.12 }))
 const dashboard = registeredRouteDestination({ name: 'workbench-dashboard' })
+const dashboardHref = computed(() =>
+  navigation.canShow(dashboard) ? navigation.resolveHref(dashboard) : undefined,
+)
 const showcase = registeredRouteDestination({ name: 'component-showcase' })
 </script>
 
@@ -303,24 +325,13 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
                 {{ t('welcomeArt.description') }}
               </p>
               <div class="flex flex-wrap items-center gap-content-gap">
-                <NButton
-                  v-if="navigation.canShow(dashboard)"
-                  type="primary"
-                  size="large"
-                  tag="a"
-                  v-bind="
-                    { href: navigation.resolveHref(dashboard) } satisfies AnchorHTMLAttributes
-                  "
+                <UiNavigationLink
+                  v-if="dashboardHref"
+                  :href="dashboardHref"
+                  :label="t('welcomeArt.enter')"
+                  :hover-label="t('welcomeArt.enterHover')"
                   @click="enterWorkbench($event, dashboard)"
-                >
-                  {{ t('welcomeArt.enter') }}
-                  <template #icon>
-                    <span
-                      class="i-lucide-arrow-right"
-                      aria-hidden="true"
-                    />
-                  </template>
-                </NButton>
+                />
                 <NButton
                   v-if="navigation.canShow(showcase)"
                   quaternary
@@ -342,7 +353,7 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
                 <span>AntV G2</span>
               </div>
             </div>
-            <WelcomeCapabilityStage />
+            <WelcomeCapabilityStage :entrance-ready="chartEntranceReady" />
           </section>
           <section
             class="wb-home-feature-grid grid min-w-0"
@@ -457,26 +468,23 @@ const showcase = registeredRouteDestination({ name: 'component-showcase' })
             <p class="m-0 text-body text-text-secondary">
               {{ t('welcomeArt.expressionBody') }}
             </p>
-            <div class="flex flex-wrap gap-component-unit">
-              <NButton
-                :type="selectedExpression === 'a' ? 'primary' : 'default'"
-                v-bind="
-                  { 'aria-pressed': selectedExpression === 'a' } satisfies ButtonHTMLAttributes
-                "
-                @click="selectedExpression = 'a'"
-              >
+            <NRadioGroup
+              v-model:value="selectedExpression"
+              :name="expressionGroupName"
+              v-bind="
+                {
+                  role: 'radiogroup',
+                  'aria-label': t('welcomeArt.expressionTitle'),
+                } satisfies HTMLAttributes
+              "
+            >
+              <NRadioButton value="a">
                 {{ t('welcomeArt.expressionA') }}
-              </NButton>
-              <NButton
-                :type="selectedExpression === 'b' ? 'primary' : 'default'"
-                v-bind="
-                  { 'aria-pressed': selectedExpression === 'b' } satisfies ButtonHTMLAttributes
-                "
-                @click="selectedExpression = 'b'"
-              >
+              </NRadioButton>
+              <NRadioButton value="b">
                 {{ t('welcomeArt.expressionB') }}
-              </NButton>
-            </div>
+              </NRadioButton>
+            </NRadioGroup>
           </div>
           <div
             class="wb-home-expression-preview rounded-panel grid gap-content-gap"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type ButtonHTMLAttributes, ref } from 'vue'
-import { NButton } from 'naive-ui/es/button'
+import { type HTMLAttributes, ref } from 'vue'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import { UiForm, useUiForm, type UiFormSchema } from '@platform/ui'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
 import FormExampleActions from '../app/workbench/forms/FormExampleActions.vue'
@@ -12,6 +12,9 @@ defineProps<{ readonly title: string; readonly message: string }>()
 const demo = useFormShowcase()
 const { t } = demo
 const columns = ref<1 | 2>(2)
+function chooseColumns(value: string | number | boolean): void {
+  if (value === 1 || value === 2) columns.value = value
+}
 const schema = {
   columns: 2,
   fields: [
@@ -77,24 +80,32 @@ const history = useFormExampleUndo(() => form)
     :form="form"
   >
     <template #controls>
-      <NButton
-        v-for="count in [1, 2] as const"
-        :key="count"
-        class="min-h-target-enhanced min-w-target-enhanced"
-        secondary
-        :bordered="false"
-        :type="columns === count ? 'primary' : 'default'"
-        v-bind="{ 'aria-pressed': columns === count } satisfies ButtonHTMLAttributes"
-        @click="columns = count"
+      <NRadioGroup
+        name="form-layout-columns"
+        :value="columns"
+        v-bind="
+          {
+            role: 'radiogroup',
+            'aria-label': t('formCapabilities.layout.controls'),
+          } satisfies HTMLAttributes
+        "
+        @update:value="chooseColumns"
       >
-        {{
-          t(
-            count === 1
-              ? 'formCapabilities.layout.oneColumn'
-              : 'formCapabilities.layout.twoColumns',
-          )
-        }}
-      </NButton>
+        <NRadioButton
+          v-for="count in [1, 2] as const"
+          :key="count"
+          class="min-h-target-enhanced min-w-target-enhanced"
+          :value="count"
+        >
+          {{
+            t(
+              count === 1
+                ? 'formCapabilities.layout.oneColumn'
+                : 'formCapabilities.layout.twoColumns',
+            )
+          }}
+        </NRadioButton>
+      </NRadioGroup>
     </template>
     <p class="m-0 text-body text-text-secondary">
       {{ t('formCapabilities.layout.intro') }}

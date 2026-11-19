@@ -328,6 +328,7 @@ ${motionResolutionRuntime}
     'data-material',
     'data-density',
     'data-motion',
+    'data-pavp-monochrome',
   ])}
   var appearanceStylePropertyNames = ['--ui-font-scale', '--ui-radius-control', '--ui-radius-panel', '--ui-radius-small']
   var colorModeContract = ${javascriptLiteral(colorModeResolutionContract, 2)}
@@ -614,6 +615,10 @@ ${motionResolutionRuntime}
     return storedColorMode
   }
 
+  function readPrefersDark() {
+    return matchMedia('(prefers-color-scheme: dark)').matches
+  }
+
   function resolveMaterial(
     storedMaterial,
     forcedColorsActive,
@@ -675,6 +680,7 @@ ${motionResolutionRuntime}
 
   function restoreAppearanceSafety() {
     clearCustomBankVariables()
+    root.removeAttribute('data-pavp-monochrome')
     root.style.removeProperty('--ui-radius-control')
     root.style.removeProperty('--ui-radius-panel')
     root.style.removeProperty('--ui-radius-small')
@@ -721,6 +727,11 @@ ${safetyBaselineRestorationLines()}
     root.style.setProperty('--ui-radius-small', String(projected.small) + 'px')
   }
 
+  function applyColorStyle(colorStyle) {
+    if (colorStyle === 'monochrome') root.setAttribute('data-pavp-monochrome', '')
+    else root.removeAttribute('data-pavp-monochrome')
+  }
+
   currentScript.__pavpRestoreAppearanceSafety = restoreAppearanceSafety
 
   var storageKey =
@@ -741,6 +752,14 @@ ${safetyBaselineRestorationLines()}
   }
 
   if (rawPreference === null) {
+    try {
+      root.setAttribute(
+        'data-color-mode',
+        resolveColorMode(${javascriptString(ProductPreferenceDefault.colorMode)}, readPrefersDark()),
+      )
+    } catch {
+      // Retain the safety mode when system appearance cannot be read.
+    }
     return
   }
 
@@ -772,7 +791,7 @@ ${safetyBaselineRestorationLines()}
     }
 
     forcedColorsActive = matchMedia('(forced-colors: active)').matches
-    prefersDark = matchMedia('(prefers-color-scheme: dark)').matches
+    prefersDark = readPrefersDark()
     reducedTransparencyRequested = matchMedia('(prefers-reduced-transparency: reduce)').matches
     backdropFilterSupported =
       CSS.supports('backdrop-filter', 'blur(0)') ||
@@ -821,6 +840,7 @@ ${safetyBaselineRestorationLines()}
       root.setAttribute('data-material', effectiveMaterial)
       root.setAttribute('data-density', storedAppearance.density.preset)
       root.setAttribute('data-motion', readEffectiveMotion(storedAppearance.motion))
+      applyColorStyle(storedAppearance.colorStyle)
       root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
       applyRadius(storedAppearance.radius)
       currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
@@ -835,6 +855,7 @@ ${safetyBaselineRestorationLines()}
     root.setAttribute('data-material', effectiveMaterial)
     root.setAttribute('data-density', storedAppearance.density.preset)
     root.setAttribute('data-motion', readEffectiveMotion(storedAppearance.motion))
+    applyColorStyle(storedAppearance.colorStyle)
     root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
     applyRadius(storedAppearance.radius)
   } catch {

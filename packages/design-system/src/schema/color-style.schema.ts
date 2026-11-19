@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const colorStyleIds = [
   'unified',
+  'monochrome',
   'dark-navigation',
   'brand-sidebar',
   'brand-header',

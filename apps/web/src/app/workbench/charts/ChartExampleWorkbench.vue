@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   type ButtonHTMLAttributes,
+  type HTMLAttributes,
   computed,
   inject,
   onActivated,
@@ -17,7 +18,7 @@ import {
   type MessageReactive,
 } from 'naive-ui/es/message'
 import { NSelect } from 'naive-ui/es/select'
-import { NRadioGroup } from 'naive-ui/es/radio'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import {
   UiCopyAction,
   UiChartTimeRange,
@@ -136,6 +137,13 @@ const rangePresets = computed(() => [
   { hours: 48, label: t('chartExamples.lastTwoDays') },
   { hours: chartSampleHours, label: t('chartExamples.fullRange') },
 ])
+const selectedRangePreset = computed(
+  () =>
+    rangePresets.value.find(
+      ({ hours }) =>
+        range.value[0] === chartSampleHours - hours && range.value[1] === chartSampleHours - 1,
+    )?.hours ?? null,
+)
 function hourLabel(hour: number): string {
   return chartHourLabel(hour, t)
 }
@@ -457,8 +465,9 @@ function chooseRange(hours: number): void {
   stopWheel()
   updateRange([chartSampleHours - hours, chartSampleHours - 1])
 }
-function isRangeSelected(hours: number): boolean {
-  return range.value[0] === chartSampleHours - hours && range.value[1] === chartSampleHours - 1
+function chooseRangePreset(value: string | number | boolean): void {
+  const preset = rangePresets.value.find(({ hours }) => hours === value)
+  if (preset !== undefined) chooseRange(preset.hours)
 }
 watch(options, () => {
   rendered.value = false
@@ -608,7 +617,7 @@ onScopeDispose(() => {
             <div
               v-for="row in visibleData"
               :key="row.key"
-              class="min-h-control rounded-control flex flex-wrap items-center justify-between bg-surface-page gap-content-gap px-button-inline"
+              class="rounded-control flex flex-wrap items-center justify-between bg-surface-page gap-content-gap min-h-target-enhanced px-button-inline"
             >
               <dt
                 class="text-body text-text-secondary"
@@ -739,21 +748,26 @@ onScopeDispose(() => {
                 />
               </div>
             </div>
-            <div class="flex flex-wrap items-end gap-component-unit">
-              <NButton
+            <NRadioGroup
+              :name="`chart-range-preset-${kindGroupName}`"
+              :value="selectedRangePreset"
+              size="small"
+              v-bind="
+                {
+                  role: 'radiogroup',
+                  'aria-label': t('chartExamples.timeRange'),
+                } satisfies HTMLAttributes
+              "
+              @update:value="chooseRangePreset"
+            >
+              <NRadioButton
                 v-for="preset in rangePresets"
                 :key="preset.hours"
-                size="small"
-                :type="isRangeSelected(preset.hours) ? 'primary' : 'default'"
-                :secondary="isRangeSelected(preset.hours)"
-                v-bind="
-                  { 'aria-pressed': isRangeSelected(preset.hours) } satisfies ButtonHTMLAttributes
-                "
-                @click="chooseRange(preset.hours)"
+                :value="preset.hours"
               >
                 {{ preset.label }}
-              </NButton>
-            </div>
+              </NRadioButton>
+            </NRadioGroup>
           </div>
         </div>
       </UiScrollArea>

@@ -1,5 +1,18 @@
 <script setup lang="ts">
-import { type ButtonHTMLAttributes, computed, onActivated, onDeactivated, ref } from 'vue'
+import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  computed,
+  effectScope,
+  getCurrentInstance,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  useId,
+  watch,
+} from 'vue'
 import {
   UiCopyAction,
   UiForm,
@@ -9,6 +22,8 @@ import {
   type UiFormSchema,
 } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
+import { NButtonGroup } from 'naive-ui/es/button-group'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import ComponentSpecimen from './ComponentSpecimen.vue'
 import FormExampleActions from './forms/FormExampleActions.vue'
 import FormLiveResult from './forms/FormLiveResult.vue'
@@ -16,11 +31,16 @@ import { useFormExampleCheck, useFormShowcase } from './forms/form-showcase'
 import { useFormExampleDraft } from './forms/use-form-example-draft'
 import { useFormExampleUndo } from './forms/use-form-example-undo'
 import { useWorkspaceUnsavedChanges } from '../workspace/use-workspace-unsaved-changes'
-const props = defineProps<{ readonly source: 'code' | 'json' }>()
-const emit = defineEmits<{ source: [value: 'code' | 'json'] }>()
+type FormSource = 'code' | 'json'
+const props = defineProps<{ readonly source: FormSource }>()
+const emit = defineEmits<{ source: [value: FormSource] }>()
 const demo = useFormShowcase()
 const { t } = demo
+const instance = getCurrentInstance()
+if (instance === null) throw new TypeError('The configured form requires the application context.')
+const application = instance.appContext.app
 const mode = ref<'edit' | 'detail'>('edit')
+const modeGroupName = useId()
 const active = ref(true)
 onActivated(() => {
   active.value = true
@@ -107,10 +127,6 @@ const configuration: UiFormSchema = {
     },
   ],
 }
-const schema =
-  props.source === 'json'
-    ? parseUiFormSchema(JSON.parse(JSON.stringify(configuration)) as unknown)
-    : configuration
 const initialValues = {
   code: 'DEMO-001',
   name: 'PAVP',
@@ -123,13 +139,7 @@ const initialValues = {
   address: { city: '', street: '' },
   contacts: [{ name: 'PAVP', email: 'demo@example.com' }],
 }
-const form = useUiForm({
-  ...demo,
-  formId: 'configured-form-specimen',
-  schema,
-  initial: { draftId: 'configured-form-example', values: initialValues },
-})
-const draft = useFormExampleDraft(form, [
+const draftFields = [
   'code',
   'name',
   'category',
@@ -140,9 +150,61 @@ const draft = useFormExampleDraft(form, [
   'notes',
   'address',
   'contacts',
-])
-useWorkspaceUnsavedChanges(draft.hasUnsavedChanges, () => form.revision.value)
-const { checked, validate, clearCheck } = useFormExampleCheck(form)
+]
+function createSession(source: FormSource) {
+  const scope = effectScope(true)
+  try {
+    const session = application.runWithContext(() =>
+      scope.run(() => {
+        const schema =
+          source === 'json'
+            ? parseUiFormSchema(JSON.parse(JSON.stringify(configuration)) as unknown)
+            : configuration
+        const form = useUiForm({
+          ...demo,
+          formId: 'configured-form-specimen',
+          schema,
+          initial: { draftId: 'configured-form-example', values: initialValues },
+        })
+        return { form, draft: useFormExampleDraft(form, draftFields) }
+      }),
+    )
+    if (!session) throw new TypeError('The configured form scope is unavailable.')
+    return {
+      ...session,
+      dispose: () => {
+        scope.stop()
+      },
+    }
+  } catch (error) {
+    scope.stop()
+    throw error
+  }
+}
+const session = shallowRef(createSession(props.source))
+const form = computed(() => session.value.form)
+const draftStatus = computed(() => session.value.draft.statusText.value)
+function hasUnsavedChanges(): boolean {
+  return session.value.draft.hasUnsavedChanges()
+}
+useWorkspaceUnsavedChanges(hasUnsavedChanges, () => form.value.revision.value)
+const { checked, validate, clearCheck } = useFormExampleCheck(() => form.value)
+watch(
+  () => props.source,
+  (source) => {
+    // End the old persistence session before recovering its saved draft.
+    session.value.dispose()
+    session.value = createSession(source)
+    mode.value = 'edit'
+    clearCheck()
+  },
+)
+onScopeDispose(() => {
+  session.value.dispose()
+})
+function switchSource(source: FormSource): void {
+  if (source !== props.source && !hasUnsavedChanges()) emit('source', source)
+}
 const copyValue = computed(() =>
   [
     t('formShowcase.aiRequest'),
@@ -151,12 +213,13 @@ const copyValue = computed(() =>
     t('formShowcase.localBoundary'),
     t('formShowcase.aiBoundary'),
     'apps/web/src/app/workbench/ConfiguredFormSpecimen.vue',
-    JSON.stringify(form.schema, null, 2),
+    JSON.stringify(form.value.schema, null, 2),
   ].join('\n\n'),
 )
 function fill(): void {
-  if (form.hasPendingInput.value || form.phase.value !== 'idle') return
-  form.setValues({
+  const current = form.value
+  if (current.hasPendingInput.value || current.phase.value !== 'idle') return
+  current.setValues({
     name: t('configuredForm.sampleName'),
     category: 'external',
     tags: ['design', 'engineering'],
@@ -168,7 +231,7 @@ function fill(): void {
     contacts: [{ name: t('configuredForm.samplePerson'), email: 'demo@example.com' }],
   })
 }
-const history = useFormExampleUndo(() => form)
+const history = useFormExampleUndo(() => form.value)
 </script>
 <template>
   <ComponentSpecimen
@@ -178,25 +241,17 @@ const history = useFormExampleUndo(() => form)
     compact-inset
     top-aligned
   >
-    <div class="grid min-w-0 w-full gap-content-gap">
-      <div class="flex flex-wrap min-w-0 items-start justify-between gap-content-gap">
-        <div class="grid min-w-0 gap-component-unit">
-          <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-            {{ t('configuredForm.title') }}
-          </h2>
-          <p class="m-0 text-caption text-text-secondary">
-            {{ t('configuredForm.description') }}
-          </p>
-        </div>
-        <UiCopyAction
-          variant="tertiary"
-          :value="copyValue"
-          :label="t('formShowcase.copyAI')"
-          :copy-label="t('workbench.copy')"
-          :success-label="t('workbench.copied')"
-          :failure-label="t('workbench.copyFailed')"
-        />
-      </div>
+    <template #actions>
+      <UiCopyAction
+        variant="tertiary"
+        :value="copyValue"
+        :label="t('formShowcase.copyAI')"
+        :copy-label="t('workbench.copy')"
+        :success-label="t('workbench.copied')"
+        :failure-label="t('workbench.copyFailed')"
+      />
+    </template>
+    <div class="grid min-w-0 w-full">
       <div class="wb-form-stage wb-form-specimen-stage grid min-h-0 min-w-0">
         <section
           class="wb-form-canvas flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
@@ -214,63 +269,74 @@ const history = useFormExampleUndo(() => form)
               >
                 <div class="min-w-0">
                   <div class="flex flex-wrap min-w-0 items-center gap-component-unit">
-                    <NButton
-                      secondary
-                      :bordered="false"
-                      :type="source === 'code' ? 'primary' : 'default'"
+                    <NButtonGroup
+                      data-pavp-exclusive-selection
                       v-bind="
                         {
-                          'aria-pressed': source === 'code',
-                          title: draft.statusText.value,
-                        } satisfies ButtonHTMLAttributes
+                          class: 'min-w-0',
+                          'aria-label': t('formShowcase.configurationSource'),
+                        } satisfies HTMLAttributes
                       "
-                      :disabled="draft.hasUnsavedChanges()"
-                      @click="emit('source', 'code')"
                     >
-                      {{ t('configuredForm.sourceCode') }}
-                    </NButton>
-                    <NButton
-                      secondary
-                      :bordered="false"
-                      :type="source === 'json' ? 'primary' : 'default'"
+                      <NButton
+                        secondary
+                        :bordered="false"
+                        :type="source === 'code' ? 'primary' : 'default'"
+                        v-bind="
+                          {
+                            'aria-pressed': source === 'code',
+                            title: draftStatus,
+                          } satisfies ButtonHTMLAttributes
+                        "
+                        :disabled="hasUnsavedChanges()"
+                        @click="switchSource('code')"
+                      >
+                        {{ t('configuredForm.sourceCode') }}
+                      </NButton>
+                      <NButton
+                        secondary
+                        :bordered="false"
+                        :type="source === 'json' ? 'primary' : 'default'"
+                        v-bind="
+                          {
+                            'aria-pressed': source === 'json',
+                            title: draftStatus,
+                          } satisfies ButtonHTMLAttributes
+                        "
+                        :disabled="hasUnsavedChanges()"
+                        @click="switchSource('json')"
+                      >
+                        {{ t('configuredForm.sourceJson') }}
+                      </NButton>
+                    </NButtonGroup>
+                    <NRadioGroup
+                      v-model:value="mode"
+                      :name="modeGroupName"
                       v-bind="
                         {
-                          'aria-pressed': source === 'json',
-                          title: draft.statusText.value,
-                        } satisfies ButtonHTMLAttributes
+                          role: 'radiogroup',
+                          'aria-label': t('formShowcase.viewMode'),
+                        } satisfies HTMLAttributes
                       "
-                      :disabled="draft.hasUnsavedChanges()"
-                      @click="emit('source', 'json')"
                     >
-                      {{ t('configuredForm.sourceJson') }}
-                    </NButton>
-                    <NButton
-                      secondary
-                      :bordered="false"
-                      :type="mode === 'edit' ? 'primary' : 'default'"
-                      v-bind="{ 'aria-pressed': mode === 'edit' } satisfies ButtonHTMLAttributes"
-                      @click="mode = 'edit'"
-                    >
-                      {{ t('configuredForm.edit') }}
-                    </NButton>
-                    <NButton
-                      secondary
-                      :bordered="false"
-                      :type="mode === 'detail' ? 'primary' : 'default'"
-                      v-bind="{ 'aria-pressed': mode === 'detail' } satisfies ButtonHTMLAttributes"
-                      :disabled="form.hasPendingInput.value"
-                      @click="mode = 'detail'"
-                    >
-                      {{ t('configuredForm.detail') }}
-                    </NButton>
+                      <NRadioButton value="edit">
+                        {{ t('configuredForm.edit') }}
+                      </NRadioButton>
+                      <NRadioButton
+                        value="detail"
+                        :disabled="form.hasPendingInput.value"
+                      >
+                        {{ t('configuredForm.detail') }}
+                      </NRadioButton>
+                    </NRadioGroup>
                   </div>
                 </div>
                 <span
                   class="min-w-0 truncate text-caption text-text-secondary"
                   role="status"
                   aria-live="polite"
-                  :title="draft.statusText.value"
-                  v-text="draft.statusText.value"
+                  :title="draftStatus"
+                  v-text="draftStatus"
                 />
               </header>
               <div class="wb-form-scroll-content min-w-0">

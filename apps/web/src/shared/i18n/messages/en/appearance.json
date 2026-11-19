@@ -8,8 +8,6 @@
   "settings.choose-theme": "Theme color",
   "settings.color-mode": "Color mode",
   "settings.system": "Follow system",
-  "settings.current-light": "Currently light",
-  "settings.current-dark": "Currently dark",
   "settings.light": "Light",
   "settings.dark": "Dark",
   "settings.contrast": "Contrast",
@@ -37,6 +35,8 @@
   "settings.motion-full": "Full",
   "settings.motion-reduced": "Reduced",
   "settings.motion-none": "Off",
+  "settings.option.off": "Off",
+  "settings.option.on": "On",
   "settings.navigation-collapsed": "Compact sidebar",
   "settings.navigation-accordion": "Accordion navigation",
   "settings.scroll-restoration": "Restore reading position",
@@ -52,13 +52,12 @@
   "settings.feedback.language-failed": "The language could not be changed. Your previous language is still active.",
   "settings.feedback.return-failed": "Could not return to your workspace. Try Return again.",
   "settings.styles.title": "Interface style",
-  "settings.styles.change": "Change style",
-  "settings.styles.close": "Close style chooser",
   "settings.styles.unified": "Unified",
   "settings.styles.dark-navigation": "Dark navigation",
   "settings.styles.brand-sidebar": "Brand sidebar",
   "settings.styles.brand-header": "Brand header",
   "settings.styles.dark-frame": "Dark frame",
   "settings.styles.brand-frame": "Brand duo",
-  "settings.styles.soft-frame": "Soft color frame"
+  "settings.styles.soft-frame": "Soft color frame",
+  "settings.styles.monochrome": "Monochrome"
 }

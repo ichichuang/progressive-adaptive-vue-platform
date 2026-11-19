@@ -45,7 +45,7 @@ onDeactivated(close)
           @click="close"
         >
           <span
-            class="size-icon i-lucide-minimize-2"
+            class="i-lucide-minimize-2 size-icon-medium"
             aria-hidden="true"
           />
         </NButton>

@@ -22,6 +22,7 @@ import {
   consoleWorkspaceNavigationItems,
   errorRouteRegistry,
   focusContractRegistry,
+  resolveHomeRoute,
   routeLayoutCapabilityRegistry,
   routeMessageRegistry,
   routeRegistry,
@@ -82,7 +83,6 @@ const expectedPageSources = [
   'apps/web/src/pages/colors.vue',
   'apps/web/src/pages/sizes.vue',
   'apps/web/src/pages/typography.vue',
-  'apps/web/src/pages/interactions.vue',
   'apps/web/src/pages/date-time.vue',
   'apps/web/src/pages/motion.vue',
   'apps/web/src/pages/component-showcase.vue',
@@ -164,7 +164,14 @@ const expectedPageSources = [
   'apps/web/src/pages/error/500.vue',
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
+  'apps/web/src/pages/preview-status-400.vue',
+  'apps/web/src/pages/preview-status-401.vue',
+  'apps/web/src/pages/preview-status-403.vue',
   'apps/web/src/pages/preview-status-404.vue',
+  'apps/web/src/pages/preview-status-500.vue',
+  'apps/web/src/pages/preview-status-offline.vue',
+  'apps/web/src/pages/preview-status-maintenance.vue',
+  'apps/web/src/pages/preview-layouts.vue',
   'apps/web/src/pages/preview-layout-admin.vue',
   'apps/web/src/pages/preview-layout-admin-footer.vue',
   'apps/web/src/pages/preview-layout-header.vue',
@@ -175,7 +182,7 @@ const expectedPageSources = [
   'apps/web/src/pages/preview-layout-fixed-display.vue',
   'apps/web/src/pages/login.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 89)
+const expectedProductPageSources = expectedPageSources.slice(0, 88)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
   'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
@@ -328,16 +335,6 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.workbench-typography',
     'route.workbench.typography',
-    'route-boundary',
-  ],
-  [
-    'apps/web/src/pages/interactions.vue',
-    'workbench-interactions',
-    '/interactions',
-    'route-params.none',
-    'route-query.none',
-    'route-title.workbench-interactions',
-    'route.workbench.interactions',
     'route-boundary',
   ],
   [
@@ -1152,6 +1149,36 @@ const expectedRouteRecords = [
     'application-boundary',
   ],
   [
+    'apps/web/src/pages/preview-status-400.vue',
+    'preview-status-400',
+    '/previews/status/400',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-invalid-route-input',
+    'route.preview.status.400',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-status-401.vue',
+    'preview-status-401',
+    '/previews/status/401',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-authentication-required',
+    'route.preview.status.401',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-status-403.vue',
+    'preview-status-403',
+    '/previews/status/403',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-permission-denied',
+    'route.preview.status.403',
+    'route-boundary',
+  ],
+  [
     'apps/web/src/pages/preview-status-404.vue',
     'preview-status-404',
     '/previews/status/404',
@@ -1159,7 +1186,47 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.error-route-not-found',
     'route.preview.status.not-found',
-    'application-boundary',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-status-500.vue',
+    'preview-status-500',
+    '/previews/status/500',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-application-route-failure',
+    'route.preview.status.500',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-status-offline.vue',
+    'preview-status-offline',
+    '/previews/status/offline',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-network-unavailable',
+    'route.preview.status.offline',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-status-maintenance.vue',
+    'preview-status-maintenance',
+    '/previews/status/maintenance',
+    'route-params.none',
+    'route-query.none',
+    'route-title.error-service-unavailable',
+    'route.preview.status.maintenance',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/preview-layouts.vue',
+    'preview-layouts',
+    '/previews/layout',
+    'route-params.none',
+    'route-query.none',
+    'route-title.preview-layouts',
+    'route.preview.layouts',
+    'route-boundary',
   ],
   [
     'apps/web/src/pages/preview-layout-admin.vue',
@@ -1306,9 +1373,6 @@ const expectedRouteTitles = {
   'route-title.workbench-colors': getDefaultConsoleMessage('route-title.workbench-colors'),
   'route-title.workbench-sizes': getDefaultConsoleMessage('route-title.workbench-sizes'),
   'route-title.workbench-typography': getDefaultConsoleMessage('route-title.workbench-typography'),
-  'route-title.workbench-interactions': getDefaultConsoleMessage(
-    'route-title.workbench-interactions',
-  ),
   'route-title.workbench-date-time': getDefaultConsoleMessage('route-title.workbench-date-time'),
   'route-title.workbench-motion': getDefaultConsoleMessage('route-title.workbench-motion'),
   'route-title.component-showcase': getDefaultConsoleMessage('route-title.component-showcase'),
@@ -1502,6 +1566,7 @@ const expectedRouteTitles = {
   'route-title.error-application-route-failure': '这个页面暂时打不开',
   'route-title.error-network-unavailable': '网络连不上',
   'route-title.error-service-unavailable': '这项服务暂时无法使用',
+  'route-title.preview-layouts': getDefaultConsoleMessage('route-title.preview-layouts'),
   'route-title.preview-layout-admin': getDefaultConsoleMessage('route-title.preview-layout-admin'),
   'route-title.preview-layout-admin-footer': getDefaultConsoleMessage(
     'route-title.preview-layout-admin-footer',
@@ -1595,11 +1660,6 @@ const expectedMessages = [
     'workbench-typography',
     'route-message.workbench-typography-summary',
     getDefaultConsoleMessage('route-message.workbench-typography-summary'),
-  ],
-  [
-    'workbench-interactions',
-    'route-message.workbench-interactions-summary',
-    getDefaultConsoleMessage('route-message.workbench-interactions-summary'),
   ],
   [
     'workbench-date-time',
@@ -2008,9 +2068,44 @@ const expectedMessages = [
     '请先返回首页，稍后再来。',
   ],
   [
+    'preview-status-400',
+    'route-message.error-invalid-route-input',
+    getDefaultConsoleMessage('route-message.error-invalid-route-input'),
+  ],
+  [
+    'preview-status-401',
+    'route-message.error-authentication-required',
+    getDefaultConsoleMessage('route-message.error-authentication-required'),
+  ],
+  [
+    'preview-status-403',
+    'route-message.error-permission-denied',
+    getDefaultConsoleMessage('route-message.error-permission-denied'),
+  ],
+  [
     'preview-status-404',
     'route-message.preview-status-404',
     getDefaultConsoleMessage('route-message.preview-status-404'),
+  ],
+  [
+    'preview-status-500',
+    'route-message.error-application-route-failure',
+    getDefaultConsoleMessage('route-message.error-application-route-failure'),
+  ],
+  [
+    'preview-status-offline',
+    'route-message.error-network-unavailable',
+    getDefaultConsoleMessage('route-message.error-network-unavailable'),
+  ],
+  [
+    'preview-status-maintenance',
+    'route-message.error-service-unavailable',
+    getDefaultConsoleMessage('route-message.error-service-unavailable'),
+  ],
+  [
+    'preview-layouts',
+    'route-message.preview-layouts-summary',
+    getDefaultConsoleMessage('route-message.preview-layouts-summary'),
   ],
   [
     'preview-layout-admin',
@@ -2288,7 +2383,7 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
   }
 
   const currentRouteGuard =
-    /isCurrentDestination:\s*item.openIn !== 'new-page' &&\s*resolved !== undefined &&\s*sameRouteAddress\(router.currentRoute.value, resolved\)/u.exec(
+    /isCurrentDestination:\s*resolved !== undefined &&\s*sameRouteAddress\(router.currentRoute.value, resolved\)/u.exec(
       snapshot.frameSource,
     )
   const navigationCall = frameMenuNavigation(snapshot.frameSource)
@@ -2701,6 +2796,9 @@ function applicationNavigationContractViolations(source: string): string[] {
   const contract = nodesOf(parsed, ts.isInterfaceDeclaration).find(
     (node) => node.name.text === 'ApplicationNavigation',
   )
+  const homeMethod = contract?.members
+    .filter(ts.isMethodSignature)
+    .find((member) => member.name.getText() === 'navigateHome')
   const options = nodesOf(parsed, ts.isTypeAliasDeclaration).find(
     (node) => node.name.text === 'ApplicationNavigationOptions',
   )
@@ -2736,8 +2834,10 @@ function applicationNavigationContractViolations(source: string): string[] {
   if (
     !exactSet(
       [...new Set(contract?.members.map((member) => member.name?.getText() ?? '') ?? [])],
-      ['navigate', 'canShow', 'resolveHref'],
+      ['navigate', 'navigateHome', 'canShow', 'resolveHref'],
     ) ||
+    homeMethod === undefined ||
+    signature(homeMethod) !== '?:ApplicationNavigationOptions=>Promise<TypedNavigationResult>' ||
     options === undefined ||
     !ts.isIntersectionTypeNode(options.type) ||
     options.type.types.length !== 2 ||
@@ -3080,6 +3180,8 @@ function applicationNavigationContractViolations(source: string): string[] {
       object.properties.some((property) => property.name?.getText() === 'navigate'),
   )
   const privateNavigate = privateView[0]?.properties.find(ts.isMethodDeclaration)
+  const homeBinding = publicView && objectPropertyValue(publicView, 'navigateHome')
+  const privateHomeBinding = privateView[0] && objectPropertyValue(privateView[0], 'navigateHome')
   const privateReturn = privateNavigate?.body?.statements[0]
   const privateCall =
     privateReturn !== undefined &&
@@ -3093,7 +3195,9 @@ function applicationNavigationContractViolations(source: string): string[] {
   )
   if (
     privateView.length !== 1 ||
-    privateView[0]?.properties.length !== 1 ||
+    privateView[0]?.properties.length !== 2 ||
+    homeBinding === undefined ||
+    privateHomeBinding?.getText() !== homeBinding.getText() ||
     privateNavigate?.body?.statements.length !== 1 ||
     privateCall === undefined ||
     !isDeepStrictEqual(memberPath(privateCall.expression), [
@@ -4476,6 +4580,22 @@ function registryViolations(): string[] {
     violations.push('Router Route Registry diverged from the exact expected route records.')
   }
 
+  const root = { name: 'root', pathPattern: '/' } as const
+  const page = { name: 'page', pathPattern: '/page' } as const
+  const configuredHome = { ...page, isHome: true } as const
+  if (
+    resolveHomeRoute([root, page]) !== root ||
+    resolveHomeRoute([root, configuredHome]) !== configuredHome
+  ) {
+    violations.push('Home selection must prefer the marked route and fall back to the root route.')
+  }
+  try {
+    resolveHomeRoute([{ ...root, isHome: true }, configuredHome])
+    violations.push('Home selection must reject multiple routes marked as home.')
+  } catch (error) {
+    if (!(error instanceof TypeError)) throw error
+  }
+
   if (
     !isDeepStrictEqual(workspaceIdentityPolicyRegistry, [
       { id: 'workspace-identity.route-single', kind: 'route-single' },
@@ -4516,13 +4636,14 @@ function registryViolations(): string[] {
       record.meta.routeTransitionFamilyId === 'route-family.architecture-workspace'
         ? `route-breadcrumb.${record.name}`
         : null
-    const expectedWorkspace = expectedRouteRecords
-      .slice(0, 88)
-      .some((expected) => expected[1] === record.name)
+    const expectedWorkspace =
+      (record.name.startsWith('preview-') && !record.name.startsWith('preview-layout-')) ||
+      expectedRouteRecords.slice(0, 87).some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center'
         ? 'appearance'
-        : expectedWorkspace || record.name.startsWith('preview-layout-')
+        : (expectedWorkspace && !record.name.startsWith('preview-status-')) ||
+            record.name.startsWith('preview-layout-')
           ? 'console'
           : 'common'
     if (
@@ -4970,33 +5091,52 @@ async function pageViolations(): Promise<string[]> {
       'The contained form workbench must reuse the canonical main UiScrollArea and lifecycle-bound Router controller port.',
     )
 
-  for (const owner of ['TableCapabilityOverview', 'TableCapabilityWorkbench']) {
-    const sourcePath = `apps/web/src/app/workbench/tables/${owner}.vue`
+  for (const sourcePath of [
+    'apps/web/src/pages/component-form-overview.vue',
+    'apps/web/src/pages/component-table-appearance.vue',
+    'apps/web/src/pages/preview-layouts.vue',
+    'apps/web/src/app/workbench/charts/ChartCapabilityOverview.vue',
+    'apps/web/src/app/workbench/tables/TableCapabilityOverview.vue',
+  ]) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
     if (
       count(source, /<WorkbenchPage\b/gu) !== 1 ||
-      !source.includes("from '../WorkbenchPage.vue'") ||
-      !/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(source) ||
-      count(source, /<UiScrollArea\b/gu) !== (owner === 'TableCapabilityWorkbench' ? 2 : 1) ||
-      (owner === 'TableCapabilityWorkbench' &&
-        !/<UiScrollArea\b[^>]*v-if="\$slots\['controls'\] && scrollControls"[^>]*owner-id="table-showcase-controls"[^>]*:enabled="active"/u.test(
-          source,
-        )) ||
-      count(source, /owner-id="architecture-console-content"/gu) !== 1 ||
-      !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*\s@controller=/u.test(
-        source,
-      ) ||
-      !source.includes("from '../../router/router-scroll-controller'") ||
-      !/\binject\(routerScrollControllerKey\)/u.test(source) ||
-      !/\bonDeactivated\(/u.test(source) ||
-      !/\bonScopeDispose\(/u.test(source) ||
-      /\bdata-scroll-owner\s*=/u.test(source) ||
+      !/from '[^']+\/WorkbenchPage\.vue'/u.test(source) ||
+      /<WorkbenchPage\b[^>]*\s:?contained(?:\s|=|>)/u.test(source) ||
+      /\bdata-scroll-owner\s*=|owner-id="architecture-console-content"/u.test(source) ||
       count(source, /<(?:main|h1|UiPageHeader)\b/gu) !== 0
     )
       violations.push(
-        `${sourcePath}: Table workbenches must preserve the contained WorkbenchPage, one canonical UiScrollArea, and lifecycle-bound Router controller port.`,
+        `${sourcePath}: Scrolling showcases must use the shared route heading and the Shell content scroll owner.`,
       )
   }
+
+  const tableWorkbench = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/workbench/tables/TableCapabilityWorkbench.vue'),
+    'utf8',
+  )
+  if (
+    count(tableWorkbench, /<WorkbenchPage\b/gu) !== 1 ||
+    !tableWorkbench.includes("from '../WorkbenchPage.vue'") ||
+    !/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(tableWorkbench) ||
+    count(tableWorkbench, /<UiScrollArea\b/gu) !== 2 ||
+    !/<UiScrollArea\b[^>]*v-if="\$slots\['controls'\] && scrollControls"[^>]*owner-id="table-showcase-controls"[^>]*:enabled="active"/u.test(
+      tableWorkbench,
+    ) ||
+    count(tableWorkbench, /owner-id="architecture-console-content"/gu) !== 1 ||
+    !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*\s@controller=/u.test(
+      tableWorkbench,
+    ) ||
+    !tableWorkbench.includes("from '../../router/router-scroll-controller'") ||
+    !/\binject\(routerScrollControllerKey\)/u.test(tableWorkbench) ||
+    !/\bonDeactivated\(/u.test(tableWorkbench) ||
+    !/\bonScopeDispose\(/u.test(tableWorkbench) ||
+    /\bdata-scroll-owner\s*=/u.test(tableWorkbench) ||
+    count(tableWorkbench, /<(?:main|h1|UiPageHeader)\b/gu) !== 0
+  )
+    violations.push(
+      'The contained table workbench must reuse the canonical main UiScrollArea and lifecycle-bound Router controller port.',
+    )
 
   for (const owner of ['TableLayoutExample', 'TableDataCapabilities', 'TableSelectionExample']) {
     const sourcePath = `apps/web/src/app/workbench/tables/${owner}.vue`
@@ -5111,7 +5251,7 @@ async function pageViolations(): Promise<string[]> {
         (routeOwnsHeading
           ? count(source, /<h1\b/gu) !== 1 ||
             count(source, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
-            !/<h1\b[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>/u.test(source) ||
+            /<h1\b[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>/u.test(source) !== welcomePage ||
             !/<h1\b[^>]*\btabindex="-1"[^>]*>/u.test(source)
           : (sourcePath.includes('/api-')
               ? (() => {
@@ -5169,42 +5309,41 @@ async function pageViolations(): Promise<string[]> {
                                   !source.includes(
                                     "from '../app/workbench/charts/ChartExampleWorkbench.vue'",
                                   )
-                                : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
-                                  ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                                    !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
-                                    count(source, /<UiScrollArea\b/gu) !== 1
-                                  : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
-                                    ? count(source, /<FormBasicControls\b/gu) !== 1 ||
+                                : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
+                                  ? count(source, /<FormBasicControls\b/gu) !== 1 ||
+                                    !source.includes(
+                                      "from '../app/workbench/forms/FormBasicControls.vue'",
+                                    )
+                                  : sourcePath.includes('/component-form-') &&
+                                      sourcePath !==
+                                        'apps/web/src/pages/component-form-builder.vue' &&
+                                      sourcePath !==
+                                        'apps/web/src/pages/component-form-overview.vue'
+                                    ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
                                       !source.includes(
-                                        "from '../app/workbench/forms/FormBasicControls.vue'",
+                                        "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
                                       )
-                                    : sourcePath.includes('/component-form-') &&
-                                        sourcePath !==
-                                          'apps/web/src/pages/component-form-builder.vue'
-                                      ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                                    : tablePageComponent !== undefined
+                                      ? count(
+                                          source,
+                                          new RegExp(`<${tablePageComponent}\\b`, 'gu'),
+                                        ) !== 1 ||
                                         !source.includes(
-                                          "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
+                                          `from '../app/workbench/tables/${tablePageComponent}.vue'`,
                                         )
-                                      : tablePageComponent !== undefined
-                                        ? count(
-                                            source,
-                                            new RegExp(`<${tablePageComponent}\\b`, 'gu'),
-                                          ) !== 1 ||
-                                          !source.includes(
-                                            `from '../app/workbench/tables/${tablePageComponent}.vue'`,
+                                      : sourcePath === 'apps/web/src/pages/component-table.vue' ||
+                                          /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
+                                            sourcePath,
                                           )
-                                        : sourcePath === 'apps/web/src/pages/component-table.vue' ||
-                                            /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
-                                              sourcePath,
-                                            )
-                                          ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
-                                            !source.includes(
-                                              "from '../app/workbench/tables/TableExampleWorkbench.vue'",
-                                            )
-                                          : count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                                            !source.includes(
-                                              "from '../app/workbench/WorkbenchPage.vue'",
-                                            )) || count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
+                                        ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                                          !source.includes(
+                                            "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                          )
+                                        : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                                          !source.includes(
+                                            "from '../app/workbench/WorkbenchPage.vue'",
+                                          )) || count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
+    const layoutOverview = sourcePath === 'apps/web/src/pages/preview-layouts.vue'
     const layoutPreview = sourcePath.startsWith('apps/web/src/pages/preview-layout-')
     const displayPreview =
       sourcePath === 'apps/web/src/pages/preview-layout-display.vue' ||
@@ -5222,9 +5361,7 @@ async function pageViolations(): Promise<string[]> {
       violations.push(
         `${sourcePath}: Display wrapper must forward route props and its exact scaling mode.`,
       )
-    const notFoundWrapper =
-      sourcePath === 'apps/web/src/pages/[...path].vue' ||
-      sourcePath === 'apps/web/src/pages/preview-status-404.vue'
+    const notFoundWrapper = sourcePath === 'apps/web/src/pages/[...path].vue'
     if (
       layoutPreview &&
       !displayPreview &&
@@ -5249,14 +5386,31 @@ async function pageViolations(): Promise<string[]> {
       violations.push(
         `${sourcePath}: Not-found wrapper must forward its route props to the shared focus owner.`,
       )
+    const statusPreview = /^preview-status-(.+)\.vue$/u.exec(basename(sourcePath))?.[1]
+    if (statusPreview !== undefined) {
+      const code =
+        statusPreview === 'offline'
+          ? 'OFFLINE'
+          : statusPreview === 'maintenance'
+            ? 'SERVICE'
+            : statusPreview
+      if (
+        !source.includes(`code="${code}"`) ||
+        !/<ErrorPresentation\b[^>]*\scontained\b/u.test(source) ||
+        !source.includes('focus-target="architecture-console-page-heading"')
+      )
+        violations.push(`${sourcePath}: Status preview must use the contained error scene.`)
+    }
     const errorPage = basename(sourcePath, '.vue')
     const errorCode =
       errorPage === 'offline' ? 'OFFLINE' : errorPage === 'maintenance' ? 'SERVICE' : errorPage
     const errorPageInvalid =
       !productPage &&
       !standaloneLogin &&
+      !layoutOverview &&
       !layoutPreview &&
       !notFoundWrapper &&
+      statusPreview === undefined &&
       (!source.includes("from '../../app/errors/ErrorPresentation.vue'") ||
         !isErrorDocument(source, errorCode))
     const loginDocumentInvalid =
@@ -5284,8 +5438,7 @@ async function pageViolations(): Promise<string[]> {
     }
 
     if (
-      (sourcePath === 'apps/web/src/pages/motion.vue' ||
-        sourcePath === 'apps/web/src/pages/component-table-appearance.vue') &&
+      sourcePath === 'apps/web/src/pages/motion.vue' &&
       (!/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(source) ||
         count(source, /<UiScrollArea\b/gu) !== 1 ||
         !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*>/u.test(source) ||
@@ -5294,7 +5447,7 @@ async function pageViolations(): Promise<string[]> {
         /\bdata-scroll-owner\s*=/u.test(source))
     )
       violations.push(
-        'Contained animation and table-style gallery pages must reuse one main UiScrollArea and the Router controller port without replacing the Shell boundary.',
+        'The contained animation gallery must reuse one main UiScrollArea and the Router controller port without replacing the Shell boundary.',
       )
   }
 
@@ -5302,13 +5455,16 @@ async function pageViolations(): Promise<string[]> {
   if (
     (!appSource.includes("routeRecord.value.name.startsWith('component-form-')") &&
       expectedProductPageSources
-        .filter((path) => path.includes('/component-form-'))
+        .filter(
+          (path) =>
+            path.includes('/component-form-') && !path.endsWith('/component-form-overview.vue'),
+        )
         .some((path) => !appSource.includes(`'${basename(path, '.vue')}'`))) ||
     !appSource.includes(':contained-content=') ||
     !appSource.includes('.readFailure(')
   )
     violations.push(
-      'Form routes must use contained Shell content while retaining the failure fallback.',
+      'Form workspaces must use contained Shell content while retaining the failure fallback.',
     )
   if (
     count(appSource, /<RouterView\b/gu) !== 1 ||
@@ -6523,7 +6679,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 89 &&
+        productRoutes.length === 88 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -6606,8 +6762,8 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_13_NATIVE_CALL_OWNER',
       passed:
-        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 2 &&
-        count(snapshot.appearanceTransitionSource, /document\.startViewTransition\s*\(/gu) === 1 &&
+        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 1 &&
+        !snapshot.appearanceTransitionSource.includes('startViewTransition') &&
         count(snapshot.coordinatorSource, /\.startViewTransition\s*\(/gu) === 1 &&
         !/document(?:\.documentElement)?\.startViewTransition|document\.documentElement/.test(
           snapshot.coordinatorSource,
@@ -9044,7 +9200,6 @@ const workspaceAxisRouteNames = [
   'workbench-colors',
   'workbench-sizes',
   'workbench-typography',
-  'workbench-interactions',
   'workbench-date-time',
   'workbench-motion',
   'api-overview',
@@ -9125,6 +9280,14 @@ const workspaceAxisRouteNames = [
   'component-combination-drawer',
   'component-combination-page',
   'component-combination-report',
+  'preview-status-400',
+  'preview-status-401',
+  'preview-status-403',
+  'preview-status-404',
+  'preview-status-500',
+  'preview-status-offline',
+  'preview-status-maintenance',
+  'preview-layouts',
 ] as const
 
 function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {

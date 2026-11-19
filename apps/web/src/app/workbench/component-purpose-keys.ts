@@ -64,6 +64,7 @@ export const componentPurposeKeys: Readonly<Partial<Record<string, ConsoleMessag
   NTab: 'showcase.purpose.NTab',
   NPageHeader: 'showcase.purpose.NPageHeader',
   UiCopyAction: 'showcase.purpose.UiCopyAction',
+  UiNavigationLink: 'showcase.purpose.UiNavigationLink',
   NButton: 'showcase.purpose.NButton',
   NButtonGroup: 'showcase.purpose.NButtonGroup',
   NIcon: 'showcase.purpose.NIcon',

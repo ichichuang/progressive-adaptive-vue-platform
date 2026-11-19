@@ -230,7 +230,7 @@ async function restore() {
             : say('Confirmed revision active', '已使用确认修订')
         }}
       </p>
-      <div class="gap-control flex flex-wrap">
+      <div class="flex flex-wrap gap-content-gap">
         <NButton @click="state.adminConflict = true">
           {{ say('Inject next revision conflict', '模拟下一次修订冲突') }}
         </NButton>

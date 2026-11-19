@@ -2,6 +2,8 @@ import {
   computed,
   getCurrentInstance,
   getCurrentScope,
+  hasInjectionContext,
+  inject,
   onActivated,
   onDeactivated,
   onScopeDispose,
@@ -33,6 +35,7 @@ import {
   resolveTableSummary,
 } from '../components/table-summary'
 import { resolveUiTableRequest } from '../components/table-request'
+import { uiLocaleKey } from '../providers/ui-locale'
 import {
   attachTreeChildren,
   collectTreeKeys,
@@ -47,6 +50,9 @@ import { cloneDraft, freezeDraftValue, getFormValue, sameDraftValue } from './fo
 /** One owner for applied query, selection and cancellable list work. No HTTP or storage singleton. */
 export function useUiTable(input: UiTableInput): UiTableController {
   const schema = parseUiTableSchema(input.schema)
+  const locale =
+    input.locale ?? (hasInjectionContext() ? inject(uiLocaleKey, undefined) : undefined)
+  const collator = computed(() => new Intl.Collator(locale?.value))
   const access = input.access
   if (schema.source.kind === 'remote' && !(access ? access.read : input.transport))
     throw new TypeError('A remote table requires a transport.')
@@ -167,6 +173,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
   let active: AbortController | undefined
   let remoteReceipt: (() => boolean) | undefined
   let stopAccess: (() => void) | undefined
+  let stopLocale: (() => void) | undefined
   const treeLoadErrors = shallowRef<readonly { readonly key: UiTableKey; readonly error: Error }[]>(
     [],
   )
@@ -259,10 +266,26 @@ export function useUiTable(input: UiTableInput): UiTableController {
         : [[path, value] as const]
     })
   }
-  function localPage(current: UiTableQuery) {
+  function localPage(current: UiTableQuery, pageCount: number) {
     // Grouped form values retain their nested request shape. Only the local
     // matcher projects them to the same paths used by flat filters and columns.
     const filters = filterLeaves(current.filters)
+    const keywordSearch = schema.keywordSearch
+    const keywordValue = keywordSearch && current.filters[keywordSearch.parameter]
+    const keyword =
+      typeof keywordValue === 'string' ? keywordValue.trim().toLocaleLowerCase(locale?.value) : ''
+    const keywordFields = keyword
+      ? schema.columns
+          .filter(({ key }) => keywordSearch?.fields.includes(key) && readableColumn(key))
+          .map((column) => ({
+            key: column.key,
+            matchingOptions: column.options?.filter(({ label }) =>
+              (input.translate?.(label) ?? label)
+                .toLocaleLowerCase(locale?.value)
+                .includes(keyword),
+            ),
+          }))
+      : []
     const matching = projectRows(access ? (access.local?.() ?? []) : localRows).filter(
       (row) =>
         matchesLocalFilters(
@@ -273,17 +296,18 @@ export function useUiTable(input: UiTableInput): UiTableController {
           ),
         ) &&
         filters.every(([key, value]) => {
-          if (key === schema.keywordSearch?.parameter) {
+          if (key === keywordSearch?.parameter) {
             if (value === null || value === '') return true
             if (typeof value !== 'string') return false
-            const keyword = value.trim().toLocaleLowerCase()
             return (
               !keyword ||
-              schema.keywordSearch.fields.some(
-                (field) =>
-                  readableColumn(field) &&
-                  display(getFormValue(row, field)).toLocaleLowerCase().includes(keyword),
-              )
+              keywordFields.some(({ key: field, matchingOptions }) => {
+                const cell = getFormValue(row, field)
+                return (
+                  display(cell).toLocaleLowerCase(locale?.value).includes(keyword) ||
+                  matchingOptions?.some((option) => option.value === cell)
+                )
+              })
             )
           }
           if (value === '' || value === null || (Array.isArray(value) && value.length === 0))
@@ -309,16 +333,19 @@ export function useUiTable(input: UiTableInput): UiTableController {
               ? comparator(left, right, { column, leftRow: a, rightRow: b })
               : typeof left === 'number' && typeof right === 'number'
                 ? left - right
-                : display(left).localeCompare(display(right))
+                : collator.value.compare(display(left), display(right))
           if (!Number.isFinite(result))
             throw new TypeError('Table sort comparators must return a finite number.')
           if (result !== 0) return sort.order === 'ascend' ? result : -result
         }
         return 0
       })
-    const start = (current.page - 1) * current.pageSize
+    const start = (current.page - pageCount) * current.pageSize
     return {
-      page: { rows: matching.slice(start, start + current.pageSize), total: matching.length },
+      page: {
+        rows: matching.slice(start, current.page * current.pageSize),
+        total: matching.length,
+      },
       filteredRows: matching,
     }
   }
@@ -350,6 +377,8 @@ export function useUiTable(input: UiTableInput): UiTableController {
     active = controller
     const ticket = ++sequence
     const current = append ? snapshot({ ...query.value, page: query.value.page + 1 }) : query.value
+    // A locale change reorders the entire loaded local prefix without resetting its page.
+    const pageCount = schema.source.kind === 'local' && continuous && !append ? current.page : 1
     const origin = access?.context()
     loading.value = true
     error.value = null
@@ -372,7 +401,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
       }
       const next =
         schema.source.kind === 'local'
-          ? localPage(current)
+          ? localPage(current, pageCount)
           : {
               page:
                 controlledPage ??
@@ -405,7 +434,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
       }
       const summaryData = parseTableSummaryData('summary' in result ? result.summary : undefined)
       validateRows(nextRows)
-      if (nextRows.length > current.pageSize || result.total < nextRows.length)
+      if (nextRows.length > current.pageSize * pageCount || result.total < nextRows.length)
         throw new TypeError('Table page size or total is inconsistent.')
       for (const controller of childLoads.values()) controller.abort()
       childLoads.clear()
@@ -814,6 +843,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
     dispose: () => {
       disposed = true
       stopAccess?.()
+      stopLocale?.()
       ++sequence
       active?.abort()
       for (const controller of childLoads.values()) controller.abort()
@@ -821,6 +851,14 @@ export function useUiTable(input: UiTableInput): UiTableController {
       loading.value = false
     },
   }
+  if (locale && schema.source.kind === 'local')
+    stopLocale = watch(locale, () => {
+      const usesDefaultSort = query.value.sorts.some(
+        ({ key }) => !schema.columns.find((column) => column.key === key)?.sortComparator,
+      )
+      const keyword = schema.keywordSearch && query.value.filters[schema.keywordSearch.parameter]
+      if (usesDefaultSort || (typeof keyword === 'string' && keyword.trim())) void fetchPage(false)
+    })
   if (access)
     stopAccess = watch(
       [access.context, access.revision],

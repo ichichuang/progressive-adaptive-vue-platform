@@ -1888,4 +1888,10 @@
   html[data-color-mode='dark'] {
     color-scheme: dark;
   }
+
+  @media (forced-colors: none) {
+    [data-pavp-monochrome] {
+      filter: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cfilter%20id%3D%22monochrome%22%20color-interpolation-filters%3D%22linearRGB%22%3E%3CfeColorMatrix%20type%3D%22matrix%22%20values%3D%220.2126%200.7152%200.0722%200%200%200.2126%200.7152%200.0722%200%200%200.2126%200.7152%200.0722%200%200%200%200%200%201%200%22%2F%3E%3C%2Ffilter%3E%3C%2Fsvg%3E#monochrome');
+    }
+  }
 }

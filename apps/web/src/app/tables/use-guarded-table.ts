@@ -352,6 +352,7 @@ export function useGuardedTable(input: GuardedTableInput) {
   }
   const table = useUiTable({
     schema,
+    ...(input.locale === undefined ? {} : { locale: input.locale }),
     ...(input.sortComparators === undefined ? {} : { sortComparators: input.sortComparators }),
     ...(input.translate === undefined ? {} : { translate: input.translate }),
     ...(input.filters === undefined ? {} : { filters: input.filters }),

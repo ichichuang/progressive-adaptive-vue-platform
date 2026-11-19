@@ -1,18 +1,23 @@
-import { computed, reactive, ref, shallowRef } from 'vue'
+import { computed, reactive, ref, shallowRef, type Ref } from 'vue'
 import {
   parseBuilderSchema,
   parseBuilderSnapshot,
-  UnsupportedBuilderSchema,
+  BuilderSchemaError,
   type BuilderSnapshot,
 } from './form-builder-document'
 import {
   parseUiFormSchema,
+  UiConfigurationError,
   type UiFormCondition,
   type UiFormNode,
   type UiFormSchema,
 } from '@platform/ui'
 import { formDraftSignature } from '../../../forms/form-draft-signature'
 import type { ConsoleTranslate } from '../../../../shared/i18n'
+import {
+  configurationDiagnosticText,
+  formatConfigurationList,
+} from '../../configuration/configuration-diagnostic'
 
 export const builderKinds = {
   text: 'formBuilder.text',
@@ -177,11 +182,11 @@ function changeChildren(
 }
 
 /** Page-owned configuration edits. The package parser remains the schema authority. */
-export function useFormBuilder(t: ConsoleTranslate) {
+export function useFormBuilder(t: ConsoleTranslate, locale: Readonly<Ref<string>>) {
   const schema = shallowRef<UiFormSchema>(parseUiFormSchema({ columns: 1, fields: [] }))
   const selected = ref<readonly string[]>([])
   const draft = shallowRef<BuilderEditableNode | null>(null)
-  const issue = ref('')
+  const issue = shallowRef<() => string>()
   const inputs = reactive(new Map<string, BuilderInputState>())
   const composing = ref(false)
   const restoredComposition = ref(false)
@@ -198,7 +203,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
       ? t('formBuilder.compositionNotSaved')
       : incomplete.value
         ? t('formBuilder.incompleteNumber')
-        : issue.value,
+        : (issue.value?.() ?? ''),
   )
   const optionIds = ref<number[]>([])
   let nextOptionId = 0
@@ -353,7 +358,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
     for (const input of state.inputs) inputState(input.key).update(input.raw, input.invalid)
     restoredComposition.value = state.composing
     restoring = false
-    issue.value = pending.value ? t('formBuilder.restoredPending') : ''
+    issue.value = pending.value ? () => t('formBuilder.restoredPending') : undefined
     return true
   }
   function restoreDraft(value: unknown): boolean {
@@ -363,23 +368,33 @@ export function useFormBuilder(t: ConsoleTranslate) {
     future.value = []
     return true
   }
-  function importJson(raw: string): boolean {
+  function importJson(raw: string, report?: (message: () => string) => void): boolean {
     try {
       const candidate = parseBuilderSchema(JSON.parse(raw))
       const before = snapshot()
       const history = past.value
-      if (!commit(candidate, candidate.fields[0] ? [candidate.fields[0].name] : [])) return false
+      if (!commit(candidate, candidate.fields[0] ? [candidate.fields[0].name] : [])) {
+        if (issue.value) report?.(issue.value)
+        return false
+      }
       // Import replaces the whole editor intentionally and remains undoable, including raw text.
       past.value = [...history.slice(-39), before]
       future.value = []
       return true
     } catch (error: unknown) {
-      issue.value = t(
-        error instanceof UnsupportedBuilderSchema
-          ? 'formBuilder.importUnsupported'
-          : 'formBuilder.importInvalid',
-      )
-      if (error instanceof Error) issue.value += ` ${error.message}`
+      const message = () => {
+        if (error instanceof BuilderSchemaError) {
+          const heading = t(
+            error.status === 'unsupported'
+              ? 'formBuilder.importUnsupported'
+              : 'formBuilder.importInvalid',
+          )
+          return `${heading} ${error.field} · ${t(error.messageKey)}`
+        }
+        return `${t('formBuilder.importInvalid')} ${configurationDiagnosticText(error, t, locale.value)}`
+      }
+      issue.value = message
+      report?.(message)
       return false
     }
   }
@@ -412,7 +427,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
               ),
           )
         ) {
-          issue.value = t('formBuilder.defaultOptionMissing')
+          issue.value = () => t('formBuilder.defaultOptionMissing')
           return false
         }
       }
@@ -424,10 +439,13 @@ export function useFormBuilder(t: ConsoleTranslate) {
       }
       selected.value = selection
       if (!live) loadDraft()
-      issue.value = ''
+      issue.value = undefined
       return true
-    } catch {
-      issue.value = t('formBuilder.invalidSchema')
+    } catch (error) {
+      issue.value =
+        error instanceof UiConfigurationError
+          ? () => configurationDiagnosticText(error, t, locale.value)
+          : () => t('formBuilder.invalidSchema')
       return false
     }
   }
@@ -436,7 +454,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
     if (selected.value.join('.') === path.join('.')) return
     selected.value = path
     loadDraft()
-    issue.value = ''
+    issue.value = undefined
   }
   function add(kind: BuilderKind, parent?: readonly string[]): void {
     if (pending.value) return
@@ -502,13 +520,14 @@ export function useFormBuilder(t: ConsoleTranslate) {
       !/^[A-Za-z_][A-Za-z0-9_]*$/u.test(node.name) ||
       ['__proto__', 'prototype', 'constructor'].includes(node.name)
     ) {
-      issue.value = t('formBuilder.invalidName')
+      issue.value = () => t('formBuilder.invalidName')
       return false
     }
     if (node.name !== current.name) {
       const users = referencedBy(schema.value, path, false)
       if (users.length) {
-        issue.value = `${t('formBuilder.referenced')} ${users.join('、')}`
+        issue.value = () =>
+          `${t('formBuilder.referenced')} ${formatConfigurationList(users, locale.value)}`
         return false
       }
     }
@@ -521,11 +540,11 @@ export function useFormBuilder(t: ConsoleTranslate) {
           ? container.fields
           : []
     if (siblings.some((sibling) => sibling.name === node.name && sibling.name !== current.name)) {
-      issue.value = t('formBuilder.duplicateName')
+      issue.value = () => t('formBuilder.duplicateName')
       return false
     }
     if (!node.label.trim()) {
-      issue.value = t('formBuilder.labelRequired')
+      issue.value = () => t('formBuilder.labelRequired')
       return false
     }
     return commit(
@@ -543,7 +562,8 @@ export function useFormBuilder(t: ConsoleTranslate) {
     if (pending.value || !selectedNode.value) return
     const users = referencedBy(schema.value, selected.value, true)
     if (users.length) {
-      issue.value = `${t('formBuilder.referenced')} ${users.join('、')}`
+      issue.value = () =>
+        `${t('formBuilder.referenced')} ${formatConfigurationList(users, locale.value)}`
       return
     }
     const name = selected.value.at(-1)
@@ -580,7 +600,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
   }
   function reorder(from: readonly string[], to: readonly string[]): void {
     if (pending.value || from.slice(0, -1).join('.') !== to.slice(0, -1).join('.')) {
-      issue.value = t('formBuilder.sameLevel')
+      issue.value = () => t('formBuilder.sameLevel')
       return
     }
     const parent = from.slice(0, -1)
@@ -599,7 +619,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
     if (pending.value) {
       future.value = [...future.value.slice(-39), snapshot()]
       loadDraft()
-      issue.value = ''
+      issue.value = undefined
       return
     }
     const previous = past.value.at(-1)

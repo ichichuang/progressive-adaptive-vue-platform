@@ -172,7 +172,7 @@ const commands = computed(() => {
           />
         </NFormItem>
       </NForm>
-      <div class="gap-control flex flex-wrap items-start justify-end">
+      <div class="flex flex-wrap items-start justify-end gap-content-gap">
         <NButton @click="show = false">
           {{ t('accessInteraction.close') }}
         </NButton>

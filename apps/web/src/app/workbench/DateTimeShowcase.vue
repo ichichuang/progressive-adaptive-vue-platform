@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { computed, onDeactivated, onScopeDispose, ref } from 'vue'
-import { NCard } from 'naive-ui/es/card'
 import { NSelect } from 'naive-ui/es/select'
 import { NSwitch } from 'naive-ui/es/switch'
 import {
-  UiSection,
   UiG2Chart,
   type UiG2ChartOptions,
   UiForm,
@@ -20,6 +18,7 @@ import {
 import { useConsoleI18n } from '../../shared/i18n'
 import { useFormShowcase } from './forms/form-showcase'
 import { useTableShowcase } from './tables/table-showcase'
+import WorkbenchSection from './WorkbenchSection.vue'
 const { t, locale } = useConsoleI18n()
 const globalDateTime = useUiDateTime()
 const timeZone = ref('global')
@@ -99,13 +98,13 @@ const chart = computed<UiG2ChartOptions>(() => ({
 }))
 const startedAt = Date.now()
 const now = useUiClock()
-const liveTime = computed(
-  () =>
-    formatUiDateTime(
-      { kind: 'timestamp', value: now.value, unit: 'milliseconds' },
-      context.value,
-    ) ?? '—',
-)
+const liveReading = computed(() => {
+  const timestamp = { kind: 'timestamp', value: now.value, unit: 'milliseconds' } as const
+  return {
+    date: formatUiDateTime(timestamp, context.value, 'date') ?? '—',
+    time: formatUiDateTime(timestamp, context.value, 'time') ?? '—',
+  }
+})
 const examples = computed(() => [
   {
     label: t('dateShowcase.instant'),
@@ -134,34 +133,28 @@ const examples = computed(() => [
 ])
 </script>
 <template>
-  <div class="grid min-w-0 gap-content-gap">
-    <NCard
-      :bordered="false"
-      class="shadow-panel"
+  <div class="grid min-w-0 gap-field-gap">
+    <WorkbenchSection
+      :title="t('dateShowcase.preview')"
+      :description="t('dateShowcase.previewHint')"
     >
-      <UiSection :title="t('dateShowcase.live')">
-        <div class="grid min-w-0 gap-component-unit">
-          <strong
-            class="font-title-weight tabular-nums text-text-primary text-title"
-            v-text="liveTime"
-          />
-          <span
-            class="text-caption text-text-secondary"
-            v-text="`${context.timeZone} · ${t('dateShowcase.liveHint')}`"
-          />
-        </div>
-      </UiSection>
-    </NCard>
-    <NCard
-      :bordered="false"
-      class="shadow-panel"
-    >
-      <UiSection
-        :title="t('dateShowcase.preview')"
-        :description="t('dateShowcase.previewHint')"
-      >
-        <div class="grid gap-content-gap">
-          <div class="flex flex-wrap items-center gap-content-gap">
+      <div class="grid min-w-0 gap-field-gap layout-wide:grid-cols-3">
+        <div class="grid min-w-0 content-start gap-content-gap">
+          <div
+            class="rounded-control grid min-w-0 bg-expression-accent-a-soft-background gap-component-unit p-panel-narrow text-expression-accent-a-soft-foreground layout-wide:p-panel"
+          >
+            <h3 class="font-title-weight m-0 text-caption">
+              {{ t('dateShowcase.live') }}
+            </h3>
+            <strong class="leading-title font-title-weight tabular-nums text-title">
+              {{ liveReading.time }}
+            </strong>
+            <span class="break-words tabular-nums text-body">
+              {{ liveReading.date }} · {{ context.timeZone }}
+            </span>
+            <span class="text-caption">{{ t('dateShowcase.liveHint') }}</span>
+          </div>
+          <div class="flex min-w-0 items-center gap-content-gap">
             <div class="flex-1 min-w-0">
               <NSelect
                 v-model:value="timeZone"
@@ -188,59 +181,55 @@ const examples = computed(() => [
               </template>
             </NSwitch>
           </div>
+        </div>
+        <dl
+          class="m-0 grid min-w-0 gap-content-gap layout-wide:col-span-2 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+        >
           <div
-            class="grid gap-content-gap layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+            v-for="example in examples"
+            :key="example.label"
+            class="rounded-control grid min-w-0 content-start bg-surface-page gap-component-unit p-panel-narrow"
           >
-            <div
-              v-for="example in examples"
-              :key="example.label"
-              class="rounded-control grid min-w-0 bg-surface-page gap-component-unit p-page-inline"
-            >
-              <span class="text-caption text-text-secondary">{{ example.label }}</span>
-              <strong class="text-body text-text-primary">{{ example.text ?? '—' }}</strong>
+            <dt class="text-caption text-text-secondary">
+              {{ example.label }}
+            </dt>
+            <dd class="m-0 grid min-w-0 gap-component-unit">
+              <strong class="font-title-weight tabular-nums text-body text-text-primary">
+                {{ example.text ?? '—' }}
+              </strong>
               <span class="text-caption text-text-secondary">{{ example.hint }}</span>
-            </div>
+            </dd>
           </div>
-        </div>
-      </UiSection>
-    </NCard>
-    <NCard
-      :bordered="false"
-      class="shadow-panel"
+        </dl>
+      </div>
+    </WorkbenchSection>
+    <WorkbenchSection
+      :title="t('dateShowcase.chart')"
+      :description="t('dateShowcase.chartHint')"
     >
-      <UiSection
-        :title="t('dateShowcase.chart')"
-        :description="t('dateShowcase.chartHint')"
-      >
-        <div class="wb-chart-preview">
-          <UiG2Chart
-            :options="chart"
-            :label="t('dateShowcase.chart')"
-            :date-time="context"
-            :date-time-channels="{ x: { kind: 'timestamp', unit: 'milliseconds', preset: 'time' } }"
-          />
-        </div>
-      </UiSection>
-    </NCard>
-    <NCard
-      :bordered="false"
-      class="shadow-panel"
+      <div class="wb-chart-preview">
+        <UiG2Chart
+          :options="chart"
+          :label="t('dateShowcase.chart')"
+          :date-time="context"
+          :date-time-channels="{ x: { kind: 'timestamp', unit: 'milliseconds', preset: 'time' } }"
+        />
+      </div>
+    </WorkbenchSection>
+    <WorkbenchSection
+      :title="t('dateShowcase.integration')"
+      :description="t('dateShowcase.integrationHint')"
     >
-      <UiSection
-        :title="t('dateShowcase.integration')"
-        :description="t('dateShowcase.integrationHint')"
-      >
-        <UiTable
-          :table="table"
-          :copy="tableDemo.tableCopy"
-          :date-time="context"
-        />
-        <UiForm
-          :form="form"
-          mode="detail"
-          :date-time="context"
-        />
-      </UiSection>
-    </NCard>
+      <UiTable
+        :table="table"
+        :copy="tableDemo.tableCopy"
+        :date-time="context"
+      />
+      <UiForm
+        :form="form"
+        mode="detail"
+        :date-time="context"
+      />
+    </WorkbenchSection>
   </div>
 </template>

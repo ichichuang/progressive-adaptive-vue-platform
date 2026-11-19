@@ -1,16 +1,8 @@
 <script setup lang="ts">
-import {
-  computed,
-  inject,
-  onActivated,
-  onDeactivated,
-  onScopeDispose,
-  ref,
-  type AnchorHTMLAttributes,
-} from 'vue'
-import { NCard } from 'naive-ui/es/card'
-import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
+import { computed, type AnchorHTMLAttributes } from 'vue'
+import { UiCopyAction } from '@platform/ui'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
+import WorkbenchSection from '../app/workbench/WorkbenchSection.vue'
 import { useConsoleI18n } from '../shared/i18n'
 import {
   useApplicationLinkActivation,
@@ -18,7 +10,6 @@ import {
 } from '../app/router/application-navigation'
 import { registeredRouteDestination } from '../app/router/route-input'
 import { getRouteRecord, routeMessageRegistry } from '../app/router/route-registry'
-import { routerScrollControllerKey } from '../app/router/router-scroll-controller'
 
 defineOptions({ name: 'ComponentFormOverviewPage' })
 defineProps<{ readonly title: string; readonly message: string }>()
@@ -87,38 +78,16 @@ const copyValue = computed(() =>
     'apps/web/src/app/workbench/forms/',
   ].join('\n\n'),
 )
-const active = ref(true)
-const register = inject(routerScrollControllerKey)
-if (!register)
-  throw new Error('Form capability overview requires the Router Scroll Controller port.')
-let unregister: (() => void) | undefined
-function connect(controller: UiScrollController | null): void {
-  unregister?.()
-  unregister = undefined
-  if (controller && active.value) unregister = register?.(controller)
-}
-onActivated(() => {
-  active.value = true
-})
-onDeactivated(() => {
-  active.value = false
-  connect(null)
-})
-onScopeDispose(() => {
-  connect(null)
-})
 </script>
 
 <template>
   <WorkbenchPage
-    contained
     :title="title"
     :message="message"
-    class="wb-form-page mx-auto w-full"
   >
     <template #actions>
       <UiCopyAction
-        variant="text"
+        variant="tertiary"
         :value="copyValue"
         :label="t('formShowcase.copyAI')"
         :copy-label="t('workbench.copy')"
@@ -126,68 +95,53 @@ onScopeDispose(() => {
         :failure-label="t('workbench.copyFailed')"
       />
     </template>
-    <UiScrollArea
-      owner-id="architecture-console-content"
-      :enabled="active"
-      class="flex-1 min-h-0"
-      @controller="connect"
+    <div
+      class="grid min-w-0 gap-field-gap"
+      data-form-capabilities="overview"
     >
-      <div
-        class="grid min-w-0 gap-content-gap"
-        data-form-capabilities="overview"
+      <WorkbenchSection
+        v-for="section in sections"
+        :key="section.label"
+        :title="section.label"
       >
-        <section
-          v-for="section in sections"
-          :key="section.label"
-          class="grid min-w-0 gap-content-gap"
-          :aria-label="section.label"
+        <div
+          class="grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-3"
         >
-          <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-            {{ section.label }}
-          </h2>
-          <div
-            class="grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-3"
+          <a
+            v-for="item in section.items"
+            :key="item.destination.name"
+            class="wb-capability-content wb-link rounded-control no-underline grid min-w-0 items-center bg-surface-page min-h-target-enhanced p-panel-narrow text-text-primary hover:bg-expression-accent-a-soft-background"
+            v-bind="
+              {
+                href: navigation.resolveHref(item.destination),
+                onClick: (event: MouseEvent) => activate(event, item.destination),
+              } satisfies AnchorHTMLAttributes
+            "
           >
-            <NCard
-              v-for="item in section.items"
-              :key="item.destination.name"
-              tag="a"
-              :bordered="false"
-              hoverable
-              class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
-              content-class="wb-capability-content grid min-w-0 items-center"
-              v-bind="
-                {
-                  href: navigation.resolveHref(item.destination),
-                  onClick: (event: MouseEvent) => activate(event, item.destination),
-                } satisfies AnchorHTMLAttributes
-              "
+            <span
+              class="wb-capability-mark rounded-control grid row-span-2 place-items-center bg-surface-panel text-control-primary text-title"
+              aria-hidden="true"
             >
-              <span
-                class="wb-capability-mark rounded-control grid row-span-2 place-items-center bg-surface-page text-control-primary text-title"
-                aria-hidden="true"
-              >
-                <span class="i-lucide-type" />
-              </span>
-              <strong class="font-title-weight text-subheading">
-                {{ item.title }}
-              </strong>
-              <span class="col-start-2 text-caption text-text-secondary">
-                {{ item.message }}
-              </span>
-              <span
-                class="row-span-2 col-start-3 row-start-1 text-control-primary"
-                aria-hidden="true"
-              >
-                ↗
-              </span>
-            </NCard>
-          </div>
-        </section>
-        <p class="m-0 text-caption text-text-secondary">
-          {{ t('formCapabilities.overview.boundary') }}
-        </p>
-      </div>
-    </UiScrollArea>
+              <span class="i-lucide-type" />
+            </span>
+            <strong class="leading-body font-title-weight text-body">
+              {{ item.title }}
+            </strong>
+            <span class="col-start-2 text-caption text-text-secondary">
+              {{ item.message }}
+            </span>
+            <span
+              class="row-span-2 col-start-3 row-start-1 text-control-primary"
+              aria-hidden="true"
+            >
+              ↗
+            </span>
+          </a>
+        </div>
+      </WorkbenchSection>
+      <p class="m-0 text-caption text-text-secondary">
+        {{ t('formCapabilities.overview.boundary') }}
+      </p>
+    </div>
   </WorkbenchPage>
 </template>

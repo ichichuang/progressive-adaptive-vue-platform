@@ -307,7 +307,7 @@ onScopeDispose(() => disposeArtwork?.())
       ref="surface"
       class="error-scene__glyph"
       data-rendering="static"
-      :data-compact="code === 'OFFLINE' || code === 'SERVICE' || code === 'ERROR' ? '' : undefined"
+      :data-compact="code === 'OFFLINE' || code === 'SERVICE' ? '' : undefined"
     >
       <div
         ref="focal"

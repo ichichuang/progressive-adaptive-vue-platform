@@ -1,5 +1,15 @@
 import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
-import { nextTick, shallowReactive, watch, type App } from 'vue'
+import {
+  inject,
+  nextTick,
+  shallowReactive,
+  shallowReadonly,
+  shallowRef,
+  watch,
+  type App,
+  type InjectionKey,
+  type Ref,
+} from 'vue'
 import type { UiScrollController, UiScrollOffset } from '@platform/ui'
 import type { ScrollRefreshSnapshot } from '../scroll/scroll-refresh-contract'
 import {
@@ -68,6 +78,7 @@ import {
   type RouteAccessCheck,
 } from './route-access'
 import {
+  homeRouteDestination,
   prepareGeneratedRoute,
   resolveRegisteredDestination,
   routeDestination,
@@ -472,6 +483,16 @@ export function isRouterNavigationCurrent(router: Router, navigationId: string):
   )
 }
 
+const routerNavigationPendingKey: InjectionKey<Readonly<Ref<boolean>>> = Symbol(
+  'Router Navigation Pending',
+)
+
+export function useRouterNavigationPending(): Readonly<Ref<boolean>> {
+  const pending = inject(routerNavigationPendingKey)
+  if (pending === undefined) throw new Error('The Router navigation state is unavailable.')
+  return pending
+}
+
 export interface RouterNavigationRequest {
   readonly kind: 'accepted'
   readonly navigationId: string
@@ -618,6 +639,8 @@ export async function createAndReadyRouter(input: {
   let pendingRefresh: ScrollRefreshSnapshot | undefined
   let disconnectRefreshScroll: (() => void) | undefined
   let latestNavigationResult: TypedNavigationResult | undefined
+  const navigationPending = shallowRef(false)
+  input.application.provide(routerNavigationPendingKey, shallowReadonly(navigationPending))
   let operation: NavigationOperation | undefined
   let nativeOperation: NavigationOperation | undefined
   let committedEntry: CommittedEntry | undefined
@@ -849,11 +872,15 @@ export async function createAndReadyRouter(input: {
         settled = true
         if (operation === next && result.kind !== 'allow') pendingRefresh = undefined
         next.result = result
-        if (operation === next && result.kind !== 'duplicated') latestNavigationResult = result
+        if (operation === next) {
+          navigationPending.value = false
+          if (result.kind !== 'duplicated') latestNavigationResult = result
+        }
         resolveCompletion(result)
       },
     }
     operation = next
+    navigationPending.value = applicationMounted
     return next
   }
 
@@ -1843,7 +1870,7 @@ export async function createAndReadyRouter(input: {
 
   function showSafeTitle(translate = localization?.t): void {
     document.title = [
-      getRoutePresentation('workbench-welcome', translate).title,
+      getRoutePresentation(homeRouteDestination.name, translate).title,
       input.configuration.presentation?.name,
     ]
       .filter(Boolean)
@@ -1879,7 +1906,7 @@ export async function createAndReadyRouter(input: {
         (previous === undefined
           ? undefined
           : resolveRegisteredDestination(router, previous.destination)) ??
-        router.resolve({ name: 'workbench-welcome' })
+        router.resolve(homeRouteDestination)
       const request = beginOperation('replace', target.fullPath)
       request.accessFallback = true
       if (
@@ -2068,7 +2095,7 @@ export async function createAndReadyRouter(input: {
         request.access = undefined
         const safe =
           request.accessFallback === true
-            ? 'workbench-welcome'
+            ? homeRouteDestination.name
             : getErrorRouteName(
                 outcome === 'identity-required'
                   ? '401'
@@ -2383,6 +2410,9 @@ export async function createAndReadyRouter(input: {
     dispose,
   }
   try {
+    if (!isPublicRouteName(homeRouteDestination.name)) {
+      throw new TypeError(`The home route must be public: ${homeRouteDestination.name}`)
+    }
     input.application.use(router)
     await router.isReady()
     routerReady = true

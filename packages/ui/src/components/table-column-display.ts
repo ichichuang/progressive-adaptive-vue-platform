@@ -2,7 +2,7 @@ import { formatUiDateTime, type UiDateTimeContext } from '../date-time/date-time
 import type { UiTableColumn } from './table-contracts'
 import type { UiFormValue } from './form-contracts'
 
-/** Declarative labels are presentation only; sorting, filtering and exports retain raw values. */
+/** Labels format cells; structured filters, comparators and exports retain the underlying value. */
 export function resolveTableColumnDisplay(
   column: UiTableColumn,
   value: UiFormValue | undefined,

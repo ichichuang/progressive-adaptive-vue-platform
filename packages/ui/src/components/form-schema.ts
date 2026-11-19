@@ -1,6 +1,7 @@
 import { richTextTools, parseRichTextDocument } from './rich-text-document'
 import {
   createConfigurationInspection,
+  failedConfigurationInspection,
   type UiConfigurationInspection,
 } from './configuration-inspection'
 import type { UiFormCondition, UiFormNode, UiFormReference, UiFormSchema } from './form-contracts'
@@ -24,7 +25,7 @@ export function inspectUiFormSchema(input: unknown): UiConfigurationInspection {
     })
     return { valid: true, issue: null, hints }
   } catch (cause) {
-    return { valid: false, issue: cause instanceof Error ? cause.message : String(cause), hints }
+    return failedConfigurationInspection(cause, hints)
   }
 }
 function parseConfiguration(
@@ -36,7 +37,7 @@ function parseConfiguration(
   collect?.(inspection.hints)
   const { record, keys, error } = inspection
   function text(value: unknown): void {
-    if (typeof value !== 'string') throw error('Expected form text.')
+    if (typeof value !== 'string') throw error('Expected form text.', 'text')
   }
   function path(value: unknown): void {
     text(value)
@@ -88,11 +89,11 @@ function parseConfiguration(
       !Number.isFinite(value) ||
       (integer && (!Number.isInteger(value) || value < 0))
     )
-      throw error('Invalid form numeric configuration.')
+      throw error('Invalid form numeric configuration.', 'bounds')
   }
   let count = 0
   function fields(value: unknown): void {
-    if (!Array.isArray(value)) throw error('Form fields must be an array.')
+    if (!Array.isArray(value)) throw error('Form fields must be an array.', 'fields')
     const names = new Set<string>()
     for (const raw of value) {
       if (++count > 1000) throw error('Too many configured form nodes.')
@@ -114,7 +115,9 @@ function parseConfiguration(
         /^\d+$/u.test(node['name'] as string) ||
         names.has(node['name'] as string)
       )
-        throw error('Form node names must be unique local keys.')
+        throw error('Form node names must be unique local keys.', 'fieldName', [
+          node['name'] as string,
+        ])
       names.add(node['name'] as string)
       text(node['label'])
       if (node['description'] !== undefined) text(node['description'])
@@ -139,7 +142,7 @@ function parseConfiguration(
           typeof node['maxItems'] === 'number' &&
           node['minItems'] > node['maxItems']
         )
-          throw error('Invalid repeat bounds.')
+          throw error('Invalid repeat bounds.', 'bounds')
         for (const key of ['addLabel', 'itemLabel']) if (node[key] !== undefined) text(node[key])
         continue
       }
@@ -198,7 +201,7 @@ function parseConfiguration(
         number(node['min'])
         number(node['max'])
         if ((node['min'] as number) >= (node['max'] as number))
-          throw error('A slider requires increasing bounds.')
+          throw error('A slider requires increasing bounds.', 'bounds')
       }
       if (kind === 'rating') {
         if (node['count'] !== undefined) {
@@ -277,7 +280,7 @@ function parseConfiguration(
         typeof node['max'] === 'number' &&
         node['min'] > node['max']
       )
-        throw error('Invalid number bounds.')
+        throw error('Invalid number bounds.', 'bounds')
       if (
         kind === 'select' ||
         kind === 'multi-select' ||
@@ -295,7 +298,7 @@ function parseConfiguration(
               (typeof option['value'] !== 'string' && typeof option['value'] !== 'number') ||
               identities.has(option['value'])
             )
-              throw error('Invalid or duplicate option identity.')
+              throw error('Invalid or duplicate option identity.', 'option')
             identities.add(option['value'])
             if (option['disabled'] !== undefined && typeof option['disabled'] !== 'boolean')
               throw error('Invalid option state.')
@@ -327,7 +330,7 @@ function parseConfiguration(
             typeof rules['maxLength'] === 'number' &&
             rules['minLength'] > rules['maxLength'])
         )
-          throw error('Invalid validation bounds.')
+          throw error('Invalid validation bounds.', 'bounds')
         if (
           kind !== 'number' &&
           kind !== 'slider' &&
@@ -382,17 +385,23 @@ function parseConfiguration(
       const local = new Set<string>()
       for (const fieldName of step['fields']) {
         text(fieldName)
-        if (local.has(fieldName as string)) throw error('Duplicate field in a form step.')
+        if (local.has(fieldName as string))
+          throw error('Duplicate field in a form step.', 'stepField', [String(fieldName)])
         local.add(fieldName as string)
         if (!topLevelNames.has(fieldName as string))
-          throw error(`Unknown form step field: ${String(fieldName)}`)
+          throw error(`Unknown form step field: ${String(fieldName)}`, 'reference', [
+            String(fieldName),
+          ])
         if (claimed.has(fieldName as string))
-          throw error(`Form step field claimed twice: ${String(fieldName)}`)
+          throw error(`Form step field claimed twice: ${String(fieldName)}`, 'stepField', [
+            String(fieldName),
+          ])
         claimed.add(fieldName as string)
       }
     }
     for (const name of topLevelNames)
-      if (!claimed.has(name)) throw error(`Form field missing from steps: ${name}`)
+      if (!claimed.has(name))
+        throw error(`Form field missing from steps: ${name}`, 'stepField', [name])
   }
   const declarations: { node: UiFormNode; path: string; group: string }[] = []
   function declare(nodes: readonly UiFormNode[], group = ''): void {
@@ -412,10 +421,10 @@ function parseConfiguration(
     let nodes = parsed.fields
     for (let index = 0; index < parts.length; index += 1) {
       const node = nodes.find((candidate) => candidate.name === parts[index])
-      if (node === undefined) throw error(`Unknown form dependency: ${path}`)
+      if (node === undefined) throw error(`Unknown form dependency: ${path}`, 'reference', [path])
       if (index === parts.length - 1) return
       if (node.kind !== 'group' && node.kind !== 'repeat')
-        throw error(`Unknown form dependency: ${path}`)
+        throw error(`Unknown form dependency: ${path}`, 'reference', [path])
       if (node.kind === 'repeat') {
         const position = parts[++index]
         if (
@@ -424,7 +433,7 @@ function parseConfiguration(
             (!/^(0|[1-9]\d*)$/u.test(position) || !Number.isSafeInteger(Number(position)))) ||
           index === parts.length - 1
         )
-          throw error(`Invalid repeat dependency: ${path}`)
+          throw error(`Invalid repeat dependency: ${path}`, 'reference', [path])
       }
       nodes = node.fields
     }

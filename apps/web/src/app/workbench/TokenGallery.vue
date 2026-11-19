@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { TokenName } from '@platform/design-system'
 import { useConsoleI18n } from '../../shared/i18n'
 import TokenSpecimen from './TokenSpecimen.vue'
+import WorkbenchSection from './WorkbenchSection.vue'
 
 const props = defineProps<{ readonly names: readonly TokenName[]; readonly label: string }>()
 const { t } = useConsoleI18n()
@@ -145,17 +146,14 @@ const groups = computed(() => {
 </script>
 <template>
   <div
-    class="wb-page grid min-w-0"
+    class="grid min-w-0 gap-field-gap"
     :aria-label="label"
   >
-    <section
+    <WorkbenchSection
       v-for="{ group, parts } in groups"
       :key="group"
-      class="grid min-w-0 gap-content-gap"
+      :title="t(groupLabels[group])"
     >
-      <h2 class="font-title-weight m-0 text-subheading text-text-primary">
-        {{ t(groupLabels[group]) }}
-      </h2>
       <section
         v-for="{ subgroup, names: groupedNames } in parts"
         :key="subgroup ?? group"
@@ -169,13 +167,23 @@ const groups = computed(() => {
           {{ t(subgroupLabels[subgroup]) }}
         </h3>
         <div
-          class="wb-specimen-grid grid items-start gap-content-gap"
+          class="wb-specimen-grid grid min-w-0 gap-content-gap"
           :class="{
+            'wb-color-specimen-grid':
+              group === 'surfaces' ||
+              group === 'status' ||
+              group === 'expression' ||
+              group === 'categorical' ||
+              group === 'foregrounds',
             'layout-regular:grid-cols-2 layout-wide:grid-cols-3': group === 'surfaces',
             'layout-regular:grid-cols-3 layout-wide:grid-cols-3':
-              group === 'status' || group === 'expression' || group === 'categorical',
-            'grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2':
-              group === 'typeSize' || group === 'typeStyle',
+              group === 'status' ||
+              group === 'expression' ||
+              group === 'categorical' ||
+              group === 'controls',
+            'grid-cols-1 layout-regular:grid-cols-2': group === 'typeSize' || group === 'typeStyle',
+            'layout-wide:grid-cols-3': subgroup === 'fontStyle',
+            'layout-wide:grid-cols-2': group === 'typeSize' || subgroup === 'lineHeight',
           }"
         >
           <TokenSpecimen
@@ -185,6 +193,6 @@ const groups = computed(() => {
           />
         </div>
       </section>
-    </section>
+    </WorkbenchSection>
   </div>
 </template>

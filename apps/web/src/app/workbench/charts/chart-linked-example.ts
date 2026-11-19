@@ -201,12 +201,15 @@ export function linkedChartOptions(
       encode: { x: 'hour', y: 'value', color: 'name', key: 'key', shape: 'smooth' },
       scale: {
         ...scale,
-        x: { type: 'linear', domain: [...range], nice: false, tickCount: 5 },
+        x: { type: 'linear', domain: [...range], nice: false },
         y: { domain: [0, 200], nice: false },
       },
       axis: {
         x: {
           title: false,
+          tickCount: 4,
+          labelAutoRotate: false,
+          labelAutoHide: true,
           labelFormatter: (hour: number) =>
             `${String(Math.floor(hour / 24) + 1)} / ${String(Math.round(hour) % 24).padStart(2, '0')}:00`,
         },
@@ -219,7 +222,10 @@ export function linkedChartOptions(
       data: [...totals].sort((a, b) => b.value - a.value),
       coordinate: { transform: [{ type: 'transpose' }] },
       encode: { x: 'name', y: 'value', color: 'name', key: 'key' },
-      axis: { x: { title: false }, y: { title: false } },
+      axis: {
+        x: { title: false },
+        y: { title: false, tickCount: 2, labelAutoRotate: false, labelAutoHide: true },
+      },
       labels: [{ text: 'value', position: 'inside', style: { textAlign: 'right' } }],
     },
     composition: {

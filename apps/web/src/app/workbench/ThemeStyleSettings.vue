@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, type ButtonHTMLAttributes } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import {
   colorStyleIds,
@@ -9,11 +9,12 @@ import {
   type UiAppearanceSnapshot,
 } from '@platform/design-system'
 import { useConsoleI18n } from '../../shared/i18n'
+
 const props = defineProps<{
   readonly modelValue: ColorStyle
   readonly appearance: Readonly<UiAppearanceSnapshot>
   readonly disabled?: boolean
-  readonly previewOnly?: boolean
+  readonly labelledBy: string
 }>()
 const emit = defineEmits<{ 'update:modelValue': [value: ColorStyle] }>()
 const { t } = useConsoleI18n()
@@ -32,12 +33,11 @@ const labels = {
   'dark-frame': 'settings.styles.dark-frame',
   'brand-frame': 'settings.styles.brand-frame',
   'soft-frame': 'settings.styles.soft-frame',
+  monochrome: 'settings.styles.monochrome',
 } as const
-const options = computed(() =>
-  colorStyleIds
-    .filter((value) => !props.previewOnly || value === props.modelValue)
-    .map((value) => ({ value, label: t(labels[value]) })),
-)
+const options = computed(() => colorStyleIds.map((value) => ({ value, label: t(labels[value]) })))
+const choiceLayout = { paddingMedium: 'var(--ui-space-content-gap)' }
+
 function previewStyle(style: ColorStyle): Record<string, string> {
   const snapshot = { ...props.appearance, colorStyle: style }
   const sidebar = projectRegionAppearance(snapshot, 'sidebar')
@@ -79,97 +79,77 @@ function moveFocus(event: KeyboardEvent): void {
   event.preventDefault()
   options[(current + direction + options.length) % options.length]?.focus()
 }
-
-function choose(style: ColorStyle): void {
-  if (!props.previewOnly) emit('update:modelValue', colorStyleSchema.parse(style))
-}
 </script>
 <template>
   <div
-    :class="
-      previewOnly
-        ? 'theme-style-summary grid min-w-0 justify-items-start gap-component-unit'
-        : 'theme-style-gallery grid min-w-0 gap-component-unit'
-    "
-    :role="previewOnly ? undefined : 'group'"
-    :aria-label="previewOnly ? undefined : t('settings.styles.title')"
-    :data-style-gallery="previewOnly ? undefined : ''"
+    class="theme-style-gallery grid grid-cols-2 min-w-0 gap-content-gap layout-regular:grid-cols-4 layout-wide:grid-cols-4"
+    role="group"
+    :aria-labelledby="labelledBy"
+    data-style-gallery
   >
-    <template
+    <NButton
       v-for="option in options"
       :key="option.value"
+      class="theme-style-choice min-w-0 min-h-target-enhanced"
+      attr-type="button"
+      block
+      :bordered="false"
+      :type="option.value === modelValue ? 'primary' : 'default'"
+      :secondary="option.value === modelValue"
+      :quaternary="option.value !== modelValue"
+      :disabled="disabled"
+      :theme-overrides="choiceLayout"
+      v-bind="
+        {
+          'aria-label': option.label,
+          'aria-pressed': option.value === modelValue,
+          title: option.label,
+          tabindex: option.value === focusedStyle ? 0 : -1,
+          onFocus: () => {
+            focusedStyle = option.value
+          },
+          onKeydown: moveFocus,
+        } satisfies ButtonHTMLAttributes
+      "
+      data-style-choice
+      data-settings-control
+      @click="emit('update:modelValue', colorStyleSchema.parse(option.value))"
     >
-      <component
-        :is="previewOnly ? 'span' : NButton"
-        :class="{
-          'theme-style-current shrink-0': previewOnly,
-          'theme-style-choice': !previewOnly,
-          'min-w-0 cursor-pointer': !previewOnly,
-        }"
-        :attr-type="previewOnly ? undefined : 'button'"
-        :text="previewOnly ? undefined : true"
-        :block="previewOnly ? undefined : true"
-        :disabled="previewOnly ? undefined : disabled"
-        :aria-pressed="previewOnly ? undefined : option.value === modelValue"
-        :aria-hidden="previewOnly ? 'true' : undefined"
-        :tabindex="previewOnly ? undefined : option.value === focusedStyle ? 0 : -1"
-        :data-style-choice="previewOnly ? undefined : ''"
-        :data-current-style="!previewOnly && option.value === modelValue ? '' : undefined"
-        @focus="focusedStyle = option.value"
-        @keydown="moveFocus"
-        @click="choose(option.value)"
-      >
+      <span class="theme-style-card grid min-w-0">
         <span
-          class="theme-style-card grid min-w-0 whitespace-normal break-words gap-component-unit"
+          class="theme-style-scene rounded-control"
+          :style="previewStyle(colorStyleSchema.parse(option.value))"
+          :data-pavp-monochrome="option.value === 'monochrome' ? '' : undefined"
+          aria-hidden="true"
         >
-          <span
-            class="theme-style-scene rounded-control"
-            :style="previewStyle(colorStyleSchema.parse(option.value))"
-            aria-hidden="true"
-          >
-            <span class="theme-style-header"><i /><i /><i /></span>
-            <span class="theme-style-sidebar">
-              <b><em /></b>
-              <i />
-              <i />
-              <i />
-            </span>
-            <span class="theme-style-tabs">
-              <b><em /></b>
-              <i />
-            </span>
-            <span class="theme-style-content">
-              <span class="theme-style-metric" />
-              <span class="theme-style-metric" />
-              <span class="theme-style-panel">
-                <i />
-                <i />
-                <b><em /></b>
-              </span>
-            </span>
+          <span class="theme-style-header"><i /><i /><i /></span>
+          <span class="theme-style-sidebar">
+            <b><em /></b>
+            <i />
+            <i />
+            <i />
           </span>
-          <span
-            v-if="!previewOnly"
-            class="text-center"
-          >
-            {{ option.label }}
+          <span class="theme-style-tabs">
+            <b><em /></b>
+            <i />
+          </span>
+          <span class="theme-style-content">
+            <span class="theme-style-metric" />
+            <span class="theme-style-metric" />
+            <span class="theme-style-panel">
+              <i />
+              <i />
+              <b><em /></b>
+            </span>
           </span>
         </span>
-      </component>
-      <slot
-        v-if="previewOnly"
-        name="preview-label"
-        :label="option.label"
-      />
-    </template>
+      </span>
+    </NButton>
   </div>
 </template>
 <style scoped>
 .theme-style-card {
   width: 100%;
-}
-.theme-style-current {
-  max-inline-size: 100%;
 }
 .theme-style-choice[data-style-choice] {
   display: grid;
@@ -177,23 +157,10 @@ function choose(style: ColorStyle): void {
   block-size: auto;
   min-inline-size: 0;
   white-space: normal;
-  padding: var(--ui-space-component-unit);
   border-radius: var(--ui-radius-control);
-  border-width: var(--ui-border-width);
-  border-style: solid;
-  border-color: var(--ui-color-border-default);
-  background-color: var(--ui-color-surface-page);
-}
-.theme-style-choice[data-style-choice][aria-pressed='true'] {
-  border-color: currentColor;
-  background-color: var(--ui-color-surface-panel);
-}
-.theme-style-choice[data-style-choice]:not(:disabled):hover {
-  color: var(--ui-color-control-primary);
 }
 @media (forced-colors: active) {
   .theme-style-choice[data-style-choice][aria-pressed='true'] {
-    border-color: Highlight;
     background-color: Highlight;
     color: HighlightText;
     forced-color-adjust: none;
@@ -203,11 +170,6 @@ html[data-pavp-settings-appearance~='fill']
   .theme-style-gallery
   .theme-style-choice[data-style-choice][aria-pressed='true'] {
   transition: background-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing) !important;
-}
-html[data-pavp-settings-appearance~='edge']
-  .theme-style-gallery
-  .theme-style-choice[data-style-choice][aria-pressed='false'] {
-  transition: border-color var(--pavp-settings-appearance-duration) var(--ui-motion-easing) !important;
 }
 html[data-pavp-settings-appearance]
   :is(.theme-style-tabs, .theme-style-content, .theme-style-metric, .theme-style-panel) {

@@ -1,5 +1,6 @@
 import {
   createConfigurationInspection,
+  failedConfigurationInspection,
   type UiConfigurationInspection,
 } from './configuration-inspection'
 import { cloneDraft, freezeDraftValue } from '../composables/form-draft-values'
@@ -23,7 +24,7 @@ export function inspectUiTableSchema(input: unknown): UiConfigurationInspection 
     })
     return { valid: true, issue: null, hints }
   } catch (cause) {
-    return { valid: false, issue: cause instanceof Error ? cause.message : String(cause), hints }
+    return failedConfigurationInspection(cause, hints)
   }
 }
 function parseConfiguration(
@@ -35,12 +36,13 @@ function parseConfiguration(
   collect?.(inspection.hints)
   const { record, keys, error } = inspection
   function text(value: unknown): void {
-    if (typeof value !== 'string' || !value.trim()) throw error('Expected nonempty table text.')
+    if (typeof value !== 'string' || !value.trim())
+      throw error('Expected nonempty table text.', 'text')
   }
   const choice = inspection.choice
   function integer(value: unknown, minimum: number): void {
     if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < minimum)
-      throw error('Invalid table numeric bounds.')
+      throw error('Invalid table numeric bounds.', 'bounds')
   }
   const schema = record(cloned)
   keys(schema, [
@@ -109,7 +111,7 @@ function parseConfiguration(
 
   const columns = schema['columns']
   if (!Array.isArray(columns) || columns.length === 0)
-    throw error('A table requires configured columns.')
+    throw error('A table requires configured columns.', 'columns')
   const columnKeys = new Set<string>()
   for (const raw of columns) {
     const column = record(raw)
@@ -134,7 +136,7 @@ function parseConfiguration(
     ])
     tablePathParts(column['key'])
     const key = column['key'] as string
-    if (columnKeys.has(key)) throw error('Table column keys must be unique.')
+    if (columnKeys.has(key)) throw error('Table column keys must be unique.', 'columnKey', [key])
     columnKeys.add(key)
     text(column['title'])
     if (column['sortComparator'] !== undefined) {
@@ -197,7 +199,7 @@ function parseConfiguration(
           ) ||
           values.has(value)
         )
-          throw error('Table options require unique scalar values.')
+          throw error('Table options require unique scalar values.', 'option')
         values.add(value)
         text(option['label'])
         if (option['tone'] !== undefined)
@@ -216,12 +218,12 @@ function parseConfiguration(
     const maximum = column['maxWidth'] as number | undefined
     const width = column['width'] as number | undefined
     if (minimum !== undefined && maximum !== undefined && minimum > maximum)
-      throw error('Table column minWidth must not exceed maxWidth.')
+      throw error('Table column minWidth must not exceed maxWidth.', 'bounds')
     if (
       width !== undefined &&
       ((minimum !== undefined && width < minimum) || (maximum !== undefined && width > maximum))
     )
-      throw error('Table column width must be within its bounds.')
+      throw error('Table column width must be within its bounds.', 'bounds')
     if (column['fixed'] !== undefined) choice(column, 'fixed', ['left', 'right'])
     for (const flag of ['sortable', 'hidden', 'resizable'])
       if (column[flag] !== undefined && typeof column[flag] !== 'boolean')

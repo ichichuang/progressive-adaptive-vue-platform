@@ -114,7 +114,7 @@ const reading = computed(() => guarded.fieldStatus('title', 'read') === 'allow')
 
 <template>
   <div class="grid gap-content-gap">
-    <div class="gap-control flex flex-wrap">
+    <div class="flex flex-wrap gap-content-gap">
       <NButton @click="() => void read.run({ id: recordId })">
         {{ say('Read confirmed data', '读取确认数据') }}
       </NButton>
