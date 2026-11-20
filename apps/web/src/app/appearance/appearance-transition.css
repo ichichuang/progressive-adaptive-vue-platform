@@ -52,6 +52,56 @@
     );
   }
 
+  /* A typed document view transition shows the previous state as a capture while the live
+     page animates in from the activation point. The old image stays put; the new is clipped. */
+  :root:active-view-transition-type(pavp-appearance)::view-transition {
+    pointer-events: none;
+  }
+
+  :root:active-view-transition-type(pavp-appearance)::view-transition-group(root) {
+    animation: none;
+  }
+
+  :root:active-view-transition-type(pavp-appearance)::view-transition-old(root) {
+    animation: none;
+  }
+
+  :root:active-view-transition-type(pavp-appearance)::view-transition-new(root) {
+    animation: var(--pavp-appearance-duration) var(--pavp-appearance-easing) both;
+  }
+
+  :root:active-view-transition-type(pavp-appearance-mode)::view-transition-new(root) {
+    animation-name: pavp-appearance-mode-reveal;
+  }
+
+  :root:active-view-transition-type(pavp-appearance-palette)::view-transition-new(root) {
+    animation-name: pavp-appearance-palette-reveal;
+  }
+
+  @keyframes pavp-appearance-mode-reveal {
+    from {
+      clip-path: circle(0px at var(--pavp-appearance-origin));
+    }
+
+    to {
+      clip-path: circle(var(--pavp-appearance-radius) at var(--pavp-appearance-origin));
+    }
+  }
+
+  @keyframes pavp-appearance-palette-reveal {
+    from {
+      clip-path: var(--pavp-appearance-shape);
+    }
+
+    50% {
+      clip-path: var(--pavp-appearance-shape-mid);
+    }
+
+    to {
+      clip-path: var(--pavp-appearance-shape-end);
+    }
+  }
+
   @media (forced-colors: active) {
     #pavp-appearance-surface {
       visibility: hidden;

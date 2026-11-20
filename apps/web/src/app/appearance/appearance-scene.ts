@@ -1,3 +1,5 @@
+export const themePickerSelector = '.pavp-admin-shell__theme-picker-popover'
+
 /** A passive copy of the painted application, isolated from live IDs, forms and theme selectors. */
 export function captureAppearanceScene(surface: HTMLElement) {
   const app = surface.closest<HTMLElement>('#app')
@@ -12,6 +14,10 @@ export function captureAppearanceScene(surface: HTMLElement) {
   // Embedded browsing contexts and media must not start a second application or playback.
   for (const embed of content.querySelectorAll('script, iframe, object, embed, audio, video')) {
     embed.remove()
+  }
+  // The live picker stays interactive above the reveal, including while it opens or closes.
+  for (const popup of content.querySelectorAll(themePickerSelector)) {
+    popup.remove()
   }
   const scrollSelector = '.pavp-scroll-area__viewport, textarea'
   const offsets = Array.from(
@@ -70,72 +76,58 @@ export function mountAppearanceScene(surface: HTMLElement): HTMLIFrameElement {
   return frame
 }
 
-/** A picker opened or dismissed during a reveal must be visible exactly where it accepts input. */
-export function trackAppearancePicker(surface: HTMLElement, signal: AbortSignal): () => void {
+/** Expose the live picker through the passive reveal so its input and paint stay together. */
+export function trackAppearancePicker(surface: HTMLElement, signal: AbortSignal): void {
   const overlays = document.getElementById('pavp-overlay-root')
-  if (!overlays) return () => undefined
-  const following = new WeakSet<Element>()
-  const picker = (root: ParentNode) =>
-    root.querySelector('[data-pavp-quick-theme]')?.closest('[role="dialog"]')
-  const visible = (dialog: Element | null | undefined) => Boolean(dialog?.getClientRects().length)
-  let motionFrame: number | undefined
-  const sync = (updateHost = true) => {
-    const liveDialog = picker(overlays)
-    const entering = liveDialog?.querySelector<HTMLElement>(':scope > div')
-    for (const frame of surface.querySelectorAll('iframe')) {
-      const doc = frame.contentDocument
-      if (!doc) continue
-      let paintedDialog = picker(doc)
-      const id = (liveDialog ?? paintedDialog)?.closest('#pavp-overlay-root > [id]')?.id
-      if (!id) continue
-      const paintedHost = doc.getElementById(id)
-      const liveHost = document.getElementById(id)
-      if (!paintedHost || !liveHost) continue
-      if (
-        updateHost &&
-        (following.has(paintedHost) || visible(liveDialog) !== visible(paintedDialog))
-      ) {
-        // Keep existing old/new colors until the user actually changes the open state.
-        following.add(paintedHost)
-        paintedHost.replaceChildren(
-          ...Array.from(liveHost.children, (node) => doc.importNode(node, true)),
-        )
-        paintedDialog = picker(paintedHost)
-      }
-      const painted = paintedDialog?.querySelector<HTMLElement>(':scope > div')
-      // cloneNode copies the entrance's inline opacity of zero, but not Motion's running animation.
-      if (painted && entering) {
-        const pose = getComputedStyle(entering)
-        painted.style.opacity = pose.opacity
-        painted.style.transform = pose.transform
-      }
-    }
-    if (
-      motionFrame === undefined &&
-      entering?.getAnimations().some((a) => a.playState === 'running')
-    ) {
-      motionFrame = requestAnimationFrame(() => {
-        motionFrame = undefined
-        sync(false)
-      })
-    }
+  if (!overlays) return
+  let frame = 0
+  function clearOpening(): void {
+    surface.style.clipPath = ''
   }
-  const observer = new MutationObserver(() => {
-    sync()
-  })
+  function sync(): void {
+    frame = 0
+    const popup = overlays?.querySelector<HTMLElement>(themePickerSelector)
+    const box = popup?.getBoundingClientRect()
+    if (!popup || !box?.width || !box.height) {
+      clearOpening()
+      return
+    }
+    const { left, top, right, bottom, width, height } = box
+    const radius = Math.min(
+      parseFloat(getComputedStyle(popup).borderTopLeftRadius) || 0,
+      width / 2,
+      height / 2,
+    )
+    const viewport = `M0 0 H${String(window.innerWidth)} V${String(window.innerHeight)} H0 Z`
+    const point = (x: number, y: number) => `${String(x)} ${String(y)}`
+    const opening = [
+      `M${point(left + radius, top)} H${String(right - radius)}`,
+      `Q${point(right, top)} ${point(right, top + radius)} V${String(bottom - radius)}`,
+      `Q${point(right, bottom)} ${point(right - radius, bottom)} H${String(left + radius)}`,
+      `Q${point(left, bottom)} ${point(left, bottom - radius)} V${String(top + radius)}`,
+      `Q${point(left, top)} ${point(left + radius, top)} Z`,
+    ].join(' ')
+    surface.style.clipPath = `path(evenodd, "${viewport} ${opening}")`
+    if (popup.getAnimations().some((animation) => animation.playState === 'running')) queue()
+  }
+  function queue(): void {
+    if (!frame) frame = requestAnimationFrame(sync)
+  }
+  const observer = new MutationObserver(queue)
   observer.observe(overlays, {
     childList: true,
     subtree: true,
     attributes: true,
     attributeFilter: ['class', 'style'],
   })
+  sync()
   signal.addEventListener(
     'abort',
     () => {
       observer.disconnect()
-      if (motionFrame !== undefined) cancelAnimationFrame(motionFrame)
+      cancelAnimationFrame(frame)
+      clearOpening()
     },
     { once: true },
   )
-  return sync
 }

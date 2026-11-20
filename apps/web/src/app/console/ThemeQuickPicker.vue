@@ -204,6 +204,7 @@ function choose(theme: AppearanceThemePreviewProjection, event: MouseEvent): voi
       class="theme-quick-choices grid gap-component-unit"
       role="group"
       :aria-label="t('shell.themePickerLabel')"
+      @pointerleave="hovered = null"
     >
       <NButton
         v-for="theme in themes"
@@ -214,9 +215,6 @@ function choose(theme: AppearanceThemePreviewProjection, event: MouseEvent): voi
             'aria-pressed': selected(theme),
             onMouseenter: () => {
               hovered = theme
-            },
-            onMouseleave: () => {
-              if (hovered === theme) hovered = null
             },
             onFocus: (event: FocusEvent) => {
               focusPreview(theme, event)
@@ -308,23 +306,24 @@ function choose(theme: AppearanceThemePreviewProjection, event: MouseEvent): voi
 .theme-quick-choice-content {
   padding: var(--ui-space-component-unit);
   pointer-events: none;
-  transition: transform var(--ui-motion-duration) var(--ui-motion-easing);
 }
 .theme-quick-palette {
+  transition: transform var(--ui-motion-duration) var(--ui-motion-easing);
   inline-size: calc(
     var(--ui-layout-target-enhanced-minimum-inline-size) - var(--ui-space-component-unit) * 2
   );
   block-size: auto;
 }
-.theme-quick-scene * {
+.theme-quick-scene *,
+.theme-quick-palette * {
   transition:
     fill var(--ui-motion-duration) var(--ui-motion-easing),
     stroke var(--ui-motion-duration) var(--ui-motion-easing);
 }
 /* Move the artwork, not the button hit area or its focus outline. */
 html[data-motion='full']
-  .theme-quick-choice:is(:hover, :focus-visible)
-  .theme-quick-choice-content {
-  transform: translateY(calc(var(--ui-space-component-unit) * -1));
+  .theme-quick-choice:enabled:is(:hover, :focus-visible):not(:active)
+  .theme-quick-palette {
+  transform: translateY(calc(var(--ui-space-component-unit) / -2));
 }
 </style>

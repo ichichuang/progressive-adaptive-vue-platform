@@ -4,6 +4,7 @@ import { nextTick } from 'vue'
 import {
   captureAppearanceScene,
   mountAppearanceScene,
+  themePickerSelector,
   trackAppearancePicker,
 } from './appearance-scene'
 import { jsonValuesEqual } from './appearance-value-equality'
@@ -33,6 +34,12 @@ interface AppearanceFrame {
   readonly dispose: () => void
 }
 
+const modeRevealDurationMs = 640
+const paletteFissureDurationMs = 800
+const modeRevealEasing = 'cubic-bezier(0.22,0.72,0.24,1)'
+const paletteFissureEasing = 'cubic-bezier(0.30,0.25,0.26,1)'
+let nextModeChangeAt = 0
+
 let activeFrame: AppearanceFrame | undefined
 let playRift: PlayRift | undefined
 
@@ -55,6 +62,9 @@ let settingsCleanup: ReturnType<typeof setTimeout> | undefined
 let settingsColorFrame: number | undefined
 
 export function finishSettingsAppearance(): void {
+  const reveal = activeReveal
+  activeReveal = undefined
+  reveal?.interrupt()
   if (!activeFrame && !settingsColorMotion) return
   activeFrame?.dispose()
   settingsColorMotion = undefined
@@ -62,6 +72,226 @@ export function finishSettingsAppearance(): void {
   if (settingsColorFrame !== undefined) cancelAnimationFrame(settingsColorFrame)
   settingsColorFrame = undefined
   document.documentElement.removeAttribute('data-pavp-settings-appearance')
+}
+
+type RevealKind = Extract<AppearanceTransitionKind, 'mode' | 'palette'>
+
+/** Typed view transitions namespace the reveal; the shared type also gates the supported path. */
+const appearanceTransitionTypes: Readonly<Record<RevealKind, readonly string[]>> = {
+  mode: ['pavp-appearance', 'pavp-appearance-mode'],
+  palette: ['pavp-appearance', 'pavp-appearance-palette'],
+}
+
+interface RevealControl {
+  interrupt(): void
+}
+
+let activeReveal: RevealControl | undefined
+
+function revealRadius(width: number, height: number, x: number, y: number): number {
+  return Math.ceil(Math.hypot(Math.max(x, width - x), Math.max(y, height - y))) + 1
+}
+
+function typedAppearanceViewTransitions(): boolean {
+  return (
+    typeof CSS !== 'undefined' &&
+    typeof CSS.supports === 'function' &&
+    CSS.supports('selector(:active-view-transition-type(pavp-appearance))')
+  )
+}
+
+function viewTransitionRevealAvailable(previous: Snapshot, surface: HTMLElement | null): boolean {
+  return (
+    previous.motion === 'full' &&
+    document.visibilityState === 'visible' &&
+    !document.activeViewTransition &&
+    document.querySelector('[data-pavp-route-transition-direction]') === null &&
+    typeof document.startViewTransition === 'function' &&
+    typedAppearanceViewTransitions() &&
+    surface !== null &&
+    // Forced colors hide the appearance surface; the same probe keeps the reveal out of that mode.
+    getComputedStyle(surface).visibility !== 'hidden'
+  )
+}
+
+/** The route content owns the 'root' name for its scoped transition; a document capture needs it unique. */
+function writeRouteRootName(element: HTMLElement, value: string, priority?: string): void {
+  element.style.setProperty('view-transition-name', value, priority)
+}
+
+function suspendRouteRootNames(): () => void {
+  const suspended: { element: HTMLElement; value: string; priority: string }[] = []
+  for (const element of document.querySelectorAll<HTMLElement>('[data-scroll-owner]')) {
+    if (getComputedStyle(element).viewTransitionName === 'none') continue
+    const value = element.style.getPropertyValue('view-transition-name')
+    const priority = element.style.getPropertyPriority('view-transition-name')
+    writeRouteRootName(element, 'none')
+    suspended.push({ element, value, priority })
+  }
+  if (suspended.length === 0) return () => undefined
+  return () => {
+    for (const { element, value, priority } of suspended) {
+      if (value) writeRouteRootName(element, value, priority)
+      else element.style.removeProperty('view-transition-name')
+    }
+  }
+}
+
+function settleRevealPaint(): Promise<void> {
+  // Two frames let the committed tokens and the first retargeted chart paint land before the
+  // reveal opens; the timeout keeps a throttled document from stalling the DOM update.
+  return new Promise<void>((resolve) => {
+    let settled = false
+    const settle = (): void => {
+      if (settled) return
+      settled = true
+      resolve()
+    }
+    let frames = 0
+    const tick = (): void => {
+      frames += 1
+      if (frames >= 2) settle()
+      else requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+    setTimeout(settle, 120)
+  })
+}
+
+/** Hit-testing is suppressed during a view transition, so a picker press resolves geometrically. */
+function pickerButtonAt(x: number, y: number): HTMLElement | undefined {
+  const popup = document.querySelector(themePickerSelector)
+  if (typeof HTMLElement !== 'function' || !(popup instanceof HTMLElement)) return undefined
+  for (const button of popup.querySelectorAll<HTMLElement>('button')) {
+    const box = button.getBoundingClientRect()
+    if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) return button
+  }
+  return undefined
+}
+
+function playViewTransitionReveal(
+  kind: RevealKind,
+  input: {
+    readonly origin?: AppearanceTransitionOrigin | undefined
+    readonly commit: () => boolean
+  },
+): void {
+  const root = document.documentElement
+  finishSettingsAppearance()
+  const { innerWidth: width, innerHeight: height } = window
+  const x = Math.max(0, Math.min(width, input.origin?.x ?? width / 2))
+  const y = Math.max(0, Math.min(height, input.origin?.y ?? height / 2))
+  const contours = kind === 'palette' ? paletteFissure(width, height, x, y).page : []
+  root.style.setProperty('--pavp-appearance-origin', `${String(x)}px ${String(y)}px`)
+  root.style.setProperty(
+    '--pavp-appearance-radius',
+    `${String(revealRadius(width, height, x, y))}px`,
+  )
+  root.style.setProperty('--pavp-appearance-shape', contours[0] ?? '')
+  root.style.setProperty('--pavp-appearance-shape-mid', contours[1] ?? '')
+  root.style.setProperty('--pavp-appearance-shape-end', contours[2] ?? '')
+  root.style.setProperty(
+    '--pavp-appearance-duration',
+    `${String(kind === 'mode' ? modeRevealDurationMs : paletteFissureDurationMs)}ms`,
+  )
+  root.style.setProperty(
+    '--pavp-appearance-easing',
+    kind === 'mode' ? modeRevealEasing : paletteFissureEasing,
+  )
+  const restoreNames = suspendRouteRootNames()
+  const update = { attempted: false }
+  let press: { readonly button: HTMLElement; readonly x: number; readonly y: number } | undefined
+  let interrupt: () => void = () => {
+    // Assigned once the transition exists.
+  }
+  const control: RevealControl = {
+    interrupt: () => {
+      interrupt()
+    },
+  }
+  const listeners = new AbortController()
+  const onInterrupt = (): void => {
+    interrupt()
+  }
+  const onPress = (event: PointerEvent): void => {
+    if (event.button !== 0) return
+    const button = pickerButtonAt(event.clientX, event.clientY)
+    if (!button) return
+    press = { button, x: event.clientX, y: event.clientY }
+    onInterrupt()
+  }
+  const cleanup = (): void => {
+    if (activeReveal === control) activeReveal = undefined
+    listeners.abort()
+    root.style.removeProperty('--pavp-appearance-origin')
+    root.style.removeProperty('--pavp-appearance-radius')
+    root.style.removeProperty('--pavp-appearance-shape')
+    root.style.removeProperty('--pavp-appearance-shape-mid')
+    root.style.removeProperty('--pavp-appearance-shape-end')
+    root.style.removeProperty('--pavp-appearance-duration')
+    root.style.removeProperty('--pavp-appearance-easing')
+    restoreNames()
+  }
+  const replayPress = (): void => {
+    const held = press
+    press = undefined
+    if (!held?.button.isConnected) return
+    held.button.dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        clientX: held.x,
+        clientY: held.y,
+      }),
+    )
+  }
+  let transition: ViewTransition
+  try {
+    transition = document.startViewTransition({
+      update: async () => {
+        update.attempted = true
+        if (!input.commit()) {
+          onInterrupt()
+          return
+        }
+        if (kind === 'mode') nextModeChangeAt = performance.now() + modeRevealDurationMs
+        await settleRevealPaint()
+      },
+      types: [...appearanceTransitionTypes[kind]],
+    })
+  } catch {
+    // A document that refuses the transition still receives the preference directly.
+    cleanup()
+    if (!update.attempted) input.commit()
+    return
+  }
+  interrupt = () => {
+    try {
+      transition.skipTransition()
+    } catch {
+      // A finished or skipped transition no longer accepts input.
+    }
+  }
+  window.addEventListener('wheel', onInterrupt, { passive: true, signal: listeners.signal })
+  document.addEventListener('touchmove', onInterrupt, {
+    passive: true,
+    signal: listeners.signal,
+  })
+  if (kind === 'palette')
+    document.addEventListener('pointerdown', onPress, { capture: true, signal: listeners.signal })
+  activeReveal = control
+  transition.finished.then(
+    () => {
+      cleanup()
+      replayPress()
+    },
+    () => {
+      // A failed capture can retire the update before it ran; the choice still commits.
+      cleanup()
+      if (!update.attempted) input.commit()
+      replayPress()
+    },
+  )
 }
 
 function sameAppearance(left: Snapshot, right: Snapshot): boolean {
@@ -229,14 +459,9 @@ function presentAppearance(
     surface.showPopover()
     document.documentElement.setAttribute('data-pavp-settings-appearance', 'reveal')
     const signal = listeners.signal
-    const syncPicker = trackAppearancePicker(surface, signal)
-    const paint = (copy: Scene, frame: HTMLIFrameElement) => {
-      const page = copy(frame)
-      syncPicker()
-      return page
-    }
+    trackAppearancePicker(surface, signal)
     let base = mountAppearanceScene(surface)
-    let scene = paint(firstScene, base)
+    let scene = firstScene(base)
     let displayed = previous
     window.addEventListener('resize', operation.dispose, { signal })
     document.addEventListener('visibilitychange', operation.dispose, { signal })
@@ -249,21 +474,21 @@ function presentAppearance(
       if (!destination || stopped()) return
       if (start.kind === 'palette' && sameAppearance(displayed, start.target)) {
         // The live page has the latest selection. Only a following effect still needs its copy.
-        if (pending.length) scene = paint(destination, base)
+        if (pending.length) scene = destination(base)
         else operation.dispose()
         return start
       }
       const incoming = mountAppearanceScene(surface)
-      let newPage = paint(destination, incoming)
+      let newPage = destination(incoming)
       const { innerWidth: width, innerHeight: height } = window
       const x = Math.max(0, Math.min(width, start.origin?.x ?? width / 2))
       const y = Math.max(0, Math.min(height, start.origin?.y ?? height / 2))
-      const radius = Math.ceil(Math.hypot(Math.max(x, width - x), Math.max(y, height - y))) + 1
+      const radius = revealRadius(width, height, x, y)
       const at = `at ${String(x)}px ${String(y)}px`
       const fissure = start.kind === 'palette' ? paletteFissure(width, height, x, y) : undefined
       const timing: KeyframeAnimationOptions = fissure
-        ? { duration: 800, easing: 'cubic-bezier(0.30,0.25,0.26,1)', fill: 'both' }
-        : { duration: 640, easing: 'cubic-bezier(0.22,0.72,0.24,1)', fill: 'both' }
+        ? { duration: paletteFissureDurationMs, easing: paletteFissureEasing, fill: 'both' }
+        : { duration: modeRevealDurationMs, easing: modeRevealEasing, fill: 'both' }
       const wave = incoming.animate(
         { clipPath: fissure?.page ?? [`circle(0px ${at})`, `circle(${String(radius)}px ${at})`] },
         timing,
@@ -290,8 +515,8 @@ function presentAppearance(
         void next.scene
           .then((copy) => {
             if (!copy || stopped() || selected !== next || reveal !== wave) return
-            if (forward) newPage = paint(copy, incoming)
-            else scene = paint(copy, base)
+            if (forward) newPage = copy(incoming)
+            else scene = copy(base)
           })
           .catch(operation.dispose)
       }
@@ -335,7 +560,7 @@ function presentAppearance(
       const destination = await opening.scene
       if (!destination || stopped()) return
       rift.cancel()
-      scene = paint(destination, base)
+      scene = destination(base)
       rift = phase('enter', opening.target, opening)
       if ((await rift.finished).kind !== 'completed' || stopped()) return
       rift.cancel()
@@ -363,9 +588,15 @@ export function playAppearanceTransition(input: {
   readonly readSnapshot: () => Snapshot
   readonly commit: () => boolean
 }): void {
+  if (input.kind === 'mode' && performance.now() < nextModeChangeAt) return
   if (input.isCurrent?.()) return
   const previous = input.readSnapshot()
   const surface = document.getElementById('pavp-appearance-surface')
+  const revealKind = input.kind === 'mode' || input.kind === 'palette' ? input.kind : undefined
+  if (revealKind !== undefined && viewTransitionRevealAvailable(previous, surface)) {
+    playViewTransitionReveal(revealKind, input)
+    return
+  }
   const canPresent =
     previous.motion === 'full' &&
     document.visibilityState === 'visible' &&
@@ -385,6 +616,7 @@ export function playAppearanceTransition(input: {
     }
   }
   if (!input.commit()) return
+  if (input.kind === 'mode') nextModeChangeAt = performance.now() + modeRevealDurationMs
   const target = input.readSnapshot()
   if (surface && (initial || continuing) && target.motion === 'full') {
     const change = {

@@ -6761,9 +6761,12 @@ function routeTransitionSourceProofResults(
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_13_NATIVE_CALL_OWNER',
+      // The coordinator owns the element-scoped call; the appearance transition owns exactly
+      // one document-level typed call for its reveal. No other native call is admitted.
       passed:
-        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 1 &&
-        !snapshot.appearanceTransitionSource.includes('startViewTransition') &&
+        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 2 &&
+        count(snapshot.appearanceTransitionSource, /document\.startViewTransition\s*\(/gu) === 1 &&
+        !snapshot.appearanceTransitionSource.includes('element.startViewTransition') &&
         count(snapshot.coordinatorSource, /\.startViewTransition\s*\(/gu) === 1 &&
         !/document(?:\.documentElement)?\.startViewTransition|document\.documentElement/.test(
           snapshot.coordinatorSource,

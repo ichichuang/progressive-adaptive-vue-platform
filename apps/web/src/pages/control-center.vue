@@ -5,7 +5,6 @@ import {
   explicitThemePreferenceSchema,
   fontScaleValues,
   projectAccessibleCustomAppearanceThemePreviews,
-  projectRegionAppearance,
   type AppearanceThemePreviewProjection,
   type ColorStyle,
   type ColorModePreference,
@@ -310,21 +309,6 @@ const themeChoiceLayout = {
 const colorModeOptions = computed(() =>
   colorModes.map((mode) => ({ value: mode.value, label: t(mode.label) })),
 )
-const colorModeTheme = computed(() => {
-  const { roles } = projectRegionAppearance(effective.snapshot.value, 'content').appearance
-    .colorPalette
-  return {
-    buttonColor: roles.neutral.soft.background.default,
-    buttonTextColor: roles.neutral.soft.foreground,
-    buttonColorActive: roles.primary.soft.background.default,
-    buttonTextColorActive: roles.primary.soft.foreground,
-    buttonBorderColor: 'transparent',
-    buttonBorderColorActive: 'transparent',
-    buttonBorderColorHover: 'transparent',
-    buttonBoxShadow: 'none',
-    buttonBoxShadowHover: 'none',
-  }
-})
 const radiusPresets = [
   { value: 0, label: 'settings.radius-square' },
   { value: 4, label: 'settings.radius-subtle' },
@@ -847,7 +831,6 @@ onScopeDispose(() => {
                       :accessible-label="t('settings.color-mode')"
                       :model-value="preference?.appearance.colorMode ?? 'system'"
                       :options="colorModeOptions"
-                      :theme-overrides="colorModeTheme"
                       :disabled="preference === null || returning"
                       v-bind="{ 'aria-labelledby': field.labelledBy } satisfies HTMLAttributes"
                       @update:model-value="chooseMode"

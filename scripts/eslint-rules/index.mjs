@@ -2430,19 +2430,17 @@ const noUnapprovedVisualLiterals = {
           return
         }
 
-        // A passive picker can mirror the live entrance's computed pose, one read per property.
+        // The appearance surface can expose the live picker through its measured outline.
         if (
           filename === 'apps/web/src/app/appearance/appearance-scene.ts' &&
-          ['opacity', 'transform'].includes(propertyName) &&
-          node.right.type === 'MemberExpression' &&
-          getStaticPropertyName(node.right.property, node.right.computed) === propertyName
+          propertyName === 'clipPath'
         ) {
-          const source = resolveLocalExpression(node.right.object)
+          if (staticNodeValue(node.right) === '' && claimStyleSink('appearance-picker-clear'))
+            return
           if (
-            source?.type === 'CallExpression' &&
-            source.callee.type === 'Identifier' &&
-            source.callee.name === 'getComputedStyle' &&
-            claimStyleSink(`appearance-picker:${propertyName}`)
+            node.right.type === 'TemplateLiteral' &&
+            node.right.quasis.map(({ value }) => value.raw).join('|') === 'path(evenodd, "| |")' &&
+            claimStyleSink('appearance-picker-opening')
           )
             return
         }
@@ -2879,6 +2877,16 @@ const noUnapprovedVisualLiterals = {
           propertyName === '--ui-font-scale' &&
           (method === 'removeProperty' || isCapturedFontScale(value, priority)) &&
           claimStyleSink(`font-scale:${method}`)
+        )
+          return
+        // The reveal writes its geometry, timing and the scoped root-name suspension that a
+        // document capture requires; each property claims one sink per write direction.
+        if (
+          filename === 'apps/web/src/app/appearance/appearance-transition.ts' &&
+          typeof propertyName === 'string' &&
+          (propertyName.startsWith('--pavp-appearance-') ||
+            propertyName === 'view-transition-name') &&
+          claimStyleSink(`appearance-reveal:${method}:${propertyName}`)
         )
           return
         if (typeof propertyName === 'string' && propertyName.startsWith('--ui-')) {

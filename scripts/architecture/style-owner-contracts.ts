@@ -2409,6 +2409,103 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['visibility', 'hidden', false]],
   },
   {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    selector: ':root:active-view-transition-type(pavp-appearance)::view-transition',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['pointer-events', 'none', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    selector: ':root:active-view-transition-type(pavp-appearance)::view-transition-group(root)',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['animation', 'none', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    selector: ':root:active-view-transition-type(pavp-appearance)::view-transition-old(root)',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['animation', 'none', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    selector: ':root:active-view-transition-type(pavp-appearance)::view-transition-new(root)',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [
+      ['animation', 'var(--pavp-appearance-duration) var(--pavp-appearance-easing) both', false],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    selector: ':root:active-view-transition-type(pavp-appearance-mode)::view-transition-new(root)',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['animation-name', 'pavp-appearance-mode-reveal', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    selector:
+      ':root:active-view-transition-type(pavp-appearance-palette)::view-transition-new(root)',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['animation-name', 'pavp-appearance-palette-reveal', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app', '@keyframes pavp-appearance-mode-reveal'],
+    selector: 'from',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['clip-path', 'circle(0px at var(--pavp-appearance-origin))', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app', '@keyframes pavp-appearance-mode-reveal'],
+    selector: 'to',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [
+      [
+        'clip-path',
+        'circle(var(--pavp-appearance-radius) at var(--pavp-appearance-origin))',
+        false,
+      ],
+    ],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app', '@keyframes pavp-appearance-palette-reveal'],
+    selector: 'from',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['clip-path', 'var(--pavp-appearance-shape)', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app', '@keyframes pavp-appearance-palette-reveal'],
+    selector: '50%',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['clip-path', 'var(--pavp-appearance-shape-mid)', false]],
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app', '@keyframes pavp-appearance-palette-reveal'],
+    selector: 'to',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['clip-path', 'var(--pavp-appearance-shape-end)', false]],
+  },
+  {
     path: 'packages/ui/src/components/UiReportPreview.vue',
     block: 1,
     context: ['@media print'],
@@ -2785,7 +2882,6 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [
       ['padding', 'var(--ui-space-component-unit)', false],
       ['pointer-events', 'none', false],
-      ['transition', 'transform var(--ui-motion-duration) var(--ui-motion-easing)', false],
     ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
@@ -2795,6 +2891,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: [],
     selector: '.theme-quick-palette',
     declarations: [
+      ['transition', 'transform var(--ui-motion-duration) var(--ui-motion-easing)', false],
       [
         'inline-size',
         'calc(var(--ui-layout-target-enhanced-minimum-inline-size) - var(--ui-space-component-unit) * 2)',
@@ -2808,7 +2905,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/console/ThemeQuickPicker.vue',
     block: 0,
     context: [],
-    selector: '.theme-quick-scene *',
+    selector: '.theme-quick-scene *,\n.theme-quick-palette *',
     declarations: [
       [
         'transition',
@@ -2823,8 +2920,8 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 0,
     context: [],
     selector:
-      "html[data-motion='full'] .theme-quick-choice:is(:hover, :focus-visible) .theme-quick-choice-content",
-    declarations: [['transform', 'translateY(calc(var(--ui-space-component-unit) * -1))', false]],
+      "html[data-motion='full'] .theme-quick-choice:enabled:is(:hover, :focus-visible):not(:active) .theme-quick-palette",
+    declarations: [['transform', 'translateY(calc(var(--ui-space-component-unit) / -2))', false]],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {
@@ -10629,12 +10726,27 @@ export const keyframeOwners: readonly {
   readonly name: string
   readonly family:
     | 'appearance-preview'
+    | 'appearance-reveal'
     | 'admin-ambient'
     | 'route-transition'
     | 'settings-panel'
     | 'api-panel'
     | 'form-content'
 }[] = [
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    name: 'pavp-appearance-mode-reveal',
+    family: 'appearance-reveal',
+  },
+  {
+    path: 'apps/web/src/app/appearance/appearance-transition.css',
+    block: 0,
+    context: ['@layer app'],
+    name: 'pavp-appearance-palette-reveal',
+    family: 'appearance-reveal',
+  },
   {
     path: 'packages/ui/src/components/UiForm.vue',
     block: 0,
@@ -11818,6 +11930,48 @@ export const privateStyleVariables = [
     source: 'settings-appearance-motion',
     valueKind: undefined,
     writer: 'apps/web/src/app/appearance/appearance-transition.css',
+  },
+  {
+    name: '--pavp-appearance-origin',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
+  },
+  {
+    name: '--pavp-appearance-radius',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
+  },
+  {
+    name: '--pavp-appearance-shape',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
+  },
+  {
+    name: '--pavp-appearance-shape-mid',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
+  },
+  {
+    name: '--pavp-appearance-shape-end',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
+  },
+  {
+    name: '--pavp-appearance-duration',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
+  },
+  {
+    name: '--pavp-appearance-easing',
+    source: 'appearance-view-transition',
+    valueKind: undefined,
+    writer: 'apps/web/src/app/appearance/appearance-transition.ts',
   },
   {
     name: '--pavp-navigation-pressed',

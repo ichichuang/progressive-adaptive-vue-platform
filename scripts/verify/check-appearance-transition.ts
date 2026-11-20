@@ -10,6 +10,7 @@ import {
 } from '@platform/design-system'
 import {
   connectSettingsRift,
+  finishSettingsAppearance,
   playAppearanceTransition,
   reconcileSettingsAppearance,
 } from '../../apps/web/src/app/appearance/appearance-transition'
@@ -69,12 +70,29 @@ class PaintAnimation {
   }
 }
 
+class PaintStyle {
+  readonly properties = new Map<string, string>()
+  setProperty(name: string, value: string): void {
+    this.properties.set(name, value)
+  }
+  getPropertyValue(name: string): string {
+    return this.properties.get(name) ?? ''
+  }
+  getPropertyPriority(): string {
+    return ''
+  }
+  removeProperty(name: string): void {
+    this.properties.delete(name)
+  }
+}
+
 class PaintNode extends EventTarget {
   children: PaintNode[] = []
   readonly tag: string
   parent: PaintNode | undefined
   readonly attributes = new Map<string, string>()
   readonly classList = new Set<string>()
+  readonly style = new PaintStyle()
   readonly contentDocument: PaintDocument | undefined
   animation: PaintAnimation | undefined
   textContent = ''
@@ -157,21 +175,80 @@ class PaintDocument extends EventTarget {
   }
 }
 let paintUnavailable = false
-let captures = 0
 let routeTransition = false
 let forcedColors = false
+let viewTransitions = 0
+let activeViewTransition: FakeViewTransitionHandle | null = null
+let failNextCapture = false
 const app = new PaintNode('app')
 const live = new PaintNode('main')
 const surface = new PaintNode('div')
 app.append(surface, live)
+interface FakeViewTransitionHandle {
+  skipTransition(): void
+  readonly finished: Promise<void>
+  complete(): void
+}
+let lastViewTransitionTypes: readonly string[] = []
+function fakeViewTransition(options: {
+  readonly update: () => Promise<void>
+  readonly types?: readonly string[]
+}): FakeViewTransitionHandle {
+  viewTransitions += 1
+  lastViewTransitionTypes = options.types ?? []
+  let settled = false
+  let ran = false
+  let resolveFinished: () => void = () => undefined
+  let rejectFinished: (error: Error) => void = () => undefined
+  const finished = new Promise<void>((resolve, reject) => {
+    resolveFinished = resolve
+    rejectFinished = reject
+  })
+  const handle: FakeViewTransitionHandle = {
+    skipTransition: () => {
+      if (settled) return
+      settled = true
+      if (activeViewTransition === handle) activeViewTransition = null
+      rejectFinished(new Error('skipped'))
+    },
+    finished,
+    complete: () => {
+      if (settled) return
+      settled = true
+      if (activeViewTransition === handle) activeViewTransition = null
+      resolveFinished()
+    },
+  }
+  activeViewTransition = handle
+  if (failNextCapture) {
+    // An old-state capture failure aborts before the update callback can run.
+    queueMicrotask(() => {
+      handle.skipTransition()
+    })
+  } else {
+    queueMicrotask(() => {
+      ran = true
+      void options.update().catch(() => undefined)
+    })
+  }
+  return Object.assign(handle, { updateRan: () => ran })
+}
 const doc = Object.assign(new PaintDocument(), {
   visibilityState: 'visible',
-  activeViewTransition: null,
+  activeViewTransition: null as FakeViewTransitionHandle | null,
   getElementById: (id: string) => (id === 'pavp-appearance-surface' ? surface : null),
   querySelector: () => (routeTransition ? app : null),
-  startViewTransition: () => {
-    captures += 1
-  },
+  querySelectorAll: (): PaintNode[] => [],
+  startViewTransition: undefined as
+    | ((options: {
+        readonly update: () => Promise<void>
+        readonly types?: readonly string[]
+      }) => FakeViewTransitionHandle)
+    | undefined,
+})
+Object.defineProperty(doc, 'activeViewTransition', {
+  configurable: true,
+  get: () => activeViewTransition,
 })
 const testWindow = Object.assign(new EventTarget(), {
   innerWidth: 1280,
@@ -180,9 +257,12 @@ const testWindow = Object.assign(new EventTarget(), {
   scrollY: 0,
 })
 const originals = new Map<string, PropertyDescriptor | undefined>()
+let now = 0
 const globals: Record<string, unknown> = {
+  performance: { now: () => now },
   document: doc,
   window: testWindow,
+  CSS: { supports: () => true },
   getComputedStyle: () => ({
     visibility: forcedColors ? 'hidden' : 'visible',
     getPropertyValue: () => '200ms',
@@ -233,7 +313,9 @@ function select(
   next: Readonly<UiAppearanceSnapshot>,
   kind: 'settings' | 'mode' | 'palette',
   label = 'new page',
+  elapsedMs = 1000,
 ) {
+  now += elapsedMs
   playAppearanceTransition({
     kind,
     origin: { x: 120, y: 80 },
@@ -273,7 +355,10 @@ try {
   assert.notEqual(wave.frames[0], wave.frames[1])
   doc.dispatchEvent(new Event('pointermove'))
   assert.equal(incoming.animation, wave)
-  select(iris, 'mode', 'light page')
+  select(iris, 'mode', 'rapid second click', 80)
+  assert.equal(current, dark, 'Repeated clicks during the cooldown do not commit')
+  assert.equal(wave.playbackRate, 1)
+  select(iris, 'mode', 'light page', 560)
   assert.equal(wave.playbackRate, -1, 'A reversal retraces the partly shown circle')
   await flush()
   assert.equal(pageIn(old), 'light page')
@@ -440,6 +525,7 @@ try {
   assert.equal(current, dark)
   assert.equal(surface.children.length, 0)
   paintUnavailable = false
+  now += 1000
   playAppearanceTransition({
     kind: 'mode',
     readSnapshot: () => dark,
@@ -448,9 +534,62 @@ try {
   })
   await flush()
   assert.ok(surface.open, 'Equivalent effective modes still show a changed preference')
-  assert.equal(captures, 0, 'The interactive document must remain available for pointer input')
+  assert.equal(viewTransitions, 0, 'Without support the document never starts a view transition')
+
+  // A document view transition reveals the live page: no passive scene, one capture per change.
+  finishSettingsAppearance()
+  doc.startViewTransition = fakeViewTransition
+  now += 1000
+  select(cobalt, 'mode', 'view transition mode')
+  await flush()
+  assert.equal(viewTransitions, 1)
+  assert.equal(current, cobalt, 'The preference commits inside the DOM update')
+  assert.equal(surface.children.length, 0, 'No passive scene backs the live reveal')
+  assert.ok(!surface.open)
+  assert.deepEqual(lastViewTransitionTypes, ['pavp-appearance', 'pavp-appearance-mode'])
+  assert.equal(root.style.properties.get('--pavp-appearance-duration'), '640ms')
+  assert.equal(root.style.properties.get('--pavp-appearance-origin'), '120px 80px')
+  assert.ok(doc.activeViewTransition)
+  doc.activeViewTransition.complete()
+  await flush()
+  assert.equal(doc.activeViewTransition, null, 'A finished reveal restores the document')
+  assert.equal(root.style.properties.size, 0)
+
+  now += 1000
+  select(emerald, 'palette', 'interrupted palette')
+  await flush()
+  assert.equal(viewTransitions, 2)
+  assert.deepEqual(lastViewTransitionTypes, ['pavp-appearance', 'pavp-appearance-palette'])
+  assert.ok(root.style.properties.get('--pavp-appearance-shape-mid'))
+  const commitsBeforeInterrupt = commits
+  testWindow.dispatchEvent(new Event('wheel'))
+  await flush()
+  assert.equal(doc.activeViewTransition, null, 'A scroll interrupts the reveal')
+  assert.equal(root.style.properties.size, 0)
+  assert.equal(commits, commitsBeforeInterrupt, 'An interrupted reveal keeps the committed choice')
+  assert.equal(current, emerald)
+
+  now += 1000
+  failNextCapture = true
+  select(iris, 'mode', 'rescued preference')
+  await flush()
+  assert.equal(viewTransitions, 3)
+  assert.equal(current, iris, 'A failed capture still commits the choice directly')
+  assert.equal(root.style.properties.size, 0)
+  failNextCapture = false
+
+  now += 1000
+  select({ ...iris, density: 'compact' }, 'settings', 'rift still owns settings')
+  await flush()
+  assert.equal(viewTransitions, 3, 'Settings changes keep the rift pipeline')
+  assert.ok(surface.open)
+  for (let step = 0; step < 3; step += 1) {
+    phases.at(-1)?.finish()
+    await flush()
+  }
+  assert.equal(surface.children.length, 0)
   console.log(
-    'Appearance scenes preserve old and new content, real rift phases, live input and cleanup.',
+    'Appearance scenes preserve old and new content, real rift phases, live input, cleanup and view transitions.',
   )
 } finally {
   disconnect()
